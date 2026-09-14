@@ -58,7 +58,34 @@ node tools/build.mjs --nhap
 
 Bộ kiểm định có một phép canh việc này, nên lỡ tay cũng không lọt.
 
-### 1.5 · Ba thứ đừng bao giờ để trong repo, kể cả repo riêng tư
+### 1.5 · Repo riêng tư KHÔNG làm mất SEO — một chút cũng không
+
+Đây là chỗ dễ lo nhầm nhất, nên nói rõ: **hai việc này không liên quan gì nhau.**
+
+```
+GitHub repo  ──(Vercel dựng)──►  Trang web  ──(Google đọc)──►  Kết quả tìm kiếm
+   private                        công khai
+```
+
+Google **không bao giờ đọc repo** của anh. Nó đọc **trang web đã dựng** — tức
+là `dist/`, thứ Vercel phục vụ công khai. Repo private hay public, Google thấy
+y hệt nhau.
+
+| | Repo private | SEO |
+|---|---|---|
+| Bài đã đăng | giấu file `.md` gốc | vẫn được Google đọc đủ |
+| `sitemap.xml`, `robots.txt`, RSS | không liên quan | vẫn công khai, vẫn hoạt động |
+| Ảnh bìa, thẻ chia sẻ | không liên quan | vẫn hiện bình thường |
+
+Nói cách khác: **giấu nguyên liệu, vẫn bày món ăn.** Anh giấu bản thảo, ghi chú,
+bài nháp và mã dựng; còn bài đã đăng thì vẫn mở toang cho Google và người đọc.
+
+Cả phần kèm nguồn khi chép (§2.2) cũng không ảnh hưởng SEO — Google đọc HTML
+chứ không bôi đen rồi Ctrl+C.
+
+Chi tiết trang đã được tối ưu SEO những gì: `docs/DUA-LEN-MANG.md` §7.
+
+### 1.6 · Ba thứ đừng bao giờ để trong repo, kể cả repo riêng tư
 
 - **Mã, mật khẩu, khoá API.** Repo private hôm nay có thể thành public ngày mai,
   và lịch sử commit thì giữ mãi mọi thứ từng có mặt.
@@ -166,3 +193,4 @@ Không phải mã, mà là dấu vết:
 | Chép cả bài thì kèm nguồn | Đã bật sẵn (§2.2) |
 | Tắt hẳn phần kèm nguồn | `"baoVeChu": { "bat": false }` |
 | Chặn hẳn việc chép | **Không làm được** — xem §2.1 |
+| Vừa giấu nguồn vừa lên top Google | Được, không xung đột — xem §1.5 |

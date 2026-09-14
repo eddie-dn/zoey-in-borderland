@@ -273,9 +273,19 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     canonical : attr(canonical),
     ogTitle   : attr(ogTitle || title),
     ogType    : ogType || 'website',
-    ogImage   : attr(ogImage || `${CAU.url}/og.png`),
+    ogImage   : attr(ogImage || `${CAU.url}${BASE}/og.png`),
     locale    : CAU.locale,
-    robots    : noindex ? '<meta name="robots" content="noindex, nofollow">' : '',
+    /* Không có bài nào noindex nữa (bản nháp không được dựng ra), nhưng giữ
+       nhánh này phòng khi cần chặn một trang riêng lẻ.
+
+       max-image-preview:large là thứ quyết định Google hiện ảnh bìa CỠ LỚN hay
+       một ô nhỏ xíu cạnh tiêu đề. Mặc định của Google với trang tiếng Việt là
+       ô nhỏ. Một dòng này đổi hẳn diện mạo kết quả tìm kiếm.
+       max-snippet:-1 cho phép trích đoạn dài tuỳ Google thấy hợp. */
+    robots    : noindex
+      ? '<meta name="robots" content="noindex, nofollow">'
+      : '<meta name="robots" content="index, follow, max-image-preview:large, ' +
+        'max-snippet:-1, max-video-preview:-1">',
     base      : BASE,
     nav       : navHTML(duong),
     napTimKiem: coTrang('/search/')
@@ -460,6 +470,14 @@ function readNextHTML(bai, congKhai) {
   </section>`;
 }
 
+/* Ảnh dùng cho og:image VÀ cho JSON-LD — phải là MỘT, không thì Facebook hiện
+   một ảnh còn Google hiện ảnh khác. Luôn là địa chỉ TUYỆT ĐỐI: cả hai bên đều
+   bỏ qua đường dẫn tương đối. */
+function anhChiaSe(bai) {
+  if (!bai.cover) return `${CAU.url}${BASE}/og.png`;
+  return /^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`;
+}
+
 function trangBai(bai, congKhai) {
   const noiDung = dienMau(MAU_POST, {
     khung       : bai.khung,
@@ -497,9 +515,7 @@ function trangBai(bai, congKhai) {
     description: bai.summary,
     canonical  : `${CAU.url}${bai.url}`,
     ogType     : 'article',
-    ogImage    : bai.cover
-      ? (/^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`)
-      : `${CAU.url}/og.png`,
+    ogImage    : anhChiaSe(bai),
     /* Bản nháp vẫn dựng ra file để tác giả xem thử, nhưng gắn noindex và
        không nằm trong danh sách / RSS / sitemap. */
     noindex    : bai.draft,
@@ -512,13 +528,43 @@ function trangBai(bai, congKhai) {
                    : `\n<script src="${BASE}/assets/comments.js" defer></script>`) +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
+    /* HAI khối dữ liệu có cấu trúc, gộp trong một mảng @graph:
+
+         BlogPosting     — Google đọc để biết đây là bài viết, của ai, ngày nào,
+                           ảnh nào. Thiếu `image` thì không đủ điều kiện hiện
+                           kết quả dạng thẻ có ảnh.
+         BreadcrumbList  — thứ làm dòng "Posts › Psychology" hiện dưới tiêu đề
+                           trong kết quả tìm kiếm, thay cho đường dẫn thô.
+                           Phải khai riêng; Google không tự đọc <nav class="crumbs">. */
     headExtra  : `<script type="application/ld+json">${JSON.stringify({
-      '@context': 'https://schema.org', '@type': 'BlogPosting',
-      headline: bai.title, datePublished: bai.date,
-      dateModified: bai.updated || bai.date,
-      description: bai.summary, keywords: bai.tags.join(', '),
-      author: { '@type': 'Person', name: CAU.author },
-      mainEntityOfPage: `${CAU.url}${bai.url}`
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'BlogPosting',
+          headline: bai.title,
+          datePublished: bai.date,
+          dateModified: bai.updated || bai.date,
+          description: bai.summary,
+          keywords: bai.tags.join(', '),
+          inLanguage: bai.lang,
+          wordCount: (bai.tho.match(/\S+/g) || []).length,
+          image: [anhChiaSe(bai)],
+          author: { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` },
+          publisher: { '@type': 'Person', name: CAU.author },
+          mainEntityOfPage: { '@type': 'WebPage', '@id': `${CAU.url}${bai.url}` }
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: CAU.title, item: `${CAU.url}${BASE}/` },
+            ...bai.muc.map((m, i) => ({
+              '@type': 'ListItem', position: i + 2, name: m.ten,
+              item: `${CAU.url}${m.url}`
+            })),
+            { '@type': 'ListItem', position: bai.muc.length + 2, name: bai.title }
+          ]
+        }
+      ]
     })}</script>`
   });
 }
@@ -580,6 +626,17 @@ function trangChuTam(bai) {
     description: CAU.description,
     canonical: `${CAU.url}${BASE}/`,
     duong: '/',
+    /* Trang chủ khai WebSite + Person: đây là chỗ Google lấy tên trang và tên
+       tác giả để hiện trong kết quả, thay vì tự đoán từ thẻ <title>. */
+    headExtra: `<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'WebSite', name: CAU.title, description: CAU.description,
+          url: `${CAU.url}${BASE}/`, inLanguage: CAU.lang,
+          publisher: { '@type': 'Person', name: CAU.author } },
+        { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` }
+      ]
+    })}</script>`,
     content: `
 <div class="container" style="padding-block:var(--s10) var(--s8)">
   <div class="eyebrow"><i></i></div>
@@ -627,11 +684,22 @@ ${muc}
 </rss>`;
 }
 
+/* lastmod giúp Google biết trang nào vừa đổi mà quay lại đọc, thay vì bò đều
+   khắp trang mỗi lần. Với blog ít bài thì chưa khác biệt mấy, nhưng khi có vài
+   trăm bài thì đây là thứ quyết định bài mới được đọc sau vài giờ hay vài ngày. */
 function sitemap(bai) {
-  const u = [`${CAU.url}${BASE}/`, ...bai.map((b) => `${CAU.url}${b.url}`)];
+  const moiNhat = bai.length
+    ? bai.map((b) => b.updated || b.date).sort().at(-1)
+    : new Date().toISOString().slice(0, 10);
+
+  const u = [
+    { loc: `${CAU.url}${BASE}/`, mod: moiNhat, uu: '1.0' },
+    ...bai.map((b) => ({ loc: `${CAU.url}${b.url}`, mod: b.updated || b.date, uu: '0.8' }))
+  ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${u.map((x) => `  <url><loc>${x}</loc></url>`).join('\n')}
+${u.map((x) => `  <url>\n    <loc>${x.loc}</loc>\n    <lastmod>${x.mod}</lastmod>` +
+             `\n    <priority>${x.uu}</priority>\n  </url>`).join('\n')}
 </urlset>`;
 }
 

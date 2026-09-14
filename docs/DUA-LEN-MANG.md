@@ -179,3 +179,50 @@ không phân biệt dấu chấm.
 | Ảnh chia sẻ Facebook ra **ô trắng** | `url` trong `site.config.json` còn là địa chỉ tạm |
 | Điện thoại **không vào được** `192.168.x.x` | Khác WiFi, `npm run dev` đã tắt, hoặc tường lửa chặn cổng 4321 |
 | Build trên Vercel **hỏng** | Xem log — thường là Node dưới 18. Vercel Settings → Node.js Version → 20.x |
+
+---
+
+## 7 · SEO — trang đã có sẵn những gì
+
+Không phải cài plugin nào. Build tự sinh hết.
+
+### 7.1 · Mỗi bài tự có
+
+| Thứ | Quyết định điều gì |
+|---|---|
+| `<title>` · `<meta description>` | Dòng tiêu đề và đoạn mô tả trong kết quả Google |
+| `rel="canonical"` | Chặn Google coi hai đường dẫn là hai bài trùng nhau |
+| `og:*` + `twitter:card` | Thẻ xem trước khi chia sẻ lên Facebook, Zalo, Twitter |
+| **`max-image-preview:large`** | Google hiện ảnh bìa **cỡ lớn** thay vì một ô nhỏ xíu cạnh tiêu đề |
+| **JSON-LD `BlogPosting`** | Google biết đây là bài viết, của ai, ngày nào, ảnh nào |
+| **JSON-LD `BreadcrumbList`** | Dòng `Zoey in Borderland › Psychology › …` hiện dưới tiêu đề, thay cho đường dẫn thô |
+| `lang="vi"` | Google biết bài tiếng Việt, đem cho người tìm bằng tiếng Việt |
+| `sitemap.xml` có `lastmod` | Google biết bài nào vừa sửa mà quay lại đọc, không phải bò đều khắp trang |
+| `feed.xml` | Người đọc theo dõi bằng RSS; vài công cụ cũng dùng nó để phát hiện bài mới |
+
+### 7.2 · Ba thứ tác giả phải tự lo
+
+**`summary` cho từng bài.** Đây là đoạn mô tả Google hiện dưới tiêu đề. Không
+khai thì máy cắt 170 chữ đầu bài — thường ra một câu dở dang. Gói trong 160 ký tự.
+
+**Tiêu đề dưới 60 ký tự.** Google cắt ở khoảng đó. Dài hơn thì phần đuôi thành
+`…`, mà phần đuôi là tên blog nên mất luôn. `npm run kiem` cảnh báo.
+
+**Ảnh bìa `.jpg` hoặc `.png`, KHÔNG phải `.svg`.** Facebook, Zalo và Twitter
+không đọc được SVG — link chia sẻ ra ô trắng. Trang vẫn hiện đẹp nên rất dễ lọt.
+`npm run kiem` bắt lỗi này (mức đỏ).
+
+### 7.3 · Sau khi lên sóng — hai việc làm một lần
+
+1. **Đổi `url` trong `site.config.json`** thành tên miền thật. Không đổi thì
+   canonical, ảnh chia sẻ và sitemap đều trỏ về địa chỉ cũ.
+2. **Khai sitemap với Google.** Vào
+   [Google Search Console](https://search.google.com/search-console), thêm trang,
+   rồi ở mục *Sitemaps* gõ `sitemap.xml`. Không làm thì Google vẫn tìm ra, chỉ
+   chậm hơn vài tuần.
+
+### 7.4 · `og.png` — ảnh chia sẻ mặc định
+
+`public/og.png` (1200×630) là ảnh dùng cho trang chủ và cho bài không khai
+`cover`. Đây là ảnh nền chuyển màu, không có chữ — thay được bằng bất kỳ ảnh
+nào cùng khổ, chỉ cần ghi đè file đó.

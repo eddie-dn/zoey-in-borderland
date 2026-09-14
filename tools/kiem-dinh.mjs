@@ -332,6 +332,59 @@ const KIEM = [
                   `chạy \`npm run build\` (không kèm --nhap) để dựng bản sạch`)
   },
 
+  /* ── SEO ── */
+  {
+    /* Facebook, Zalo và Twitter KHÔNG đọc được SVG làm ảnh chia sẻ. Ảnh bìa
+       để .svg thì trang vẫn đẹp, nhưng mọi link chia sẻ ra một ô trắng — và
+       chỉ phát hiện ra khi đã bấm gửi cho ai đó rồi. */
+    ten: 'Ảnh chia sẻ không phải SVG, và là địa chỉ tuyệt đối',
+    muc: 'loi',
+    chay: ({ trang }) => trang.flatMap((t) => {
+      const r = [];
+      const u = t.ogImage || '';
+      if (/\.svgx?($|\?)/i.test(u)) {
+        r.push(`${t.url} — og:image là SVG (${u.split('/').pop()}). ` +
+               `Facebook/Zalo không đọc được. Đổi cover sang .jpg hoặc .png`);
+      }
+      if (u && !/^https?:\/\//i.test(u)) {
+        r.push(`${t.url} — og:image không phải địa chỉ tuyệt đối: ${u}`);
+      }
+      return r;
+    })
+  },
+  {
+    ten: 'Khối dữ liệu có cấu trúc (JSON-LD) đọc được',
+    muc: 'loi',
+    chay: ({ trang }) => trang.flatMap((t) =>
+      [...t.html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+        .flatMap((m) => {
+          try { JSON.parse(m[1]); return []; }
+          catch (e) { return [`${t.url} — JSON-LD hỏng cú pháp: ${e.message}`]; }
+        }))
+  },
+  {
+    /* Google cắt tiêu đề ở khoảng 60 ký tự trên máy tính. Dài hơn thì phần
+       đuôi thành "…" — mà phần đuôi của mình là tên blog, nên mất luôn. */
+    ten: 'Tiêu đề trang không dài quá chỗ Google hiển thị',
+    muc: 'canh',
+    chay: ({ trang }) => trang
+      .filter((t) => (t.title || '').length > 65)
+      .map((t) => `${t.url} — tiêu đề ${t.title.length} ký tự, Google cắt ở ~60`)
+  },
+  {
+    ten: 'sitemap.xml có lastmod cho mọi trang',
+    muc: 'canh',
+    chay: ({ dist }) => {
+      const f = path.join(dist, 'sitemap.xml');
+      if (!fs.existsSync(f)) return [];
+      const xml = fs.readFileSync(f, 'utf8');
+      const loc = (xml.match(/<loc>/g) || []).length;
+      const mod = (xml.match(/<lastmod>/g) || []).length;
+      return loc === mod ? []
+        : [`sitemap.xml: ${loc} trang nhưng chỉ ${mod} có lastmod`];
+    }
+  },
+
   /* ── Sổ phiên bản ── */
   {
     ten: 'Sổ phiên bản có ghi bản mới nhất, và có phần tóm tắt cho nó',

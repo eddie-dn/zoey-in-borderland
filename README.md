@@ -80,6 +80,11 @@ ra `dist/`. Xem thử ở máy mình thì `npm run dev`.
 khối mã chép được bình thường. Đây là gờ giảm tốc, không phải ổ khoá — không có
 cách nào chặn được sao chép trên web (`docs/RIENG-TU.md` §2.1).
 
+**SEO sinh sẵn, không cài plugin nào.** Thẻ meta, `og:*`, JSON-LD `BlogPosting`
++ `BreadcrumbList`, sitemap có `lastmod`, RSS, `max-image-preview:large`.
+Repo để private **không ảnh hưởng gì tới SEO** — Google đọc trang đã dựng, không
+đọc repo (`docs/RIENG-TU.md` §1.5).
+
 **Khung bình luận không cần máy chủ.** Google Apps Script + Google Sheet, miễn
 phí, dữ liệu nằm trong Drive của bạn. Không bình luận nào tự lên trang — mọi
 dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
@@ -87,7 +92,7 @@ dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 21 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+**Bộ kiểm định 25 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
 link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt RSS, thẻ meta thiếu.
 
 ---

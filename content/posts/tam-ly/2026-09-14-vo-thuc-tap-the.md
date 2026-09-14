@@ -3,7 +3,7 @@ title: Vô thức tập thể, và cái cớ để tin vào giấc mơ
 date: 2026-09-14
 summary: Jung nói có một tầng ký ức không thuộc về riêng ai. Bài này vừa là ghi chép về ý đó, vừa là bản demo đầy đủ mọi khối viết được trên blog.
 tags: [tâm lý, jung, ghi chép]
-cover: /media/2026/vo-thuc-tap-the/bia.svg
+cover: /media/2026/vo-thuc-tap-the/bia.png
 coverAlt: Một quầng sáng tím hồng toả ra từ tâm, bao quanh là hai vòng tròn nét đứt
 ---
 

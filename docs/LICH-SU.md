@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.04 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
 | V1.03 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
 | V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
 | V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
@@ -32,6 +33,18 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.04 — 14-Sep-2026
+
+- **Thêm ảnh chia sẻ mặc định.** `public/og.png` trước đây được khai trong thẻ
+  meta nhưng file không tồn tại — mọi link chia sẻ ra ô trắng.
+- **Bổ sung dữ liệu có cấu trúc.** `BreadcrumbList` cho dòng phân cấp hiện dưới
+  tiêu đề trong kết quả Google, `max-image-preview:large` cho ảnh bìa hiện cỡ
+  lớn thay vì ô nhỏ, `lastmod` trong sitemap.
+- **Bốn phép kiểm SEO mới,** trong đó một cái bắt lỗi ảnh bìa để `.svg` —
+  Facebook và Zalo không đọc được định dạng đó.
+- Ghi rõ trong tài liệu: **repo riêng tư không ảnh hưởng SEO**, vì Google đọc
+  trang đã dựng chứ không đọc repo.
 
 ## V1.03 — 14-Sep-2026
 

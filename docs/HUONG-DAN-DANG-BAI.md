@@ -119,7 +119,7 @@ git add -A && git commit -m "bài: tên bài" && git push
 |---|---|---|
 | `summary` | **Một câu hoàn chỉnh**, ≤ 160 ký tự | Máy tự cắt 170 chữ đầu bài — thường ra một câu dở dang trên Facebook |
 | `tags` | 2–5 tag, **viết có dấu, viết thường** | Bài không xuất hiện ở bất kỳ trang tag nào, sau này gần như không tìm lại được |
-| `cover` | `/media/<năm>/<slug>/bia.jpg`, khổ 1600×900 | Link chia sẻ lên Facebook/Zalo ra một ô trắng trơn |
+| `cover` | `/media/<năm>/<slug>/bia.jpg` hoặc `.png`, khổ 1600×900 — **đừng dùng `.svg`** | Link chia sẻ lên Facebook/Zalo ra một ô trắng trơn |
 | `coverAlt` | **Tả ảnh**, không phải chú thích ảnh | Người dùng trình đọc màn hình nghe thấy một khoảng lặng |
 
 ### 2.3 · Tuỳ chọn
@@ -157,6 +157,11 @@ template gì cả — cả hai khung dùng chung một HTML, chỉ khác cách x
 trang riêng. Trước khi gõ tag mới, mở `dist/tags.json` xem đã có tag nào gần
 giống chưa. Quy ước: **viết thường, có dấu, số ít** — `sách`, không phải
 `Sách` hay `Những cuốn sách`.
+
+**Ảnh bìa để định dạng `.svg`.** Trang vẫn hiện đẹp, nhưng Facebook, Zalo và
+Twitter **không đọc được SVG** làm ảnh chia sẻ — link gửi đi ra một ô trắng, và
+thường chỉ phát hiện sau khi đã gửi cho ai đó rồi. Bìa dùng `.jpg` hoặc `.png`.
+`npm run kiem` bắt lỗi này.
 
 **Ảnh quên chữ alt.** `![](anh.jpg)` thì build cảnh báo ngay. Alt là **tả ảnh cho
 người không nhìn thấy nó**, khác với chú thích — chú thích là phần trong dấu
