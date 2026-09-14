@@ -295,6 +295,31 @@ const KIEM = [
     }
   },
 
+  {
+    /* Vercel preset "Other" mặc định lấy thư mục `public/` làm nơi chứa trang
+       nếu nó tồn tại — mà repo này có public/, trong đó chỉ có ảnh. Không có
+       vercel.json trỏ sang dist/ thì deploy xong ra 404, và log build lại hoàn
+       toàn sạch nên rất khó đoán ra. */
+    ten: 'vercel.json trỏ đúng vào dist/',
+    muc: 'canh',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'vercel.json');
+      if (!fs.existsSync(f)) {
+        return ['thiếu vercel.json — Vercel sẽ lấy nhầm thư mục public/ và ra 404 ' +
+                '(xem docs/DUA-LEN-MANG.md §3)'];
+      }
+      let v;
+      try { v = JSON.parse(fs.readFileSync(f, 'utf8')); }
+      catch (e) { return [`vercel.json đọc không được: ${e.message}`]; }
+      const r = [];
+      if (v.outputDirectory !== 'dist') {
+        r.push(`vercel.json: outputDirectory là "${v.outputDirectory}" — phải là "dist"`);
+      }
+      if (!v.buildCommand) r.push('vercel.json: thiếu buildCommand "npm run build"');
+      return r;
+    }
+  },
+
   /* ── Sổ phiên bản ── */
   {
     ten: 'Sổ phiên bản có ghi bản mới nhất, và có phần tóm tắt cho nó',

@@ -10,6 +10,7 @@
    ============================================================ */
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -114,10 +115,44 @@ const may = http.createServer((req, res) => {
   res.end(than);
 });
 
+/* Địa chỉ máy trong MẠNG NỘI BỘ, để mở thử trên điện thoại.
+   localhost chỉ có nghĩa với chính cái máy đang chạy lệnh; gõ nó trên điện
+   thoại là điện thoại tự tìm chính nó, không ra gì cả. Phải là địa chỉ IP của
+   laptop trong mạng WiFi nhà.
+
+   Lọc bỏ interface ảo (Docker, VPN, máy ảo): chúng cũng có IPv4 nội bộ nhưng
+   điện thoại không vào được, mà in ra thì người dùng thử nhầm cái đó trước. */
+function diaChiMang() {
+  const ra = [];
+  for (const [ten, ds] of Object.entries(os.networkInterfaces())) {
+    if (/^(docker|br-|veth|virbr|vmnet|utun|tun|tap|lo)/i.test(ten)) continue;
+    for (const n of ds || []) {
+      if (n.family === 'IPv4' && !n.internal) ra.push({ ten, ip: n.address });
+    }
+  }
+  return ra;
+}
+
 console.log(mau.dam('\n  Dựng lần đầu…'));
 dung();
+
+/* listen(CONG) không kèm địa chỉ ⇒ Node nghe trên MỌI interface, nên máy khác
+   trong cùng WiFi vào được ngay. Nếu đổi thành listen(CONG, '127.0.0.1') thì
+   chỉ chính máy này vào được, điện thoại chịu. */
 may.listen(CONG, () => {
-  console.log(`  ${mau.xanh('▸')} ${mau.dam(`http://localhost:${CONG}`)}`);
-  console.log(mau.mo('    đang theo dõi content/ · src/ · public/ — lưu file là trang tự tải lại'));
+  console.log(`  ${mau.xanh('▸')} ${mau.dam(`http://localhost:${CONG}`)}   ${mau.mo('máy này')}`);
+
+  const mang = diaChiMang();
+  if (mang.length) {
+    mang.forEach((m) => {
+      console.log(`  ${mau.xanh('▸')} ${mau.dam(`http://${m.ip}:${CONG}`)}` +
+        `   ${mau.mo('điện thoại — cùng WiFi, gõ nguyên địa chỉ này')}`);
+    });
+  } else {
+    console.log(mau.mo('    (không thấy địa chỉ mạng nào — máy đang không nối WiFi/LAN?)'));
+  }
+
+  console.log(mau.mo('\n    đang theo dõi content/ · src/ · public/ — lưu file là trang tự tải lại'));
+  console.log(mau.mo('    máy tính và điện thoại phải chung một mạng WiFi'));
   console.log(mau.mo('    Ctrl+C để dừng\n'));
 });

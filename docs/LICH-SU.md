@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
 | V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
 | V1.00 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
 | V0.10 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
@@ -30,6 +31,16 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.02 — 14-Sep-2026
+
+- **Sửa chỗ Vercel deploy ra 404.** Thêm `vercel.json` trỏ thẳng vào `dist/`.
+  Không có nó, Vercel lấy nhầm thư mục `public/` — trong đó chỉ có ảnh, không
+  có trang chủ.
+- **Xem thử trên điện thoại.** `npm run dev` nay in luôn địa chỉ của máy trong
+  mạng WiFi, gõ vào trình duyệt điện thoại là mở được.
+- **Thêm `docs/DUA-LEN-MANG.md`** — ba cách xem trang, cách gỡ mấy lỗi hay gặp,
+  và cái bẫy `.gitignore` biến mất khi upload tay lên GitHub.
 
 ## V1.01 — 14-Sep-2026
 

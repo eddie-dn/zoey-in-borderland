@@ -23,6 +23,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | **Viết và đăng một bài** | [`docs/HUONG-DAN-DANG-BAI.md`](docs/HUONG-DAN-DANG-BAI.md) |
 | Hiểu sơ đồ trang, đường dẫn, cách build chạy | [`docs/IA.md`](docs/IA.md) |
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
+| **Đưa lên mạng · xem trên điện thoại** | [`docs/DUA-LEN-MANG.md`](docs/DUA-LEN-MANG.md) |
 | Cài khung bình luận | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
@@ -40,7 +41,7 @@ src/js/         theme · toc · media · comments
 src/templates/  shell.html · post.html
 tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
 tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
-docs/           năm file tài liệu ở bảng trên
+docs/           sáu file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
