@@ -1,0 +1,11 @@
+/dist/
+node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+/content/_scratch/
+/_anh/*
+!/_anh/README.md
