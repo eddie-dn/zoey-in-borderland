@@ -32,7 +32,8 @@
     "version": "Phiên bản KHÔNG khai ở đây. Nguồn duy nhất là dòng đầu bảng trong docs/LICH-SU.md. Ghi thêm bằng: npm run ver -- \"mô tả\"",
     "chuaDung": "Danh sách đường dẫn CHƯA DỰNG. Mọi chỗ trỏ tới chúng (nav, chân trang, nút tìm kiếm, chip tag, dòng phân cấp) sẽ hiện mờ thay vì thành link. Dựng xong trang nào thì xoá dòng đó khỏi đây. Cố ý làm vậy để không bao giờ có link chết — bộ kiểm định bắt ngay nếu sót.",
     "nhan": "Chữ giao diện (nav, đường dẫn phân cấp, nhãn, ngày) để TIẾNG ANH cho đồng bộ; nội dung bài vẫn tiếng Việt. Bảng nhãn nằm ở đầu tools/build.mjs, biến NHAN — đổi ngôn ngữ giao diện là sửa đúng khối đó.",
-    "binhLuan": "url = địa chỉ Web App của Google Apps Script. Để rỗng thì khung bình luận vẫn hiện nhưng form bị khoá lại. Cài từng bước: docs/BINH-LUAN.md. Đặt bat:false để tắt hẳn khung bình luận trên mọi bài."
+    "binhLuan": "url = địa chỉ Web App của Google Apps Script. Để rỗng thì khung bình luận vẫn hiện nhưng form bị khoá lại. Cài từng bước: docs/BINH-LUAN.md. Đặt bat:false để tắt hẳn khung bình luận trên mọi bài.",
+    "baoVeChu": "Chép một đoạn DÀI thì tự kèm dòng nguồn. nguong = từ bao nhiêu ký tự trở lên mới can thiệp (dưới ngưỡng chép nguyên, để người ta trích một câu cho dễ). gioiHan = 0 nghĩa là không cắt, chỉ thêm nguồn; đặt số > 0 thì đoạn chép bị rút gọn còn bấy nhiêu ký tự. ĐÂY LÀ GỜ GIẢM TỐC CHỨ KHÔNG PHẢI Ổ KHOÁ — không có cách nào chặn được sao chép trên web. Đặt bat:false để tắt."
   },
   "chuaDung": [
     "/posts/",
@@ -45,5 +46,11 @@
     "bat": true,
     "url": "",
     "loiMoi": "Ghé ngang thì để lại một dòng cũng được — không cần đăng ký gì cả."
+  },
+  "baoVeChu": {
+    "bat": true,
+    "nguong": 220,
+    "gioiHan": 0,
+    "loiNhac": "Đọc bản đầy đủ tại"
   }
 }

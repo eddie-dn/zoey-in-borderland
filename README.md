@@ -24,6 +24,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | Hiểu sơ đồ trang, đường dẫn, cách build chạy | [`docs/IA.md`](docs/IA.md) |
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **Đưa lên mạng · xem trên điện thoại** | [`docs/DUA-LEN-MANG.md`](docs/DUA-LEN-MANG.md) |
+| Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
 | Cài khung bình luận | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
@@ -37,11 +38,11 @@ content/pages/                                      trang tĩnh
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
 _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
-src/js/         theme · toc · media · comments
+src/js/         theme · toc · media · comments · copy-guard
 src/templates/  shell.html · post.html
 tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
 tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
-docs/           sáu file tài liệu ở bảng trên
+docs/           bảy file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
@@ -72,6 +73,13 @@ Cả hai dùng chung một HTML, chỉ khác cách xếp bằng grid.
 nó đổi tên cho sạch, xếp đúng chỗ, đo tỉ lệ, cảnh báo ảnh nặng, và in sẵn dòng
 Markdown để dán.
 
+**Bản nháp không bao giờ lên mạng.** `npm run build` không ghi bài `draft: true`
+ra `dist/`. Xem thử ở máy mình thì `npm run dev`.
+
+**Chép cả bài thì clipboard tự kèm dòng nguồn.** Trích một câu vẫn nguyên vẹn;
+khối mã chép được bình thường. Đây là gờ giảm tốc, không phải ổ khoá — không có
+cách nào chặn được sao chép trên web (`docs/RIENG-TU.md` §2.1).
+
 **Khung bình luận không cần máy chủ.** Google Apps Script + Google Sheet, miễn
 phí, dữ liệu nằm trong Drive của bạn. Không bình luận nào tự lên trang — mọi
 dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
@@ -79,7 +87,7 @@ dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 19 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+**Bộ kiểm định 21 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
 link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt RSS, thẻ meta thiếu.
 
 ---

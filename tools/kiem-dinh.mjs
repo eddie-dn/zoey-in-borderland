@@ -320,6 +320,18 @@ const KIEM = [
     }
   },
 
+  {
+    /* Bản nháp thường là thứ riêng tư nhất trên blog cá nhân. `noindex` chỉ
+       bảo Google đừng đánh chỉ mục — file vẫn nằm công khai trên máy chủ, ai
+       đoán trúng đường dẫn là đọc được. Nên nó phải KHÔNG có mặt trong dist. */
+    ten: 'Bản nháp không lọt vào bản dựng',
+    muc: 'loi',
+    chay: ({ trang }) => trang
+      .filter((t) => t.noindex)
+      .map((t) => `${t.url} là bản nháp nhưng vẫn có file trong dist/ — ` +
+                  `chạy \`npm run build\` (không kèm --nhap) để dựng bản sạch`)
+  },
+
   /* ── Sổ phiên bản ── */
   {
     ten: 'Sổ phiên bản có ghi bản mới nhất, và có phần tóm tắt cho nó',

@@ -32,6 +32,13 @@ const THU_MUC    = {
 const CO        = new Set(process.argv.slice(2));
 const CHI_KIEM  = CO.has('--check-only') || CO.has('--check');
 const CHI_TIET  = CO.has('--v') || CO.has('--verbose');
+/* BẢN NHÁP MẶC ĐỊNH KHÔNG ĐƯỢC GHI RA dist/.
+   Bản trước vẫn ghi ra file rồi gắn noindex. Nhưng noindex chỉ bảo Google đừng
+   đánh chỉ mục — file vẫn nằm công khai trên máy chủ, ai đoán trúng đường dẫn
+   là đọc được bài chưa viết xong. Với blog cá nhân, bài nháp thường là thứ
+   riêng tư nhất.
+   `npm run dev` tự bật cờ này để tác giả vẫn xem thử được ở máy mình. */
+const CO_NHAP   = CO.has('--nhap') || CO.has('--drafts');
 
 const CAU = JSON.parse(fs.readFileSync(path.join(GOC, 'site.config.json'), 'utf8'));
 const BASE = (CAU.base || '').replace(/\/$/, '');
@@ -456,6 +463,13 @@ function readNextHTML(bai, congKhai) {
 function trangBai(bai, congKhai) {
   const noiDung = dienMau(MAU_POST, {
     khung       : bai.khung,
+    /* Thuộc tính cho copy-guard.js. Để rỗng khi tắt trong cấu hình thì script
+       không tìm thấy mốc và tự thoát ngay, không làm gì cả. */
+    copyGuard   : (CAU.baoVeChu || {}).bat === false ? '' :
+      ` data-copy-guard data-nguong="${attr(String((CAU.baoVeChu || {}).nguong ?? 220))}"` +
+      ` data-gioihan="${attr(String((CAU.baoVeChu || {}).gioiHan ?? 0))}"` +
+      ` data-nhac="${attr((CAU.baoVeChu || {}).loiNhac || 'Đọc bản đầy đủ tại')}"` +
+      ` data-tieude="${attr(bai.title)}"`,
     crumbs      : crumbsHTML(bai),
     /* noiChu() dán từ công cụ vào từ sau nó, để text-wrap:balance không bẻ
        tiêu đề đúng giữa một cụm từ. Chỉ dùng ở h1 — xem tools/lib/text.mjs. */
@@ -495,7 +509,9 @@ function trangBai(bai, congKhai) {
     scripts    : `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
-                   : `\n<script src="${BASE}/assets/comments.js" defer></script>`),
+                   : `\n<script src="${BASE}/assets/comments.js" defer></script>`) +
+                 ((CAU.baoVeChu || {}).bat === false ? ''
+                   : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
     headExtra  : `<script type="application/ld+json">${JSON.stringify({
       '@context': 'https://schema.org', '@type': 'BlogPosting',
       headline: bai.title, datePublished: bai.date,
@@ -670,7 +686,7 @@ async function chay() {
 
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
-    for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js']) {
+    for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js', 'copy-guard.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
@@ -678,9 +694,10 @@ async function chay() {
 
     /* Gợi ý chỉ lấy trong danh sách CÔNG KHAI: gợi ý cả bản nháp thì bạn đọc
        bấm vào là rơi vào một bài chưa viết xong. */
-    for (const b of bai) ghi(b.duongDanRa, trangBai(b, congKhai));
+    const canDung = CO_NHAP ? bai : congKhai;
+    for (const b of canDung) ghi(b.duongDanRa, trangBai(b, congKhai));
 
-    ghi(path.join(THU_MUC.dist, 'index.html'), trangChuTam(bai));
+    ghi(path.join(THU_MUC.dist, 'index.html'), trangChuTam(canDung));
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'), sitemap(congKhai));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
@@ -733,6 +750,12 @@ async function chay() {
   }
 
   const nhap = bai.length - congKhai.length;
+  if (nhap && !CHI_KIEM) {
+    console.log(mau.mo(CO_NHAP
+      ? `    ${nhap} bản nháp CÓ dựng ra file (đang ở chế độ xem thử)`
+      : `    ${nhap} bản nháp KHÔNG dựng ra file — thêm --nhap nếu muốn xem thử`));
+  }
+
   console.log(mau.xanh(`  ✓ ${congKhai.length} bài công khai` +
     (nhap ? ` · ${nhap} bản nháp` : '')) +
     mau.mo(`  ·  ${BAN.ten} · ${BAN.ngay}`) +

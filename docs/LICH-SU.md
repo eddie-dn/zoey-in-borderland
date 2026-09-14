@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.03 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
 | V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
 | V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
 | V1.00 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
@@ -31,6 +32,16 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.03 — 14-Sep-2026
+
+- **Bản nháp không còn lên mạng.** Trước đây bài `draft: true` vẫn được đẩy lên
+  máy chủ, chỉ gắn `noindex` — mà `noindex` chỉ bảo Google đừng đánh chỉ mục,
+  ai đoán trúng đường dẫn vẫn đọc được. Nay `npm run build` không ghi chúng ra.
+- **Chép cả bài thì clipboard tự kèm dòng nguồn.** Trích ngắn dưới 220 ký tự và
+  khối mã vẫn chép nguyên vẹn. Dán vào Word thì dòng nguồn là liên kết bấm được.
+- **Thêm `docs/RIENG-TU.md`** — cách đặt repo riêng tư, và nói thẳng vì sao
+  không thể chặn việc sao chép trên web.
 
 ## V1.02 — 14-Sep-2026
 

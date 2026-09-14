@@ -38,7 +38,9 @@ let phienBan = Date.now();
 
 function dung() {
   const t0 = Date.now();
-  const r = spawnSync(process.execPath, [path.join(GOC, 'tools', 'build.mjs')],
+  /* --nhap: ở máy mình thì dựng cả bản nháp để xem thử. Bản dựng thật
+     (npm run build) không có cờ này, nên nháp không bao giờ lên mạng. */
+  const r = spawnSync(process.execPath, [path.join(GOC, 'tools', 'build.mjs'), '--nhap'],
                       { stdio: 'inherit' });
   if (r.status === 0) phienBan = Date.now();
   else console.log(mau.do('  ✖ dựng hỏng — giữ nguyên bản cũ đang chạy\n'));

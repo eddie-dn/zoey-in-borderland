@@ -164,3 +164,20 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
    Đúng §6 của DESIGN-SYSTEM cũ. TUYỆT ĐỐI không đặt cho .prose:
    thân bài là thứ người đọc có quyền bôi để chép. */
 .site-head,.site-foot,.stamp,.eyebrow,.toc{user-select:none}
+
+/* ── LỜI NHẮC KHI CHÉP ──
+   Do copy-guard.js dựng lên khi đoạn chép bị rút gọn. Im lặng cắt bớt thì
+   người đọc dán ra mới phát hiện thiếu, và không hiểu vì sao. */
+.copy-nhac{
+  position:fixed;left:50%;bottom:24px;translate:-50% 12px;z-index:200;
+  max-width:min(420px, calc(100vw - 32px));
+  padding:11px var(--s5);border-radius:var(--r-pill);
+  background:var(--glass-fill);
+  -webkit-backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  backdrop-filter:blur(16px) saturate(var(--glass-sat));
+  box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
+  color:var(--text-muted);font-size:var(--fs-sm);line-height:1.5;text-align:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s var(--ease-glass), translate .3s var(--ease-glass);
+}
+.copy-nhac.hien{opacity:1;translate:-50% 0}
