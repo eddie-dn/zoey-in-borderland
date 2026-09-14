@@ -43,16 +43,16 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'copy-btn';
-    b.textContent = 'Chép';
-    b.setAttribute('aria-label', 'Chép đoạn mã này');
+    b.textContent = 'Copy';
+    b.setAttribute('aria-label', 'Copy code');
     b.addEventListener('click', function(){
       var code = pre.querySelector('code');
       navigator.clipboard.writeText(code ? code.innerText : pre.innerText).then(function(){
-        b.textContent = 'Đã chép';
-        setTimeout(function(){ b.textContent = 'Chép'; }, 1600);
+        b.textContent = 'Copied';
+        setTimeout(function(){ b.textContent = 'Copy'; }, 1600);
       }).catch(function(){
-        b.textContent = 'Chép hụt';
-        setTimeout(function(){ b.textContent = 'Chép'; }, 1600);
+        b.textContent = 'Failed';
+        setTimeout(function(){ b.textContent = 'Copy'; }, 1600);
       });
     });
     pre.appendChild(b);

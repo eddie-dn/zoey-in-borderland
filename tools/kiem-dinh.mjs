@@ -241,6 +241,60 @@ const KIEM = [
     }
   },
 
+  /* ── CSS ── */
+  {
+    /* Thiếu một file CSS trong bundle thì KHÔNG có lỗi nào cả — trang vẫn dựng,
+       vẫn mở được, chỉ là một mảng giao diện lặng lẽ biến mất. Đã vấp: cả bộ
+       liquid glass nằm ngoài bundle suốt một phiên bản mà không ai biết. */
+    ten: 'Bundle CSS gộp đủ mọi file trong src/styles/',
+    muc: 'loi',
+    chay: ({ goc, dist }) => {
+      const f = path.join(dist, 'assets', 'style.css');
+      if (!fs.existsSync(f)) return ['thiếu dist/assets/style.css'];
+      const gop = fs.readFileSync(f, 'utf8');
+      const thuMuc = path.join(goc, 'src', 'styles');
+      if (!fs.existsSync(thuMuc)) return [];
+      return fs.readdirSync(thuMuc)
+        .filter((x) => x.endsWith('.css'))
+        .filter((x) => !gop.includes(`───────── ${x} ─────────`))
+        .map((x) => `src/styles/${x} không có trong bundle — thêm vào mảng ` +
+                    `thuTu ở tools/build.mjs (hàm gopCSS)`);
+    }
+  },
+  {
+    /* Nút chính là chỗ dễ lọt lỗi tương phản nhất: nền gradient pastel + chữ
+       trắng nhìn trên bản thiết kế thì đẹp, nhưng đọc thì không ra chữ. */
+    ten: 'Nút chính không dùng chữ trắng trên nền pastel',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'styles', 'components.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8');
+      const m = css.match(/\.btn\s*\{[^}]*\}/);
+      if (!m) return [];
+      return /color:\s*(#fff|#ffffff|white|rgb\(255,\s*255,\s*255\))/i.test(m[0])
+        ? ['.btn đặt chữ màu trắng — trên nền gradient pastel chỉ đạt ~2:1, đọc không ra']
+        : [];
+    }
+  },
+
+  {
+    /* Mục nav trỏ tới trang chưa dựng render thành <span>, không phải <a>.
+       Luật CSS nào chỉ nhắm `a.nav-text` sẽ bỏ sót chúng — và ở màn hẹp,
+       bốn mục nav không ẩn được sẽ ép tên trang co về 0. */
+    ten: 'Luật ẩn nav ở màn hẹp bắt được cả <span> lẫn <a>',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'styles', 'layout.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8');
+      return /\.nav\s+a\.nav-text\s*\{[^}]*display\s*:\s*none/.test(css)
+        ? ['layout.css: luật ẩn nav viết `.nav a.nav-text` — bỏ chữ `a` đi, ' +
+           'không thì mục "sắp có" (là <span>) vẫn hiện và đẩy tên trang mất chỗ']
+        : [];
+    }
+  },
+
   /* ── Sổ phiên bản ── */
   {
     ten: 'Sổ phiên bản có ghi bản mới nhất, và có phần tóm tắt cho nó',
@@ -258,13 +312,16 @@ const KIEM = [
 
   /* ── Thân bài ── */
   {
-    ten: 'Không còn chú thích <!-- --> lọt vào thân bài',
+    /* Soi CẢ TRANG, không chỉ trong <article>. Bản đầu cắt lấy đoạn giữa
+       <article> và </article> bằng regex, rồi chính một chú thích trong template
+       có nhắc chữ "<article>" làm regex bắt nhầm mốc mở — báo lỗi giả ở mọi
+       bài. Không dò cấu trúc bằng regex nữa: build đã bỏ sạch chú thích rồi,
+       nên bất kỳ dấu <!-- nào còn sót đều là lỗi. */
+    ten: 'Không còn chú thích <!-- --> lọt ra HTML',
     muc: 'loi',
-    chay: ({ trang }) => trang.flatMap((t) => {
-      const art = (t.than.match(/<article[\s\S]*?<\/article>/) || [''])[0];
-      return (art.match(/<!--/g) || []).length
-        ? [`${t.url} — có chú thích lọt vào thân bài, người đọc xem mã nguồn là thấy`] : [];
-    })
+    chay: ({ trang }) => trang
+      .filter((t) => /<!--/.test(t.html))
+      .map((t) => `${t.url} — còn chú thích trong HTML, người đọc xem mã nguồn là thấy`)
   },
   {
     ten: 'Không có đường dẫn còn sót dấu vết máy chạy build',

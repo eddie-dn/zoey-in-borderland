@@ -30,9 +30,30 @@ Lệnh này làm ba việc: tạo file `.md` đặt đúng chỗ, đặt tên fi
 `YYYY-MM-DD-slug` để thư mục tự sắp theo ngày, và tạo sẵn thư mục ảnh riêng cho
 bài đó trong `public/media/<năm>/<slug>/`.
 
-### Bước 2 — Viết
+### Bước 2 — Viết, và đưa ảnh vào
 
-Mở file vừa tạo. Ảnh của bài thả vào thư mục ảnh mà bước 1 đã tạo sẵn.
+Mở file vừa tạo.
+
+**Ảnh thì không phải tự đi copy vào đúng thư mục.** Quăng hết vào `_anh/` ở gốc
+dự án — tên gì cũng được, tiếng Việt có dấu cũng được — rồi chạy:
+
+```bash
+npm run anh <slug-bài>          # chuyển ảnh vào bài
+npm run anh <slug-bài> --bia    # kèm đặt luôn ảnh ngang đầu tiên làm bìa
+npm run anh                      # xem bài nào đang có ảnh gì
+```
+
+Lệnh đó làm năm việc:
+
+1. Đổi tên cho sạch — `Ảnh chụp Màn hình 2026-09-14 lúc 10.23.45.png` thành
+   `anh-chup-man-hinh-2026-09-14-luc-10-23-45.png`. Tên có dấu và khoảng trắng
+   sang URL là một chuỗi `%20%C3%A1` dài loằng ngoằng, vài máy chủ còn từ chối hẳn.
+2. Xếp vào `public/media/<năm>/<slug-bài>/`.
+3. Đo kích thước thật, tính tỉ lệ.
+4. **Cảnh báo ảnh nặng** trên 400 KB, kèm chỗ nén.
+5. **In sẵn dòng Markdown để dán vào bài** — có sẵn `{.wide}` nếu ảnh ngang.
+
+`_anh/` nằm trong `.gitignore`, nên ảnh chưa dùng không lọt lên git.
 
 Vừa viết vừa xem:
 
@@ -105,31 +126,29 @@ git add -A && git commit -m "bài: tên bài" && git push
 
 | Field | Dùng khi |
 |---|---|
-| `khung` | Chọn khung trình bày: `A` (mặc định) · `B` · `C` — xem §2.4 |
+| `khung` | Chọn khung trình bày: `A` (mặc định) hoặc `B` — xem §2.4 |
 | `slug` | Muốn đường dẫn khác với tiêu đề. Không khai thì lấy tên file (bỏ phần ngày) |
 | `updated` | Sửa bài cũ đáng kể — ngày sửa hiện cạnh ngày đăng |
 | `draft` | Đang viết dở |
 | `pinned` | Ghim bài lên đầu danh sách |
 | `lang` | Bài viết bằng thứ tiếng khác `vi` |
 
-### 2.4 · Ba khung trình bày — chọn khung nào
+### 2.4 · Hai khung trình bày — chọn khung nào
 
-Khai `khung: A` (hoặc B, C) trong front matter. Không khai thì dùng A.
-Cả ba đều tự về một cột ở màn dưới 1080px.
+Khai `khung: A` hoặc `khung: B` trong front matter. Không khai thì dùng A.
+Cả hai tự về một cột ở màn dưới 1080px.
 
 | | Dáng | Hợp với | Ký tự/dòng |
 |---|---|---|---|
 | **A** | cột đọc + mục lục dính bên phải | bài phân tích nhiều mục, bài hướng dẫn | 71 |
 | **B** | ảnh bìa tràn hết màn, tiêu đề căn giữa, không cột phụ | bài kể chuyện, bài nhiều ảnh, bài ngắn | 74 |
-| **C** | mục lục dính lề trái, cột đọc bên phải | bài rất dài, cần tra mục liên tục | 72 |
 
-**A** là mặc định vì nó hợp với đa số bài. Đổi sang **B** khi bài có ảnh bìa
-đẹp và ít mục — mục lục lúc đó chỉ tổ chiếm chỗ. Đổi sang **C** khi bài dài tới
-mức người đọc phải nhảy qua nhảy lại giữa các mục.
+**A** là mặc định vì hợp với đa số bài. Đổi sang **B** khi bài có ảnh bìa đẹp và
+ít mục — mục lục lúc đó chỉ tổ chiếm chỗ.
 
 :::tip Thử trước khi chốt
 Đổi một chữ trong front matter rồi `npm run dev` là thấy ngay. Không phải sửa
-template gì cả — cả ba khung dùng chung một HTML, chỉ khác cách xếp.
+template gì cả — cả hai khung dùng chung một HTML, chỉ khác cách xếp.
 :::
 
 ### 2.5 · Ba cái bẫy hay vấp
@@ -212,6 +231,9 @@ Xếp nhiều ảnh cạnh nhau:
 ![ảnh hai](/media/2026/ten-bai/2.jpg)
 :::
 ```
+
+**Đừng copy ảnh bằng tay** — dùng `npm run anh <slug-bài>` (xem §1 Bước 2).
+Nó đổi tên, xếp đúng chỗ và in sẵn dòng chèn.
 
 **Ba điều build tự lo, không phải gõ:**
 
@@ -327,6 +349,7 @@ bài nháp hoặc file ghi chú mà không sợ nó bị đăng.
 
 ```bash
 npm run new "Tên bài" <chuyên-mục>    # tạo bài mới
+npm run anh <slug-bài>                 # đưa ảnh từ _anh/ vào bài
 npm run dev                            # xem thử, tự tải lại
 npm run check                          # kiểm file .md nguồn
 npm run kiem                           # KIỂM ĐỊNH dist/ trước khi đăng
@@ -337,6 +360,7 @@ npm run ver -- --lon "mô tả"           # mở một build mới
 npm run clean                          # xoá dist/
 ```
 
+Khung bình luận: `docs/BINH-LUAN.md`.
 Bảng màu, bộ chữ, quy ước nút: `docs/DESIGN-SYSTEM.md`.
 Sơ đồ trang và đường dẫn: `docs/IA.md`.
 Lịch sử phiên bản: `docs/LICH-SU.md`.

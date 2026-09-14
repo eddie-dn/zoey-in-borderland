@@ -1,28 +1,47 @@
 <div class="read-bar" aria-hidden="true"></div>
 
+<!-- Bốn khối này đều là CON TRỰC TIẾP của .post-layout, không lồng vào nhau.
+     Nhờ vậy lưới xếp được chúng độc lập ở mỗi khổ màn:
+
+       màn hẹp   → một cột, đúng thứ tự đọc:
+                   đầu bài → mục lục (gập) → thân bài → chân bài
+       ≥1080px   → đầu/thân/chân xếp dọc ở cột trái,
+                   mục lục dính ở cột phải, ngang tầm thân bài
+
+     Bản trước để đầu bài NẰM TRONG <article>, nên mục lục — vốn là anh em của
+     <article> — không chen vào giữa đầu bài và thân bài được, và ở màn hẹp nó
+     rơi xuống tận cuối trang, tức là sau khi đọc xong mới thấy mục lục. -->
+
 <div class="post-layout khung-{{khung}}">
-  <article class="prose" itemscope itemtype="https://schema.org/BlogPosting">
-    <header class="post-head">
-      <nav class="crumbs" aria-label="Đường dẫn">{{crumbs}}</nav>
-      <h1 itemprop="headline">{{title}}</h1>
-      {{summaryBlock}}
-      <div class="meta-row">
-        <time datetime="{{dateISO}}" itemprop="datePublished">{{dateText}}</time>
-        <span class="dot" aria-hidden="true"></span>
-        <span>{{readingTime}} phút đọc</span>
-        {{updatedBlock}}
-        {{draftBadge}}
-      </div>
-      {{tagRow}}
-    </header>
 
-    {{cover}}
-    {{body}}
+  <header class="post-head">
+    <nav class="crumbs" aria-label="Breadcrumb">{{crumbs}}</nav>
 
-    <footer class="post-foot">
-      {{postNav}}
-    </footer>
-  </article>
+    <h1>{{title}}</h1>
+
+    <!-- Ngày và phút đọc bám ngay dưới tiêu đề: hai thứ người đọc liếc để
+         quyết định có đọc tiếp không. Tóm tắt đứng sau chúng. -->
+    <div class="meta-row">
+      <time datetime="{{dateISO}}">{{dateText}}</time>
+      <span class="dot" aria-hidden="true"></span>
+      <span>{{readingTime}} min read</span>
+      {{updatedBlock}}
+      {{draftBadge}}
+    </div>
+
+    {{summaryBlock}}
+  </header>
 
   {{toc}}
+
+  <article class="prose" itemscope itemtype="https://schema.org/BlogPosting">
+    {{cover}}
+    {{body}}
+  </article>
+
+  <footer class="post-foot">
+    {{tagBlock}}
+    {{binhLuan}}
+    {{readNext}}
+  </footer>
 </div>

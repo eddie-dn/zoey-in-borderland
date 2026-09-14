@@ -1,6 +1,6 @@
 {
   "title": "Zoey in Borderland",
-  "tagline": "Ghi chép cá nhân",
+  "tagline": "Personal notes",
   "description": "Blog cá nhân của Honghandangiu — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
   "author": "Honghandangiu",
   "lang": "vi",
@@ -10,19 +10,19 @@
   "postsPerPage": 12,
   "nav": [
     {
-      "label": "Bài viết",
+      "label": "Posts",
       "href": "/posts/"
     },
     {
-      "label": "Tag",
+      "label": "Tags",
       "href": "/tags/"
     },
     {
-      "label": "Lưu trữ",
+      "label": "Archive",
       "href": "/archive/"
     },
     {
-      "label": "Về tôi",
+      "label": "About",
       "href": "/about/"
     }
   ],
@@ -30,7 +30,9 @@
     "base": "Để rỗng khi trang chạy ở gốc tên miền (Vercel, Netlify, tên miền riêng). Nếu deploy lên GitHub Pages dạng user.github.io/ten-repo thì đặt base thành \"/ten-repo\".",
     "url": "Dùng cho canonical, OG image và sitemap. Phải là địa chỉ thật khi đã lên sóng, không thì mạng xã hội lấy sai ảnh bìa.",
     "version": "Phiên bản KHÔNG khai ở đây. Nguồn duy nhất là dòng đầu bảng trong docs/LICH-SU.md. Ghi thêm bằng: npm run ver -- \"mô tả\"",
-    "chuaDung": "Danh sách đường dẫn CHƯA DỰNG. Mọi chỗ trỏ tới chúng (nav, chân trang, nút tìm kiếm, chip tag, dòng phân cấp) sẽ hiện mờ thay vì thành link. Dựng xong trang nào thì xoá dòng đó khỏi đây. Cố ý làm vậy để không bao giờ có link chết — bộ kiểm định bắt ngay nếu sót."
+    "chuaDung": "Danh sách đường dẫn CHƯA DỰNG. Mọi chỗ trỏ tới chúng (nav, chân trang, nút tìm kiếm, chip tag, dòng phân cấp) sẽ hiện mờ thay vì thành link. Dựng xong trang nào thì xoá dòng đó khỏi đây. Cố ý làm vậy để không bao giờ có link chết — bộ kiểm định bắt ngay nếu sót.",
+    "nhan": "Chữ giao diện (nav, đường dẫn phân cấp, nhãn, ngày) để TIẾNG ANH cho đồng bộ; nội dung bài vẫn tiếng Việt. Bảng nhãn nằm ở đầu tools/build.mjs, biến NHAN — đổi ngôn ngữ giao diện là sửa đúng khối đó.",
+    "binhLuan": "url = địa chỉ Web App của Google Apps Script. Để rỗng thì khung bình luận vẫn hiện nhưng form bị khoá lại. Cài từng bước: docs/BINH-LUAN.md. Đặt bat:false để tắt hẳn khung bình luận trên mọi bài."
   },
   "chuaDung": [
     "/posts/",
@@ -38,5 +40,10 @@
     "/archive/",
     "/about/",
     "/search/"
-  ]
+  ],
+  "binhLuan": {
+    "bat": true,
+    "url": "",
+    "loiMoi": "Ghé ngang thì để lại một dòng cũng được — không cần đăng ký gì cả."
+  }
 }

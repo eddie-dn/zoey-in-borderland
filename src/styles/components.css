@@ -27,9 +27,9 @@
   padding:12px var(--s6);border-radius:var(--r-pill);cursor:pointer;
   font-family:var(--font-label);font-size:var(--fs-xs);font-weight:600;
   letter-spacing:.18em;text-transform:uppercase;
-  color:var(--text-invert);
+  color:var(--btn-ink);
 }
-.btn:hover{color:var(--text-invert)}
+.btn:hover{color:var(--btn-ink)}
 /* Nút phụ là kính TRONG, không màu — để nó cũng có màu nhấn thì màn nào cũng
    có hai thứ tranh nhau làm nút chính. */
 .btn--ghost{color:var(--text-muted)}

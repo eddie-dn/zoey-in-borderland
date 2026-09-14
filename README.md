@@ -4,6 +4,7 @@ Blog cá nhân. Static site, **không framework, không dependency** — chỉ c
 
 ```bash
 npm run new "Tên bài"   # tạo bài mới
+npm run anh <slug-bài>  # đưa ảnh từ _anh/ vào đúng thư mục của bài
 npm run dev             # xem thử ở http://localhost:4321, tự tải lại khi lưu
 npm run check           # kiểm file .md nguồn
 npm run kiem            # kiểm định dist/ — chạy trước khi đăng
@@ -22,6 +23,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | **Viết và đăng một bài** | [`docs/HUONG-DAN-DANG-BAI.md`](docs/HUONG-DAN-DANG-BAI.md) |
 | Hiểu sơ đồ trang, đường dẫn, cách build chạy | [`docs/IA.md`](docs/IA.md) |
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
+| Cài khung bình luận | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
 ---
@@ -32,11 +34,13 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 content/posts/<mục>/<mục-con>/YYYY-MM-DD-slug.md   ← bài viết; thư mục = chuyên mục
 content/pages/                                      trang tĩnh
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
+_anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
-src/js/         theme · toc · media
+src/js/         theme · toc · media · comments
 src/templates/  shell.html · post.html
-tools/          build · new-post · dev · version · kiem-dinh · lib/
-docs/           bốn file tài liệu ở bảng trên
+tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
+tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
+docs/           năm file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
@@ -60,21 +64,32 @@ của Google, không cookie theo dõi đặt lên người đọc.
 **Tìm kiếm chạy hẳn trong trình duyệt.** Build sinh `search-index.json` có sẵn
 bản bỏ dấu, nên gõ `tam ly` cũng tìm ra *tâm lý*. Không máy chủ, không API.
 
-**Ba khung trình bày bài,** chọn bằng một chữ trong front matter (`khung: A|B|C`).
-Cả ba dùng chung một HTML, chỉ khác cách xếp bằng grid.
+**Hai khung trình bày bài,** chọn bằng một chữ trong front matter (`khung: A|B`).
+Cả hai dùng chung một HTML, chỉ khác cách xếp bằng grid.
+
+**Ảnh không phải copy tay.** Quăng vào `_anh/` rồi `npm run anh <slug-bài>` —
+nó đổi tên cho sạch, xếp đúng chỗ, đo tỉ lệ, cảnh báo ảnh nặng, và in sẵn dòng
+Markdown để dán.
+
+**Khung bình luận không cần máy chủ.** Google Apps Script + Google Sheet, miễn
+phí, dữ liệu nằm trong Drive của bạn. Không bình luận nào tự lên trang — mọi
+dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 16 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+**Bộ kiểm định 19 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
 link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt RSS, thẻ meta thiếu.
 
 ---
 
 ## Trạng thái
 
-Lượt này (V1.00) thêm: hệ chữ đo lại bằng số liệu thật, bộ liquid glass, ba
-khung trình bày bài, sổ phiên bản, bộ kiểm định trước khi đăng.
+V1.01 thêm: xếp lại đầu bài, tag xuống chân bài, gợi ý đọc tiếp, khung bình
+luận, công cụ đưa ảnh vào bài, chữ giao diện tiếng Anh.
+
+V1.00: hệ chữ đo lại bằng số liệu thật, bộ liquid glass, sổ phiên bản, bộ kiểm
+định trước khi đăng.
 
 Nền tảng (V0.10): design system, khung đọc bài, bộ dựng Markdown, bảng kiểm,
 tài liệu, hai bài mẫu.

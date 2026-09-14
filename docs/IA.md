@@ -52,7 +52,24 @@ content/
 
 public/                              chép nguyên xi sang dist/
 └── media/<năm>/<slug-bài>/          ảnh và video của từng bài
+
+_anh/                                chỗ quăng ảnh tạm (KHÔNG theo git)
 ```
+
+### Đưa ảnh vào bài
+
+Không copy tay. Quăng ảnh vào `_anh/` rồi:
+
+```bash
+npm run anh <slug-bài>          # chuyển vào đúng thư mục của bài
+npm run anh <slug-bài> --bia    # kèm đặt ảnh ngang đầu tiên làm bìa
+npm run anh                      # xem bài nào đang có ảnh gì
+```
+
+`tools/anh.mjs` lo: đổi tên sang slug sạch (tên tiếng Việt có dấu sang URL là
+một chuỗi `%20%C3%A1` dài loằng ngoằng, vài máy chủ còn từ chối hẳn), xếp vào
+`public/media/<năm>/<slug>/`, đo kích thước, cảnh báo ảnh trên 400 KB, và in
+sẵn dòng Markdown kèm `{.wide}` nếu ảnh ngang.
 
 ### Ba quy ước cứng
 
@@ -83,7 +100,13 @@ content/posts/tam-ly/2026-09-14-vo-thuc.md
 ```
 
 Cùng lượt đó build còn sinh: `search-index.json`, `tags.json`, `feed.xml`,
-`sitemap.xml`, `robots.txt`, và gộp 5 file CSS thành một `assets/style.css`.
+`sitemap.xml`, `robots.txt`, `version.json`, và gộp **6** file CSS thành một
+`assets/style.css`.
+
+> **Danh sách file CSS phải phủ hết `src/styles/`.** Thiếu một file thì không
+> có lỗi nào cả — trang vẫn dựng, chỉ là một mảng giao diện lặng lẽ biến mất.
+> Đã vấp: cả bộ liquid glass nằm ngoài bundle suốt một phiên bản. `npm run kiem`
+> nay có một phép so lại.
 
 ### Vì sao KIỂM đứng trước DỰNG
 
@@ -153,7 +176,11 @@ dẫn CSS và ảnh đều trỏ về gốc tên miền — trang ra trắng tr�
 | `url` | canonical, ảnh OG, sitemap — **phải là địa chỉ thật khi lên sóng** |
 | `base` | tiền tố mọi đường dẫn (xem khối cảnh báo trên) |
 | `nav` | các mục trên thanh điều hướng |
-| `version` | tem phiên bản ở chân trang |
+| `chuaDung` | danh sách đường dẫn CHƯA DỰNG — mọi chỗ trỏ tới chúng hiện mờ thay vì thành link chết |
+| `binhLuan` | `bat` bật/tắt khung bình luận · `url` địa chỉ Apps Script · `loiMoi` câu mời |
+
+Phiên bản **không** khai ở đây. Nguồn duy nhất là dòng đầu bảng trong
+`docs/LICH-SU.md`.
 
 ---
 
@@ -174,12 +201,27 @@ một template và một hàm trong `build.mjs`:
 | `/archive/` | gom `congKhai` theo năm | nhỏ |
 | `/about/` và `content/pages/` | dùng lại `docBai()`, bỏ phần chuyên mục | nhỏ |
 | Trang chủ thật | thay `trangChuTam()` | vừa |
+| Menu trượt cho màn hẹp | nav hiện đang ẩn dưới 640px | nhỏ |
 | `og.png` mặc định | ảnh tĩnh, hoặc sinh theo bài | vừa |
 | Trang 404 | template riêng | nhỏ |
 
-Hai thứ **cố ý chưa làm**, không phải quên:
+### 6.1 · Bình luận — đã có (V1.01)
 
-- **Bình luận.** Blog cá nhân không có bình luận thì không phải kiểm duyệt spam,
-  và không phải nhúng script của bên thứ ba lên mọi trang bài.
+Google Apps Script làm máy chủ, Google Sheet làm chỗ lưu. Không tốn tiền, không
+đăng ký dịch vụ nào, dữ liệu nằm trong Drive của chính chủ trang. Cài đặt từng
+bước: [`docs/BINH-LUAN.md`](BINH-LUAN.md).
+
+```
+Người đọc gõ ──POST──► Apps Script ──ghi──► Sheet (cột Duyệt TRỐNG)
+Trang web   ◄──GET──── Apps Script ◄─chỉ dòng đã duyệt─┘
+```
+
+Hai luật cứng: **không bình luận nào tự lên trang**, và **email không bao giờ
+ra khỏi Sheet** (hàm `doGet` không đọc cột email).
+
+### 6.2 · Cố ý chưa làm
+
 - **Đo lượt xem.** Chưa gắn gì. Khi cần thì chọn loại không đặt cookie
   (Plausible, GoatCounter) — một dòng `<script>` trong `shell.html` là xong.
+  Gắn rồi thì gợi ý "đọc tiếp" xếp hạng được theo lượt đọc: cộng thêm một số
+  hạng vào hàm `goiY()` trong `build.mjs`, phần còn lại không phải sửa.

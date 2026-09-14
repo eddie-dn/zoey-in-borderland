@@ -36,6 +36,12 @@
   --text-muted:#6A587F;               /* chữ phụ — đã chỉnh đậm hơn --raw-ink2 cho đủ 4.5:1 */
   --text-faint:#8B7BA3;               /* meta, tem — chỉ dùng cho chữ ≥12px */
   --text-invert:#FFFFFF;
+  /* Chữ trên NÚT CHÍNH. Nút chính có nền gradient pastel (violet → orchid →
+     coral); chữ trắng trên đó chỉ đạt ~2:1, nhìn thấy hình cái nút nhưng không
+     đọc ra chữ. Mực tím đậm đạt 5.8:1 trên đoạn tối nhất của gradient và 7.2:1
+     trên đoạn sáng nhất. Giữ NGUYÊN màu này ở cả hai theme: gradient của nút
+     không đổi theo theme, nên chữ trên nó cũng không được đổi. */
+  --btn-ink:#3A2A52;
 
   /* Link/nhấn có HAI màu tách bạch: một để ĐỌC, một để TRANG TRÍ.
      --raw-orchid trên nền sáng chỉ đạt 1.78:1 — đẹp nhưng không đọc nổi.
@@ -81,7 +87,11 @@
   --fs-h4:clamp(17px,1.02rem + .34vw,19.5px);
   --fs-h3:clamp(20px,1.14rem + .62vw,25px);
   --fs-h2:clamp(24px,1.32rem + .95vw,32px);
-  --fs-h1:clamp(30px,1.55rem + 2.1vw,50px);
+  /* Trần 40px chứ không phải 50px. Ở 50px, tiêu đề hai dòng bị bẻ ngay giữa
+     một cụm từ ("và cái / cớ để tin") vì text-wrap:balance chia đều độ dài hai
+     dòng chứ không biết đâu là ranh giới ý. Hạ cỡ xuống thì phần lớn tiêu đề
+     gói gọn trong hai dòng tự nhiên, không phải nhờ tới việc bẻ ép. */
+  --fs-h1:clamp(27px,1.5rem + 1.35vw,40px);
   --fs-display:clamp(36px,1.7rem + 3.3vw,68px);
 
   /* Dòng: tiếng Việt có dấu chồng hai tầng (ế, ộ, ữ) nên cần thoáng hơn
@@ -153,7 +163,7 @@
   --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:26px; --r-pill:999px;
   --dur-fast:.18s; --dur:.28s; --dur-slow:.5s;
   --ease:cubic-bezier(.4,.9,.3,1);
-  --header-h:60px;
+  --header-h:64px;
 
   color-scheme:light;
 }

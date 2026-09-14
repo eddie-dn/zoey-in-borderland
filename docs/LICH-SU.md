@@ -23,12 +23,24 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
 | V1.00 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
 | V0.10 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
 
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.01 — 14-Sep-2026
+
+- **Xếp lại đầu bài.** Ngày và phút đọc lên ngay dưới tiêu đề; tóm tắt xuống
+  sau, in nghiêng và nhỏ lại. Tag rời khỏi đầu bài, xuống hẳn khung riêng ở chân.
+- **Mọi thứ thẳng một mép.** Ảnh bìa, ảnh trong bài, bảng, đầu bài, chân bài —
+  cùng một lề trái với cột chữ. Đo lại: lệch 0px ở cả hai khung, cả hai khổ màn.
+- **Khung bình luận.** Google Apps Script + Google Sheet, không tốn tiền, không
+  bình luận nào tự lên trang. Thêm khối gợi ý đọc tiếp xếp theo tag trùng.
+- **Hai công cụ mới.** `npm run anh` đưa ảnh từ `_anh/` vào đúng thư mục bài và
+  in sẵn dòng chèn. Chữ giao diện chuyển hết sang tiếng Anh; bỏ khung C.
 
 ## V1.00 — 14-Sep-2026
 

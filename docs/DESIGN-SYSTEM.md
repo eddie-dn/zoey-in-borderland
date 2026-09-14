@@ -437,21 +437,125 @@ Thứ tự này không đổi được:
 
 ---
 
-## 8 · BA KHUNG TRÌNH BÀY BÀI
+## 8 · HAI KHUNG TRÌNH BÀY BÀI
 
-Chọn bằng `khung: A | B | C` trong front matter. Cả ba dùng **chung một HTML**,
-chỉ đổi cách xếp bằng grid — nên đổi khung không phải viết lại template nào, và
-ba khung không bao giờ lệch nhau về nội dung.
+Chọn bằng `khung: A | B` trong front matter. Cả hai dùng **chung một HTML**,
+chỉ đổi cách xếp bằng grid — nên đổi khung không phải viết lại template nào.
 
 | | Dáng | Hợp với | Ký tự/dòng |
 |---|---|---|---|
 | **A** | cột đọc + mục lục dính phải | bài phân tích nhiều mục | 71 |
 | **B** | bìa tràn màn, tiêu đề giữa, không cột phụ | bài kể chuyện, nhiều ảnh | 74 |
-| **C** | mục lục dính lề trái, cột đọc phải | bài rất dài | 72 |
 
-Dưới 1080px cả ba tự về **một cột** — màn hẹp không đủ chỗ cho cột phụ, ép vào
-thì cột chữ hẹp tới mức mỗi dòng còn vài chữ.
+Dưới 1080px cả hai về **một cột**.
 
-Ở khung C, mục lục nằm **cột đầu** trong lưới nhưng vẫn nằm **sau bài** trong
-HTML (đặt chỗ bằng `grid-column`/`grid-row`). Mắt thấy mục lục trước, trình đọc
-màn hình vẫn nghe bài trước — hai thứ đó không nhất thiết phải trùng nhau.
+### 8.1 · Bốn khối con, đặt chỗ TƯỜNG MINH
+
+```
+.post-layout
+├── .post-head    đường dẫn · TIÊU ĐỀ · ngày+phút đọc · tóm tắt
+├── .toc-box      mục lục
+├── .prose        ảnh bìa + thân bài
+└── .post-foot    khối tag · khung bình luận · gợi ý đọc tiếp
+```
+
+Bốn khối là **con trực tiếp** của lưới, không lồng vào nhau. Bản trước để đầu
+bài nằm TRONG `<article>`, nên mục lục — vốn là anh em của `<article>` — không
+chen được vào giữa đầu bài và thân bài, và ở màn hẹp nó rơi xuống tận cuối
+trang: đọc xong hết rồi mới thấy mục lục.
+
+Ở ≥1080px phải đặt chỗ tường minh:
+
+```css
+.khung-a .post-head{grid-column:1;grid-row:1}
+.khung-a .prose    {grid-column:1;grid-row:2}
+.khung-a .post-foot{grid-column:1;grid-row:3}
+.khung-a .toc-box  {grid-column:2;grid-row:2}
+```
+
+> **Bẫy đã vấp.** Để lưới tự xếp thì nó lấp theo hàng: đầu bài (1,1) → mục lục
+> (1,2) → thân bài (2,1) → **chân bài (2,2)**, tức là chân bài nhảy sang cột
+> mục lục.
+
+### 8.2 · Mọi thứ THẲNG MỘT MÉP
+
+Ảnh, bảng, khối mã, callout, đầu bài, chân bài — tất cả cùng một lề trái.
+`.wide` và `.full` vẫn còn, nhưng là thứ tác giả **phải tự gõ** cho từng ảnh.
+
+Đầu bài và chân bài không nằm trong `.prose` nên không ăn theo lưới của nó.
+Chúng phải **chép lại đúng công thức** của làn chữ:
+
+```css
+.post-head, .post-foot{
+  width: min(var(--measure), 100% - var(--gutter) * 2);
+  margin-inline: auto;
+}
+```
+
+Chép công thức, không áng chừng một con số: áng chừng thì lệch vài px, và mắt
+bắt được ngay vì ba khối nằm chồng dọc nhau.
+
+> **Bẫy đã vấp (khung B).** `--measure` khai ở `.prose` thì chỉ thân bài rộng
+> 60ch; đầu bài và chân bài vẫn đọc 58ch của `:root`. Lệch 12px. Phải khai ở
+> chính `.post-layout.khung-b` để cả bốn khối con cùng thừa kế.
+
+### 8.3 · Thứ tự đầu bài
+
+```
+đường dẫn → TIÊU ĐỀ → ngày · phút đọc → tóm tắt
+```
+
+Ngày và phút đọc bám **ngay dưới tiêu đề**: đó là hai thứ người đọc liếc để
+quyết định có đọc tiếp không. Tóm tắt đứng sau chúng — nó đã là nội dung rồi.
+
+Tag **không** nằm ở đầu bài nữa. Ở đó chúng chen giữa tiêu đề và câu mở, làm
+chậm đúng lúc người đọc đang muốn vào bài.
+
+### 8.4 · Tiêu đề: nối chữ tiếng Việt
+
+`text-wrap: balance` chia đều độ dài các dòng nhưng **không biết đâu là ranh
+giới ý**. Tiêu đề "…và cái cớ để tin…" bị bẻ thành "…và cái" / "cớ để tin…".
+
+Cách chữa: build dán từ **công cụ** vào từ ngay sau nó bằng khoảng trắng cứng
+(`tools/lib/text.mjs`, hàm `noiChu`). Hai nhóm không bao giờ nên đứng cuối dòng
+trong tiếng Việt:
+
+- **Loại từ** — cái, con, chiếc, người, việc, điều, thứ…
+- **Từ nối** — và, của, là, với, cho, từ, về, trong, như, mà, thì…
+
+Chỉ áp cho tiêu đề. Thân bài dòng nào cũng dài, dán thêm khoảng trắng cứng chỉ
+làm trình duyệt khó xuống dòng hơn mà mắt không nhận ra khác biệt.
+
+---
+
+## 9 · CHỮ GIAO DIỆN — TIẾNG ANH
+
+Mọi chữ **không phải nội dung bài** đều tiếng Anh: nav, đường dẫn phân cấp,
+nhãn, ngày tháng, nút. Phần khung trang đọc ra đồng bộ, và tách bạch hẳn khỏi
+nội dung tiếng Việt.
+
+Tất cả gom về **một khối** — biến `NHAN` ở đầu `tools/build.mjs`. Đổi ngôn ngữ
+giao diện là sửa đúng khối đó, không phải đi lùng từng chuỗi rải trong code.
+
+Tên chuyên mục cũng tiếng Anh, khai trong `_muc.json` của từng thư mục.
+
+---
+
+## 10 · MỘT LỖI ĐÁNG NHỚ
+
+`glass.css` **nằm ngoài bundle suốt một phiên bản** mà không ai biết: mảng
+`thuTu` trong `gopCSS()` thiếu tên nó. Thiếu một file CSS thì không có lỗi nào
+cả — trang vẫn dựng, vẫn mở được, chỉ là cả một mảng giao diện lặng lẽ biến mất.
+
+Bộ kiểm định nay có một phép so `src/styles/*.css` với bundle đã gộp. Thêm file
+CSS mới mà quên khai vào `thuTu` là `npm run kiem` báo đỏ ngay.
+
+Hai phép kiểm khác sinh ra từ cùng lượt đó:
+
+- **Nút chính không dùng chữ trắng.** Nền gradient pastel + chữ trắng chỉ đạt
+  ~2:1. Dùng `--btn-ink` (`#3A2A52`) — 5.8:1 ở đoạn tối nhất của gradient,
+  7.2:1 ở đoạn sáng nhất. Giữ nguyên ở cả hai theme vì gradient của nút không
+  đổi theo theme.
+- **Luật ẩn nav bắt cả `<span>`.** Mục trỏ tới trang chưa dựng render thành
+  `<span>`, không phải `<a>`. Luật `.nav a.nav-text{display:none}` bỏ sót
+  chúng, và ở 390px bốn mục nav không ẩn được đã ép tên trang co về 0.

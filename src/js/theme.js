@@ -28,7 +28,7 @@
     if(m) m.setAttribute('content', t === 'dark' ? '#120C22' : '#FAF6FD');
     var b = document.querySelector('.theme-btn');
     if(b){
-      var nhan = t === 'dark' ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối';
+      var nhan = t === 'dark' ? 'Switch to light' : 'Switch to dark';
       b.setAttribute('aria-label', nhan);
       b.setAttribute('data-tip', nhan);
     }

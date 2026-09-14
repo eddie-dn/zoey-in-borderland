@@ -17,7 +17,7 @@ import { render } from './lib/markdown.mjs';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
 import { docSo, temNgay } from './lib/lichsu.mjs';
 import {
-  slugify, escapeHtml, attr, phutDoc, ngayViet, ngayISO, ngayTem, tomTat, boDau
+  slugify, escapeHtml, attr, phutDoc, ngayAnh, ngayISO, ngayTem, tomTat, boDau, noiChu
 } from './lib/text.mjs';
 
 const GOC        = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,6 +49,40 @@ const BAN = SO.moiNhat || { ten: 'V0.00', ngay: '', suaChinh: '' };
 if (CAU.version) {
   CANH_BAO.push('site.config.json còn khoá `version` — bỏ đi, phiên bản nay lấy từ docs/LICH-SU.md');
 }
+
+/* ══════════ BẢNG NHÃN GIAO DIỆN ══════════
+   Mọi chữ KHÔNG phải nội dung bài đều lấy từ đây — tiếng Anh, để phần khung
+   trang đọc ra đồng bộ với nhau và tách bạch hẳn khỏi nội dung tiếng Việt.
+   Đổi ngôn ngữ giao diện là sửa đúng khối này, không phải đi lùng từng chuỗi
+   nằm rải trong code. */
+const NHAN = {
+  posts      : 'Posts',
+  tagged     : 'Tagged',
+  readNext   : 'Read next',
+  onThisPage : 'On this page',
+  contents   : 'Contents',
+  minRead    : 'min read',
+  updated    : 'Updated',
+  draft      : 'Draft',
+  soon       : 'Coming soon',
+  search     : 'Search',
+  skipToMain : 'Skip to content',
+  toLight    : 'Switch to light',
+  toDark     : 'Switch to dark',
+  anchor     : 'Link to this section',
+  related    : 'Related',
+  comments   : 'Leave a note',
+  yourName   : 'Name',
+  yourNote   : 'Your note',
+  optional   : 'optional',
+  emailNote  : 'optional · never shown',
+  namePh     : 'Ai ghé ngang đây?',
+  emailPh    : 'Để mình trả lời riêng',
+  notePh     : 'Viết gì cũng được…',
+  send       : 'Send',
+  older      : 'Older',
+  newer      : 'Newer'
+};
 
 const mau = {
   do:   (s) => `\x1b[31m${s}\x1b[0m`,
@@ -154,8 +188,8 @@ function docBai(file) {
        mong muốn, nên báo cảnh báo chứ không dừng build. */
     khung      : (() => {
       const k = String(fm.khung || 'A').trim().toUpperCase();
-      if (!'ABC'.includes(k) || k.length !== 1) {
-        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A, B hoặc C. Dùng tạm A.`);
+      if (k !== 'A' && k !== 'B') {
+        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A hoặc B. Dùng tạm A.`);
         return 'a';
       }
       return k.toLowerCase();
@@ -198,7 +232,7 @@ function lienKet(href, chu, lop = '') {
 function navHTML(duongHienTai) {
   return CAU.nav.map((n) => {
     if (!coTrang(n.href)) {
-      return `<span class="nav-text nav-cho tip" data-tip="Sắp có">${escapeHtml(n.label)}</span>`;
+      return `<span class="nav-text nav-cho tip" data-tip="${NHAN.soon}">${escapeHtml(n.label)}</span>`;
     }
     const day = duongHienTai.startsWith(n.href) && n.href !== '/';
     return `<a class="nav-text" href="${BASE}${n.href}"${day ? ' aria-current="page"' : ''}>` +
@@ -206,9 +240,22 @@ function navHTML(duongHienTai) {
   }).join('\n      ');
 }
 
+/* Bỏ chú thích HTML khỏi trang đã dựng.
+   Chú thích trong shell.html và post.html là ghi chú cho người SỬA TEMPLATE,
+   không phải cho người đọc blog. Đẩy chúng ra HTML thì vừa nặng trang vừa sinh
+   một lỗi khó thấy: chú thích nào nhắc tới tên thẻ (ví dụ giải thích về
+   `<article>`) sẽ làm mọi phép dò cấu trúc bằng regex bắt nhầm mốc. Đã vấp
+   đúng lỗi đó — bộ kiểm định báo "chú thích lọt vào thân bài" cho cả hai bài.
+
+   Chú thích trong BÀI VIẾT đã bị bỏ từ khâu dựng Markdown (markdown.mjs);
+   đây là lớp chặn thứ hai, cho phần khung trang. */
+function boChuThich(html) {
+  return html.replace(/<!--[\s\S]*?-->/g, '');
+}
+
 function trang({ title, description, canonical, ogTitle, ogImage, ogType, content,
                  scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/' }) {
-  return dienMau(MAU_SHELL, {
+  return boChuThich(dienMau(MAU_SHELL, {
     lang,
     htmlAttr  : '',
     title     : escapeHtml(title),
@@ -225,13 +272,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     base      : BASE,
     nav       : navHTML(duong),
     napTimKiem: coTrang('/search/')
-      ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="Tìm kiếm" data-tip="Tìm kiếm">` +
+      ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
         `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
         `<path d="M16.2 16.2 21 21"/></svg></a>` : '',
     footLinks : [
         ['/feed.xml', 'RSS', true],
-        ['/archive/', 'Lưu trữ', coTrang('/archive/')],
-        ['/tags/', 'Tag', coTrang('/tags/')]
+        ['/archive/', 'Archive', coTrang('/archive/')],
+        ['/tags/', 'Tags', coTrang('/tags/')]
       ].map(([h, t, co]) => co ? `<a href="${BASE}${h}">${t}</a>`
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
@@ -240,7 +287,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     year      : new Date().getFullYear(),
     buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
     version   : BAN.ten
-  });
+  }));
 }
 
 function tocHTML(headings) {
@@ -249,9 +296,9 @@ function tocHTML(headings) {
   const li = headings.map((h) =>
     `<li class="lvl-${h.cap}"><a href="#${h.id}">${escapeHtml(h.chu)}</a></li>`).join('');
   return `<details class="toc-box" open>
-    <summary>Mục lục</summary>
-    <nav class="toc" aria-label="Mục lục bài viết">
-      <div class="toc-title">Trong bài này</div>
+    <summary>${NHAN.contents}</summary>
+    <nav class="toc" aria-label="${NHAN.onThisPage}">
+      <div class="toc-title">${NHAN.onThisPage}</div>
       <ol>${li}</ol>
     </nav>
   </details>`;
@@ -259,7 +306,7 @@ function tocHTML(headings) {
 
 function crumbsHTML(bai) {
   const muc = [
-    `<li>${lienKet('/posts/', 'Bài viết')}</li>`,
+    `<li>${lienKet('/posts/', NHAN.posts)}</li>`,
     ...bai.muc.map((m) => `<li>${lienKet(m.url.replace(BASE, ''), m.ten)}</li>`)
   ].join('');
   return `<ol>${muc}</ol>`;
@@ -281,42 +328,152 @@ function coverHTML(bai) {
   }
   /* Ảnh bìa là thứ ĐẦU TIÊN người đọc nhìn thấy, nên KHÔNG lazy-load nó:
      lazy ở đây làm ảnh bìa về sau cả những ảnh nằm dưới màn hình. */
-  return `<figure class="post-cover wide">` +
+  /* Không còn class `wide`: ảnh bìa thẳng mép với cột chữ. Để nó thò ra hai
+     bên thì bài nào cũng mở đầu bằng một tấm ảnh lệch khỏi mọi thứ phía dưới. */
+  return `<figure class="post-cover">` +
     `<img src="${attr(ngoai ? bai.cover : BASE + bai.cover)}" alt="${attr(bai.coverAlt)}"` +
     `${dim}${style} loading="eager" fetchpriority="high" decoding="async">` +
     (bai.coverAlt ? `<figcaption>${escapeHtml(bai.coverAlt)}</figcaption>` : '') +
     `</figure>`;
 }
 
-function postNavHTML(truoc, sau) {
-  const o = [];
-  if (truoc) o.push(`<a class="prev" href="${truoc.url}"><span class="dir">← Bài trước</span>` +
-                    `<span class="t">${escapeHtml(truoc.title)}</span></a>`);
-  if (sau)   o.push(`<a class="next" href="${sau.url}"><span class="dir">Bài sau →</span>` +
-                    `<span class="t">${escapeHtml(sau.title)}</span></a>`);
-  return o.length ? `<nav class="post-nav" aria-label="Bài trước và bài sau">${o.join('')}</nav>` : '';
+/* ── KHỐI TAG Ở CHÂN BÀI ──
+   Tag chuyển hẳn từ đầu bài xuống đây. Ở đầu bài chúng chen giữa tiêu đề và
+   câu đầu tiên, làm chậm lúc người đọc đang muốn vào bài; ở chân bài chúng
+   đúng vai: đọc xong rồi mới hỏi "còn gì giống thế này nữa không". */
+function tagBlockHTML(bai) {
+  if (!bai.tags.length) return '';
+  return `<section class="post-tags">
+    <p class="label label--muted">${NHAN.tagged}</p>
+    <div class="tag-row">${bai.tags.map((t) =>
+      lienKet(`/tags/${slugify(t)}/`, t, 'tag')).join('')}</div>
+  </section>`;
 }
 
-function trangBai(bai, truoc, sau) {
+/* ── GỢI Ý ĐỌC TIẾP ──
+   Xếp hạng theo SỐ TAG TRÙNG trước, rồi mới tới gần nhau về thời gian. Bài
+   cùng tag là bài cùng mạch nghĩ — đó mới là thứ người vừa đọc xong muốn đọc
+   tiếp; còn "bài ngay trước/sau theo ngày" chỉ là một phép sắp xếp tình cờ.
+
+   CHƯA xếp theo "được đọc nhiều" được: trang không gắn công cụ đo lượt xem
+   nào (xem docs/IA.md §6). Khi nào gắn thì cộng thêm một số hạng vào `diem`
+   dưới đây, phần còn lại không phải sửa. */
+function goiY(bai, congKhai, soLuong = 3) {
+  const tag = new Set(bai.tags.map((t) => slugify(t)));
+  const i = congKhai.findIndex((b) => b.url === bai.url);
+
+  return congKhai
+    .filter((b) => b.url !== bai.url)
+    .map((b, _, __) => {
+      const j = congKhai.findIndex((x) => x.url === b.url);
+      const trung = b.tags.filter((t) => tag.has(slugify(t))).length;
+      return {
+        bai: b,
+        trung,
+        /* Mỗi tag trùng ăn đứt mọi khoảng cách thời gian, nên nhân 100.
+           Phần còn lại tách hai bài xa nhau về ngày ra sau. */
+        diem: trung * 100 - Math.abs(j - i),
+        moiHon: j < i
+      };
+    })
+    .sort((a, b) => b.diem - a.diem)
+    .slice(0, soLuong);
+}
+
+/* ── KHUNG BÌNH LUẬN ──
+   Chỉ là HTML tĩnh; mọi việc gửi/nhận do src/js/comments.js lo, nói chuyện với
+   một Google Apps Script (tools/apps-script/Code.gs).
+
+   Ba chỗ cố ý:
+     · Ô `hp` là BẪY BOT — ẩn bằng CSS chứ không phải type="hidden", vì bot đọc
+       HTML thấy hidden là biết đường bỏ qua. Phải có aria-hidden và tabindex=-1
+       để người dùng bàn phím và trình đọc màn hình không bao giờ lạc vào đó.
+     · Email ghi rõ là KHÔNG hiện công khai — và đúng là không: doGet bên Apps
+       Script không đọc cột email, nên không có đường nào moi ra qua mạng.
+     · Form nằm TRƯỚC danh sách bình luận. Người ghé qua muốn để lại một dòng
+       thì thấy ô nhập ngay, không phải cuộn qua hết bình luận của người khác. */
+function binhLuanHTML(bai) {
+  const c = CAU.binhLuan || {};
+  if (c.bat === false) return '';
+  return `<section class="binh-luan" data-binh-luan="${attr(c.url || '')}"
+           data-trang="${attr(bai.url)}">
+    <div class="eyebrow"><i></i></div>
+    <p class="label">${NHAN.comments} <span class="bl-dem"></span></p>
+    <p class="bl-moi">${escapeHtml(c.loiMoi || 'Ghé ngang thì để lại một dòng cũng được.')}</p>
+
+    <form class="bl-form" novalidate>
+      <div class="bl-hang">
+        <label class="bl-o">
+          <span>${NHAN.yourName} <em>${NHAN.optional}</em></span>
+          <input name="ten" type="text" maxlength="60" autocomplete="name"
+                 placeholder="${attr(NHAN.namePh)}">
+        </label>
+        <label class="bl-o">
+          <span>Email <em>${NHAN.emailNote}</em></span>
+          <input name="email" type="email" maxlength="120" autocomplete="email"
+                 placeholder="${attr(NHAN.emailPh)}">
+        </label>
+      </div>
+
+      <label class="bl-o">
+        <span>${NHAN.yourNote}</span>
+        <textarea name="noiDung" rows="4" maxlength="2000" required
+                  placeholder="${attr(NHAN.notePh)}"></textarea>
+      </label>
+
+      <input class="bl-hp" name="hp" type="text" tabindex="-1"
+             autocomplete="off" aria-hidden="true">
+
+      <div class="bl-chan">
+        <span class="bl-con"></span>
+        <button class="btn" type="submit">${NHAN.send}</button>
+      </div>
+    </form>
+
+    <p class="bl-bao" role="status" aria-live="polite"></p>
+    <ul class="bl-ds"></ul>
+  </section>`;
+}
+
+function readNextHTML(bai, congKhai) {
+  const ds = goiY(bai, congKhai);
+  if (!ds.length) return '';
+
+  const the = ds.map(({ bai: b, trung, moiHon }) => `
+    <a class="rn-card card" href="${b.url}">
+      <span class="rn-kind">${trung ? NHAN.related : (moiHon ? NHAN.newer : NHAN.older)}</span>
+      <span class="rn-title">${escapeHtml(b.title)}</span>
+      <span class="rn-meta">${ngayAnh(b.date)} · ${b.phut} ${NHAN.minRead}</span>
+    </a>`).join('');
+
+  return `<section class="read-next">
+    <div class="eyebrow"><i></i></div>
+    <p class="label">${NHAN.readNext}</p>
+    <div class="rn-grid">${the}</div>
+  </section>`;
+}
+
+function trangBai(bai, congKhai) {
   const noiDung = dienMau(MAU_POST, {
     khung       : bai.khung,
     crumbs      : crumbsHTML(bai),
-    title       : escapeHtml(bai.title),
+    /* noiChu() dán từ công cụ vào từ sau nó, để text-wrap:balance không bẻ
+       tiêu đề đúng giữa một cụm từ. Chỉ dùng ở h1 — xem tools/lib/text.mjs. */
+    title       : noiChu(escapeHtml(bai.title)),
     summaryBlock: bai.summary ? `<p class="summary">${escapeHtml(bai.summary)}</p>` : '',
     dateISO     : bai.date,
-    dateText    : ngayViet(bai.date),
+    dateText    : ngayAnh(bai.date),
     readingTime : bai.phut,
     updatedBlock: bai.updated
-      ? `<span class="dot" aria-hidden="true"></span><span>Sửa lần cuối ${ngayViet(bai.updated)}</span>`
+      ? `<span class="dot" aria-hidden="true"></span><span>${NHAN.updated} ${ngayAnh(bai.updated)}</span>`
       : '',
-    draftBadge  : bai.draft ? '<span class="badge badge--draft">Bản nháp</span>' : '',
-    tagRow      : bai.tags.length
-      ? `<div class="tag-row">${bai.tags.map((t) =>
-          lienKet(`/tags/${slugify(t)}/`, t, 'tag')).join('')}</div>`
-      : '',
+    draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
+
     cover       : coverHTML(bai),
     body        : bai.html,
-    postNav     : postNavHTML(truoc, sau),
+    tagBlock    : tagBlockHTML(bai),
+    readNext    : readNextHTML(bai, congKhai),
+    binhLuan    : binhLuanHTML(bai),
     toc         : tocHTML(bai.headings)
   });
 
@@ -336,7 +493,9 @@ function trangBai(bai, truoc, sau) {
     duong      : '/posts/',
     content    : noiDung,
     scripts    : `<script src="${BASE}/assets/toc.js" defer></script>\n` +
-                 `<script src="${BASE}/assets/media.js" defer></script>`,
+                 `<script src="${BASE}/assets/media.js" defer></script>` +
+                 ((CAU.binhLuan || {}).bat === false ? ''
+                   : `\n<script src="${BASE}/assets/comments.js" defer></script>`),
     headExtra  : `<script type="application/ld+json">${JSON.stringify({
       '@context': 'https://schema.org', '@type': 'BlogPosting',
       headline: bai.title, datePublished: bai.date,
@@ -365,7 +524,15 @@ function gopCSS() {
        tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
        glass      trước component, để component ghi đè được vật liệu khi cần
        prose      sau component, để khung đọc bài ghi đè được component */
-  const thuTu = ['tokens.css', 'base.css', 'layout.css', 'components.css', 'prose.css'];
+  /* Thứ tự KHÔNG đổi được:
+       tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
+       glass      trước component, để component ghi đè được vật liệu khi cần
+       prose      sau component, để khung đọc bài ghi đè được component
+     Danh sách này phải phủ HẾT src/styles/ — bộ kiểm định có một phép so lại
+     (xem tools/kiem-dinh.mjs). Bản trước thiếu glass.css ở đây, và vì CSS
+     thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
+  const thuTu = ['tokens.css', 'base.css', 'glass.css', 'layout.css',
+                 'components.css', 'prose.css'];
   return thuTu.map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
     if (!fs.existsSync(p)) { CANH_BAO.push(`thiếu file style: ${f}`); return ''; }
@@ -382,7 +549,7 @@ function trangChuTam(bai) {
   const the = bai.map((b) => `
     <article class="card">
       <div class="meta-row">
-        <time datetime="${b.date}">${ngayViet(b.date)}</time>
+        <time datetime="${b.date}">${ngayAnh(b.date)}</time>
         <span class="dot" aria-hidden="true"></span><span>${b.phut} phút đọc</span>
         ${b.draft ? '<span class="badge badge--draft">Nháp</span>' : ''}
       </div>
@@ -503,21 +670,15 @@ async function chay() {
 
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
-    for (const j of ['theme.js', 'toc.js', 'media.js']) {
+    for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
 
-    /* Bài trước / bài sau chỉ nối trong danh sách CÔNG KHAI: nối cả bản nháp
-       thì bạn đọc bấm "bài sau" là rơi vào một bài chưa viết xong. */
-    const viTri = new Map(congKhai.map((b, i) => [b.url, i]));
-    for (const b of bai) {
-      const i = viTri.get(b.url);
-      const truoc = i === undefined ? null : congKhai[i + 1] || null;
-      const sau   = i === undefined ? null : congKhai[i - 1] || null;
-      ghi(b.duongDanRa, trangBai(b, truoc, sau));
-    }
+    /* Gợi ý chỉ lấy trong danh sách CÔNG KHAI: gợi ý cả bản nháp thì bạn đọc
+       bấm vào là rơi vào một bài chưa viết xong. */
+    for (const b of bai) ghi(b.duongDanRa, trangBai(b, congKhai));
 
     ghi(path.join(THU_MUC.dist, 'index.html'), trangChuTam(bai));
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
