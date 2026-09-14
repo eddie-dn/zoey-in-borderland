@@ -9,14 +9,34 @@
   "locale": "vi_VN",
   "postsPerPage": 12,
   "nav": [
-    { "label": "Bài viết", "href": "/posts/" },
-    { "label": "Tag",      "href": "/tags/" },
-    { "label": "Lưu trữ",  "href": "/archive/" },
-    { "label": "Về tôi",   "href": "/about/" }
+    {
+      "label": "Bài viết",
+      "href": "/posts/"
+    },
+    {
+      "label": "Tag",
+      "href": "/tags/"
+    },
+    {
+      "label": "Lưu trữ",
+      "href": "/archive/"
+    },
+    {
+      "label": "Về tôi",
+      "href": "/about/"
+    }
   ],
-  "version": "V0.10",
   "_ghichu": {
     "base": "Để rỗng khi trang chạy ở gốc tên miền (Vercel, Netlify, tên miền riêng). Nếu deploy lên GitHub Pages dạng user.github.io/ten-repo thì đặt base thành \"/ten-repo\".",
-    "url": "Dùng cho canonical, OG image và sitemap. Phải là địa chỉ thật khi đã lên sóng, không thì mạng xã hội lấy sai ảnh bìa."
-  }
+    "url": "Dùng cho canonical, OG image và sitemap. Phải là địa chỉ thật khi đã lên sóng, không thì mạng xã hội lấy sai ảnh bìa.",
+    "version": "Phiên bản KHÔNG khai ở đây. Nguồn duy nhất là dòng đầu bảng trong docs/LICH-SU.md. Ghi thêm bằng: npm run ver -- \"mô tả\"",
+    "chuaDung": "Danh sách đường dẫn CHƯA DỰNG. Mọi chỗ trỏ tới chúng (nav, chân trang, nút tìm kiếm, chip tag, dòng phân cấp) sẽ hiện mờ thay vì thành link. Dựng xong trang nào thì xoá dòng đó khỏi đây. Cố ý làm vậy để không bao giờ có link chết — bộ kiểm định bắt ngay nếu sót."
+  },
+  "chuaDung": [
+    "/posts/",
+    "/tags/",
+    "/archive/",
+    "/about/",
+    "/search/"
+  ]
 }

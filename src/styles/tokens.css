@@ -86,8 +86,11 @@
 
   /* Dòng: tiếng Việt có dấu chồng hai tầng (ế, ộ, ữ) nên cần thoáng hơn
      tiếng Anh khoảng 0.1 đơn vị, không thì dấu bài trên chạm chữ bài dưới. */
-  --lh-tight:1.14;
-  --lh-title:1.22;
+  /* 1.20 chứ không phải 1.14. Đo ở tiêu đề hai dòng "Vô thức tập thể, và cái /
+     cớ để tin vào giấc mơ": ở 1.14 thì dấu ngã của "ữ" dòng dưới chạm chân "ể"
+     dòng trên. Tiếng Anh để 1.05–1.10 được vì không có dấu chồng tầng. */
+  --lh-tight:1.20;
+  --lh-title:1.26;
   --lh-body:1.78;
   --lh-ui:1.5;
 
@@ -97,7 +100,12 @@
   /* ── 4. ĐO DÒNG ──
      66ch là chỗ mắt đọc êm nhất với body 17–18px. Hẹp hơn thì mắt nhảy
      dòng liên tục, rộng hơn thì xuống dòng hay bị lạc hàng. */
-  --measure:66ch;
+  /* ĐO THẬT rồi mới chốt. 66ch cho ra ~80 ký tự trên một dòng ở desktop —
+     rộng hơn hẳn khoảng 65–75 mà các trang đọc-bài-dài dùng, và ở mức đó mắt
+     hay lạc hàng lúc quay về đầu dòng sau.
+     `ch` là bề rộng chữ "0", rộng hơn ký tự trung bình của bài, nên số ch
+     luôn NHỎ HƠN số ký tự/dòng thật: 58ch ≈ 70 ký tự/dòng. */
+  --measure:58ch;
   --measure-wide:82ch;
   --measure-ui:1180px;
 
@@ -106,6 +114,40 @@
   --s6:24px;  --s7:32px;  --s8:40px;  --s9:56px;  --s10:72px;
   --s11:96px; --s12:128px;
   --gutter:clamp(18px,5vw,32px);      /* lề ngang tối thiểu, mọi màn hình */
+
+  /* ── 5b. LIQUID GLASS ──
+     Một tấm kính thật không phải chỉ là "nền mờ". Nó có bốn tầng, và thiếu
+     tầng nào cũng ra nhựa mờ chứ không ra kính:
+       1. RUỘT      nền bán trong, đậm dần từ trên xuống
+       2. NHOÈ NỀN  backdrop-filter — bão hoà nâng lên thì màu sau kính mới
+                    ánh qua, chỉ blur không thôi ra màu xám bệch
+       3. VIỀN SÁNG vệt trắng mảnh ở mép trên, mờ dần xuống — đây là chỗ
+                    ánh sáng bẻ qua mép kính, và là tầng làm nên "liquid"
+       4. BÓNG ĐỔ  tách tấm kính khỏi nền phía sau */
+  --glass-blur:18px;
+  --glass-sat:1.7;
+  /* Ruột .55→.26 chứ không phải .78→.44. Trên nền pastel sáng, kính đục .78
+     đọc ra là "một thanh trắng đặc", mất hẳn cảm giác nhìn xuyên qua. Trong
+     hơn thì nội dung phía sau ánh lên — đó mới là kính. */
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.55),rgba(255,255,255,.26));
+  /* HAI viền, hai việc khác nhau — đây là chỗ bản đầu làm sai:
+       --glass-edge  viền CẤU TRÚC, tối nhẹ, tách tấm kính khỏi nền
+       --glass-spec  vệt SÁNG ở mép, chỗ ánh sáng bẻ qua rìa
+     Bản đầu để cả hai là màu trắng, nên trên nền sáng thì tấm kính không còn
+     đường bao nào — header trôi lẫn vào trang. */
+  --glass-edge:rgba(122,103,149,.15);
+  --glass-ring:rgba(255,255,255,.75);
+  --glass-spec:rgba(255,255,255,.95);          /* vệt sáng mép trên */
+  --glass-spec2:rgba(255,255,255,.10);         /* ánh mờ mép dưới */
+  --glass-drop:0 10px 34px rgba(94,72,133,.14);
+  --glass-drop-lift:0 18px 48px rgba(94,72,133,.22);
+  --glass-tint:linear-gradient(130deg,var(--accent-2),var(--accent) 58%,var(--accent-3));
+
+  /* Nhịp chuyển động. --spring có vọt qua đích rồi lùi lại — đó là cái làm
+     nút bấm có cảm giác vật thể thật. Chỉ dùng cho nút và thẻ; KHÔNG dùng cho
+     thứ đang mở ra đóng vào, vì vọt quá đích trên một tấm panel nhìn như giật. */
+  --spring:cubic-bezier(.34,1.42,.64,1);
+  --ease-glass:cubic-bezier(.22,1,.36,1);
 
   /* ── 6. BO GÓC & KHÁC ── */
   --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:26px; --r-pill:999px;
@@ -151,6 +193,18 @@
     --shadow-md:0 12px 32px rgba(8,3,20,.46);
     --shadow-lg:0 26px 64px rgba(8,3,20,.58);
 
+    /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
+       hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
+       đục, mất hẳn cảm giác kính. */
+    --glass-fill:linear-gradient(163deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
+    --glass-edge:rgba(227,170,221,.20);
+    --glass-ring:rgba(227,170,221,.26);
+    --glass-spec:rgba(255,255,255,.42);
+    --glass-spec2:rgba(255,255,255,.05);
+    --glass-drop:0 12px 38px rgba(8,3,20,.46);
+    --glass-drop-lift:0 20px 54px rgba(8,3,20,.62);
+    --glass-sat:1.9;
+
     color-scheme:dark;
   }
 }
@@ -188,6 +242,18 @@
   --shadow-sm:0 2px 10px rgba(8,3,20,.34);
   --shadow-md:0 12px 32px rgba(8,3,20,.46);
   --shadow-lg:0 26px 64px rgba(8,3,20,.58);
+
+  /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
+     hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
+     đục, mất hẳn cảm giác kính. */
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
+  --glass-edge:rgba(227,170,221,.20);
+  --glass-ring:rgba(227,170,221,.26);
+  --glass-spec:rgba(255,255,255,.42);
+  --glass-spec2:rgba(255,255,255,.05);
+  --glass-drop:0 12px 38px rgba(8,3,20,.46);
+  --glass-drop-lift:0 20px 54px rgba(8,3,20,.62);
+  --glass-sat:1.9;
 
   color-scheme:dark;
 }

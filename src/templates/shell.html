@@ -51,9 +51,7 @@
     </a>
     <nav class="nav" aria-label="Điều hướng chính">
       {{nav}}
-      <a class="ico-btn tip" href="{{base}}/search/" aria-label="Tìm kiếm" data-tip="Tìm kiếm">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/></svg>
-      </a>
+      {{napTimKiem}}
       <button class="ico-btn tip theme-btn" type="button"
               aria-label="Chuyển sang nền tối" data-tip="Chuyển sang nền tối">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
@@ -71,9 +69,7 @@
   <div class="container">
     <div class="foot-links">
       <span>© {{year}} {{author}}</span>
-      <a href="{{base}}/feed.xml">RSS</a>
-      <a href="{{base}}/archive/">Lưu trữ</a>
-      <a href="{{base}}/tags/">Tag</a>
+      {{footLinks}}
     </div>
     <!-- Tem hai dòng: ký tên TRÊN, phiên bản DƯỚI — đúng §4 của DESIGN-SYSTEM. -->
     <div class="stamp">

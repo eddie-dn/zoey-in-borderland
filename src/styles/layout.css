@@ -14,14 +14,13 @@
 /* ── HEADER ─────────────────────────────────────────────────
    position:sticky + backdrop-filter. Nền phải có alpha < 1 thì blur mới
    nhìn thấy tác dụng; để nền đục thì backdrop-filter tốn GPU mà vô hình. */
+/* Header là một THANH KÍNH: nội dung trôi bên dưới nó và ánh lên qua mặt kính.
+   Nền phải bán trong thì backdrop-filter mới có tác dụng — để nền đục thì vừa
+   tốn GPU vừa chẳng thấy gì. */
 .site-head{
   position:sticky;top:0;z-index:60;
   height:var(--header-h);
   display:flex;align-items:center;
-  border-bottom:1px solid var(--line);
-  background:color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter:blur(14px) saturate(1.4);
-  -webkit-backdrop-filter:blur(14px) saturate(1.4);
 }
 .site-head .container{display:flex;align-items:center;gap:var(--s4)}
 
@@ -129,8 +128,8 @@
 @media (max-width:1079px){
   .toc-box{
     margin:0 var(--gutter) var(--s7);
-    border:1px solid var(--line);border-radius:var(--r-md);
-    background:var(--surface);padding:var(--s3) var(--s4);
+    border-radius:var(--r-md);
+    padding:var(--s3) var(--s4);
   }
   .toc-box summary{
     cursor:pointer;list-style:none;
@@ -150,4 +149,90 @@
   height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);
   background:linear-gradient(90deg,var(--accent-2),var(--accent),var(--accent-3));
   pointer-events:none;
+}
+
+/* Mục điều hướng trỏ tới trang CHƯA DỰNG. Hiện mờ, không phải link, không bấm
+   được — thà hiện mờ còn hơn dẫn người đọc vào một trang 404. Bỏ cờ chuaDung
+   trong site.config.json là nó tự thành link thật. */
+.nav-cho{
+  color:var(--text-faint);
+  opacity:.5;
+  cursor:default;
+  padding:var(--s2) var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-xs);font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;
+}
+.site-foot .nav-cho{font-family:var(--font-body);font-size:var(--fs-sm);
+  letter-spacing:0;text-transform:none;padding:0}
+
+/* ══════════════════════════════════════════════════════════════
+   BA KHUNG TRÌNH BÀY BÀI VIẾT
+
+   Chọn bằng `khung: A | B | C` trong front matter. Không khai thì dùng A.
+   Cả ba dùng CHUNG một HTML — chỉ đổi cách xếp bằng grid, nên đổi khung không
+   phải viết lại template nào, và ba khung không bao giờ lệch nhau về nội dung.
+
+     A · CỘT ĐỌC + MỤC LỤC PHẢI      mặc định. Bài phân tích có nhiều mục.
+     B · BÌA TRÀN MÀN, CỘT GIỮA      bài kể chuyện, bài nhiều ảnh.
+     C · LỀ TRÁI DÍNH, CỘT PHẢI      bài rất dài, cần tra mục liên tục.
+
+   Dưới 1080px cả ba khung tự về MỘT CỘT — màn hẹp không đủ chỗ cho cột phụ,
+   mà ép vào thì cột chữ hẹp tới mức mỗi dòng chỉ còn vài chữ.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── A · mặc định ── đã khai ở .post-layout phía trên.
+   Tinh chỉnh: cột mục lục hẹp lại 210px và khoảng cách giảm, để khối bài và
+   khối mục lục đọc ra là MỘT cụm, không phải hai mảnh rời nhau trôi trên trang. */
+@media (min-width:1080px){
+  .post-layout.khung-a{grid-template-columns:minmax(0,1fr) 210px;gap:var(--s8)}
+}
+
+/* ── B · bìa tràn màn, cột đọc nằm giữa ──
+   Không có cột mục lục. Mục lục thu về khối gập ngay đầu bài ở mọi bề ngang.
+   Bìa nhảy lên TRƯỚC tiêu đề bằng order:-1 — không phải đổi template, vì
+   order tác động lên thứ tự xếp của grid chứ không phải thứ tự trong HTML
+   (nên trình đọc màn hình vẫn nghe tiêu đề trước, đúng thứ tự đọc). */
+.post-layout.khung-b{
+  grid-template-columns:minmax(0,1fr);
+  max-width:none;
+  padding-inline:0;
+}
+.khung-b .prose{--measure:60ch}
+/* `.prose > .post-cover` chứ không phải `.khung-b .post-cover`: ảnh bìa mang
+   sẵn class .wide, mà prose.css nạp SAU layout.css nên luật `.prose > .wide`
+   của nó (cùng độ ưu tiên 0-2-0, đứng sau) thắng. Thêm một bậc là đủ. */
+.khung-b .prose > .post-cover{
+  order:-1;
+  grid-column:full;
+  margin:calc(var(--s8) * -1) 0 var(--s9);
+}
+.khung-b .prose > .post-cover img{border-radius:0;max-height:62vh;object-fit:cover}
+.khung-b .post-head{text-align:center}
+.khung-b .post-head .crumbs,
+.khung-b .post-head .meta-row,
+.khung-b .post-head .tag-row{justify-content:center}
+.khung-b .post-head .summary{margin-inline:auto}
+.khung-b .toc-box{max-width:var(--measure);margin-inline:auto}
+@media (min-width:1080px){
+  .khung-b .toc-box{position:static;max-height:none}
+  .khung-b .toc-box summary{display:block}
+}
+
+/* ── C · lề trái dính, cột đọc bên phải ──
+   Mục lục nằm CỘT ĐẦU trong lưới nhưng vẫn nằm SAU bài trong HTML — đặt chỗ
+   bằng grid-column/grid-row. Mắt nhìn thấy mục lục trước, còn trình đọc màn
+   hình vẫn nghe bài trước; hai thứ đó không nhất thiết phải trùng nhau. */
+@media (min-width:1080px){
+  .post-layout.khung-c{
+    grid-template-columns:212px minmax(0,1fr);
+    gap:var(--s9);
+  }
+  .khung-c .prose{grid-column:2;grid-row:1}
+  .khung-c .toc-box{grid-column:1;grid-row:1}
+  .khung-c .prose{--measure:59ch}
+  .khung-c .toc ol{border-left:none;border-right:1px solid var(--line)}
+  .khung-c .toc a{border-left:none;border-right:2px solid transparent;
+    margin-left:0;margin-right:-1px;text-align:right}
+  .khung-c .toc a.active{border-right-color:var(--accent)}
+  .khung-c .toc-title{text-align:right}
 }

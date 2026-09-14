@@ -24,16 +24,29 @@
 .prose > .full{grid-column:full}  /* tràn hết bề ngang khung */
 
 /* ── NHỊP DỌC ──
-   Khoảng cách là thuộc tính của CẶP phần tử, không phải của một phần tử.
-   Nên dùng margin-top và chỉ dùng margin-top: không bao giờ phải đi trừ
-   margin chồng nhau giữa hai khối cạnh nhau. */
-.prose > * + *{margin-top:var(--s5)}
-.prose > * + h2{margin-top:var(--s10)}
-.prose > * + h3{margin-top:var(--s8)}
-.prose > * + h4{margin-top:var(--s7)}
-.prose > h2 + *,.prose > h3 + *,.prose > h4 + *{margin-top:var(--s4)}
-.prose > * + figure,.prose > figure + *{margin-top:var(--s8)}
-.prose > * + hr,.prose > hr + *{margin-top:var(--s9)}
+   Hai luật.
+
+   MỘT: khoảng cách là thuộc tính của CẶP phần tử, không phải của một phần tử.
+   Chỉ dùng margin-top, không bao giờ margin-bottom — nhờ vậy không phải đi trừ
+   margin chồng nhau, khoảng cách nào cũng do đúng một quy tắc quyết định.
+
+   HAI: mọi khoảng cách quy về --flow, và --flow tính từ CỠ CHỮ THÂN BÀI.
+   Không dùng px cứng: cỡ chữ co giãn theo bề ngang màn hình, mà khoảng cách
+   đứng yên thì nhịp bài vỡ ở hai đầu thang — desktop thì thưa thếch, mobile
+   thì chật cứng.
+   Cũng KHÔNG dùng `em`: margin tính bằng em đọc theo cỡ chữ của CHÍNH phần tử
+   đó, nên "2.4em phía trên h2" ra 2.4 × 32px chứ không phải 2.4 × 18.5px —
+   sai gấp rưỡi. calc() từ --fs-base thì luôn đo theo thân bài. */
+.prose{--flow:calc(var(--fs-base) * 1.5)}   /* ≈ 0.85× chiều cao dòng — đo ra vừa mắt */
+
+.prose > * + *{margin-top:var(--flow)}
+.prose > * + h2{margin-top:calc(var(--flow) * 2.4)}
+.prose > * + h3{margin-top:calc(var(--flow) * 1.75)}
+.prose > * + h4{margin-top:calc(var(--flow) * 1.4)}
+.prose > :is(h2,h3,h4) + *{margin-top:calc(var(--flow) * 0.55)}
+.prose > * + figure,.prose > figure + *{margin-top:calc(var(--flow) * 1.9)}
+.prose > * + hr,.prose > hr + *{margin-top:calc(var(--flow) * 2.2)}
+.prose > * + .callout,.prose > .callout + *{margin-top:calc(var(--flow) * 1.5)}
 
 /* ── TIÊU ĐỀ TRONG BÀI ── */
 .prose h2{font-size:var(--fs-h2);font-style:italic}
@@ -202,10 +215,14 @@
    Bốn loại, bốn màu, nhưng CÙNG một hình dáng. Màu là thứ duy nhất khác nhau
    — vì màu một mình không đủ (người mù màu), nên mỗi loại còn có nhãn chữ. */
 .prose .callout{
-  padding:var(--s5);border-radius:var(--r-md);
-  border:1px solid var(--cl-line,var(--line));
+  position:relative;
+  padding:var(--s5) var(--s5) var(--s5) calc(var(--s5) + 3px);
+  border-radius:var(--r-md);
   border-left:3px solid var(--cl-accent,var(--accent));
   background:var(--cl-bg,var(--accent-wash));
+  box-shadow:inset 0 0 0 1px var(--line), 0 4px 18px rgba(94,72,133,.07);
+  -webkit-backdrop-filter:blur(8px) saturate(1.3);
+  backdrop-filter:blur(8px) saturate(1.3);
   font-size:calc(var(--fs-base) * .96);line-height:1.72;
 }
 .prose .callout > .callout-lab{
@@ -230,8 +247,9 @@
 .prose pre{
   position:relative;
   padding:var(--s5) var(--s5) var(--s5);
-  border-radius:var(--r-md);border:1px solid var(--line);
+  border-radius:var(--r-md);
   background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
   overflow-x:auto;                 /* khối mã là MỘT trong ba thứ được phép trượt
                                       ngang, cùng với bảng và sơ đồ */
   font-size:var(--fs-sm);line-height:1.68;

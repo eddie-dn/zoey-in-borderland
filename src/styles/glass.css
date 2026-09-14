@@ -1,0 +1,152 @@
+/* ============================================================
+   LIQUID GLASS — MỘT công thức vật liệu, mọi mảnh giao diện mượn lại.
+
+   CÁCH ÁP: không bắt HTML gõ thêm class. Mảnh nào cần kính thì thêm tên nó
+   vào DANH SÁCH ở §1 dưới đây. Viết `<button class="btn">` là đủ.
+
+   Bản đầu làm kiểu utility — `<div class="card glass lift sheen">`. Bỏ, vì
+   hai lý do: HTML thành một mớ class, và quan trọng hơn, quên một class là
+   mảnh đó lặng lẽ khác hẳn mọi mảnh còn lại mà không ai nhận ra ngay.
+
+   Vật liệu có bốn tầng, thiếu tầng nào cũng ra nhựa mờ chứ không ra kính:
+     1. RUỘT      nền bán trong, đậm dần từ trên xuống
+     2. NHOÈ NỀN  backdrop-filter, có nâng bão hoà — chỉ blur không thôi thì
+                  màu sau kính ra xám bệch
+     3. VIỀN SÁNG vệt trắng mảnh ở mép trên mờ dần xuống — chỗ ánh sáng bẻ qua
+                  rìa kính, và là tầng làm nên chữ "liquid"
+     4. BÓNG ĐỔ  tách tấm kính ra khỏi nền phía sau
+   ============================================================ */
+
+/* ══════════ 1. DANH SÁCH MẢNH DÙNG KÍNH ══════════ */
+.glass,
+.site-head,
+.card,
+.btn,
+.ovp,
+.prose pre .copy-btn{
+  position:relative;
+  isolation:isolate;                 /* giữ ::before của kính không đè lên nội dung */
+  background:var(--glass-fill);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    var(--glass-drop);
+}
+
+/* backdrop-filter tách riêng, có @supports: trình duyệt cũ không hiểu thì
+   vẫn còn nền bán trong ở trên, chỉ mất phần nhoè — vẫn đọc được chữ.
+   Nếu gộp chung thì máy cũ ra một tấm trong suốt hoàn toàn, chữ đè lên chữ. */
+@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
+  .glass,.site-head,.card,.btn,.ovp,.prose pre .copy-btn{
+    -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
+}
+
+/* ── VỆT SÁNG MÉP — tầng làm nên chữ "liquid" ──
+   Một viền gradient thật: tô nền gradient rồi KHOÉT RUỘT bằng mask, chỉ chừa
+   lại đúng 1px ở rìa. Sáng nhất ở mép trên-trái (hướng nguồn sáng), mờ dần
+   quanh viền, gần như tắt ở mép dưới-phải. Đây là chỗ ánh sáng bẻ qua rìa kính.
+
+   Không thay được bằng `border: 1px solid`: viền đặc thì bốn cạnh sáng như
+   nhau, và mắt đọc ra ngay là một cái khung, không phải một tấm kính. */
+.glass::before,
+.site-head::before,
+.card::before,
+.btn::before,
+.ovp::before,
+.prose pre .copy-btn::before{
+  content:"";
+  position:absolute;inset:0;z-index:-1;
+  border-radius:inherit;
+  padding:1px;
+  background:linear-gradient(150deg,
+    var(--glass-spec) 0%,
+    var(--glass-spec2) 34%,
+    transparent 58%,
+    var(--glass-spec2) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  pointer-events:none;
+}
+
+/* ── BIẾN THỂ ── */
+
+/* Kính CÓ MÀU — nút chính. Đúng một nút chính mỗi màn. */
+.glass--tint,.btn:not(.btn--ghost){
+  background:var(--glass-tint);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.30), var(--glass-drop);
+}
+.glass--tint::before,.btn:not(.btn--ghost)::before{
+  background:linear-gradient(150deg,rgba(255,255,255,.88) 0%,
+    rgba(255,255,255,.22) 40%,transparent 72%);
+}
+
+/* Kính MỎNG — cho thứ nằm trong một tấm kính khác. Hai lớp blur chồng nhau
+   vừa tốn GPU vừa ra màu bệch, nên lớp trong giảm hẳn độ nhoè. */
+.glass--thin,.btn--ghost,.prose pre .copy-btn{
+  --glass-blur:9px;
+  box-shadow:inset 0 0 0 1px var(--glass-edge);
+}
+
+/* Kính PHẲNG — thanh dính mép trên. Không bóng đổ bốn phía; tách khỏi nội dung
+   đang trôi bên dưới bằng MỘT vạch tối mảnh (--line), không phải vạch sáng:
+   vạch trắng trên nền pastel sáng thì vô hình, header trôi lẫn vào trang. */
+.glass--flat,.site-head{
+  --glass-blur:22px;
+  border-radius:0;
+  box-shadow:0 1px 0 0 var(--line), 0 6px 20px -12px rgba(94,72,133,.5);
+}
+.glass--flat::before,.site-head::before{ padding:0 0 1px }
+
+/* ── NHỊP CHUYỂN ĐỘNG ──────────────────────────────────────
+   Hai nhịp, dùng đúng chỗ:
+     .lift   nhấc lên khi rê vào — cho thẻ, thứ có thể mở ra
+     .press  lún xuống khi bấm  — cho nút, thứ thực thi một việc
+   Cả hai chỉ động tới transform, box-shadow và filter: ba thuộc tính trình
+   duyệt chạy được trên luồng vẽ riêng, không phải tính lại bố cục. */
+.lift,.card{
+  transition:transform var(--dur) var(--ease-glass),
+             box-shadow var(--dur) var(--ease-glass);
+  will-change:transform;
+}
+@media (hover:hover){
+  .lift:hover,.card:hover{
+    transform:translateY(-3px);
+    box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
+  }
+}
+.press,.btn{
+  transition:transform .34s var(--spring),
+             box-shadow var(--dur) var(--ease-glass),
+             filter var(--dur-fast) linear;
+}
+.press:active,.btn:active{ transform:scale(.965); transition-duration:.09s }
+@media (hover:hover){ .press:hover,.btn:hover{ filter:brightness(1.06) saturate(1.06) } }
+
+/* Vệt sáng chạy ngang khi rê vào nút — như nghiêng tấm kính dưới đèn.
+   Chỉ trên máy CÓ con trỏ: trên cảm ứng không có trạng thái "rê vào", hiệu ứng
+   sẽ kẹt ở giữa chừng sau mỗi cú chạm. */
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .sheen,.btn{ overflow:hidden }
+  .sheen::after,.btn::after{
+    content:"";position:absolute;inset:0;z-index:1;
+    border-radius:inherit;pointer-events:none;
+    background:linear-gradient(105deg,transparent 38%,
+      rgba(255,255,255,.34) 50%,transparent 62%);
+    translate:-130% 0;
+    transition:translate .62s var(--ease-glass);
+  }
+  .sheen:hover::after,.btn:hover::after{ translate:130% 0 }
+}
+
+/* ── TÔN TRỌNG "GIẢM CHUYỂN ĐỘNG" ──
+   Người bật cài đặt này thường vì chuyển động làm họ chóng mặt hoặc buồn nôn.
+   Bỏ hẳn phần nhấc lên và lún xuống; giữ đổi màu và bóng đổ, vì đó là tín hiệu
+   cho biết nút đang được nhắm tới — bỏ luôn thì không còn gì báo. */
+@media (prefers-reduced-motion:reduce){
+  .lift:hover,.card:hover{ transform:none }
+  .press:active,.btn:active{ transform:none }
+  .sheen::after,.btn::after{ display:none }
+}

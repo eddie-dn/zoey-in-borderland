@@ -9,8 +9,12 @@
     "build": "node tools/build.mjs",
     "check": "node tools/build.mjs --check-only",
     "dev": "node tools/dev.mjs",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "ver": "node tools/version.mjs",
+    "kiem": "node tools/kiem-dinh.mjs"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "UNLICENSED"
 }

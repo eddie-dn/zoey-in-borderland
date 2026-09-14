@@ -5,7 +5,9 @@ Blog cá nhân. Static site, **không framework, không dependency** — chỉ c
 ```bash
 npm run new "Tên bài"   # tạo bài mới
 npm run dev             # xem thử ở http://localhost:4321, tự tải lại khi lưu
-npm run check           # kiểm bài, không ghi file
+npm run check           # kiểm file .md nguồn
+npm run kiem            # kiểm định dist/ — chạy trước khi đăng
+npm run ver -- "mô tả"  # ghi một dòng vào sổ phiên bản
 npm run build           # dựng ra dist/
 ```
 
@@ -20,6 +22,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | **Viết và đăng một bài** | [`docs/HUONG-DAN-DANG-BAI.md`](docs/HUONG-DAN-DANG-BAI.md) |
 | Hiểu sơ đồ trang, đường dẫn, cách build chạy | [`docs/IA.md`](docs/IA.md) |
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
+| Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
 ---
 
@@ -29,11 +32,11 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 content/posts/<mục>/<mục-con>/YYYY-MM-DD-slug.md   ← bài viết; thư mục = chuyên mục
 content/pages/                                      trang tĩnh
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
-src/styles/     tokens · base · layout · components · prose
+src/styles/     tokens · base · glass · layout · components · prose
 src/js/         theme · toc · media
 src/templates/  shell.html · post.html
-tools/          build.mjs · new-post.mjs · dev.mjs · lib/
-docs/           ba file tài liệu ở bảng trên
+tools/          build · new-post · dev · version · kiem-dinh · lib/
+docs/           bốn file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
@@ -57,12 +60,24 @@ của Google, không cookie theo dõi đặt lên người đọc.
 **Tìm kiếm chạy hẳn trong trình duyệt.** Build sinh `search-index.json` có sẵn
 bản bỏ dấu, nên gõ `tam ly` cũng tìm ra *tâm lý*. Không máy chủ, không API.
 
+**Ba khung trình bày bài,** chọn bằng một chữ trong front matter (`khung: A|B|C`).
+Cả ba dùng chung một HTML, chỉ khác cách xếp bằng grid.
+
+**Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
+bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
+
+**Bộ kiểm định 16 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt RSS, thẻ meta thiếu.
+
 ---
 
 ## Trạng thái
 
-Lượt này dựng **khung sườn**: design system, khung đọc bài, bộ dựng Markdown,
-bảng kiểm, tài liệu, hai bài mẫu.
+Lượt này (V1.00) thêm: hệ chữ đo lại bằng số liệu thật, bộ liquid glass, ba
+khung trình bày bài, sổ phiên bản, bộ kiểm định trước khi đăng.
+
+Nền tảng (V0.10): design system, khung đọc bài, bộ dựng Markdown, bảng kiểm,
+tài liệu, hai bài mẫu.
 
 Trang chủ hiện tại là **bản tạm**. Các trang `/posts/`, `/tags/`, `/search/`,
 `/archive/`, `/about/` chưa dựng — dữ liệu cho chúng đã sinh sẵn

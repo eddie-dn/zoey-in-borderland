@@ -6,6 +6,8 @@
 > bên này để **đọc bài dài**.
 >
 > Vì để đọc bài dài, có ba chỗ buộc phải khác, ghi rõ ở §2.4.
+>
+> **Bộ liquid glass** thêm ở V1.00 — xem §2b.
 
 ---
 
@@ -79,18 +81,63 @@ mượt từ 320px tới 1440px, không có "điểm gãy" nào mà cỡ chữ n
 | `--fs-h1` | 30 → 50px | tiêu đề bài |
 | `--fs-xs` | 11.5 → 12.5px | nhãn Oswald |
 
-### 2.2 · Dòng và đo dòng
+### 2.2 · Dòng và đo dòng — SỐ LIỆU ĐO THẬT
+
+Mấy con số dưới đây **đếm trong trình duyệt**, không ước lượng: dùng
+`canvas.measureText` lấy bề rộng ký tự trung bình thật của bài rồi chia cho bề
+rộng cột. Bản đầu ước lượng, và lệch hẳn 10 ký tự.
+
+| Khổ màn | Cột chữ | Cỡ chữ | Ký tự/dòng | Chuẩn |
+|---|---|---|---|---|
+| 1440px | 683px | 18.5px | **71** | 65–75 ✓ |
+| 820px | 680px | 18.5px | **71** | ✓ |
+| 390px | 351px | 17.2px | **40** | 35–45 ✓ |
 
 ```css
 --lh-body: 1.78     /* thân bài */
---measure: 66ch     /* bề ngang cột chữ */
+--measure: 58ch     /* KHÔNG phải 66ch — xem dưới */
 ```
 
-**1.78 chứ không phải 1.6.** Tiếng Việt có dấu chồng hai tầng, để 1.6 là dấu của
+**`ch` không phải là "ký tự".** `1ch` là bề rộng chữ **`0`**, rộng hơn ký tự
+trung bình của một bài văn xuôi. Ở phông này, `66ch` cho ra **80 ký tự/dòng** —
+vượt hẳn khoảng 65–75 mà các trang đọc-bài-dài dùng, và ở mức đó mắt hay lạc
+hàng lúc quay về đầu dòng sau. `58ch` mới ra 71.
+
+**1.78 chứ không phải 1.6.** Tiếng Việt có dấu chồng hai tầng; để 1.6 là dấu của
 dòng dưới chạm chân chữ dòng trên. Cao hơn tiếng Anh khoảng 0.1 đơn vị.
 
-**66ch** là chỗ mắt đọc êm nhất ở cỡ 17–18px. Hẹp hơn thì mắt nhảy dòng liên
-tục; rộng hơn thì hết dòng hay lạc hàng khi quay lại đầu dòng sau.
+### 2.2b · Thang tiêu đề và nhịp dọc
+
+| | Cỡ ở 1440px | So với thân bài | Chuẩn |
+|---|---|---|---|
+| h1 | 50px | 2.70× | 2.2–3.0 ✓ |
+| h2 | 32px | 1.73× | 1.5–1.8 ✓ |
+| h3 | 25px | 1.35× | 1.25–1.45 ✓ |
+| chú thích ảnh | 14.5px | 0.78× | ✓ |
+
+Nhịp dọc quy hết về **một biến**, và biến đó tính từ **cỡ chữ thân bài**:
+
+```css
+.prose{ --flow: calc(var(--fs-base) * 1.5) }   /* ≈ 0.85× chiều cao dòng */
+.prose > * + *  { margin-top: var(--flow) }
+.prose > * + h2 { margin-top: calc(var(--flow) * 2.4) }
+```
+
+Hai cái bẫy ở đây, cả hai đều đã vấp:
+
+- **Không dùng px cứng.** Cỡ chữ co giãn theo bề ngang màn hình; khoảng cách
+  đứng yên thì nhịp vỡ ở hai đầu thang. Bản đầu để 20px cố định, ra
+  **0.59× chiều cao dòng** — các đoạn dính vào nhau thành một khối.
+- **Không dùng `em`.** `margin-top` tính bằng `em` đọc theo cỡ chữ của **chính
+  phần tử đó**, nên "2.4em phía trên h2" ra 2.4 × 32px chứ không phải
+  2.4 × 18.5px — sai gấp rưỡi. `calc()` từ `--fs-base` thì luôn đo theo thân bài.
+
+### 2.2c · Một bài chỉ có MỘT chỗ mở
+
+Bài có `summary` thì đoạn đầu **không** tự phóng to thành sapo nữa. Để cả hai
+thì người đọc gặp liền hai khối chữ lớn cùng cỡ nói cùng một ý — đo ra đúng
+20.5px cho cả hai, nhìn như bài bị lặp. Build tự lo việc này
+(`khongSapo: !!fm.summary`), không phải nhớ.
 
 ### 2.3 · Ba quy tắc dàn chữ
 
@@ -107,12 +154,94 @@ như tiếng Anh. Bật `hyphens:auto` là trình duyệt cắt `nghiêng` thàn
 
 | | `HAN-961030-*` | Blog | Vì sao |
 |---|---|---|---|
-| Khổ khung | `max-width:460px`, một màn cố định | cột chữ 66ch, co theo màn | Bên kia là màn hình máy để chơi; bên này phải đọc được trên cả màn 27" |
+| Khổ khung | `max-width:460px`, một màn cố định | cột chữ 58ch, co theo màn | Bên kia là màn hình máy để chơi; bên này phải đọc được trên cả màn 27" |
 | Cuộn | `overflow:hidden`, không cuộn | cuộn tự nhiên cả trang | Bài dài |
 | Bôi đen chữ | `user-select:none` gần như khắp nơi | **chỉ cấm ở header, chân trang, tem, mục lục** | Thân bài là thứ người đọc có quyền bôi để chép |
 
 > **Tuyệt đối không đặt `user-select:none` cho `.prose`.** Đây là lỗi mang thói
 > quen từ trang trò chơi sang mà không nghĩ lại.
+
+---
+
+## 2b · LIQUID GLASS
+
+Toàn bộ nằm ở `src/styles/glass.css`.
+
+### 2b.1 · Bốn tầng — thiếu tầng nào cũng ra nhựa mờ
+
+| Tầng | Làm gì | Token |
+|---|---|---|
+| 1 · Ruột | nền bán trong, đậm dần từ trên xuống | `--glass-fill` |
+| 2 · Nhoè nền | `backdrop-filter` **có nâng bão hoà** | `--glass-blur` `--glass-sat` |
+| 3 · Viền sáng | vệt sáng ở mép, chỗ ánh sáng bẻ qua rìa | `--glass-spec` |
+| 4 · Bóng đổ | tách tấm kính khỏi nền phía sau | `--glass-drop` |
+
+Tầng 2 phải có `saturate()`, không chỉ `blur()`: chỉ nhoè thôi thì màu sau kính
+ra xám bệch, không ánh qua được.
+
+Tầng 3 làm bằng **viền gradient thật** — tô nền gradient rồi khoét ruột bằng
+`mask-composite`, chỉ chừa 1px ở rìa, sáng nhất ở mép trên-trái. Không thay
+được bằng `border: 1px solid`: viền đặc thì bốn cạnh sáng như nhau, và mắt đọc
+ra ngay là một cái khung chứ không phải một tấm kính.
+
+### 2b.2 · HAI viền, hai việc — chỗ dễ làm sai nhất
+
+```css
+--glass-edge  /* viền CẤU TRÚC, tối nhẹ — tách tấm kính khỏi nền */
+--glass-spec  /* vệt SÁNG ở mép — nơi ánh sáng bẻ qua rìa */
+```
+
+> **Bẫy đã vấp.** Bản đầu để cả hai là màu trắng. Trên nền pastel sáng thì tấm
+> kính mất hẳn đường bao — header trôi lẫn vào trang, không còn vạch ngăn nào.
+> Trên nền tối không lộ ra, nên lỗi này chỉ thấy ở đúng một theme.
+
+Cũng vì vậy ruột kính bản sáng để `.55 → .26`, không phải `.78 → .44`: đục quá
+thì đọc ra là "một thanh trắng đặc", mất hẳn cảm giác nhìn xuyên qua.
+
+### 2b.3 · Áp bằng DANH SÁCH, không bằng utility class
+
+```css
+.glass, .site-head, .card, .btn, .ovp, .prose pre .copy-btn { … }
+```
+
+Thêm mảnh mới thì thêm tên nó vào danh sách ở §1 của `glass.css`. HTML vẫn viết
+`<button class="btn">`, không phải `class="btn glass glass--tint press sheen"`.
+
+Bản đầu làm kiểu utility. Bỏ, vì hai lý do: HTML thành một mớ class, và quan
+trọng hơn — quên một class thì mảnh đó **lặng lẽ** khác mọi mảnh còn lại mà
+không ai nhận ra ngay.
+
+### 2b.4 · Chuyển động — hai nhịp, dùng đúng chỗ
+
+| Nhịp | Khi nào | Hàm |
+|---|---|---|
+| `.lift` nhấc lên | rê vào thẻ, thứ **mở ra được** | `--ease-glass` mượt, chậm dần |
+| `.press` lún xuống | bấm nút, thứ **thực thi một việc** | `--spring` vọt qua đích rồi lùi |
+| `.sheen` vệt sáng chạy ngang | rê vào nút, chỉ trên máy có con trỏ | |
+
+`--spring` vọt qua đích rồi lùi lại — đó là cái làm nút có cảm giác vật thể
+thật. **Chỉ dùng cho nút và thẻ**; không dùng cho panel đang mở ra đóng vào,
+vì vọt quá đích trên một tấm panel nhìn ra là giật chứ không phải nảy.
+
+Cả ba chỉ động tới `transform`, `box-shadow`, `filter` — ba thuộc tính trình
+duyệt chạy trên luồng vẽ riêng, không phải tính lại bố cục.
+
+**`prefers-reduced-motion`**: bỏ hẳn phần nhấc lên, lún xuống, vệt sáng. Giữ
+đổi màu và bóng đổ — đó là tín hiệu báo nút đang được nhắm tới, bỏ luôn thì
+không còn gì báo.
+
+### 2b.5 · Cố ý KHÔNG làm: khúc xạ thật bằng SVG
+
+Liquid Glass của Apple bẻ cong ảnh phía sau bằng `feTurbulence` +
+`feDisplacementMap`. Làm được trong CSS qua `backdrop-filter: url(#filter)`,
+nhưng bỏ, vì ba lý do:
+
+- Safari không chạy SVG filter trong `backdrop-filter` — đúng nửa số người đọc
+  trên điện thoại sẽ thấy một phiên bản khác hẳn.
+- Trên trang cuộn dài, nó buộc vẽ lại vùng khúc xạ ở mỗi khung hình.
+- Ở khổ một thanh header cao 60px, phần nhìn thấy được gần như bằng không.
+
+Vệt sáng ở mép (tầng 3) đã cho ra đúng cảm giác đó với chi phí bằng không.
 
 ---
 
@@ -248,8 +377,13 @@ Giữ nguyên quy ước §4 của design system cũ — hai dòng, **ký tên t
 Last updated 14-Sep-2026 · V0.10
 ```
 
-Oswald, 8.5px, giãn `.18em`, VIẾT HOA, màu mờ. Ngày và số phiên bản do build tự
-điền từ `site.config.json` — không sửa tay.
+Oswald, 8.5px, giãn `.18em`, VIẾT HOA, màu mờ.
+
+**Ngày và số phiên bản do build tự điền từ `docs/LICH-SU.md`** — không sửa tay,
+và **không khai ở `site.config.json`**. Sổ phiên bản là nguồn duy nhất; khai ở
+hai chỗ thì sớm muộn cũng lệch, và lúc lệch không biết chỗ nào đúng.
+
+Ghi thêm một bản: `npm run ver -- "mô tả loại việc"`.
 
 ---
 
@@ -282,8 +416,42 @@ tử tràn cũng không kéo cả trang trượt theo.
 | `base.css` | reset, nền trang, chữ gốc, focus | component |
 | `layout.css` | header, chân trang, cột bài + mục lục | style của thân bài |
 | `components.css` | nút, chip, thẻ, huy hiệu, tooltip | khung đọc bài |
+| `glass.css` | vật liệu kính + hai nhịp chuyển động | màu (đọc từ tokens) · bố cục |
 | `prose.css` | **toàn bộ khung đọc bài** | mọi thứ ngoài `<article>` |
 
-Build gộp theo **đúng thứ tự trên** thành `dist/assets/style.css`. Thứ tự không
-đổi được: token phải đứng trước mọi thứ dùng nó, và `prose` đứng sau `components`
-để khung đọc bài ghi đè được khi cần.
+Build gộp thành `dist/assets/style.css` theo thứ tự:
+
+```
+tokens → base → glass → layout → components → prose
+```
+
+Thứ tự này không đổi được:
+- `tokens` trước mọi thứ, vì mọi file còn lại đọc biến của nó
+- `glass` trước `components`, để component ghi đè được vật liệu khi cần
+- `prose` sau `components`, để khung đọc bài ghi đè được component
+
+> **Hệ quả phải nhớ.** Luật trong `prose.css` thắng luật cùng độ ưu tiên ở
+> `layout.css`. Đã vấp: `.khung-b .post-cover{grid-column:full}` bị
+> `.prose > .wide{grid-column:wide}` đè, nên ảnh bìa không tràn hết. Cách xử:
+> thêm một bậc — `.khung-b .prose > .post-cover`.
+
+---
+
+## 8 · BA KHUNG TRÌNH BÀY BÀI
+
+Chọn bằng `khung: A | B | C` trong front matter. Cả ba dùng **chung một HTML**,
+chỉ đổi cách xếp bằng grid — nên đổi khung không phải viết lại template nào, và
+ba khung không bao giờ lệch nhau về nội dung.
+
+| | Dáng | Hợp với | Ký tự/dòng |
+|---|---|---|---|
+| **A** | cột đọc + mục lục dính phải | bài phân tích nhiều mục | 71 |
+| **B** | bìa tràn màn, tiêu đề giữa, không cột phụ | bài kể chuyện, nhiều ảnh | 74 |
+| **C** | mục lục dính lề trái, cột đọc phải | bài rất dài | 72 |
+
+Dưới 1080px cả ba tự về **một cột** — màn hẹp không đủ chỗ cho cột phụ, ép vào
+thì cột chữ hẹp tới mức mỗi dòng còn vài chữ.
+
+Ở khung C, mục lục nằm **cột đầu** trong lưới nhưng vẫn nằm **sau bài** trong
+HTML (đặt chỗ bằng `grid-column`/`grid-row`). Mắt thấy mục lục trước, trình đọc
+màn hình vẫn nghe bài trước — hai thứ đó không nhất thiết phải trùng nhau.

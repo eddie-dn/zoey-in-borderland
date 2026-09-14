@@ -3,11 +3,12 @@
 > Mở file này ra mỗi khi đăng bài mới. Ba phần: **làm theo thứ tự** (§1),
 > **bảng kiểm trước khi đăng** (§2), **bảng cú pháp** (§3).
 >
-> Không cần nhớ gì cả — `npm run check` sẽ nhắc lại hết những gì thiếu.
+> Không cần nhớ gì cả — `npm run check` và `npm run kiem` sẽ nhắc lại hết
+> những gì thiếu.
 
 ---
 
-## 1 · BỐN BƯỚC ĐĂNG MỘT BÀI
+## 1 · NĂM BƯỚC ĐĂNG MỘT BÀI
 
 ### Bước 1 — Tạo khung bài
 
@@ -50,9 +51,26 @@ npm run check
 - **Lỗi đỏ** → bài không dựng được, phải sửa.
 - **Cảnh báo vàng** → bài vẫn ra, nhưng thiếu thứ nên có. Đọc §2 rồi tự quyết.
 
-### Bước 4 — Đăng
+### Bước 4 — Kiểm định trước khi đăng
 
-Xoá dòng `draft: true` trong front matter, rồi:
+```bash
+npm run kiem
+```
+
+`check` ở bước 3 chỉ soi file `.md` nguồn. `kiem` soi **HTML đã dựng xong** —
+đúng thứ người đọc nhận được. Nó bắt những thứ file nguồn không lộ ra: link nội
+bộ gãy, ảnh mồ côi, tag viết lệch nhau, bản nháp lọt vào RSS, thẻ meta thiếu.
+
+### Bước 5 — Đăng
+
+Xoá dòng `draft: true` trong front matter. Nếu lần này có sửa giao diện hay
+công cụ thì ghi một dòng vào sổ phiên bản:
+
+```bash
+npm run ver -- "thêm bài · chỉnh khung ảnh"
+```
+
+Rồi:
 
 ```bash
 npm run build
@@ -87,13 +105,34 @@ git add -A && git commit -m "bài: tên bài" && git push
 
 | Field | Dùng khi |
 |---|---|
+| `khung` | Chọn khung trình bày: `A` (mặc định) · `B` · `C` — xem §2.4 |
 | `slug` | Muốn đường dẫn khác với tiêu đề. Không khai thì lấy tên file (bỏ phần ngày) |
 | `updated` | Sửa bài cũ đáng kể — ngày sửa hiện cạnh ngày đăng |
 | `draft` | Đang viết dở |
 | `pinned` | Ghim bài lên đầu danh sách |
 | `lang` | Bài viết bằng thứ tiếng khác `vi` |
 
-### 2.4 · Ba cái bẫy hay vấp
+### 2.4 · Ba khung trình bày — chọn khung nào
+
+Khai `khung: A` (hoặc B, C) trong front matter. Không khai thì dùng A.
+Cả ba đều tự về một cột ở màn dưới 1080px.
+
+| | Dáng | Hợp với | Ký tự/dòng |
+|---|---|---|---|
+| **A** | cột đọc + mục lục dính bên phải | bài phân tích nhiều mục, bài hướng dẫn | 71 |
+| **B** | ảnh bìa tràn hết màn, tiêu đề căn giữa, không cột phụ | bài kể chuyện, bài nhiều ảnh, bài ngắn | 74 |
+| **C** | mục lục dính lề trái, cột đọc bên phải | bài rất dài, cần tra mục liên tục | 72 |
+
+**A** là mặc định vì nó hợp với đa số bài. Đổi sang **B** khi bài có ảnh bìa
+đẹp và ít mục — mục lục lúc đó chỉ tổ chiếm chỗ. Đổi sang **C** khi bài dài tới
+mức người đọc phải nhảy qua nhảy lại giữa các mục.
+
+:::tip Thử trước khi chốt
+Đổi một chữ trong front matter rồi `npm run dev` là thấy ngay. Không phải sửa
+template gì cả — cả ba khung dùng chung một HTML, chỉ khác cách xếp.
+:::
+
+### 2.5 · Ba cái bẫy hay vấp
 
 **Tag viết lệch nhau.** `tâm lý` và `tam ly` là **hai tag khác nhau**, gom ra hai
 trang riêng. Trước khi gõ tag mới, mở `dist/tags.json` xem đã có tag nào gần
@@ -289,10 +328,15 @@ bài nháp hoặc file ghi chú mà không sợ nó bị đăng.
 ```bash
 npm run new "Tên bài" <chuyên-mục>    # tạo bài mới
 npm run dev                            # xem thử, tự tải lại
-npm run check                          # kiểm bài, không ghi file
+npm run check                          # kiểm file .md nguồn
+npm run kiem                           # KIỂM ĐỊNH dist/ trước khi đăng
 npm run build                          # dựng ra dist/
+npm run ver                            # xem sổ phiên bản
+npm run ver -- "mô tả"                 # ghi một bản vá vào sổ
+npm run ver -- --lon "mô tả"           # mở một build mới
 npm run clean                          # xoá dist/
 ```
 
-Bảng màu, bộ chữ, quy ước nút: xem `docs/DESIGN-SYSTEM.md`.
-Sơ đồ trang và đường dẫn: xem `docs/IA.md`.
+Bảng màu, bộ chữ, quy ước nút: `docs/DESIGN-SYSTEM.md`.
+Sơ đồ trang và đường dẫn: `docs/IA.md`.
+Lịch sử phiên bản: `docs/LICH-SU.md`.

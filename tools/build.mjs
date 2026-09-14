@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { docFrontMatter, kiemBai } from './lib/frontmatter.mjs';
 import { render } from './lib/markdown.mjs';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
+import { docSo, temNgay } from './lib/lichsu.mjs';
 import {
   slugify, escapeHtml, attr, phutDoc, ngayViet, ngayISO, ngayTem, tomTat, boDau
 } from './lib/text.mjs';
@@ -37,12 +38,25 @@ const BASE = (CAU.base || '').replace(/\/$/, '');
 const CANH_BAO = [];
 const LOI = [];
 
+/* Phiên bản đọc từ docs/LICH-SU.md, KHÔNG từ site.config.json. Một nguồn duy
+   nhất thì không bao giờ lệch. Khai ở cả hai chỗ là sớm muộn cũng quên một chỗ,
+   và lúc đó không biết chỗ nào mới đúng. */
+const SO = docSo(GOC);
+if (SO.loi) LOI.push(SO.loi);
+if (SO.thieuFile) LOI.push('thiếu docs/LICH-SU.md — sổ phiên bản là nguồn của số Vxx.yy');
+if (!SO.thieuFile && !SO.loi && !SO.moiNhat) LOI.push('docs/LICH-SU.md: bảng chưa có dòng nào');
+const BAN = SO.moiNhat || { ten: 'V0.00', ngay: '', suaChinh: '' };
+if (CAU.version) {
+  CANH_BAO.push('site.config.json còn khoá `version` — bỏ đi, phiên bản nay lấy từ docs/LICH-SU.md');
+}
+
 const mau = {
   do:   (s) => `\x1b[31m${s}\x1b[0m`,
   vang: (s) => `\x1b[33m${s}\x1b[0m`,
   xanh: (s) => `\x1b[32m${s}\x1b[0m`,
   mo:   (s) => `\x1b[2m${s}\x1b[0m`,
-  dam:  (s) => `\x1b[1m${s}\x1b[0m`
+  dam:  (s) => `\x1b[1m${s}\x1b[0m`,
+  tim:  (s) => `\x1b[35m${s}\x1b[0m`
 };
 
 /* ══════════════ 1. GOM FILE ══════════════ */
@@ -105,7 +119,11 @@ function docBai(file) {
     publicDir: THU_MUC.public,
     base: BASE,
     host: new URL(CAU.url).host,
-    canhBao: canhBaoBai
+    canhBao: canhBaoBai,
+    /* Bài đã có `summary` thì đoạn đầu KHÔNG tự phóng to nữa. Để cả hai thì
+       người đọc gặp liền hai khối chữ lớn cùng cỡ nói cùng một ý — đo ra đúng
+       20.5px cho cả hai, nhìn như bài bị lặp. Một bài chỉ nên có một chỗ mở. */
+    khongSapo: !!fm.summary
   });
 
   const duong  = ['posts', ...thoi.map((x) => slugify(x)), slug];
@@ -131,6 +149,17 @@ function docBai(file) {
     draft      : fm.draft === true,
     pinned     : fm.pinned === true,
     lang       : String(fm.lang || CAU.lang),
+    /* Khung trình bày: A (mặc định) · B bìa tràn màn · C lề trái dính.
+       Khai sai chữ thì lặng lẽ về A — bài vẫn đọc được, chỉ không đúng khung
+       mong muốn, nên báo cảnh báo chứ không dừng build. */
+    khung      : (() => {
+      const k = String(fm.khung || 'A').trim().toUpperCase();
+      if (!'ABC'.includes(k) || k.length !== 1) {
+        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A, B hoặc C. Dùng tạm A.`);
+        return 'a';
+      }
+      return k.toLowerCase();
+    })(),
     html       : kq2.html,
     headings   : kq2.headings,
     tho        : kq2.tho,
@@ -150,8 +179,27 @@ function dienMau(mau, gt) {
   return mau.replace(/\{\{(\w+)\}\}/g, (m, k) => (k in gt ? String(gt[k] ?? '') : ''));
 }
 
+/* MỘT danh sách chuaDung trong site.config.json, mọi chỗ dùng chung.
+   Link trỏ tới trang chưa có là link chết — người đọc bấm vào ăn trang 404, mà
+   404 đọc như trang hỏng chứ không đọc như "phần này sắp có". Nên chỗ nào trỏ
+   tới đường dẫn trong danh sách đó thì render thành chữ mờ, không phải <a>.
+   Dựng xong trang nào thì xoá dòng đó khỏi danh sách, mọi link tự sống lại. */
+const CHUA_DUNG = CAU.chuaDung || [];
+function coTrang(href) {
+  return !CHUA_DUNG.some((x) => href === x || href.startsWith(x));
+}
+/* Dựng một liên kết, tự hạ xuống chữ mờ nếu đích chưa dựng */
+function lienKet(href, chu, lop = '') {
+  return coTrang(href)
+    ? `<a${lop ? ` class="${lop}"` : ''} href="${BASE}${href}">${escapeHtml(chu)}</a>`
+    : `<span class="${lop ? lop + ' ' : ''}nav-cho tip" data-tip="Sắp có">${escapeHtml(chu)}</span>`;
+}
+
 function navHTML(duongHienTai) {
   return CAU.nav.map((n) => {
+    if (!coTrang(n.href)) {
+      return `<span class="nav-text nav-cho tip" data-tip="Sắp có">${escapeHtml(n.label)}</span>`;
+    }
     const day = duongHienTai.startsWith(n.href) && n.href !== '/';
     return `<a class="nav-text" href="${BASE}${n.href}"${day ? ' aria-current="page"' : ''}>` +
            `${escapeHtml(n.label)}</a>`;
@@ -176,12 +224,22 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     robots    : noindex ? '<meta name="robots" content="noindex, nofollow">' : '',
     base      : BASE,
     nav       : navHTML(duong),
+    napTimKiem: coTrang('/search/')
+      ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="Tìm kiếm" data-tip="Tìm kiếm">` +
+        `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
+        `<path d="M16.2 16.2 21 21"/></svg></a>` : '',
+    footLinks : [
+        ['/feed.xml', 'RSS', true],
+        ['/archive/', 'Lưu trữ', coTrang('/archive/')],
+        ['/tags/', 'Tag', coTrang('/tags/')]
+      ].map(([h, t, co]) => co ? `<a href="${BASE}${h}">${t}</a>`
+                               : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
     scripts,
     headExtra,
     year      : new Date().getFullYear(),
-    buildDate : ngayTem(),
-    version   : CAU.version
+    buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
+    version   : BAN.ten
   });
 }
 
@@ -201,8 +259,8 @@ function tocHTML(headings) {
 
 function crumbsHTML(bai) {
   const muc = [
-    `<li><a href="${BASE}/posts/">Bài viết</a></li>`,
-    ...bai.muc.map((m) => `<li><a href="${m.url}">${escapeHtml(m.ten)}</a></li>`)
+    `<li>${lienKet('/posts/', 'Bài viết')}</li>`,
+    ...bai.muc.map((m) => `<li>${lienKet(m.url.replace(BASE, ''), m.ten)}</li>`)
   ].join('');
   return `<ol>${muc}</ol>`;
 }
@@ -241,6 +299,7 @@ function postNavHTML(truoc, sau) {
 
 function trangBai(bai, truoc, sau) {
   const noiDung = dienMau(MAU_POST, {
+    khung       : bai.khung,
     crumbs      : crumbsHTML(bai),
     title       : escapeHtml(bai.title),
     summaryBlock: bai.summary ? `<p class="summary">${escapeHtml(bai.summary)}</p>` : '',
@@ -253,7 +312,7 @@ function trangBai(bai, truoc, sau) {
     draftBadge  : bai.draft ? '<span class="badge badge--draft">Bản nháp</span>' : '',
     tagRow      : bai.tags.length
       ? `<div class="tag-row">${bai.tags.map((t) =>
-          `<a class="tag" href="${BASE}/tags/${slugify(t)}/">${escapeHtml(t)}</a>`).join('')}</div>`
+          lienKet(`/tags/${slugify(t)}/`, t, 'tag')).join('')}</div>`
       : '',
     cover       : coverHTML(bai),
     body        : bai.html,
@@ -302,8 +361,10 @@ function chep(tu, den) {
 }
 
 function gopCSS() {
-  /* Thứ tự này không đổi được: token phải đứng trước mọi thứ dùng nó, và
-     prose đứng sau components để khung đọc bài ghi đè được nếu cần. */
+  /* Thứ tự này không đổi được:
+       tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
+       glass      trước component, để component ghi đè được vật liệu khi cần
+       prose      sau component, để khung đọc bài ghi đè được component */
   const thuTu = ['tokens.css', 'base.css', 'layout.css', 'components.css', 'prose.css'];
   return thuTu.map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
@@ -428,6 +489,14 @@ async function chay() {
     process.exit(1);
   }
 
+  /* Đọc phiên bản của LẦN DỰNG TRƯỚC ngay trong dist cũ, trước khi xoá nó.
+     Không cần file trạng thái riêng ở gốc dự án — dist đã là chỗ ghi nhớ sẵn. */
+  let banCu = null;
+  const fBan = path.join(THU_MUC.dist, 'version.json');
+  if (fs.existsSync(fBan)) {
+    try { banCu = JSON.parse(fs.readFileSync(fBan, 'utf8')).ban; } catch {}
+  }
+
   if (!CHI_KIEM) {
     fs.rmSync(THU_MUC.dist, { recursive: true, force: true });
     fs.mkdirSync(THU_MUC.dist, { recursive: true });
@@ -455,6 +524,10 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'), sitemap(congKhai));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
         `User-agent: *\nAllow: /\nSitemap: ${CAU.url}${BASE}/sitemap.xml\n`);
+    ghi(path.join(THU_MUC.dist, 'version.json'), JSON.stringify({
+      ban: BAN.ten, ngay: BAN.ngay, suaChinh: BAN.suaChinh,
+      dungLuc: new Date().toISOString()
+    }));
 
     /* Bộ chỉ mục tìm kiếm. Trang /search/ của lượt sau chỉ việc tải file này
        rồi lọc ngay trong trình duyệt — không cần máy chủ, không cần API.
@@ -490,9 +563,18 @@ async function chay() {
   }
   if (CHI_TIET) bai.forEach((b) => console.log(`    ${mau.mo(b.url.padEnd(46))} ${b.title}`));
 
+  /* Có bản mới thì in hẳn một khối cho dễ thấy — đây là lúc dễ quên nhất việc
+     viết mấy dòng tóm tắt xuống phần dưới sổ. */
+  if (!CHI_KIEM && banCu && banCu !== BAN.ten) {
+    console.log(mau.tim(`  ┌─ CẬP NHẬT MỚI  ${banCu} → ${BAN.ten}`));
+    console.log(mau.tim('  │ ') + BAN.suaChinh);
+    console.log(mau.tim('  └─ ') + mau.mo('nhớ viết tóm tắt cho bản này ở docs/LICH-SU.md\n'));
+  }
+
   const nhap = bai.length - congKhai.length;
   console.log(mau.xanh(`  ✓ ${congKhai.length} bài công khai` +
     (nhap ? ` · ${nhap} bản nháp` : '')) +
+    mau.mo(`  ·  ${BAN.ten} · ${BAN.ngay}`) +
     mau.mo(`  (${Date.now() - t0}ms)`));
   console.log(mau.mo(CHI_KIEM
     ? '    chế độ kiểm bài — không ghi file nào\n'
