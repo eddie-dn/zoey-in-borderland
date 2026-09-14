@@ -1,0 +1,101 @@
+/* ============================================================
+   BASE — reset, nền trang, chữ gốc, trạng thái focus.
+   Không có component nào ở đây.
+   ============================================================ */
+
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+
+html{
+  -webkit-text-size-adjust:100%;    /* iOS xoay ngang tự phóng chữ to lên — chặn */
+  scroll-behavior:smooth;
+  scroll-padding-top:calc(var(--header-h) + var(--s5));
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+
+body{
+  position:relative;
+  min-height:100dvh;
+  background-color:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:var(--fs-base);
+  line-height:var(--lh-body);
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  font-variant-ligatures:common-ligatures;
+  overflow-x:hidden;                /* khung an toàn: một phần tử tràn cũng không
+                                       kéo cả trang trượt ngang được */
+}
+
+/* Quầng màu nền nằm ở một LỚP CỐ ĐỊNH RIÊNG, không phải background-attachment:fixed.
+   Ba lý do đã kiểm chứng:
+     · iOS Safari bỏ qua hẳn background-attachment:fixed — nền trôi theo trang.
+     · Trên Android, nó buộc trình duyệt vẽ lại toàn bộ nền ở TỪNG khung hình
+       khi cuộn, bài dài là thấy giật rõ.
+     · Chụp ảnh màn hình giữa lúc cuộn ra mảng đen — đã vấp đúng lỗi này.
+   position:fixed + z-index:-1 thì trình duyệt đẩy hẳn lên một lớp riêng của
+   GPU, cuộn bao nhiêu cũng không phải vẽ lại. */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;
+  background-image:var(--bg-tint);
+  pointer-events:none;
+}
+
+::selection{background:var(--sel-bg);color:var(--text)}
+
+img,svg,video,canvas,iframe{display:block;max-width:100%}
+img,video{height:auto}
+
+input,button,textarea,select{font:inherit;color:inherit}
+button{background:none;border:none;padding:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{color:var(--accent-ink-hover)}
+
+/* Vòng focus: CHỈ hiện khi đi bằng bàn phím (:focus-visible), không hiện khi
+   bấm chuột. Dùng :focus thường thì mọi cú bấm đều để lại viền — người dùng
+   tưởng hỏng. Nhưng bỏ hẳn outline thì người đi bằng Tab mất dấu hoàn toàn. */
+:focus-visible{
+  outline:2px solid var(--accent-ink);
+  outline-offset:3px;
+  border-radius:var(--r-xs);
+}
+:focus:not(:focus-visible){outline:none}
+
+h1,h2,h3,h4,h5,h6{
+  font-family:var(--font-display);
+  font-weight:600;
+  line-height:var(--lh-title);
+  letter-spacing:var(--ls-tight);
+  text-wrap:balance;               /* tiêu đề không bao giờ để rớt 1 chữ xuống dòng */
+}
+
+p,li,dd{text-wrap:pretty}          /* chặn chữ mồ côi cuối đoạn */
+
+ul,ol{padding-left:1.15em}
+
+hr{border:none;height:1px;background:var(--line)}
+
+code,kbd,samp,pre{font-family:var(--font-mono);font-size:.88em}
+
+/* Chỉ dành cho trình đọc màn hình — dùng cho "Bỏ qua tới nội dung", nhãn ẩn */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;
+}
+.sr-only.focusable:focus-visible{
+  position:fixed;top:var(--s3);left:var(--s3);z-index:200;
+  width:auto;height:auto;clip:auto;clip-path:none;
+  padding:var(--s3) var(--s5);background:var(--surface-solid);
+  border:1px solid var(--line-strong);border-radius:var(--r-pill);
+  box-shadow:var(--shadow-md);
+}

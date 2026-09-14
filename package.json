@@ -1,0 +1,16 @@
+{
+  "name": "zoey-in-borderland",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blog cá nhân — static site, không framework, không dependency.",
+  "type": "module",
+  "scripts": {
+    "new": "node tools/new-post.mjs",
+    "build": "node tools/build.mjs",
+    "check": "node tools/build.mjs --check-only",
+    "dev": "node tools/dev.mjs",
+    "clean": "rm -rf dist"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}

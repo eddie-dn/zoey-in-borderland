@@ -1,0 +1,28 @@
+<div class="read-bar" aria-hidden="true"></div>
+
+<div class="post-layout">
+  <article class="prose" itemscope itemtype="https://schema.org/BlogPosting">
+    <header class="post-head">
+      <nav class="crumbs" aria-label="Đường dẫn">{{crumbs}}</nav>
+      <h1 itemprop="headline">{{title}}</h1>
+      {{summaryBlock}}
+      <div class="meta-row">
+        <time datetime="{{dateISO}}" itemprop="datePublished">{{dateText}}</time>
+        <span class="dot" aria-hidden="true"></span>
+        <span>{{readingTime}} phút đọc</span>
+        {{updatedBlock}}
+        {{draftBadge}}
+      </div>
+      {{tagRow}}
+    </header>
+
+    {{cover}}
+    {{body}}
+
+    <footer class="post-foot">
+      {{postNav}}
+    </footer>
+  </article>
+
+  {{toc}}
+</div>

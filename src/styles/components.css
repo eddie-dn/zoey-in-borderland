@@ -1,0 +1,158 @@
+/* ============================================================
+   COMPONENTS — các mảnh dùng lại được. Mỗi mảnh một việc.
+   Tra bảng ở docs/DESIGN-SYSTEM.md §3 trước khi thêm mảnh mới.
+   ============================================================ */
+
+/* ── EYEBROW — vạch phân cách có viên kim cương giữa ──
+   Mượn nguyên từ HAN-961030-A. Dùng để mở đầu một khu, không dùng thay <hr>. */
+.eyebrow{display:flex;align-items:center;gap:var(--s3);margin-block:var(--s2) var(--s3)}
+.eyebrow::before,.eyebrow::after{content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent))}
+.eyebrow::after{background:linear-gradient(90deg,var(--accent),transparent)}
+.eyebrow i{width:5px;height:5px;background:var(--accent);
+  transform:rotate(45deg);border-radius:1px;flex:none}
+
+/* ── NHÃN OSWALD — chữ hoa giãn rộng, dùng cho mọi cái nhãn nhỏ ── */
+.label{
+  font-family:var(--font-label);font-size:var(--fs-xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--accent-ink);line-height:1.6;
+}
+.label--muted{color:var(--text-faint);font-weight:500}
+
+/* ── NÚT CÓ CHỮ ──
+   Mỗi màn đúng MỘT nút chính, đúng §2 của DESIGN-SYSTEM cũ. */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  padding:12px var(--s6);border-radius:var(--r-pill);cursor:pointer;
+  font-family:var(--font-label);font-size:var(--fs-xs);font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text-invert);
+  background:linear-gradient(120deg,var(--accent-2),var(--accent) 60%,var(--accent-3));
+  box-shadow:var(--shadow-md);
+  transition:transform var(--dur-fast),box-shadow var(--dur),filter var(--dur-fast);
+}
+.btn:hover{box-shadow:var(--shadow-lg);filter:brightness(1.04);color:var(--text-invert)}
+.btn:active{transform:translateY(1px)}
+.btn--ghost{
+  background:none;color:var(--text-muted);
+  border:1px solid var(--line-strong);box-shadow:none;
+}
+.btn--ghost:hover{color:var(--text);border-color:var(--accent);filter:none}
+
+/* ── NÚT CHỈ CÓ HÌNH ──
+   Luật cứng kế thừa §1.2/§1.4: nút chỉ có hình thì BẮT BUỘC là SVG, bắt buộc
+   có aria-label, và bắt buộc có chú thích nổi. Đừng gõ ký tự ↺ ⟳ ✕ vào HTML:
+   mỗi máy lấy một phông khác nhau, vài máy Android ra ô vuông rỗng. */
+.ico-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;flex:none;border-radius:var(--r-pill);
+  border:1px solid transparent;color:var(--text-muted);
+  transition:color var(--dur-fast),background var(--dur-fast),border-color var(--dur-fast);
+}
+.ico-btn:hover{color:var(--text);background:var(--accent-wash);border-color:var(--line)}
+.ico-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* Hình NÉT ĐẶC (cuộn phim, mũi tên quay vòng) phải đảo lại — để fill:currentColor
+   cho cả ba thì con mắt thành quả trứng đen; để fill:none cho cả ba thì cuộn
+   phim biến mất sạch. Đây là cái bẫy đã ghi trong DESIGN-SYSTEM cũ §1.2. */
+.ico-btn svg.fill{fill:currentColor;stroke:none}
+
+/* ── CHÚ THÍCH NỔI — đặt phía DƯỚI, mọi chỗ ──
+   Phía trên luôn là chỗ của tiêu đề hoặc thẻ meta, đè lên là che mất. */
+.tip{position:relative}
+.tip::after{
+  content:attr(data-tip);
+  position:absolute;top:calc(100% + 6px);left:50%;translate:-50% 0;
+  z-index:80;padding:5px 10px;border-radius:var(--r-xs);
+  background:var(--surface-solid);border:1px solid var(--line-strong);
+  box-shadow:var(--shadow-md);color:var(--text-muted);
+  font-family:var(--font-body);font-size:var(--fs-2xs);font-weight:400;
+  letter-spacing:0;text-transform:none;white-space:nowrap;line-height:1.4;
+  opacity:0;pointer-events:none;transition:opacity var(--dur-fast);
+}
+.tip:hover::after,.tip:focus-visible::after{opacity:1}
+
+/* ── CHIP TAG ──
+   Một hình dáng duy nhất cho tag ở mọi nơi: đầu bài, thẻ bài, trang /tags/.
+   Khác nhau chỉ ở cỡ, qua biến --chip-fs. */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px 5px;border-radius:var(--r-pill);
+  border:1px solid var(--line);background:var(--accent-wash);
+  color:var(--text-muted);font-size:var(--chip-fs,var(--fs-xs));
+  line-height:1.45;white-space:nowrap;
+  transition:color var(--dur-fast),border-color var(--dur-fast),background var(--dur-fast);
+}
+.tag::before{content:"#";color:var(--accent-ink);opacity:.8}
+a.tag:hover{color:var(--text);border-color:var(--accent);background:var(--accent-wash)}
+.tag--count::after{
+  content:attr(data-count);
+  font-family:var(--font-label);font-size:.85em;color:var(--text-faint);
+  padding-left:3px;border-left:1px solid var(--line);margin-left:2px;
+}
+.tag-row{display:flex;flex-wrap:wrap;gap:var(--s2)}
+
+/* ── ĐƯỜNG DẪN PHÂN CẤP (folder → sub-folder) ── */
+.crumbs{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);
+}
+.crumbs a{color:var(--text-muted)}
+.crumbs a:hover{color:var(--accent-ink)}
+.crumbs li{display:flex;align-items:center;gap:var(--s2);list-style:none}
+.crumbs li + li::before{content:"/";color:var(--line-strong)}
+.crumbs ol{display:flex;flex-wrap:wrap;gap:var(--s2);padding:0;margin:0}
+
+/* ── THẺ BÀI (dùng cho trang danh sách ở lượt sau) ── */
+.card{
+  position:relative;display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s5);border-radius:var(--r-lg);
+  border:1px solid var(--line);background:var(--surface);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:var(--shadow-sm);
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur),border-color var(--dur);
+}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--line-strong)}
+.card h3{font-size:var(--fs-h4);font-style:italic}
+/* Cả thẻ bấm được nhưng CHỈ tiêu đề là <a> thật — người đi bằng Tab nghe đúng
+   một liên kết, không phải cả khối. ::after phủ lên để chuột bấm đâu cũng trúng. */
+.card a.stretch::after{content:"";position:absolute;inset:0;border-radius:inherit}
+.card .meta{font-size:var(--fs-sm);color:var(--text-faint)}
+
+/* ── HÀNG META CỦA BÀI (ngày · thời gian đọc · chuyên mục) ── */
+.meta-row{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s4);
+  font-size:var(--fs-sm);color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.meta-row > * {display:inline-flex;align-items:center;gap:6px}
+.meta-row .dot{width:3px;height:3px;border-radius:50%;background:var(--line-strong)}
+
+/* ── HUY HIỆU TRẠNG THÁI ── */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 9px 3px;
+  border-radius:var(--r-pill);font-family:var(--font-label);
+  font-size:var(--fs-2xs);font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+}
+.badge--draft{background:var(--warn-wash);color:var(--warn)}
+.badge--new{background:var(--ok-wash);color:var(--ok)}
+.badge--pin{background:var(--accent-wash);color:var(--accent-ink)}
+
+/* ── NÚT CHUYỂN SÁNG / TỐI ──
+   Hai hình chồng nhau, chỉ một hình hiện — đổi bằng CSS chứ không xoá/dựng lại
+   DOM, nên không có nhịp nháy khi bấm. */
+.theme-btn svg{fill:none;stroke:currentColor}
+.theme-btn .i-moon{display:none}
+:root[data-theme="dark"] .theme-btn .i-sun{display:none}
+:root[data-theme="dark"] .theme-btn .i-moon{display:block}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .theme-btn .i-sun{display:none}
+  :root:not([data-theme="light"]) .theme-btn .i-moon{display:block}
+}
+
+/* ── KHÔNG CHO BÔI ĐEN — chỉ cho phần trang trí ──
+   Đúng §6 của DESIGN-SYSTEM cũ. TUYỆT ĐỐI không đặt cho .prose:
+   thân bài là thứ người đọc có quyền bôi để chép. */
+.site-head,.site-foot,.stamp,.eyebrow,.toc{user-select:none}

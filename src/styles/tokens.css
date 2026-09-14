@@ -1,0 +1,193 @@
+/* ============================================================
+   TOKENS — nguồn duy nhất của màu, chữ, nhịp, bóng đổ.
+   Kế thừa bảng màu của HAN-961030-A (Sakura) và -B (Galaxy).
+
+   BA TRẠNG THÁI THEME, viết đúng thứ tự này thì nút chuyển mới
+   thắng được cả hai chiều:
+     1. :root                         → bảng SÁNG, định nghĩa ĐỦ mọi biến
+     2. @media (prefers-color-scheme: dark) :root:not([data-theme="light"])
+                                      → máy để tối & người đọc chưa chọn gì
+     3. :root[data-theme="dark"]      → người đọc tự bấm chọn tối
+   Không bao giờ để một màu CHỈ tồn tại trong khối (2) hoặc (3):
+   máy để sáng + người đọc bấm tối là màu đó biến mất.
+   ============================================================ */
+
+:root{
+  /* ── 1. MÀU GỐC — chép từ 2 file HAN, không đổi giá trị ── */
+  --raw-lav:#F4E7FB;    --raw-blush:#F3DCDC;  --raw-coral:#F5BCBA;
+  --raw-orchid:#E3AADD; --raw-violet:#C8A8E9; --raw-peri:#C3C7F3;
+  --raw-ink:#3E2F56;    --raw-ink2:#7A6795;
+  --raw-night:#120C22;  --raw-night2:#1B1233; --raw-night3:#2B1E4C;
+  --raw-paper:#F6EFFB;
+
+  /* ── 2. MÀU NGỮ NGHĨA — chỗ duy nhất giao diện được đọc ──
+     Quy tắc: component KHÔNG bao giờ dùng --raw-*, chỉ dùng lớp này.
+     Đổi theme = đổi lớp này, không đụng tới component nào. */
+  --bg:#FAF6FD;                       /* nền trang */
+  --bg-tint:
+    radial-gradient(120% 70% at 10% -4%, #FFF6FB 0%, rgba(255,246,251,0) 52%),
+    radial-gradient(90% 55% at 94% 2%, #EFE4FC 0%, rgba(239,228,252,0) 58%),
+    radial-gradient(120% 60% at 50% 104%, #FBEDF1 0%, rgba(251,237,241,0) 60%);
+  --surface:rgba(255,255,255,.72);    /* mặt thẻ, có backdrop-filter */
+  --surface-solid:#FFFFFF;            /* mặt thẻ đục — dùng khi chồng nhiều lớp */
+  --surface-sunken:#F2EAF9;           /* nền lõm: code, bảng sọc */
+
+  --text:#3E2F56;                     /* chữ chính — tím mực, cố ý KHÔNG dùng đen */
+  --text-muted:#6A587F;               /* chữ phụ — đã chỉnh đậm hơn --raw-ink2 cho đủ 4.5:1 */
+  --text-faint:#8B7BA3;               /* meta, tem — chỉ dùng cho chữ ≥12px */
+  --text-invert:#FFFFFF;
+
+  /* Link/nhấn có HAI màu tách bạch: một để ĐỌC, một để TRANG TRÍ.
+     --raw-orchid trên nền sáng chỉ đạt 1.78:1 — đẹp nhưng không đọc nổi.
+     Nên chữ dùng --accent-ink, còn gạch chân/chấm/viền mới dùng --accent. */
+  --accent:#E3AADD;                   /* trang trí: viền, chấm, gradient */
+  --accent-ink:#7A52B8;               /* chữ link, nhãn — 5.27:1 trên --bg */
+  --accent-ink-hover:#653F9E;
+  --accent-2:#C8A8E9;
+  --accent-3:#F5BCBA;
+  --accent-wash:rgba(227,170,221,.14);/* nền nhạt của chip, callout */
+
+  --line:rgba(122,103,149,.18);
+  --line-strong:rgba(122,103,149,.34);
+  --sel-bg:rgba(200,168,233,.34);
+
+  --ok:#2F7D62;  --ok-wash:rgba(47,125,98,.10);
+  --warn:#9A6520; --warn-wash:rgba(154,101,32,.10);
+  --bad:#B2415F; --bad-wash:rgba(178,65,95,.10);
+
+  --shadow-sm:0 2px 8px rgba(94,72,133,.07);
+  --shadow-md:0 10px 28px rgba(94,72,133,.12);
+  --shadow-lg:0 24px 60px rgba(94,72,133,.18);
+
+  /* ── 3. CHỮ ──
+     Ba phông, ba việc, không dùng lẫn:
+       Oswald            → nhãn VIẾT HOA giãn rộng (eyebrow, tem, nút)
+       Cormorant Garamond→ tiêu đề + trích dẫn, nghiêng là chất riêng của trang
+       Be Vietnam Pro    → THÂN BÀI. Bắt buộc: phông này vẽ đủ dấu tiếng Việt,
+                           không bị vỡ dấu ở ộ ẫ ự như các phông Latin thường. */
+  --font-label:"Oswald",system-ui,sans-serif;
+  --font-display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --font-body:"Be Vietnam Pro",system-ui,"Segoe UI","Noto Sans",sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+
+  /* Thang cỡ chữ co giãn theo bề ngang — KHÔNG có media query nào cho cỡ chữ.
+     clamp() lo hết từ 320px tới 1440px, nên không có "điểm gãy" nào mà chữ
+     nhảy cỡ đột ngột giữa chừng. */
+  --fs-2xs:11px;
+  --fs-xs:clamp(11.5px,.70rem + .12vw,12.5px);
+  --fs-sm:clamp(13px,.79rem + .16vw,14.5px);
+  --fs-base:clamp(16.5px,1rem + .30vw,18.5px);   /* thân bài */
+  --fs-md:clamp(18px,1.06rem + .38vw,20.5px);    /* lead, sapo */
+  --fs-h4:clamp(17px,1.02rem + .34vw,19.5px);
+  --fs-h3:clamp(20px,1.14rem + .62vw,25px);
+  --fs-h2:clamp(24px,1.32rem + .95vw,32px);
+  --fs-h1:clamp(30px,1.55rem + 2.1vw,50px);
+  --fs-display:clamp(36px,1.7rem + 3.3vw,68px);
+
+  /* Dòng: tiếng Việt có dấu chồng hai tầng (ế, ộ, ữ) nên cần thoáng hơn
+     tiếng Anh khoảng 0.1 đơn vị, không thì dấu bài trên chạm chữ bài dưới. */
+  --lh-tight:1.14;
+  --lh-title:1.22;
+  --lh-body:1.78;
+  --lh-ui:1.5;
+
+  --ls-label:.22em;    /* giãn chữ của nhãn Oswald viết hoa */
+  --ls-tight:-.01em;
+
+  /* ── 4. ĐO DÒNG ──
+     66ch là chỗ mắt đọc êm nhất với body 17–18px. Hẹp hơn thì mắt nhảy
+     dòng liên tục, rộng hơn thì xuống dòng hay bị lạc hàng. */
+  --measure:66ch;
+  --measure-wide:82ch;
+  --measure-ui:1180px;
+
+  /* ── 5. NHỊP — thang 4px ── */
+  --s1:4px;   --s2:8px;   --s3:12px;  --s4:16px;  --s5:20px;
+  --s6:24px;  --s7:32px;  --s8:40px;  --s9:56px;  --s10:72px;
+  --s11:96px; --s12:128px;
+  --gutter:clamp(18px,5vw,32px);      /* lề ngang tối thiểu, mọi màn hình */
+
+  /* ── 6. BO GÓC & KHÁC ── */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:26px; --r-pill:999px;
+  --dur-fast:.18s; --dur:.28s; --dur-slow:.5s;
+  --ease:cubic-bezier(.4,.9,.3,1);
+  --header-h:60px;
+
+  color-scheme:light;
+}
+
+/* ── THEME TỐI: máy để tối VÀ người đọc chưa tự chọn sáng ── */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#120C22;
+    --bg-tint:radial-gradient(125% 85% at 50% 38%, #2B1E4C 0%, #1B1233 54%, #120C22 100%);
+    --surface:rgba(255,255,255,.065);
+    --surface-solid:#241839;
+    --surface-sunken:rgba(255,255,255,.05);
+
+    --text:#F6EFFB;
+    --text-muted:rgba(246,239,251,.72);
+    --text-faint:rgba(246,239,251,.50);
+    --text-invert:#2A1E44;
+
+    /* Trên nền tối thì orchid đạt 9.4:1 — đọc thoải mái, nên chữ và trang
+       trí về chung một màu, không cần tách như bên sáng nữa. */
+    --accent:#E3AADD;
+    --accent-ink:#EFC2E9;
+    --accent-ink-hover:#F8DDF4;
+    --accent-2:#C8A8E9;
+    --accent-3:#F5BCBA;
+    --accent-wash:rgba(227,170,221,.13);
+
+    --line:rgba(227,170,221,.20);
+    --line-strong:rgba(227,170,221,.38);
+    --sel-bg:rgba(200,168,233,.30);
+
+    --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
+    --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
+    --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
+
+    --shadow-sm:0 2px 10px rgba(8,3,20,.34);
+    --shadow-md:0 12px 32px rgba(8,3,20,.46);
+    --shadow-lg:0 26px 64px rgba(8,3,20,.58);
+
+    color-scheme:dark;
+  }
+}
+
+/* ── THEME TỐI: người đọc tự bấm chọn — phải lặp lại y hệt khối trên,
+   không dùng @import hay kế thừa được, vì media query và attribute
+   selector không giao nhau. ── */
+:root[data-theme="dark"]{
+  --bg:#120C22;
+  --bg-tint:radial-gradient(125% 85% at 50% 38%, #2B1E4C 0%, #1B1233 54%, #120C22 100%);
+  --surface:rgba(255,255,255,.065);
+  --surface-solid:#241839;
+  --surface-sunken:rgba(255,255,255,.05);
+
+  --text:#F6EFFB;
+  --text-muted:rgba(246,239,251,.72);
+  --text-faint:rgba(246,239,251,.50);
+  --text-invert:#2A1E44;
+
+  --accent:#E3AADD;
+  --accent-ink:#EFC2E9;
+  --accent-ink-hover:#F8DDF4;
+  --accent-2:#C8A8E9;
+  --accent-3:#F5BCBA;
+  --accent-wash:rgba(227,170,221,.13);
+
+  --line:rgba(227,170,221,.20);
+  --line-strong:rgba(227,170,221,.38);
+  --sel-bg:rgba(200,168,233,.30);
+
+  --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
+  --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
+  --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
+
+  --shadow-sm:0 2px 10px rgba(8,3,20,.34);
+  --shadow-md:0 12px 32px rgba(8,3,20,.46);
+  --shadow-lg:0 26px 64px rgba(8,3,20,.58);
+
+  color-scheme:dark;
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="{{lang}}" {{htmlAttr}}>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<meta name="author" content="{{author}}">
+<meta name="theme-color" content="#FAF6FD">
+<link rel="canonical" href="{{canonical}}">
+{{robots}}
+<meta property="og:type" content="{{ogType}}">
+<meta property="og:site_name" content="{{siteTitle}}">
+<meta property="og:title" content="{{ogTitle}}">
+<meta property="og:description" content="{{description}}">
+<meta property="og:url" content="{{canonical}}">
+<meta property="og:image" content="{{ogImage}}">
+<meta property="og:locale" content="{{locale}}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="{{siteTitle}}" href="{{base}}/feed.xml">
+<link rel="icon" href="{{base}}/favicon.svg" type="image/svg+xml">
+
+<!-- ĐẶT THEME TRƯỚC KHI VẼ KHUNG HÌNH ĐẦU TIÊN.
+     Phải viết thẳng vào đây, không được tách ra file ngoài: file ngoài tải xong
+     thì trình duyệt đã vẽ xong nền sáng rồi, người đọc thấy trang loé trắng một
+     nhịp mới tối lại. Đoạn này cố tình để trần, không bọc hàm, cho chạy sớm nhất. -->
+<script>
+(function(){try{
+  var t=localStorage.getItem('zib-theme');
+  if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
+  else t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  if(t==='dark')document.querySelector('meta[name=theme-color]').content='#120C22';
+}catch(e){}})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="{{base}}/assets/style.css">
+{{headExtra}}
+</head>
+<body>
+<a class="sr-only focusable" href="#noi-dung">Bỏ qua, tới thẳng nội dung</a>
+
+<div class="shell">
+<header class="site-head">
+  <div class="container">
+    <a class="brand" href="{{base}}/">
+      <b>{{siteTitle}}</b><span>{{tagline}}</span>
+    </a>
+    <nav class="nav" aria-label="Điều hướng chính">
+      {{nav}}
+      <a class="ico-btn tip" href="{{base}}/search/" aria-label="Tìm kiếm" data-tip="Tìm kiếm">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/></svg>
+      </a>
+      <button class="ico-btn tip theme-btn" type="button"
+              aria-label="Chuyển sang nền tối" data-tip="Chuyển sang nền tối">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.4A8.6 8.6 0 1 1 9.6 3.5a6.9 6.9 0 0 0 10.9 10.9Z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="noi-dung">
+{{content}}
+</main>
+
+<footer class="site-foot">
+  <div class="container">
+    <div class="foot-links">
+      <span>© {{year}} {{author}}</span>
+      <a href="{{base}}/feed.xml">RSS</a>
+      <a href="{{base}}/archive/">Lưu trữ</a>
+      <a href="{{base}}/tags/">Tag</a>
+    </div>
+    <!-- Tem hai dòng: ký tên TRÊN, phiên bản DƯỚI — đúng §4 của DESIGN-SYSTEM. -->
+    <div class="stamp">
+      @Designed by {{author}}<br>
+      Last updated {{buildDate}} · {{version}}
+    </div>
+  </div>
+</footer>
+</div>
+
+<script src="{{base}}/assets/theme.js" defer></script>
+{{scripts}}
+</body>
+</html>

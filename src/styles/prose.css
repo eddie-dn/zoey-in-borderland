@@ -1,0 +1,328 @@
+/* ============================================================
+   PROSE — KHUNG ĐỌC BÀI. Đây là thứ quan trọng nhất của cả blog.
+   Mọi thứ nằm giữa <article class="prose"> … </article>.
+
+   Ý chính: cột chữ hẹp để đọc êm, nhưng ẢNH và VIDEO được phép phá rào
+   ra rộng hơn cột chữ. Làm bằng grid có 3 làn đặt tên sẵn — không dùng
+   margin âm (margin âm vỡ ngay khi đổi bề ngang khung cha).
+   ============================================================ */
+
+.prose{
+  display:grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter),1fr)
+    [wide-start]  minmax(0,7rem)
+    [text-start]  min(var(--measure), 100% - var(--gutter)*2) [text-end]
+                  minmax(0,7rem) [wide-end]
+    minmax(var(--gutter),1fr) [full-end];
+  font-size:var(--fs-base);
+  line-height:var(--lh-body);
+  color:var(--text);
+}
+.prose > *{grid-column:text}      /* mặc định: mọi thứ nằm trong cột chữ */
+.prose > .wide{grid-column:wide}  /* rộng hơn cột chữ, vẫn còn lề */
+.prose > .full{grid-column:full}  /* tràn hết bề ngang khung */
+
+/* ── NHỊP DỌC ──
+   Khoảng cách là thuộc tính của CẶP phần tử, không phải của một phần tử.
+   Nên dùng margin-top và chỉ dùng margin-top: không bao giờ phải đi trừ
+   margin chồng nhau giữa hai khối cạnh nhau. */
+.prose > * + *{margin-top:var(--s5)}
+.prose > * + h2{margin-top:var(--s10)}
+.prose > * + h3{margin-top:var(--s8)}
+.prose > * + h4{margin-top:var(--s7)}
+.prose > h2 + *,.prose > h3 + *,.prose > h4 + *{margin-top:var(--s4)}
+.prose > * + figure,.prose > figure + *{margin-top:var(--s8)}
+.prose > * + hr,.prose > hr + *{margin-top:var(--s9)}
+
+/* ── TIÊU ĐỀ TRONG BÀI ── */
+.prose h2{font-size:var(--fs-h2);font-style:italic}
+.prose h3{font-size:var(--fs-h3)}
+.prose h4{font-size:var(--fs-h4);font-family:var(--font-body);font-weight:600;
+  letter-spacing:0;line-height:1.45}
+
+/* Móc neo: chỉ hiện khi rê vào tiêu đề, nằm ở LỀ TRÁI ngoài cột chữ để
+   không đẩy chữ tiêu đề dịch sang phải lúc hiện ra. */
+.prose :is(h2,h3,h4){position:relative}
+.prose .anchor{
+  position:absolute;top:.1em;right:100%;padding-right:.35em;
+  color:var(--accent);opacity:0;font-family:var(--font-body);font-weight:400;
+  text-decoration:none;transition:opacity var(--dur-fast);
+}
+.prose :is(h2,h3,h4):hover .anchor,.prose .anchor:focus-visible{opacity:.85}
+@media (max-width:860px){.prose .anchor{display:none}}  /* hẹp thì không còn lề để treo */
+
+/* ── ĐOẠN VĂN & LEAD ── */
+.prose p{
+  /* Tiếng Việt là ngôn ngữ đơn âm, KHÔNG được bật hyphens:auto — trình duyệt
+     sẽ cắt "nghiêng" thành "ngh-iêng". Chỉ cho phép bẻ khi gặp URL dài. */
+  hyphens:none;
+  overflow-wrap:break-word;
+  word-break:normal;
+}
+.prose .lead{
+  font-size:var(--fs-md);line-height:1.66;color:var(--text-muted);
+  font-weight:400;
+}
+.prose .lead strong{color:var(--text);font-weight:600}
+
+/* ── LIÊN KẾT TRONG BÀI ──
+   Gạch chân mảnh, cách chữ 3px: đọc rõ là liên kết nhưng không cắt ngang
+   dấu tiếng Việt ở dưới chữ (ạ, ọ, ụ). Đây là lý do không dùng underline mặc định. */
+.prose a:not(.tag):not(.anchor):not(.btn){
+  color:var(--accent-ink);
+  text-decoration:underline;
+  text-decoration-color:color-mix(in srgb, var(--accent-ink) 42%, transparent);
+  text-decoration-thickness:1px;
+  text-underline-offset:3px;
+  transition:text-decoration-color var(--dur-fast),color var(--dur-fast);
+}
+.prose a:not(.tag):not(.anchor):not(.btn):hover{
+  color:var(--accent-ink-hover);text-decoration-color:currentColor;
+}
+/* Liên kết ra ngoài có mũi tên nhỏ — người đọc biết mình sắp rời trang */
+.prose a[rel~="external"]::after{content:"↗";font-size:.8em;margin-left:2px;
+  text-decoration:none;display:inline-block}
+
+/* ── DANH SÁCH ── */
+.prose :is(ul,ol){padding-left:1.35em}
+.prose li + li{margin-top:var(--s2)}
+.prose li::marker{color:var(--accent-ink)}
+.prose ul li::marker{content:"✦  ";font-size:.85em}
+.prose :is(ul,ol) :is(ul,ol){margin-top:var(--s2)}
+.prose ul ul li::marker{content:"·  "}
+
+/* Danh sách việc cần làm (checklist) — dùng cho bài dạng hướng dẫn.
+   Lớp .tick nằm trên TỪNG MỤC, nên một danh sách trộn lẫn mục có ô và mục
+   thường vẫn hiển thị đúng cả hai. .task chỉ bỏ lề khi cả danh sách đều có ô. */
+.prose ul.task{padding-left:0}
+.prose li.tick{list-style:none;display:flex;gap:var(--s3);align-items:flex-start}
+.prose li.tick::before{
+  content:"";flex:none;width:1.05em;height:1.05em;margin-top:.36em;
+  border:1.5px solid var(--line-strong);border-radius:4px;
+}
+.prose li.tick.done::before{
+  border-color:var(--ok);background:var(--ok);
+  /* dấu tick vẽ bằng mask, không phải ký tự ✓ — ký tự thì phụ thuộc phông máy */
+  -webkit-mask:var(--tick) center/72% no-repeat;mask:var(--tick) center/72% no-repeat;
+}
+:root{--tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8.5l3.6 3.6 7.4-9' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+
+/* ── TRÍCH DẪN ── */
+.prose blockquote{
+  padding-left:var(--s5);border-left:2px solid var(--accent);
+  font-family:var(--font-display);font-style:italic;
+  font-size:var(--fs-md);line-height:1.56;color:var(--text-muted);
+}
+.prose blockquote p + p{margin-top:var(--s3)}
+.prose blockquote cite{
+  display:block;margin-top:var(--s3);font-family:var(--font-body);
+  font-style:normal;font-size:var(--fs-sm);color:var(--text-faint);
+}
+.prose blockquote cite::before{content:"— "}
+
+/* ── HÌNH ẢNH ──
+   BẮT BUỘC có aspect-ratio đặt sẵn từ lúc build (biến --ar). Không có nó thì
+   ảnh cao 0px lúc chưa tải xong rồi bật ra chiều cao thật — chữ dưới ảnh nhảy
+   một phát, người đang đọc mất dòng. Đây là lỗi CLS, và nó đau nhất trên mạng yếu. */
+.prose figure{margin:0}
+.prose figure img,
+.prose figure video{
+  width:100%;height:auto;display:block;
+  aspect-ratio:var(--ar,16/10);
+  object-fit:cover;
+  border-radius:var(--r-md);
+  background:var(--surface-sunken);   /* ô xám giữ chỗ trong lúc ảnh đang tải */
+}
+.prose figure.full img,.prose figure.full video{border-radius:0}
+@media (max-width:640px){
+  /* Trên điện thoại, ảnh .wide tự động tràn hết bề ngang: giữ lề hai bên cho
+     ảnh ở màn hẹp chỉ làm ảnh bé lại chứ không giúp gì cho việc đọc. */
+  .prose > .wide{grid-column:full}
+  .prose figure.wide img,.prose figure.wide video{border-radius:0}
+}
+.prose figcaption{
+  margin-top:var(--s3);
+  padding-inline:var(--gutter);
+  font-size:var(--fs-sm);line-height:1.6;color:var(--text-faint);
+  text-align:center;text-wrap:pretty;
+}
+.prose > figure:not(.full):not(.wide) figcaption{padding-inline:0;text-align:left}
+.prose figcaption b{color:var(--text-muted);font-weight:600}
+
+/* Ảnh trong suốt (PNG sản phẩm, sơ đồ) — đừng cắt xén, đừng bo nền */
+.prose figure.plain img{object-fit:contain;background:none;aspect-ratio:auto}
+
+/* Bộ ảnh 2–3 cột. Tự xuống 1 cột ở màn hẹp, không cần media query nhờ auto-fit. */
+.prose .gallery{
+  display:grid;gap:var(--s3);
+  grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));
+}
+.prose .gallery figure{margin:0}
+.prose .gallery img{aspect-ratio:var(--ar,1/1)}
+
+/* ── VIDEO ──
+   Hai dạng. Dạng 1: file .mp4 tự chứa. Dạng 2: YouTube — KHÔNG nhúng iframe
+   ngay từ đầu. Một iframe YouTube kéo theo ~1.2MB script của Google và đặt
+   cookie theo dõi lên người đọc dù họ chưa hề bấm play. Nên ở đây chỉ đặt ảnh
+   bìa + nút play; bấm vào mới dựng iframe. */
+.prose .video-frame{
+  position:relative;aspect-ratio:16/9;overflow:hidden;
+  border-radius:var(--r-md);background:var(--surface-sunken);
+}
+.prose .video-frame iframe,.prose .video-frame video{
+  position:absolute;inset:0;width:100%;height:100%;border:none;
+  aspect-ratio:auto;border-radius:0;
+}
+.prose figure.full .video-frame{border-radius:0}
+.yt-facade{position:absolute;inset:0;width:100%;height:100%;padding:0;
+  cursor:pointer;border:none;background:var(--surface-sunken)}
+.yt-facade img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  aspect-ratio:auto;border-radius:0;
+}
+.yt-facade::after{                 /* vệt tối nhẹ để nút play luôn nổi lên */
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(60% 60% at 50% 50%, rgba(30,14,45,.30), rgba(30,14,45,.52));
+  transition:opacity var(--dur);
+}
+.yt-facade:hover::after{opacity:.75}
+.yt-play{
+  position:absolute;top:50%;left:50%;translate:-50% -50%;z-index:2;
+  width:62px;height:62px;border-radius:50%;
+  display:grid;place-items:center;
+  background:linear-gradient(140deg,var(--accent-2),var(--accent));
+  box-shadow:0 10px 30px rgba(60,30,90,.45);
+  transition:transform var(--dur) var(--ease);
+}
+.yt-facade:hover .yt-play{transform:scale(1.08)}
+.yt-play svg{width:22px;height:22px;fill:#fff;stroke:none;margin-left:3px}
+
+/* ── KHUNG NHẤN (callout) ──
+   Bốn loại, bốn màu, nhưng CÙNG một hình dáng. Màu là thứ duy nhất khác nhau
+   — vì màu một mình không đủ (người mù màu), nên mỗi loại còn có nhãn chữ. */
+.prose .callout{
+  padding:var(--s5);border-radius:var(--r-md);
+  border:1px solid var(--cl-line,var(--line));
+  border-left:3px solid var(--cl-accent,var(--accent));
+  background:var(--cl-bg,var(--accent-wash));
+  font-size:calc(var(--fs-base) * .96);line-height:1.72;
+}
+.prose .callout > .callout-lab{
+  display:block;margin-bottom:var(--s2);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--cl-accent,var(--accent-ink));
+}
+.prose .callout > * + *{margin-top:var(--s3)}
+.prose .callout--note{--cl-accent:var(--accent-ink);--cl-bg:var(--accent-wash)}
+.prose .callout--tip {--cl-accent:var(--ok);--cl-bg:var(--ok-wash)}
+.prose .callout--warn{--cl-accent:var(--warn);--cl-bg:var(--warn-wash)}
+.prose .callout--stop{--cl-accent:var(--bad);--cl-bg:var(--bad-wash)}
+
+/* ── MÃ NGUỒN ── */
+.prose :not(pre) > code{
+  padding:.14em .42em;border-radius:var(--r-xs);
+  background:var(--surface-sunken);border:1px solid var(--line);
+  color:var(--accent-ink);font-size:.86em;
+  overflow-wrap:break-word;
+}
+.prose pre{
+  position:relative;
+  padding:var(--s5) var(--s5) var(--s5);
+  border-radius:var(--r-md);border:1px solid var(--line);
+  background:var(--surface-sunken);
+  overflow-x:auto;                 /* khối mã là MỘT trong ba thứ được phép trượt
+                                      ngang, cùng với bảng và sơ đồ */
+  font-size:var(--fs-sm);line-height:1.68;
+  -webkit-overflow-scrolling:touch;
+  tab-size:2;
+}
+.prose pre code{background:none;border:none;padding:0;color:var(--text)}
+.prose pre[data-lang]::before{
+  content:attr(data-lang);
+  position:absolute;top:0;right:0;
+  padding:3px 10px 4px;border-radius:0 var(--r-md) 0 var(--r-xs);
+  background:var(--line);color:var(--text-faint);
+  font-family:var(--font-label);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+}
+
+/* ── BẢNG ──
+   Bọc trong .table-wrap để bảng rộng trượt ngang TRONG khung của nó, chứ không
+   kéo cả trang trượt theo. */
+.prose .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border:1px solid var(--line);border-radius:var(--r-md)}
+.prose table{border-collapse:collapse;width:100%;font-size:var(--fs-sm);
+  line-height:1.6}
+.prose :is(th,td){padding:10px var(--s4);text-align:left;
+  border-bottom:1px solid var(--line);vertical-align:top}
+.prose th{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
+  background:var(--accent-wash);white-space:nowrap;
+}
+.prose tbody tr:last-child :is(th,td){border-bottom:none}
+
+/* ── LINH TINH ── */
+.prose hr{
+  height:auto;background:none;border:none;text-align:center;
+  color:var(--accent);opacity:.75;
+}
+.prose hr::before{content:"✦ ✦ ✦";letter-spacing:.6em;font-size:9px}
+.prose kbd{
+  padding:2px 7px;border-radius:5px;border:1px solid var(--line-strong);
+  border-bottom-width:2px;background:var(--surface-solid);
+  font-size:.82em;color:var(--text-muted);
+}
+.prose mark{background:var(--accent-wash);color:var(--text);
+  padding:.05em .25em;border-radius:3px}
+.prose abbr[title]{text-decoration:underline dotted;cursor:help}
+.prose small{font-size:var(--fs-sm);color:var(--text-faint)}
+
+/* ── ĐẦU BÀI ── */
+.post-head{margin-bottom:var(--s8)}
+.post-head h1{
+  font-size:var(--fs-h1);font-style:italic;line-height:var(--lh-tight);
+  margin-top:var(--s4);
+}
+.post-head .summary{
+  margin-top:var(--s4);font-size:var(--fs-md);line-height:1.6;
+  color:var(--text-muted);text-wrap:pretty;max-width:var(--measure);
+}
+.post-head .meta-row{margin-top:var(--s5)}
+.post-head .tag-row{margin-top:var(--s4)}
+.post-cover{margin-bottom:var(--s8)}
+
+/* ── CHÂN BÀI: bài trước / bài sau ── */
+.post-nav{
+  display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));
+  margin-top:var(--s10);padding-top:var(--s7);border-top:1px solid var(--line);
+}
+.post-nav a{display:flex;flex-direction:column;gap:6px;
+  padding:var(--s4);border:1px solid var(--line);border-radius:var(--r-md);
+  color:var(--text);transition:border-color var(--dur),background var(--dur)}
+.post-nav a:hover{border-color:var(--accent);background:var(--accent-wash)}
+.post-nav .dir{font-family:var(--font-label);font-size:var(--fs-2xs);
+  font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint)}
+.post-nav .t{font-family:var(--font-display);font-style:italic;font-size:var(--fs-h4)}
+.post-nav a.next{text-align:right;align-items:flex-end}
+
+/* Nút chép mã — do media.js dựng lên, nên style nằm sau khối pre ở trên.
+   Mờ sẵn, rõ hẳn khi rê vào khối mã; trên máy cảm ứng thì luôn rõ vì không
+   có trạng thái "rê vào" nào cả. */
+.prose pre .copy-btn{
+  position:absolute;top:6px;right:6px;z-index:2;
+  padding:4px 10px 5px;border-radius:var(--r-xs);
+  border:1px solid var(--line-strong);background:var(--surface-solid);
+  color:var(--text-muted);
+  font-family:var(--font-label);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;line-height:1.6;
+  opacity:0;transition:opacity var(--dur-fast),color var(--dur-fast);
+}
+.prose pre:hover .copy-btn,.prose pre .copy-btn:focus-visible{opacity:1}
+.prose pre .copy-btn:hover{color:var(--accent-ink);border-color:var(--accent)}
+@media (hover:none){.prose pre .copy-btn{opacity:.85}}
+/* Có nút chép thì nhãn ngôn ngữ phải nhường chỗ, không thì hai cái chồng lên nhau */
+.prose pre[data-lang]::before{right:auto;left:0;border-radius:var(--r-md) 0 var(--r-xs) 0}

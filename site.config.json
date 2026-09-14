@@ -1,0 +1,22 @@
+{
+  "title": "Zoey in Borderland",
+  "tagline": "Ghi chép cá nhân",
+  "description": "Blog cá nhân của Honghandangiu — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
+  "author": "Honghandangiu",
+  "lang": "vi",
+  "url": "https://zoey-in-borderland.vercel.app",
+  "base": "",
+  "locale": "vi_VN",
+  "postsPerPage": 12,
+  "nav": [
+    { "label": "Bài viết", "href": "/posts/" },
+    { "label": "Tag",      "href": "/tags/" },
+    { "label": "Lưu trữ",  "href": "/archive/" },
+    { "label": "Về tôi",   "href": "/about/" }
+  ],
+  "version": "V0.10",
+  "_ghichu": {
+    "base": "Để rỗng khi trang chạy ở gốc tên miền (Vercel, Netlify, tên miền riêng). Nếu deploy lên GitHub Pages dạng user.github.io/ten-repo thì đặt base thành \"/ten-repo\".",
+    "url": "Dùng cho canonical, OG image và sitemap. Phải là địa chỉ thật khi đã lên sóng, không thì mạng xã hội lấy sai ảnh bìa."
+  }
+}
