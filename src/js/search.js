@@ -70,10 +70,13 @@
     return ra;
   }
 
+  /* Chữ lấy từ bảng NHAN trong tools/build.mjs, gửi sang qua data-nhan — y
+     như comments.js và so-tay.js. Bản trước chép bốn nhãn này thẳng vào đây;
+     sửa bảng thì bốn chỗ này không đổi theo, mà không có gì báo. */
+  var N = {};
+  try { N = JSON.parse((loc && loc.dataset.nhan) || '{}'); } catch (e) {}
   function nhan(k, n) {
-    var b = { results: '{n} results', oneResult: '1 result',
-              noResults: 'Nothing matched.', typeMore: 'Keep typing…' };
-    return b[k].replace('{n}', n);
+    return String(N[k] || '').replace('{n}', n);
   }
 
   /* ── TẢI CHỈ MỤC ──

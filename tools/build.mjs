@@ -128,7 +128,6 @@ const NHAN = {
   skipToMain  : 'Skip to content',
   toLight     : 'Switch to light',
   toDark      : 'Switch to dark',
-  anchor      : 'Link to this section',
   older       : 'Older',
   newer       : 'Newer',
 
@@ -513,6 +512,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
       : '<meta name="robots" content="index, follow, max-image-preview:large, ' +
         'max-snippet:-1, max-video-preview:-1">',
     base      : BASE,
+    skipToMain: escapeHtml(NHAN.skipToMain),
+    toLight   : attr(NHAN.toLight),
+    toDark    : attr(NHAN.toDark),
     nav       : navHTML(duong),
     napTimKiem: coTrang('/search/')
       ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
@@ -1040,10 +1042,6 @@ function chep(tu, den) {
 }
 
 function gopCSS() {
-  /* Thứ tự này không đổi được:
-       tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
-       glass      trước component, để component ghi đè được vật liệu khi cần
-       prose      sau component, để khung đọc bài ghi đè được component */
   /* Thứ tự KHÔNG đổi được:
        tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
        glass      trước component, để component ghi đè được vật liệu khi cần
@@ -1053,11 +1051,40 @@ function gopCSS() {
      thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
   const thuTu = ['tokens.css', 'base.css', 'glass.css', 'layout.css',
                  'components.css', 'list.css', 'prose.css', 'about.css'];
-  return thuTu.map((f) => {
+
+  const gop = thuTu.map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
     if (!fs.existsSync(p)) { CANH_BAO.push(`thiếu file style: ${f}`); return ''; }
     return `/* ───────── ${f} ───────── */\n${fs.readFileSync(p, 'utf8')}`;
   }).join('\n\n');
+
+  return boChuThichCSS(gop);
+}
+
+/* ── CẮT CHÚ THÍCH KHI GỬI RA ──
+   Mấy file trong src/styles/ có rất nhiều chú thích, và đó là chủ ý: chúng ghi
+   lại vì sao từng luật lại viết như vậy, chỗ nào đã vấp. Nhưng người ĐỌC BLOG
+   không cần chúng, mà vẫn phải tải về.
+
+   Đo trên bundle thật:
+       nguyên bản    91.1KB  ·  25.8KB sau brotli
+       bỏ chú thích  56.7KB  ·  10.9KB sau brotli
+
+   Tức là 15KB mỗi lượt tải đầu, chỉ để chở mấy dòng ghi chú cho chính mình.
+   Chú thích vẫn nằm nguyên trong src/ — đây chỉ là bước cuối trước khi ghi ra
+   dist/.
+
+   KHÔNG nén khoảng trắng luôn: đo ra chỉ thêm 1.1KB nữa sau brotli, đổi lại
+   CSS gửi đi mất hẳn khả năng đọc khi cần soi bằng DevTools. Không đáng.
+
+   An toàn vì chú thích CSS không lồng nhau được, và đã soát: không có chuỗi
+   `/*` nào nằm trong `content:` hay `url()` của dự án này. */
+function boChuThichCSS(css) {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    /* Bỏ chú thích xong để lại nhiều dòng trống liên tiếp — gom lại còn một. */
+    .replace(/\n[ \t]*\n[ \t]*\n+/g, '\n\n')
+    .replace(/[ \t]+$/gm, '');
 }
 
 /* ══════════════ 5. TRANG DANH SÁCH ══════════════
@@ -1132,7 +1159,13 @@ function trangChu(bai) {
   const xep = [...bai].sort((a, b) =>
     (b.pinned - a.pinned) || (a.date < b.date ? 1 : -1));
   const noiBat = xep[0];
-  const conLai = xep.slice(1, 7);
+  /* `postsPerPage` trong site.config.json quyết định trang chủ liệt kê bao
+     nhiêu bài dưới bài nổi bật. Trước đây khoá này khai mà KHÔNG AI ĐỌC — sửa
+     nó không có tác dụng gì, đúng kiểu cấu hình nói dối.
+
+     Chưa cắt trang cho /posts/: ba bài thì cắt trang là thừa. Khi nào danh sách
+     dài tới mức phải cuộn lâu mới tính, và lúc đó dùng lại chính khoá này. */
+  const conLai = xep.slice(1, 1 + Math.max(1, Number(CAU.postsPerPage) || 6));
 
   return trang({
     title: `${CAU.title} · ${CAU.tagline}`,
@@ -1378,7 +1411,10 @@ function trangSearch() {
     <button class="tk-xoa" type="button" aria-label="${attr(NHAN.clear)}" hidden>✕</button>
   </div>
 </form>
-<div class="tk-loc" id="tk-loc"></div>
+<div class="tk-loc" id="tk-loc" data-nhan="${attr(JSON.stringify({
+      results: NHAN.results, oneResult: NHAN.oneResult,
+      noResults: NHAN.noResults, typeMore: NHAN.typeMore
+    }))}"></div>
 <p class="tk-dem" role="status" aria-live="polite"></p>
 <div class="tk-kq" id="tk-kq"></div>`,
     duong: '/search/',

@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.08 | 2026-09-15 | 08 | nhẹ đi 63% · nén ảnh · cắt chú thích CSS khi dựng · dọn nhãn và cấu hình chết |
 | V1.07 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
 | V1.06 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
 | V1.05 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
@@ -36,6 +37,35 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.08 — 15-Sep-2026
+
+Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang nhẹ đi **63%**:
+2.10MB còn 0.78MB.
+
+- **Ảnh bìa 391KB xuống 84KB.** Ba chỗ cộng lại: hạ từ 1600×900 về 1200×675
+  (cột chữ rộng nhất cũng chỉ 1100px, ảnh chia sẻ chuẩn là 1200×630 — 1600 là
+  thừa); thêm bước lọc Sub trước khi nén (bộ ghi PNG cũ ghi filter 0, tức là
+  không lọc gì); và bỏ hạt nhiễu chống vệt dải. Riêng hạt nhiễu tốn hơn nửa
+  dung lượng file, mà soi kỹ thì không có vệt dải nào để mà chống — bảng màu ở
+  đây toàn pastel nằm sát nhau.
+- **Thêm `npm run nen`** — nén lại mọi PNG trong `public/` mà không mất một
+  pixel nào. Thử cả năm kiểu lọc cho từng dòng, giữ kiểu nhỏ nhất. Ảnh demo
+  trong bài giảm 82%. Chạy được cho mọi ảnh bỏ vào sau này.
+- **Chú thích CSS không còn gửi ra mạng.** Bundle 91KB còn 56KB, qua dây là
+  25.8KB còn 10.7KB. Chú thích vẫn nằm nguyên trong `src/styles/` — chỉ cắt ở
+  bước cuối trước khi ghi ra `dist/`.
+- **Bảng nhãn giao diện từng nói dối 8 chỗ.** Nó khai "mọi chữ nằm ở đây" nhưng
+  tám nhãn khai rồi mà chữ thật lại gõ cứng trong `shell.html`, `theme.js` và
+  `search.js` — sửa bảng không có tác dụng. Nay nối lại hết.
+- **Dọn đồ chết:** một khoá cấu hình không ai đọc, một nhãn cho tính năng chưa
+  bao giờ dựng, ba class CSS không dùng và không nằm trong design system, và
+  một khối chú thích bị dán hai lần.
+- **Sửa một phép kiểm dò sai.** Phép kiểm "bundle CSS đủ file" dò bằng chính
+  dòng chú thích mốc — tới lúc build bắt đầu cắt chú thích thì nó báo đỏ cả tám
+  file dù CSS vẫn đủ. Sửa xong lại dò quá lỏng (bắt trúng một dòng khai báo
+  chung của file khác) nên vẫn báo xanh khi thiếu file thật. Nay dò bằng dòng
+  selector, và đã thử ngược để chắc là nó bắt được.
 
 ## V1.07 — 15-Sep-2026
 

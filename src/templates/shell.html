@@ -41,7 +41,7 @@
 {{headExtra}}
 </head>
 <body>
-<a class="sr-only focusable" href="#noi-dung">Skip to content</a>
+<a class="sr-only focusable" href="#noi-dung">{{skipToMain}}</a>
 
 <div class="shell">
 <header class="site-head">
@@ -52,8 +52,12 @@
     <nav class="nav" aria-label="Main">
       {{nav}}
       {{napTimKiem}}
+      <!-- Hai nhãn đi kèm dưới dạng data-*: theme.js đổi qua đổi lại giữa
+           chúng mỗi lần bấm, nên nó phải có SẴN CẢ HAI chứ không tự chế chữ.
+           Gõ cứng trong theme.js thì bảng NHAN sửa xong không có tác dụng. -->
       <button class="ico-btn tip theme-btn" type="button"
-              aria-label="Switch to dark" data-tip="Switch to dark">
+              aria-label="{{toDark}}" data-tip="{{toDark}}"
+              data-nhan-sang="{{toLight}}" data-nhan-toi="{{toDark}}">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.4A8.6 8.6 0 1 1 9.6 3.5a6.9 6.9 0 0 0 10.9 10.9Z"/></svg>
       </button>

@@ -28,7 +28,11 @@
     if(m) m.setAttribute('content', t === 'dark' ? '#120C22' : '#FAF6FD');
     var b = document.querySelector('.theme-btn');
     if(b){
-      var nhan = t === 'dark' ? 'Switch to light' : 'Switch to dark';
+      /* Nhãn lấy từ data-* mà build gắn sẵn, không gõ cứng ở đây — cả bộ chữ
+         giao diện nằm ở bảng NHAN trong tools/build.mjs. */
+      var nhan = t === 'dark'
+        ? (b.getAttribute('data-nhan-sang') || 'Switch to light')
+        : (b.getAttribute('data-nhan-toi')  || 'Switch to dark');
       b.setAttribute('aria-label', nhan);
       b.setAttribute('data-tip', nhan);
     }

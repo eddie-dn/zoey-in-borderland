@@ -44,7 +44,7 @@ _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
 src/js/         theme · toc · media · comments · copy-guard · reveal · so-tay
 src/templates/  shell.html · post.html · page.html
-tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
+tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh · lib/
 tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
 functions/api/  quote.js — hàm Cloudflare xin câu trích dẫn từ Gemini (tuỳ chọn)
                 _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay

@@ -258,7 +258,14 @@ const KIEM = [
   {
     /* Thiếu một file CSS trong bundle thì KHÔNG có lỗi nào cả — trang vẫn dựng,
        vẫn mở được, chỉ là một mảng giao diện lặng lẽ biến mất. Đã vấp: cả bộ
-       liquid glass nằm ngoài bundle suốt một phiên bản mà không ai biết. */
+       liquid glass nằm ngoài bundle suốt một phiên bản mà không ai biết.
+
+       Dò bằng NỘI DUNG THẬT, không bằng dòng chú thích mốc. Bản trước tìm chuỗi
+       `───────── tên.css ─────────` mà build chèn vào giữa các file; tới lúc
+       build bắt đầu cắt chú thích khi xuất ra thì mọi mốc biến mất và phép kiểm
+       này báo đỏ toàn bộ tám file, dù CSS vẫn nằm đủ trong bundle.
+
+       Bài học: phép kiểm không được bám vào thứ chỉ có mặt để cho người đọc. */
     ten: 'Bundle CSS gộp đủ mọi file trong src/styles/',
     muc: 'loi',
     chay: ({ goc, dist }) => {
@@ -267,9 +274,29 @@ const KIEM = [
       const gop = fs.readFileSync(f, 'utf8');
       const thuMuc = path.join(goc, 'src', 'styles');
       if (!fs.existsSync(thuMuc)) return [];
+
       return fs.readdirSync(thuMuc)
         .filter((x) => x.endsWith('.css'))
-        .filter((x) => !gop.includes(`───────── ${x} ─────────`))
+        .filter((x) => {
+          /* Dò bằng DÒNG SELECTOR, không bằng dòng khai báo.
+
+             Bản trước lấy bất kỳ dòng nào có `:` hoặc `{`. Hỏng ngay: một dòng
+             như `font-size:var(--fs-h1);font-style:italic;` là khai báo chung,
+             file CSS nào cũng có thể có y hệt. Thử bỏ list.css ra khỏi bundle
+             thì phép kiểm vẫn báo xanh, vì nó bắt trúng một dòng khai báo của
+             file khác. Tên selector (`.ds-luoi{`, `.chip-hang{`) mới là thứ
+             riêng của từng file. */
+          const src = fs.readFileSync(path.join(thuMuc, x), 'utf8')
+            .replace(/\/\*[\s\S]*?\*\//g, '');
+          const sel = src.split('\n')
+            .map((d) => d.trim())
+            /* Dòng mở một khối luật, và có ít nhất một selector dạng .class
+               hoặc #id — đủ đặc trưng để không đụng file khác. */
+            .filter((d) => /\{\s*$|\{.+\}$/.test(d) && /^[.#][\w-]/.test(d))
+            .slice(0, 8);
+          if (!sel.length) return false;            /* file không có selector riêng */
+          return !sel.some((d) => gop.includes(d));
+        })
         .map((x) => `src/styles/${x} không có trong bundle — thêm vào mảng ` +
                     `thuTu ở tools/build.mjs (hàm gopCSS)`);
     }

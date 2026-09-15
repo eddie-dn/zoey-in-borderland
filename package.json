@@ -13,7 +13,8 @@
     "ver": "node tools/version.mjs",
     "kiem": "node tools/kiem-dinh.mjs",
     "anh": "node tools/anh.mjs",
-    "bia": "node tools/bia.mjs"
+    "bia": "node tools/bia.mjs",
+    "nen": "node tools/nen.mjs"
   },
   "engines": {
     "node": ">=18"

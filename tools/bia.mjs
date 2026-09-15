@@ -33,9 +33,38 @@ const GOC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = path.join(GOC, 'content', 'posts');
 const PUBLIC = path.join(GOC, 'public');
 
-/* 1600×900 — tỉ lệ 16:9. Vừa làm ảnh bìa trong bài, vừa đủ lớn để Facebook và
-   Google cắt lại mà không bị vỡ. */
-const W = 1600, H = 900;
+/* 1200×675 — tỉ lệ 16:9.
+
+   Đời đầu để 1600×900. Thừa: cột chữ trong bài rộng khoảng 700px, thẻ bài ở
+   lưới danh sách rộng nhất cũng chỉ ~1100px, và ảnh chia sẻ chuẩn của Facebook
+   là 1200×630. Không chỗ nào cần tới 1600. Riêng việc hạ xuống 1200 đã cắt
+   gần một nửa dung lượng mà không ai nhìn thấy khác biệt.
+
+   Màn hình 2× thì trình duyệt phóng 1200 lên — với một tấm gradient mềm thì
+   không thấy vỡ, khác hẳn ảnh chụp có chi tiết nhỏ. */
+const W = 1200, H = 675;
+
+/* ── BIÊN HẠT NHIỄU ──
+   Hạt nhiễu chống vệt dải (banding) trên gradient mềm. Nhưng nó cũng là thứ
+   PHÁ NÉN mạnh nhất: mỗi pixel một giá trị ngẫu nhiên mới thì zlib không tìm
+   được mẫu nào để lặp.
+
+   Đo trên ảnh thật (1200×675, có filter Sub):
+       nhiễu ±0.8  →  165KB
+       nhiễu  0    →   81KB
+   Tức là hạt nhiễu tốn gấp đôi cả tấm ảnh.
+
+   Soi kỹ bản không nhiễu: KHÔNG có vệt dải. Lý do là bảng màu ở đây toàn màu
+   pastel nằm sát nhau, biên độ gradient hẹp nên 8 bit thừa sức. Nhiễu ở đây là
+   bảo hiểm cho một rủi ro không có thật.
+
+   Để lại hằng số này thay vì xoá hẳn: hôm nào thêm cặp màu cách xa nhau mà
+   thấy vệt dải thì chỉnh lên 1.6 là xong, không phải viết lại gì.
+
+   (Đã thử dither CÓ TRẬT TỰ kiểu Bayer 4×4, tưởng tuần hoàn thì nén tốt hơn.
+   Sai: 302KB so với 236KB của nhiễu ngẫu nhiên. Nền gradient trôi bên dưới nên
+   giá trị cộng lại vẫn khác nhau từng pixel, mà biên độ Bayer lại lớn hơn.) */
+const NHIEU = 0;
 
 const mau = {
   do:   (s) => `\x1b[31m${s}\x1b[0m`,
@@ -139,9 +168,8 @@ function ve(tieuDe) {
       const goc4 = Math.hypot((u - .5) * 1.25, (v - .5) * 1.25);
       c = tron(c, tron(c, [120, 96, 150], .5), Math.max(0, goc4 - .42) * .78);
 
-      /* Hạt nhiễu rất nhẹ — gradient phẳng tuyệt đối in ra bị vệt dải */
-      const n = ((x * 12.9898 + y * 78.233) * 43758.5453) % 1;
-      const nz = (n - .5) * 3.4;
+      /* Hạt nhiễu — xem hằng số NHIEU ở đầu file. Mặc định tắt. */
+      const nz = NHIEU ? (((x * 12.9898 + y * 78.233) * 43758.5453) % 1 - .5) * NHIEU : 0;
 
       const o = doc + 1 + x * 3;
       px[o]     = kep(c[0] + nz);
@@ -166,6 +194,36 @@ function khoi(ten, data) {
   const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(than));
   return Buffer.concat([len, than, crc]);
 }
+/* ── LỌC TRƯỚC KHI NÉN ──
+   PNG cho phép mỗi dòng chọn một cách "lọc": thay vì ghi giá trị pixel, ghi
+   HIỆU so với pixel bên trái (Sub), bên trên (Up), hay trung bình (Average).
+   Trên một dải màu mềm, hiệu giữa hai pixel cạnh nhau gần như luôn bằng 0 hoặc
+   ±1, mà một dãy toàn số 0 thì zlib nén còn gần như không tốn gì.
+
+   Đời đầu ghi filter 0 (None) cho mọi dòng — tức là không lọc gì cả. Đo trên
+   ảnh thật, 1600×900 có nhiễu:
+       None 391KB · Sub 271KB · Up 393KB · Average 386KB · Paeth 439KB
+   Sub thắng rõ vì gradient ở đây chạy chủ yếu theo chiều NGANG.
+
+   Không làm lọc thích ứng (thử cả 5 kiểu mỗi dòng rồi chọn kiểu nhỏ nhất) như
+   bộ mã hoá thật: tốn gấp năm lần thời gian để đổi lấy vài phần trăm, trong
+   khi ảnh ở đây bài nào cũng cùng một kiểu bố cục. */
+function locSub(px) {
+  const buoc = 1 + W * 3;
+  const ra = Buffer.alloc(px.length);
+  for (let y = 0; y < H; y++) {
+    const o = y * buoc;
+    ra[o] = 1;                                     /* filter type: Sub */
+    for (let k = 0; k < W * 3; k++) {
+      /* Trừ pixel bên trái — 3 byte trước, vì mỗi pixel là 3 byte RGB.
+         Ba byte đầu dòng không có gì bên trái nên trừ 0. */
+      const trai = k >= 3 ? px[o + 1 + k - 3] : 0;
+      ra[o + 1 + k] = (px[o + 1 + k] - trai) & 0xFF;
+    }
+  }
+  return ra;
+}
+
 function png(px) {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(W, 0); ihdr.writeUInt32BE(H, 4);
@@ -173,7 +231,7 @@ function png(px) {
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
     khoi('IHDR', ihdr),
-    khoi('IDAT', zlib.deflateSync(px, { level: 9 })),
+    khoi('IDAT', zlib.deflateSync(locSub(px), { level: 9 })),
     khoi('IEND', Buffer.alloc(0))
   ]);
 }
