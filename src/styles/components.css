@@ -166,6 +166,17 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
 }
 .meta-row > * {display:inline-flex;align-items:center;gap:6px}
 
+/* Mốc cập nhật: cùng hàng meta nhưng mờ hơn ngày đăng một bậc. Ngày ĐĂNG là
+   sự thật cố định của bài; mốc cập nhật là ghi chú bên lề — cùng cỡ chữ nhưng
+   nhạt hơn thì thứ tự đọc tự đúng mà không cần thêm dấu phân cách nào. */
+.meta-row .moc{color:var(--text-faint);font-variant-numeric:tabular-nums}
+.meta-row .moc::before{
+  content:"";width:3px;height:3px;border-radius:50%;
+  background:currentColor;opacity:.5;margin-right:2px;
+}
+/* Lượt xem: đậm hơn mốc, vì nó là con số người đọc thật sự liếc. */
+.meta-row .xem{color:var(--text-muted);font-variant-numeric:tabular-nums}
+
 /* ── DẤU NGĂN GẮN VÀO MỤC SAU, KHÔNG PHẢI MỘT THẺ RIÊNG ──
    Đời đầu chèn `<span class="dot">` giữa các mục. Hỏng khi hàng gãy dòng: dấu
    chấm là một phần tử flex độc lập nên nó ở lại cuối dòng trên, còn chữ nó đi
@@ -363,3 +374,64 @@ body.so-khoa{overflow:hidden}
   .so-bang td{padding:var(--s3) var(--s1)}
   .so-ngay{display:none}     /* cột ngày là thứ bỏ được đầu tiên khi hết chỗ */
 }
+
+/* ══════════════ BĂNG ẢNH ══════════════
+   Trượt bằng CUỘN-DÍNH của chính trình duyệt, không dựng lại bằng JavaScript.
+   Nhờ vậy nó vuốt được trên điện thoại, lăn ngang được bằng chuột, kéo được
+   thanh cuộn, và đi được bằng phím mũi tên — đều là hành vi CÓ SẴN, đã đúng với
+   mọi thiết bị trợ năng. JavaScript chỉ thêm hàng chấm và hai nút. */
+.bang-anh{position:relative}
+.ba-cuon{
+  display:flex;gap:var(--s3);
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  border-radius:var(--r-lg);
+  /* Giấu thanh cuộn nhưng GIỮ chức năng cuộn. Hàng chấm ở dưới đã nói cho người
+     đọc biết còn mấy tấm nữa, nên thanh cuộn chỉ là một vạch xám thừa. */
+  scrollbar-width:none;
+}
+.ba-cuon::-webkit-scrollbar{display:none}
+.ba-cuon:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ba-tam{
+  flex:0 0 100%;min-width:0;margin:0;
+  scroll-snap-align:start;
+  position:relative;
+}
+.ba-tam img{
+  width:100%;height:auto;display:block;
+  aspect-ratio:var(--ar,4/5);object-fit:cover;
+  border-radius:var(--r-lg);
+  background:var(--accent-wash);
+}
+.ba-tam figcaption{
+  margin-top:var(--s3);
+  font-size:var(--fs-sm);line-height:1.5;color:var(--text-faint);
+  text-align:left;
+}
+
+/* Hàng chấm + hai nút: do JavaScript dựng, nên không có JS thì băng vẫn vuốt
+   được, chỉ là không có chỗ bấm. */
+.ba-dieu{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:var(--s4);margin-top:var(--s4);
+}
+.ba-cham{display:flex;gap:6px}
+.ba-cham button{
+  width:7px;height:7px;padding:0;border:none;border-radius:50%;
+  background:var(--line);cursor:pointer;
+  transition:background var(--dur-fast),transform var(--dur-fast);
+}
+.ba-cham button[aria-current="true"]{background:var(--accent);transform:scale(1.35)}
+.ba-cham button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ba-nut{display:flex;gap:6px}
+.ba-nut button{
+  width:30px;height:30px;padding:0;border:none;border-radius:50%;
+  background:none;box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text-muted);cursor:pointer;line-height:1;
+  transition:color var(--dur-fast),box-shadow var(--dur-fast);
+}
+.ba-nut button:hover:not(:disabled),.ba-nut button:focus-visible{
+  color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+}
+.ba-nut button:disabled{opacity:.3;cursor:default}

@@ -27,6 +27,12 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.07 | 2026-09-15 | 07 | khung bài ảnh ngắn: băng ảnh bên trái, tản mạn bên phải |
+| V3.06 | 2026-09-15 | 06 | chữ thân bài đo lại · căn đều hai bên · đầu bài rộng hơn cột chữ |
+| V3.05 | 2026-09-15 | 05 | ngày đăng gốc kèm mốc cập nhật tự động · bỏ phút đọc |
+| V3.04 | 2026-09-15 | 04 | khổ dọc: màn đầu trọn một màn · bỏ danh sách ba bài · thẻ bài gọn lại |
+| V3.03 | 2026-09-15 | 03 | cánh hoa nét hơn có chiều sâu · thiên hà tràn cả hai mép màn hình |
+| V3.02 | 2026-09-15 | 02 | chữ giữa tách khỏi chữ đầu · hai dòng thôi đè nhau khi co lại |
 | V3.01 | 2026-09-15 | 01 | phân trang có số cho Posts và Archive · người đọc chọn số bài mỗi trang |
 | V3.00 | 2026-09-15 | 00 | trang chủ giữ tối đa 6 bài · hai lối đi sang Posts và Archive |
 | V2.09 | 2026-09-15 | 09 | khối chữ lớn căn giữa không mất chữ · gộp Zoey in cùng hàng khi co lại |
@@ -55,6 +61,101 @@
 
 ---
 
+## V3.07 — 15-Sep-2026
+
+- **Khung C — bài ảnh ngắn.** Vài tấm kỉ niệm bên trái, mấy dòng tản mạn bên
+  phải. Kiểu bài này không hợp khung đọc dài: bốn dòng chữ bày ra giữa cột 66
+  ký tự thì trông như bài bị cụt giữa chừng. Ở khổ rộng, băng ảnh DÍNH lại khi
+  cuộn — chữ trôi qua bên cạnh trong khi ảnh đứng yên; khổ hẹp thì ảnh trước,
+  chữ sau.
+
+- **Băng ảnh trượt bằng chính trình duyệt.** Vuốt trên điện thoại, lăn chuột
+  ngang, kéo thanh cuộn, đi bằng phím mũi tên — tất cả đều chạy kể cả khi
+  JavaScript không chạy, vì đó là hành vi có sẵn. JavaScript chỉ thêm hàng chấm
+  và hai nút. Thư viện carousel làm ngược lại: chặn cuộn thật rồi dựng lại bằng
+  mã, sau đó phải tự vá lại từng thứ vừa phá.
+
+- **Ảnh nhận cả đường dẫn ngoài.** Ảnh đã up ở chỗ khác thì dán thẳng địa chỉ,
+  không phải tải về bỏ vào kho chỉ để đăng một lần.
+## V3.06 — 15-Sep-2026
+
+- **Chữ thân bài đo lại.** Cảm giác "chữ to quá" hoá ra không phải lỗi của cỡ
+  chữ: nó đến từ khoảng dòng 1,78 cộng cột chữ chỉ 58 ký tự — khối chữ nở ra,
+  mỗi dòng ít chữ, mắt phải xuống dòng liên tục. Nay khoảng dòng 1,65 (vẫn dư
+  chỗ cho dấu tiếng Việt chồng trên chồng dưới), cột chữ 66 ký tự, và cỡ chữ
+  chỉ hạ một bậc nhỏ. Khoảng cách hai đoạn siết từ 1,5 xuống 1,25 lần cỡ chữ —
+  lớn hơn một chiều cao dòng thì mỗi đoạn thành một hòn đảo và mắt phải nhảy.
+  Khoảng quanh ảnh từ 1,9 xuống 1,45.
+
+- **Căn đều hai bên.** Sách vở bảo đừng căn đều khi không ngắt được âm tiết —
+  luật ấy viết cho tiếng Anh. Đo trên chính kho bài: 5.888 từ, dài trung bình
+  3,5 ký tự, chỉ 0,1% dài quá 8 ký tự. Khoảng trắng chỉ phải giãn nhiều khi có
+  từ dài không xuống dòng được, mà tiếng Việt gần như không có từ nào như thế.
+  Nên ở đây căn đều cho mép phải thẳng mà hầu như không phải trả giá. Dưới
+  560px thì tự tắt: cột hẹp quá, mỗi dòng chỉ còn 8–10 khe để chia.
+
+- **Một khung duy nhất cho trang bài, và bài nào cũng có mục lục.** Tiêu đề
+  từng bị bóp lại còn hơn nửa bề ngang — không phải vì khung hẹp, mà vì bài
+  thiếu mục lục trong khi lưới vẫn giữ chỗ cho cột mục lục. Đã thử cho đầu bài
+  rộng hơn thân bài: tiêu đề dàn ra đẹp, nhưng ba khối xếp chồng mà lệch mép
+  thì đọc ra là hai khung chồng nhau. Nay mục lục dựng từ một mục trở lên, và
+  có phép kiểm canh bài không có tiêu đề mục nào.
+
+- **Một câu dẫn, một khuôn.** Ô tóm tắt dưới tiêu đề và câu dẫn trong thân bài
+  giờ cùng một kiểu. Bài nhập từ blog cũ mở đầu bằng khối trích dẫn — chính là
+  câu dẫn — nay được bỏ khỏi thân bài sau khi đã lấy làm tóm tắt, thay vì bắt
+  người đọc đọc một đoạn hai lần cách nhau chưa tới một màn.
+## V3.05 — 15-Sep-2026
+
+- **Ngày đăng gốc, và mốc cập nhật riêng.** Bài 2017 mãi là 2017 — ngày đăng
+  không bao giờ đổi. Bên cạnh nó là mốc sửa gần nhất, ghi theo lối tương đối:
+  "Updated 3 days ago", "Updated 6 months ago". Chữ tương đối do trình duyệt
+  tính chứ không nướng sẵn vào trang: trang tĩnh nằm trên máy chủ hàng tháng,
+  nướng sẵn "15 phút trước" thì dòng ấy đứng đó mãi mãi và thành sai.
+
+- **Mốc tự cập nhật, không phải gõ tay.** Một cuốn sổ nhỏ ghi vân tay nội dung
+  từng bài; sửa bài thì vân tay đổi và mốc tự ghi mới. Vân tay cố ý KHÔNG tính
+  front matter — thêm một cái tag hay dán dòng ảnh bìa không phải là sửa bài,
+  mà tính cả thì mỗi lần sinh ảnh bìa là mọi bài đều thành "vừa cập nhật".
+
+- **Bỏ "phút đọc".** Nó là con số máy ĐOÁN từ số chữ, và với văn xuôi tiếng
+  Việt có cả thơ trích lẫn danh sách thì nó sai đều. Chỗ ấy để dành cho lượt
+  xem — con số thật.
+
+## V3.04 — 15-Sep-2026
+
+- **Màn đầu ở khổ dọc trở lại đúng một màn.** Bản trước xếp dọc đủ bốn khối nên
+  màn đầu dài hơn màn hình, chữ chen nhau, và nền động gần như không thấy đâu —
+  mà nền động mới là thứ người đọc gặp đầu tiên, chữ tên blog cố ý làm mờ cũng
+  là để nhường chỗ cho nó. Nay bỏ hẳn danh sách ba bài ở màn đầu (cuộn xuống
+  một nhịp đã có trọn danh sách rồi), ba khối còn lại giãn ra cho vừa khít, và
+  khoảng trống giữa chúng để hiệu ứng thở.
+
+- **Thẻ bài gọn lại ở khổ dọc.** Tóm tắt kẹp hai dòng, tag giữ hai cái, lề trong
+  siết lại. Một màn điện thoại trước chứa nổi hai bài, giờ là ba — và người đọc
+  lấy lại được khả năng lướt.
+
+## V3.03 — 15-Sep-2026
+
+- **Cánh hoa có chiều sâu.** Mỗi cánh mang một "lớp xa gần", và cỡ, độ đậm, tốc
+  độ rơi, độ dày viền đều suy ra từ đó: cánh gần thì to, rõ, rơi nhanh; cánh xa
+  thì nhỏ, mờ, trôi chậm. Thêm gân giữa cho cánh đủ lớn. Cánh to gần gấp đôi nên
+  số cánh phải BỚT đi — giữ nguyên số mà phóng to là màn hình kín đặc.
+
+- **Thiên hà tràn cả hai mép.** Bản trước chỉ vươn khỏi mép phải, nửa trái màn
+  trống trơn, nên cái đang thấy đọc ra là một đốm sáng lệch chứ không phải một
+  dải ngân hà. Nay đĩa rộng hơn nửa màn, sao dày gấp đôi, nhánh xoắn thu gọn lại
+  cho ra dải rõ ràng, và lõi sáng nhỏ đi để nhánh làm chủ.
+
+## V3.02 — 15-Sep-2026
+
+- **Chữ giữa tách khỏi chữ đầu.** Nó đang nép sát quá, đọc ra như một dấu phụ
+  của chữ Z chứ không phải một từ.
+
+- **Hai dòng thôi đè nhau lúc co lại.** Đuôi chữ "y" của dòng trên thò xuống
+  đúng thân chữ "d" của dòng dưới — hai nét chồng nhau và mắt đọc ra là lỗi in.
+  Chữ nghiêng kiểu Cormorant có đuôi rất dài nên khoảng dòng cũ không đủ; mở
+  thêm một chút là vừa hở mà vẫn chưa thành hai dòng rời rạc.
 ## V3.01 — 15-Sep-2026
 
 - **Posts và Archive có số trang.** Danh sách dài hơn 10 bài thì tự có bộ số

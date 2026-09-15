@@ -13,13 +13,11 @@ cover: /media/2017/ngo-nhung-bai-hoc-ngu-ngon-nho-doi/bia.png
 coverAlt: Ngộ - Những bài học ngụ ngôn nhớ đời
 ---
 
-> Sau đây là những mẩu chuyện nhỏ góp nhặt được khi đọc Ngộ của Bác Tôn Thất Nguyễn Thiêm. Mong mỗi người trong ta sẽ có những đúc kết cho riêng mình qua mỗi câu chuyện ý nghĩa này.
-
 *Sau đây là những mẩu chuyện nhỏ góp nhặt được khi đọc **[Ngộ của Bác Tôn Thất Nguyễn Thiêm](http://www.the-glamorous-light.com/Ngo-Ton-That-Nguyen-Thiem)**. Mong mỗi người trong ta sẽ có những đúc kết cho riêng mình qua mỗi câu chuyện ý nghĩa này.*
 
 ---
 
-#### **Câu chuyện 1: Phật ở đâu?**
+### **Câu chuyện 1: Phật ở đâu?**
 
 Có một vị sư nọ đi vào chùa và khạc nhổ vào một tượng Phật. Khi bị nhà chùa quở trách, ông nói, "làm ơn chỉ giùm chỗ nào không có Phật".
 
@@ -27,7 +25,7 @@ Câu này ngụ ý, Phật ở mọi nơi, trong chính ta sâu lắng, cũng xa
 
 ---
 
-#### **Câu chuyện 2: Cuộc sống hạnh phúc**
+### **Câu chuyện 2: Cuộc sống hạnh phúc**
 
 Có một người chết ở địa ngục, xin được đầu thai, thưa nguyện vọng của mình với Diêm Vương: "Xin được làm con rể tể tướng, làm cha trạng nguyên, làm ông của đại phú hùng gia, làm chồng quận chúa, thê đàn thiếp đống, nhà cửa ruộng nương mênh mông bát ngát, châu báu la liệt khắp nơi, một đời công hầu danh lợi, phú quý vinh hoa, sống lâu trăm tuổi, chẳng bệnh tật gì, khoái lạc vô biên, sức lực dẻo dai, sáng ba đêm bảy trưa hai chiều một."
 
@@ -37,7 +35,7 @@ Diêm Vương nổi cáu: "Tổ sư mày, thế gian mà có người như thế
 
 ---
 
-#### **Câu chuyện 3: Hãy làm một kẻ đi sau nguy hiểm**
+### **Câu chuyện 3: Hãy làm một kẻ đi sau nguy hiểm**
 
 Ở phố chuyên doanh may mặc, có ba ông thợ may cạnh tranh kịch liệt với nhau. Ông thợ may đầu tiên treo bảng "Tiệm may tuyệt vời nhất tỉnh".
 
@@ -49,7 +47,7 @@ Làm kẻ đi sau cũng cần có tư duy và nhận định riêng mình là v�
 
 ---
 
-#### **Câu chuyện 4: Miệng lưỡi thế gian**
+### **Câu chuyện 4: Miệng lưỡi thế gian**
 
 Đây là một câu chuyện ngụ ngôn của Tây phương tên "Cùng con đi chợ" để nói về thị phi, điều tiếng của người đời.
 
@@ -67,7 +65,7 @@ Sau đó người cha hỏi con trai đã hiểu thế nào là miệng lưỡi 
 
 ---
 
-#### **Câu chuyện 5: Im lặng tha ma**
+### **Câu chuyện 5: Im lặng tha ma**
 
 Câu chuyện cổ của Tây Âu nói về sự ung dung tự tại. Một học trò hỏi thầy mình: thế nào là sống ung dung tự tại.
 
@@ -79,7 +77,7 @@ Thầy liền dạy: "Con ạ, ung dung tự tại chính là thản nhiên bìn
 
 ---
 
-#### **Câu chuyện 6: Tâm vô tư, trí vô niệm**
+### **Câu chuyện 6: Tâm vô tư, trí vô niệm**
 
 Có một vị sư già cõng thiếu phụ qua sông sáng sớm. Một vị sư trẻ trông thấy cảnh ấy, mặt nặng mày nhẹ cả ngày cuối cùng không chịu nổi bèn trách cứ vị sư già sao không giữ giới nam nữ bất thân. Sư già hồn nhiên cười nói: "Ta cõng người đàn bà qua sông, đến bờ thì ta để lại trên bến sáng nay. Còn ngươi cứ để tâm trí cõng người thiếu phụ ấy cho đến tận bây giờ. Rốt cuộc ai là người phạm giới?!"
 

@@ -19,18 +19,22 @@
 
     <h1>{{title}}</h1>
 
-    <!-- Ngày và phút đọc bám ngay dưới tiêu đề: hai thứ người đọc liếc để
-         quyết định có đọc tiếp không. Tóm tắt đứng sau chúng. -->
+    <!-- Hàng meta bám ngay dưới tiêu đề: ngày đăng gốc, mốc cập nhật gần nhất,
+         và lượt xem. Trước đây có "phút đọc" — bỏ đi, vì nó là con số MÁY ĐOÁN
+         từ số chữ, còn lượt xem là con số THẬT. Xem docs/DESIGN-SYSTEM.md §18. -->
     <div class="meta-row">
       <time datetime="{{dateISO}}">{{dateText}}</time>
-      <span class="dot" aria-hidden="true"></span>
-      <span>{{readingTime}} min read</span>
-      {{updatedBlock}}
+      {{mocBlock}}
+      {{xemBlock}}
       {{draftBadge}}
     </div>
 
     {{summaryBlock}}
   </header>
+
+  <!-- Băng ảnh của khung C. Rỗng ở khung A và B, nên nó không chiếm ô lưới nào
+       (CSS đặt `display:none` cho khối rỗng). -->
+  {{bangAnh}}
 
   {{toc}}
 

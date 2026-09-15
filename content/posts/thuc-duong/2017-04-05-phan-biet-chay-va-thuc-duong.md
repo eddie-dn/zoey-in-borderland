@@ -13,8 +13,6 @@ cover: /media/2017/phan-biet-chay-va-thuc-duong/bia.png
 coverAlt: Phân biệt Chay và Thực Dưỡng
 ---
 
-> Mọi người hay bị nhầm lẫn vụ ăn Chay và Thực dưỡng. Nên mình viết bài này nhằm ghi chú và hỗ trợ cho những ai muốn theo đuổi con đường ăn uống lành mạnh.
-
 Hôm qua mình đi ăn thực dưỡng, tình cờ nghe mọi người bàn luận sôi động về Chay và Thực dưỡng cái nào tốt hơn, ăn tốt cho sức khỏe hơn. Bỗng nhớ ra mọi người hay bị nhầm lẫn vụ ăn Chay và Thực dưỡng. Nên mình viết bài này nhằm ghi chú và hỗ trợ cho những ai muốn theo đuổi con đường ăn uống lành mạnh.
 
 ## **Thực dưỡng là ăn chay?!**

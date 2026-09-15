@@ -13,8 +13,6 @@ cover: /media/2017/tarot-dummies-cau-chuyen-tu-nhung-la-bai/bia.png
 coverAlt: "[Tarot for Dummies] - 10 điều cơ bản về Tarot mà ai cũng nhầm"
 ---
 
-> Tarot không dừng ở việc mở ra tương lai, mà còn là lời nhắc của quá trình hiện tại, bài học, kinh nghiệm trong suốt một đoạn thời gian dài của một người.
-
 ## ***Tarot for Dummies - 10 điều cơ bản thuộc chuỗi series Tự học Tarot cho Người mới bắt đầu***
 
 ---

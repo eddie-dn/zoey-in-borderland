@@ -13,9 +13,6 @@ cover: /media/2017/siddhartha-loi-tham-thi-tu-dong-song/bia.png
 coverAlt: "Siddhartha: Lời thầm thì từ dòng sông"
 ---
 
-> Ai cũng đều sẽ ngộ ra nhiều hay ít, và mỗi người đều có quan điểm cho riêng mình bằng ngôn ngữ của riêng mình chứ chẳng của ai khác, chẳng của trải nghiệm nào khác thay thế nổi.
->             Trích lời Govinda: "Cuối cùng ta đã thấy sự thánh thiện sánh ngang với Đức Chí tôn ấy lần nữa sau khi Ngài mất ở ngay đây, ngay trên Siddhartha ."
-
 ## **Reviewer:** Chiêu Dương
 
 ## **Book:** Siddharha

@@ -88,7 +88,7 @@
   --fs-2xs:11px;
   --fs-xs:clamp(11.5px,.70rem + .12vw,12.5px);
   --fs-sm:clamp(13px,.79rem + .16vw,14.5px);
-  --fs-base:clamp(16.5px,1rem + .30vw,18.5px);   /* thân bài */
+  --fs-base:clamp(16.5px,1rem + .22vw,17.5px);   /* thân bài */
   --fs-md:clamp(18px,1.06rem + .38vw,20.5px);    /* lead, sapo */
   --fs-h4:clamp(17px,1.02rem + .34vw,19.5px);
   --fs-h3:clamp(20px,1.14rem + .62vw,25px);
@@ -107,7 +107,13 @@
      dòng trên. Tiếng Anh để 1.05–1.10 được vì không có dấu chồng tầng. */
   --lh-tight:1.20;
   --lh-title:1.26;
-  --lh-body:1.78;
+  /* 1.65, KHÔNG phải 1.78.
+     Tiếng Việt cần khoảng dòng rộng hơn tiếng Anh thật — dấu chồng cả trên
+     (ế, ữ) lẫn dưới (ạ, ộ), nên hai dòng sát nhau là dấu đụng nhau. Nhưng 1.78
+     đi quá tay: nó làm cả khối chữ nở ra và người đọc CẢM thấy chữ to, dù cỡ
+     chữ không đổi. 1.65 vẫn dư chỗ cho dấu, mà khối chữ lại đặc và dễ lướt.
+     (Tham chiếu: thân bài Medium ~1.58, sách in ~1.4.) */
+  --lh-body:1.65;
   --lh-ui:1.5;
 
   --ls-label:.22em;    /* giãn chữ của nhãn Oswald viết hoa */
@@ -121,7 +127,10 @@
      hay lạc hàng lúc quay về đầu dòng sau.
      `ch` là bề rộng chữ "0", rộng hơn ký tự trung bình của bài, nên số ch
      luôn NHỎ HƠN số ký tự/dòng thật: 58ch ≈ 70 ký tự/dòng. */
-  --measure:58ch;
+  /* 66ch. Khoảng đọc êm nhất là 60–75 ký tự một dòng; 58 là HẸP hơn khoảng đó,
+     và cột hẹp cộng khoảng dòng rộng chính là thứ làm trang trông thưa thếch.
+     Cột rộng hơn cũng là điều kiện để căn đều hai bên không bị hở. */
+  --measure:66ch;
   --measure-wide:82ch;
   --measure-ui:1180px;
 

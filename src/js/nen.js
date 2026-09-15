@@ -52,25 +52,39 @@
   /* ══════════ HOA RƠI ══════════ */
   function dungHoa() {
     var MAU = ['#F8C8D8', '#F5BCBA', '#FBD9E4', '#F3DCDC', '#EFC7E4', '#E9C4EE'];
+    /* Màu MŨI cánh — cùng sắc nhưng đậm hơn một bậc. Xếp cùng thứ tự với MAU
+       để mỗi cánh lấy đúng cặp của nó. */
+    var DAM = ['#EFA6C2', '#EC9C9A', '#F4BBD0', '#E6C0C0', '#DFA6D6', '#D8A3E2'];
     var hoa = [];
 
     function moi(batDau) {
+      /* LỚP SÂU: 0 = xa tít, 1 = ngay trước mặt.
+         Mọi thứ khác suy ra từ nó — cỡ, độ đậm, tốc độ rơi, độ dày viền. Cánh
+         gần thì to, rõ, rơi nhanh; cánh xa thì nhỏ, mờ, trôi chậm. Đó là cách
+         mắt người đọc ra chiều sâu, và là lý do màn hoa rơi không thành một
+         đám đốm hồng phẳng lì.
+
+         Mũ 0.7 để số cánh NGHIÊNG VỀ PHÍA GẦN: rải đều thì phần lớn cánh rơi
+         vào khoảng giữa và không cánh nào đủ to để thành điểm nhìn. */
+      var lop = Math.pow(Math.random(), 0.7);
+      var iMau = (Math.random() * MAU.length) | 0;
       return {
+        lop: lop,
         x: -20 + Math.random() * (W + 40),
         /* Lần đầu rải sẵn khắp chiều cao, để trang vừa mở đã có hoa ở cả trên
            lẫn dưới chứ không phải chờ chúng rơi xuống. */
-        y: batDau ? Math.random() * H : -14 - Math.random() * 70,
-        r: 4.5 + Math.random() * 7,
+        y: batDau ? Math.random() * H : -18 - Math.random() * 80,
+        r: 5 + lop * 14,
         /* Gió dạt trái chậm hơn tốc độ rơi nhiều lần, nên cánh đi hết chiều
            dọc màn hình mới ra khỏi mép — nửa dưới không bị trống. */
-        vy: 0.42 + Math.random() * 0.95,
-        vx: -0.10 - Math.random() * 0.30,
-        sw: 0.6 + Math.random() * 1.5,
+        vy: 0.34 + lop * 1.2,
+        vx: -0.07 - lop * 0.34,
+        sw: 0.5 + Math.random() * 1.5,
         ph: Math.random() * 6.28,
-        sp: 0.012 + Math.random() * 0.026,
+        sp: 0.011 + Math.random() * 0.024,
         go: Math.random() * 6.28,
-        mau: MAU[(Math.random() * MAU.length) | 0],
-        mo: 0.4 + Math.random() * 0.5
+        mau: MAU[iMau], dam: DAM[iMau],
+        mo: 0.46 + lop * 0.5
       };
     }
 
@@ -81,24 +95,44 @@
       ctx.bezierCurveTo(r * 0.75, -r * 0.72, r * 0.62, r * 0.5, 0, r);
       ctx.bezierCurveTo(-r * 0.62, r * 0.5, -r * 0.75, -r * 0.72, 0, -r);
       ctx.closePath();
+      /* Ba chặng màu thay vì hai: trắng ở gốc, màu hoa ở giữa, rồi ĐẬM HƠN ở
+         mũi cánh. Hai chặng cho ra một vệt chuyển đều, nhìn như vết mực loang;
+         chặng thứ ba làm mũi cánh có trọng lượng và cánh đọc ra là một VẬT chứ
+         không phải một vệt màu. */
       var g = ctx.createLinearGradient(0, -r, 0, r);
-      g.addColorStop(0, '#FFFFFF'); g.addColorStop(1, h.mau);
+      g.addColorStop(0, '#FFFFFF');
+      g.addColorStop(0.55, h.mau);
+      g.addColorStop(1, h.dam || h.mau);
       ctx.fillStyle = g;
-      ctx.globalAlpha = h.mo * (0.5 + 0.5 * lat);
+      ctx.globalAlpha = h.mo * (0.58 + 0.42 * lat);
       ctx.fill();
-      /* Viền mảnh: nền nửa dưới ngả hồng, cánh trắng-hồng không viền thì chìm
-         hẳn — cánh vẫn ở đó mà mắt không nhận ra. */
-      ctx.strokeStyle = 'rgba(196,132,172,.34)';
-      ctx.lineWidth = 0.7;
-      ctx.globalAlpha *= 0.9;
+      /* Viền dày theo LỚP SÂU. Nền ngả hồng, cánh trắng-hồng không viền thì
+         chìm hẳn — cánh vẫn ở đó mà mắt không nhận ra. Cánh gần viền đậm và
+         dày hơn, nên nó nổi hẳn lên trước; cánh xa gần như không viền. */
+      ctx.strokeStyle = 'rgba(184,112,162,' + (0.26 + h.lop * 0.34).toFixed(3) + ')';
+      ctx.lineWidth = 0.55 + h.lop * 1.15;
+      ctx.globalAlpha *= 0.92;
       ctx.stroke();
+      /* Gân giữa — một nét cong mảnh. Chỉ vẽ cho cánh đủ to, vì dưới ~9px thì
+         nó chỉ làm cánh trông bẩn. Đây là chi tiết khiến cánh đọc ra là CÁNH
+         HOA chứ không phải một hình giọt nước. */
+      if (r > 9) {
+        ctx.beginPath();
+        ctx.moveTo(0, -r * 0.72);
+        ctx.quadraticCurveTo(r * 0.12, 0, 0, r * 0.82);
+        ctx.strokeStyle = 'rgba(206,138,178,' + (0.16 + h.lop * 0.2).toFixed(3) + ')';
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
     }
 
     return {
       dung: function () {
         /* Mật độ theo DIỆN TÍCH thật, không theo một con số cố định: cùng một
            số cánh thì màn 1440px thấy thưa mà màn 390px thấy dày đặc. */
-        var n = Math.max(40, Math.min(130, Math.round(W * H / 4200)));
+        /* Cánh to gần gấp đôi bản trước, nên mật độ phải BỚT đi chứ không tăng:
+           giữ nguyên số cánh mà phóng to là màn hình kín đặc và thành rối. */
+        var n = Math.max(36, Math.min(112, Math.round(W * H / 5200)));
         while (hoa.length < n) hoa.push(moi(true));
         hoa.length = n;
       },
@@ -144,7 +178,10 @@
     /* Xoắn log: góc tăng theo bán kính. Đây là thứ làm ra hình xoắn ốc thật
        thay vì mấy vòng tròn đồng tâm. */
     function nhanh(t, k) {
-      return t * 4.6 + k * Math.PI + (Math.random() - 0.5) * (0.7 - t * 0.42);
+      /* Số hạng cuối là ĐỘ TÃI của nhánh. Để rộng thì sao rải đều khắp đĩa và
+         không thấy nhánh đâu cả; thu lại thì nhánh hiện rõ thành dải. Đây là
+         chỗ quyết định "giống ngân hà" hay "giống đám bụi". */
+      return t * 4.6 + k * Math.PI + (Math.random() - 0.5) * (0.44 - t * 0.26);
     }
 
     return {
@@ -158,13 +195,21 @@
            khung mới ra dáng thiên hà.
            Vế H*0.92 là cái CHẶN cho khung ngang-mà-thấp (1600x500): không có
            nó thì cả màn chỉ còn thấy mỗi quầng lõi. */
-        R = Math.min(W * 0.52, H * 0.92);
+        /* TRÀN CẢ HAI MÉP, không chỉ mép phải.
+           Bản trước lấy 0.52 bề ngang với tâm ở 66% — đĩa chỉ vươn khỏi mép
+           phải, còn nửa trái màn hình trống trơn, nên cái đang thấy đọc ra là
+           một ĐỐM SÁNG nằm lệch chứ không phải một dải ngân hà. Ngân hà thật
+           thì khung hình nằm LỌT TRONG nó, không phải nó nằm lọt trong khung. */
+        R = Math.min(W * 0.78, H * 1.25);
         sao = []; bui = []; vanMay = [];
         /* Đếm theo diện tích MÀN chứ không theo diện tích đĩa — cái mắt người
            thấy là bao nhiêu chấm trên mỗi vùng màn hình. Nhưng đĩa to ra gần
            gấp đôi thì trần cũng phải nới, không thì từng ấy sao trải trên vùng
            rộng gấp bốn và nhánh xoắn trông thủng lỗ chỗ. */
-        var nSao = Math.max(80, Math.min(420, Math.round(W * H / 3400)));
+        /* Đĩa rộng gấp rưỡi thì số sao phải tăng hơn thế, không thì nhánh xoắn
+           loãng ra thành vài chấm rời. Chấm nhỏ và mờ nên dày mà không rối —
+           cái làm rối là chấm TO, không phải chấm NHIỀU. */
+        var nSao = Math.max(140, Math.min(900, Math.round(W * H / 1900)));
         var nBui = Math.round(nSao * 1.5);
 
         for (var i = 0; i < nSao; i++) {
@@ -190,12 +235,12 @@
             o: 0.10 + Math.random() * 0.18
           });
         }
-        for (i = 0; i < 14; i++) {
+        for (i = 0; i < 26; i++) {
           t = Math.pow(Math.random(), 0.55);
           vanMay.push({
             r: R * t, g: nhanh(t, i % 2),
             v: 0.00030 + 0.00042 / (0.3 + t),
-            rad: R * (0.15 + Math.random() * 0.22),
+            rad: R * (0.12 + Math.random() * 0.2),
             m: ['#E3AADD', '#C3C7F3', '#F5BCBA', '#C8A8E9', '#9F7BD8'][i % 5],
             o: 0.055 + Math.random() * 0.075
           });
@@ -206,7 +251,10 @@
         /* Lõi lệch khỏi tâm: để đúng giữa thì quầng sáng nằm ngay sau chữ và
            chữ bị loá. Lệch xuống-phải thì chữ nằm trên vùng tối, còn người đọc
            vẫn thấy trọn đĩa ngân hà. */
-        var cx = W * 0.66, cy = H * 0.60;
+        /* Tâm lệch phải VỪA PHẢI thôi (58%): lệch nhiều thì nửa trái màn hình
+           chỉ còn nền trơn. Ở 58% với bán kính mới, nhánh xoắn quét qua cả hai
+           mép, còn lõi sáng vẫn nằm lệch khỏi khối chữ. */
+        var cx = W * 0.58, cy = H * 0.62;
         ctx.clearRect(0, 0, W, H);
         ctx.save();
         ctx.translate(cx, cy); ctx.rotate(NGHIENG); ctx.translate(-cx, -cy);
@@ -235,7 +283,10 @@
            thì thành cái đèn pin giữa đám bụi. Hệ số 0.46 (thay vì 0.74 như
            tỉ lệ cũ) để lõi chỉ nhỉnh lên một chút — phần to ra phải là NHÁNH
            XOẮN, không phải cục sáng. */
-        var Rl = R * 0.46;
+        /* Lõi chỉ còn 0.3 bán kính đĩa (trước 0.46). Đĩa to lên mà lõi giữ tỉ
+           lệ cũ thì cả màn hình thành một quầng sáng — đúng cái "đốm sáng" cần
+           bỏ. Phần to ra phải là NHÁNH XOẮN, không phải cục sáng. */
+        var Rl = R * 0.3;
         g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rl);
         g.addColorStop(0, 'rgba(255,248,253,.80)');
         g.addColorStop(.16, 'rgba(251,227,240,.46)');

@@ -445,6 +445,48 @@ Nhớ thêm vào `nav` trong `site.config.json` nếu muốn nó lên thanh menu
 
 ---
 
+## 6b · KHUNG C — BÀI ẢNH NGẮN
+
+Vài tấm ảnh kỉ niệm, mấy dòng tản mạn. Không phải bài đọc dài — bài đọc dài thì
+dùng khung A như bình thường.
+
+```yaml
+---
+title: Thứ bảy, không có gì
+date: 2026-09-15
+khung: C
+summary: Một buổi sáng không có việc gì phải làm.
+tags:
+  - tản mạn
+anh:
+  - /media/2026/thu-bay/1.jpg | Cái ghế ngoài ban công, chín giờ sáng
+  - /media/2026/thu-bay/2.jpg | Ly trà nguội từ lúc nào không hay
+  - https://i.imgur.com/abc.jpg
+---
+
+Sáng thứ bảy, không hẹn ai, không phải đi đâu.
+```
+
+| Chỗ | Ghi gì |
+|---|---|
+| `khung: C` | bắt buộc, không có dòng này thì ra khung đọc dài |
+| `anh:` | mỗi dòng một tấm: `- <đường dẫn> \| <chú thích>` |
+| chú thích | không bắt buộc — bỏ luôn cả dấu `\|` nếu không cần |
+| đường dẫn | ảnh trong `public/media/`, **hoặc** địa chỉ `https://` ngoài |
+| `cover:` | vẫn khai như thường — nó là ảnh trên thẻ bài và ảnh khi chia sẻ link, **không** in vào thân bài ở khung C |
+
+**Hai đến bốn tấm là vừa.** Một tấm thì không cần băng ảnh (đặt thẳng vào thân
+bài); quá năm tấm thì người đọc vuốt mỏi tay mà không biết còn bao nhiêu.
+
+**Không cần tiêu đề mục.** Khung C không có mục lục — bài ngắn thì mục lục là
+thừa, và cột bên phải đã dành cho chữ.
+
+**Ảnh up ở chỗ khác cũng được.** Dán thẳng địa chỉ. Đổi lại: hôm nào chỗ ấy sập
+hoặc đổi đường dẫn thì ảnh mất, mà mình không biết — ảnh trong `public/media/`
+thì nằm cùng repo, không bao giờ mất.
+
+---
+
 ## 7 · NHẬP BÀI CŨ TỪ BLOG KHÁC
 
 Có bản xuất WordPress (hoặc bất kỳ `.md` nào có front matter khác)?

@@ -115,6 +115,18 @@ function nhapMot(f, homNay) {
   const tom = dan ? dan[1].replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').trim()
                   : tomTat(than.replace(/[#>*_`\[\]()]/g, ''), 180);
 
+  /* Bỏ khối trích dẫn MỞ ĐẦU sau khi đã lấy nó làm tóm tắt.
+     Bản xuất WordPress hay mở bài bằng một câu dẫn trong khối `>`. Ở blog này
+     câu dẫn đã có ô riêng ngay dưới tiêu đề, nên giữ cả hai nghĩa là người đọc
+     gặp đúng một đoạn chữ hai lần, cách nhau chưa tới một màn. */
+  if (dan && than.startsWith('>')) {
+    const dong = than.split('\n');
+    let k = 0;
+    while (k < dong.length && (dong[k].startsWith('>') ||
+           (k > 0 && !dong[k].trim() && (dong[k + 1] || '').startsWith('>')))) k++;
+    than = dong.slice(k).join('\n').replace(/^\n+/, '');
+  }
+
   const thuMuc = path.join(POSTS, mucSlug);
   const dich = path.join(thuMuc, `${ngay}-${slug}.md`);
   if (fs.existsSync(dich)) return { bo: `${path.basename(dich)} — đã có, bỏ qua` };

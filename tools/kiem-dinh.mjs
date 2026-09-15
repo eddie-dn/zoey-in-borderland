@@ -726,6 +726,29 @@ const KIEM = [
       return ra;
     }
   },
+  {
+    /* ── BÀI NÀO CŨNG PHẢI CÓ MỤC LỤC ──
+       Không phải vì mục lục tiện — vì BỐ CỤC. Lưới trang bài khai sẵn một cột
+       cho mục lục; bài không có tiêu đề mục nào thì cột ấy trống và khung chữ
+       nằm lệch hẳn về trái giữa một khoảng rộng vô chủ.
+
+       Cảnh báo chứ không chặn: bài rất ngắn không có mục nào là hợp lý, và
+       chặn thì người viết phải bịa ra tiêu đề mục cho đủ luật. */
+    ten: 'Bài nào cũng có ít nhất một tiêu đề mục (để dựng mục lục)',
+    muc: 'canh',
+    chay: ({ trang }) => trang
+      /* Nhận trang BÀI bằng dấu hiệu của chính nó, không đoán theo đường dẫn.
+         Đoán theo đường dẫn thì `/posts/doi-thuong/ha-noi/` — một chuyên mục
+         lồng hai tầng — trông y hệt một bài và bị bắt oan. */
+      .filter((t) => /class="post-layout/.test(t.html))
+      /* Khung C (bài ảnh ngắn) CỐ Ý không có mục lục: bài chỉ vài đoạn, và cột
+         bên phải đã dành cho chữ chứ không bỏ trống. Lý do của phép kiểm này là
+         cột trống, mà khung C thì không có cột trống nào. */
+      .filter((t) => !/class="post-layout[^"]*khung-c/.test(t.html))
+      .filter((t) => !/<nav class="toc"|id="muc-luc"|class="[^"]*toc/.test(t.html))
+      .map((t) => `${t.url} — không có tiêu đề mục nào, nên trang bài thiếu ` +
+                  `mục lục và cột bên phải bỏ trống. Thêm vài dòng \`## \` vào bài.`)
+  },
   /* ── Thân bài ── */
   {
     /* Soi CẢ TRANG, không chỉ trong <article>. Bản đầu cắt lấy đoạn giữa

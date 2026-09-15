@@ -16,6 +16,7 @@ import { docFrontMatter, kiemBai } from './lib/frontmatter.mjs';
 import { render } from './lib/markdown.mjs';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
 import { docSo, docChiTiet, temNgay } from './lib/lichsu.mjs';
+import { vanTay, capNhatMoc } from './lib/moc.mjs';
 import { docNguon } from './lib/doc-nguon.mjs';
 import {
   slugify, escapeHtml, attr, phutDoc, ngayAnh, ngayISO, ngayTem, tomTat, boDau, noiChu
@@ -120,8 +121,19 @@ const NHAN = {
   related     : 'Related',
   onThisPage  : 'On this page',
   contents    : 'Contents',
-  minRead     : 'min read',
   updated     : 'Updated',
+  /* Chữ cho mốc thời gian tương đối. Gửi sang JS qua attribute dạng JSON —
+     chữ hiển thị ở một chỗ duy nhất, không gõ cứng vào file .js. */
+  thoi        : {
+    now: 'just now', ago: '{t} ago',
+    min: '{n} min',   mins: '{n} mins',
+    hour: '{n} hour', hours: '{n} hours',
+    day: '{n} day',   days: '{n} days',
+    month: '{n} month', months: '{n} months',
+    year: '{n} year',   years: '{n} years'
+  },
+  views       : '{n} views',
+  view1       : '1 view',
   draft       : 'Draft',
   soon        : 'Coming soon',
   search      : 'Search',
@@ -380,16 +392,34 @@ function docBai(file) {
        mong muốn, nên báo cảnh báo chứ không dừng build. */
     khung      : (() => {
       const k = String(fm.khung || 'A').trim().toUpperCase();
-      if (k !== 'A' && k !== 'B') {
-        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A hoặc B. Dùng tạm A.`);
+      if (!'ABC'.includes(k) || k.length !== 1) {
+        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A, B hoặc C. Dùng tạm A.`);
         return 'a';
       }
       return k.toLowerCase();
     })(),
+    /* ── ẢNH CHO KHUNG C ──
+       Mỗi dòng một tấm: `- <đường dẫn> | <chú thích>`. Chú thích không bắt buộc.
+       Đường dẫn nhận cả ảnh trong `public/media/` lẫn địa chỉ ngoài — bài kỉ
+       niệm hay có ảnh đã up sẵn ở chỗ khác, bắt tải về rồi bỏ vào repo chỉ để
+       đăng một lần là phiền vô ích.
+
+       KHÔNG lấy từ Markdown trong thân bài: băng ảnh cần biết TRƯỚC nó có bao
+       nhiêu tấm để dựng hàng chấm và đặt tỉ lệ khung; đào ảnh ra từ HTML đã dựng
+       là làm ngược. */
+    anhBang    : (Array.isArray(fm.anh) ? fm.anh : []).map((x) => {
+      const [src, ...chu] = String(x).split('|');
+      return { src: src.trim(), alt: chu.join('|').trim() };
+    }).filter((x) => x.src),
     html       : kq2.html,
     headings   : kq2.headings,
     tho        : kq2.tho,
-    phut       : phutDoc(kq2.tho)
+    phut       : phutDoc(kq2.tho),
+    /* Khoá và vân tay cho sổ mốc cập nhật — xem tools/lib/moc.mjs.
+       Vân tay tính trên TIÊU ĐỀ + THÂN BÀI, không tính front matter: thêm một
+       cái tag hay dán dòng `cover:` không phải là sửa bài. */
+    khoaMoc    : path.relative(THU_MUC.content, file).replace(/\\/g, '/'),
+    bamMoc     : vanTay(fm.title, than)
   };
 }
 
@@ -523,7 +553,12 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        tự chọn gì. Đoạn script trong <head> đọc nó. KHÔNG đặt thẳng data-theme
        ở đây: làm vậy là đè lên lựa chọn của người đọc. */
     htmlAttr  : [BASE ? `data-base="${attr(BASE)}"` : '',
-                 epTheme ? `data-ep="${attr(epTheme)}"` : ''].filter(Boolean).join(' '),
+                 epTheme ? `data-ep="${attr(epTheme)}"` : '',
+                 /* Bảng chữ cho mốc thời gian tương đối. Đặt trên <html> chứ
+                    không đặt trên từng mốc: một trang danh sách có tới vài chục
+                    mốc, lặp cùng một bảng chữ vài chục lần là thừa vài KB. */
+                 `data-thoi="${attr(JSON.stringify(NHAN.thoi))}"`
+                ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
@@ -561,7 +596,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
       ].map(([h, t, co]) => co ? `<a href="${BASE}${h}">${t}</a>`
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
-    scripts: scripts + doanTruocHTML() + beaconHTML(),
+    scripts: `<script src="${BASE}/assets/moc.js" defer></script>\n` +
+             scripts + doanTruocHTML() + beaconHTML(),
     headExtra,
     year      : new Date().getFullYear(),
     buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
@@ -611,9 +647,50 @@ function doanTruocHTML() {
       eagerness: 'moderate' }] }).replace(/<\//g, '<\\/') +
     `</script>`;
 }
+/* ── BĂNG ẢNH CHO KHUNG C ──
+   Khung C là bài NGẮN có ảnh: vài tấm kỉ niệm bên trái, mấy dòng tản mạn bên
+   phải. Kiểu bài này không hợp khung đọc dài — một bài bốn dòng mà bày ra giữa
+   cột chữ 66 ký tự thì trông như bài bị cụt.
+
+   ── BĂNG ẢNH LÀM BẰNG CUỘN-DÍNH, KHÔNG BẰNG JAVASCRIPT ──────────────────
+   `scroll-snap-type` lo toàn bộ phần trượt: vuốt trên điện thoại, lăn chuột
+   ngang trên laptop, kéo thanh cuộn, và cả phím mũi tên khi băng đang được chọn
+   — tất cả đều là hành vi CÓ SẴN của trình duyệt, đã đúng với mọi thiết bị
+   trợ năng. JavaScript chỉ thêm hàng chấm và hai nút, và nếu nó không chạy thì
+   băng ảnh vẫn vuốt được. Thư viện carousel làm ngược lại: dựng lại toàn bộ cơ
+   chế cuộn bằng JS, rồi phải tự vá lại từng thứ vừa phá.
+
+   Mỗi tấm chiếm trọn bề ngang băng và dính mép trái khi dừng, nên không bao
+   giờ có cảnh hai nửa tấm ảnh cạnh nhau. */
+function bangAnhHTML(bai) {
+  const ds = bai.anhBang || [];
+  if (bai.khung !== 'c' || !ds.length) return '';
+  const tam = ds.map((x, i) => {
+    const src = /^https?:/.test(x.src) ? x.src : BASE + x.src;
+    return `<figure class="ba-tam" id="ba-${bai.slug}-${i + 1}">
+      <img src="${attr(src)}" alt="${attr(x.alt)}" loading="${i ? 'lazy' : 'eager'}"
+           decoding="async" style="--ar:4/5">
+      ${x.alt ? `<figcaption>${escapeHtml(x.alt)}</figcaption>` : ''}
+    </figure>`;
+  }).join('');
+  return `<div class="bang-anh" data-bang data-nhan="${attr(JSON.stringify({
+    prev: NHAN.prevPage, next: NHAN.nextPage, of: '{n}/{m}'
+  }))}">
+    <div class="ba-cuon" tabindex="0" role="group" aria-roledescription="carousel"
+         aria-label="${attr(bai.title)}">${tam}</div>
+  </div>`;
+}
 function tocHTML(headings) {
-  /* Dưới 2 mục thì mục lục chỉ tổ chiếm chỗ — bài ngắn không cần bản đồ. */
-  if (headings.length < 2) return '';
+  /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
+     cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không
+     có mục lục vẫn bị giữ chỗ 210px cho một cột trống, và khung chữ nằm lệch
+     hẳn về trái giữa một khoảng rộng vô chủ.
+
+     Chữa bằng cách bỏ cột ở bài không mục lục thì được một trang bài rộng khác
+     mọi trang bài còn lại — hai khung cho cùng một loại nội dung. Chữa bằng cách
+     BÀI NÀO CŨNG CÓ MỤC LỤC thì chỉ còn một khung. Bộ kiểm định canh bài không
+     có tiêu đề mục nào. */
+  if (!headings.length) return '';
   const li = headings.map((h) =>
     `<li class="lvl-${h.cap}"><a href="#${h.id}">${escapeHtml(h.chu)}</a></li>`).join('');
   return `<details class="toc-box" open>
@@ -635,6 +712,10 @@ function crumbsHTML(bai) {
 
 function coverHTML(bai) {
   if (!bai.cover) return '';
+  /* Khung C KHÔNG in ảnh bìa vào thân bài: băng ảnh ĐÃ là phần hình của bài,
+     thêm ảnh bìa nữa là hai khối ảnh chồng nhau ngay đầu trang. `cover` vẫn giữ
+     nguyên công dụng còn lại của nó — ảnh trên thẻ bài và ảnh khi chia sẻ link. */
+  if (bai.khung === 'c') return '';
   const ngoai = /^https?:/.test(bai.cover);
   let dim = '', style = '';
   if (!ngoai) {
@@ -787,7 +868,7 @@ function readNextHTML(bai, congKhai) {
     <a class="rn-card card" href="${b.url}">
       <span class="rn-kind">${trung ? NHAN.related : (moiHon ? NHAN.newer : NHAN.older)}</span>
       <span class="rn-title">${escapeHtml(b.title)}</span>
-      <span class="rn-meta">${ngayAnh(b.date)} · ${b.phut} ${NHAN.minRead}</span>
+      <span class="rn-meta">${ngayAnh(b.date)}</span>
     </a>`).join('');
 
   return `<section class="read-next">
@@ -822,10 +903,8 @@ function trangBai(bai, congKhai) {
     summaryBlock: bai.summary ? `<p class="summary">${escapeHtml(bai.summary)}</p>` : '',
     dateISO     : bai.date,
     dateText    : ngayAnh(bai.date),
-    readingTime : bai.phut,
-    updatedBlock: bai.updated
-      ? `<span>${NHAN.updated} ${ngayAnh(bai.updated)}</span>`
-      : '',
+    mocBlock    : mocHTML(bai),
+    xemBlock    : xemHTML(bai),
     draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
 
     cover       : coverHTML(bai),
@@ -833,7 +912,8 @@ function trangBai(bai, congKhai) {
     tagBlock    : tagBlockHTML(bai),
     readNext    : readNextHTML(bai, congKhai),
     binhLuan    : binhLuanHTML(bai),
-    toc         : tocHTML(bai.headings)
+    toc         : tocHTML(bai.headings),
+    bangAnh     : bangAnhHTML(bai)
   });
 
   return trang({
@@ -855,7 +935,9 @@ function trangBai(bai, congKhai) {
     lang       : bai.lang,
     duong      : '/posts/',
     content    : noiDung,
-    scripts    : `<script src="${BASE}/assets/toc.js" defer></script>\n` +
+    scripts    : (bai.khung === 'c'
+                   ? `<script src="${BASE}/assets/bang-anh.js" defer></script>\n` : '') +
+                 `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/comments.js" defer></script>`) +
@@ -1191,15 +1273,58 @@ function boChuThichCSS(css) {
    ============================================================ */
 
 /* Thẻ một bài. Dùng ở mọi trang danh sách và ở khối "đọc tiếp" cuối bài. */
+/* ── HÀNG META DÙNG CHUNG ──
+   Ba chỗ cần nó: thẻ bài trong lưới, bài nổi bật ở trang chủ, và đầu trang bài.
+   Trước đây ba chỗ gõ ba lần — đổi luật một chỗ là hai chỗ kia lệch ngay, và đã
+   lệch thật (bài nổi bật từng thiếu nhãn bản nháp).
+
+   ── VÌ SAO BỎ "phút đọc" ────────────────────────────────────────────────
+   Nó là con số MÁY ĐOÁN: chia số chữ cho một tốc độ đọc giả định. Với văn xuôi
+   tiếng Việt có cả thơ trích và danh sách thì nó sai đều. Lượt xem thì ngược
+   lại — là con số THẬT, và nó trả lời đúng câu người đọc đang hỏi: "bài này có
+   ai đọc không?"
+
+   ── HAI MỐC THỜI GIAN ───────────────────────────────────────────────────
+   Ngày ĐĂNG giữ nguyên vĩnh viễn (bài 2017 mãi là 2017). Mốc CẬP NHẬT chỉ hiện
+   khi nó thật sự muộn hơn ngày đăng quá một ngày — sửa một lỗi chính tả vài giờ
+   sau khi đăng thì không đáng gắn nhãn.
+
+   HTML ghi sẵn ngày TUYỆT ĐỐI ("Updated 15 Sep 2026"); JavaScript đổi nó sang
+   tương đối ("Updated 3 days ago"). Nướng sẵn chữ tương đối vào HTML là sai:
+   trang tĩnh nằm trên CDN hàng tháng, và "15 phút trước" sẽ đứng đó mãi. */
+function hangMeta(b) {
+  const muc = b.muc && b.muc.length ? b.muc[b.muc.length - 1].ten : '';
+  return `<div class="meta-row">
+    <time datetime="${b.date}">${ngayAnh(b.date)}</time>
+    ${mocHTML(b)}
+    ${xemHTML(b)}
+    ${muc ? `<span>${escapeHtml(muc)}</span>` : ''}
+    ${b.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : ''}
+  </div>`;
+}
+
+function mocHTML(b) {
+  if (!b.capNhat) return '';
+  const cn = Date.parse(b.capNhat.length > 10 ? b.capNhat : b.capNhat + 'T00:00:00Z');
+  const dg = Date.parse(b.date + 'T00:00:00Z');
+  /* Ngưỡng 20 giờ: đủ để bỏ qua mấy lần sửa vặt ngay sau khi đăng, mà vẫn bắt
+     được lần sửa của ngày hôm sau. */
+  if (!(cn - dg > 20 * 3600 * 1000)) return '';
+  return `<span class="moc" data-moc="${attr(new Date(cn).toISOString())}">` +
+         `${NHAN.updated} ${ngayAnh(new Date(cn).toISOString().slice(0, 10))}</span>`;
+}
+
+/* Ô lượt xem để TRỐNG và `hidden` sẵn: con số do trình duyệt xin về sau. Nướng
+   sẵn một con số vào HTML tĩnh thì nó đứng yên từ lúc dựng — mà lượt xem là thứ
+   duy nhất trên trang này phải luôn mới. Chưa bật hoặc gọi hỏng thì ô ở nguyên
+   trạng thái ẩn, hàng meta chỉ ngắn đi một mục. */
+function xemHTML(b) {
+  if (!(CAU.luotXem || {}).bat) return '';
+  return `<span class="xem" data-xem="${attr(b.url)}" hidden></span>`;
+}
 function theBai(b, { hienMuc = true } = {}) {
-  const muc = hienMuc && b.muc.length ? b.muc[b.muc.length - 1] : null;
   return `<article class="card the-bai">
-    <div class="meta-row">
-      <time datetime="${b.date}">${ngayAnh(b.date)}</time>
-      <span>${b.phut} ${NHAN.minRead}</span>
-      ${muc ? `<span>${escapeHtml(muc.ten)}</span>` : ''}
-      ${b.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : ''}
-    </div>
+    ${hangMeta(hienMuc ? b : { ...b, muc: [] })}
     <h3><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h3>
     <p class="the-tom">${escapeHtml(tomTat(b.summary, 150))}</p>
     ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, 3).map((t) =>
@@ -1429,11 +1554,7 @@ function trangChu(bai) {
              alt="${attr(noiBat.coverAlt)}" loading="lazy" decoding="async">
       </div>` : ''}
       <div class="chu-chu">
-        <div class="meta-row">
-          <time datetime="${noiBat.date}">${ngayAnh(noiBat.date)}</time>
-          <span>${noiBat.phut} ${NHAN.minRead}</span>
-          ${noiBat.muc.length ? `<span>${escapeHtml(noiBat.muc[noiBat.muc.length - 1].ten)}</span>` : ''}
-        </div>
+        ${hangMeta(noiBat)}
         <h2><a class="stretch" href="${noiBat.url}">${noiChu(escapeHtml(noiBat.title))}</a></h2>
         <p class="chu-tom">${escapeHtml(tomTat(noiBat.summary, 220))}</p>
         ${noiBat.tags.length ? `<div class="tag-row">${noiBat.tags.map((t) =>
@@ -1726,6 +1847,23 @@ async function chay() {
   if (!file.length) CANH_BAO.push('content/posts/ chưa có bài nào');
 
   const bai = file.map(docBai).filter(Boolean);
+
+  /* ── MỐC CẬP NHẬT ──
+     Đối chiếu vân tay nội dung với sổ `content/.moc.json` để biết bài nào thật
+     sự đổi. Chạy trước khi dựng trang vì mọi khung meta đều cần con số này.
+     Chế độ `--check-only` chỉ soi file nguồn, không được ghi gì. */
+  const kqMoc = CHI_KIEM
+    ? { moc: {}, doi: [] }
+    : capNhatMoc(GOC, bai.map((b) => ({ khoa: b.khoaMoc, bam: b.bamMoc, ngay: b.date })));
+  for (const b of bai) {
+    /* Khai tay trong front matter thì THẮNG sổ: đó là lời của người viết, còn
+       sổ chỉ là thứ máy suy ra. Năm bài nhập từ blog cũ dùng đúng đường này. */
+    b.capNhat = b.updated || kqMoc.moc[b.khoaMoc] || b.date;
+  }
+  if (kqMoc.doi.length && CHI_TIET) {
+    kqMoc.doi.forEach((k) => CHI_TIET && console.log(mau.mo(`    mốc mới: ${k}`)));
+  }
+
   const trangTinhDS = quet(THU_MUC.pages).map(docTrang).filter(Boolean);
 
   /* Trùng URL là lỗi câm nhất trong mọi lỗi build: bài sau ghi đè bài trước,
@@ -1765,7 +1903,8 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
-                     'nen.js', 'trang-so.js']) {
+                     'nen.js', 'trang-so.js', 'moc.js',
+                     'bang-anh.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }

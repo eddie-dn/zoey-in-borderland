@@ -43,15 +43,21 @@
    Cũng KHÔNG dùng `em`: margin tính bằng em đọc theo cỡ chữ của CHÍNH phần tử
    đó, nên "2.4em phía trên h2" ra 2.4 × 32px chứ không phải 2.4 × 18.5px —
    sai gấp rưỡi. calc() từ --fs-base thì luôn đo theo thân bài. */
-.prose{--flow:calc(var(--fs-base) * 1.5)}   /* ≈ 0.85× chiều cao dòng — đo ra vừa mắt */
+/* --flow 1.25 (trước 1.5).
+   Khoảng cách giữa hai đoạn nên NHỎ HƠN một chiều cao dòng: lớn hơn thì mỗi
+   đoạn thành một hòn đảo và mắt phải nhảy chứ không trôi. 1.25 × cỡ chữ ≈ 0.76
+   chiều cao dòng — đủ để thấy chỗ ngắt đoạn, chưa đủ để cắt mạch đọc. */
+.prose{--flow:calc(var(--fs-base) * 1.25)}
 
 .prose > * + *{margin-top:var(--flow)}
-.prose > * + h2{margin-top:calc(var(--flow) * 2.4)}
+.prose > * + h2{margin-top:calc(var(--flow) * 2.2)}
 .prose > * + h3{margin-top:calc(var(--flow) * 1.75)}
 .prose > * + h4{margin-top:calc(var(--flow) * 1.4)}
 .prose > :is(h2,h3,h4) + *{margin-top:calc(var(--flow) * 0.55)}
-.prose > * + figure,.prose > figure + *{margin-top:calc(var(--flow) * 1.9)}
-.prose > * + hr,.prose > hr + *{margin-top:calc(var(--flow) * 2.2)}
+/* Ảnh và video được nhiều chỗ thở hơn chữ, nhưng 1.9 thì thành một khoảng
+   trắng to bằng cả đoạn văn. 1.45 vẫn tách bạch mà không làm đứt bài. */
+.prose > * + figure,.prose > figure + *{margin-top:calc(var(--flow) * 1.45)}
+.prose > * + hr,.prose > hr + *{margin-top:calc(var(--flow) * 1.9)}
 .prose > * + .callout,.prose > .callout + *{margin-top:calc(var(--flow) * 1.5)}
 
 /* ── TIÊU ĐỀ TRONG BÀI ── */
@@ -78,10 +84,44 @@
   hyphens:none;
   overflow-wrap:break-word;
   word-break:normal;
+
+  /* ── CĂN ĐỀU HAI BÊN ──
+     Sách giáo khoa bảo ĐỪNG căn đều khi không có ngắt âm tiết: thiếu ngắt thì
+     trình duyệt phải kéo giãn khoảng trắng, và trên cột hẹp nó tạo ra những
+     "dòng sông" trắng chạy dọc giữa đoạn.
+
+     Nhưng luật ấy viết cho TIẾNG ANH. Đo ngay trên kho bài này: 5.888 từ, dài
+     trung bình 3,5 ký tự, phân vị 95 là 5 ký tự, và chỉ 0,1% số từ dài quá 8
+     ký tự. Khoảng trắng chỉ phải giãn nhiều khi một từ DÀI không xuống dòng
+     được — mà tiếng Việt gần như không có từ nào như thế. Nên ở đây căn đều
+     cho ra mép phải thẳng mà hầu như không phải trả giá.
+
+     Điều kiện còn lại là cột phải đủ rộng: dưới khoảng 45 ký tự một dòng thì
+     mọi ngôn ngữ đều hở. Luật ở dưới tắt căn đều đúng chỗ ấy. */
+  text-align:justify;
+  text-justify:inter-word;
 }
+
+/* Cột hẹp (điện thoại đứng) thì trả về căn trái: chỉ còn 30–40 ký tự một dòng,
+   mỗi dòng chỉ chứa 8–10 từ, nên một từ xuống dòng là cả dòng giãn thấy rõ. */
+@media (max-width:560px){
+  .prose p{text-align:left}
+}
+/* Câu dẫn trong thân bài dùng ĐÚNG khuôn của ô tóm tắt ở đầu bài (§.post-head
+   .summary): cùng nghiêng, cùng gạch dọc bên trái, cùng màu. Hai thứ này làm
+   cùng một việc — nói trước bài này về cái gì — nên trông chúng phải là một.
+   Trước đây mỗi chỗ một kiểu, và người đọc gặp hai "câu dẫn" khác nhau trong
+   cùng một trang. */
 .prose .lead{
-  font-size:var(--fs-md);line-height:1.66;color:var(--text-muted);
+  font-size:calc(var(--fs-base) * .97);
+  line-height:1.62;
+  color:var(--text-muted);
+  font-style:italic;
   font-weight:400;
+  text-align:left;
+  text-wrap:pretty;
+  padding-left:var(--s4);
+  border-left:2px solid var(--line);
 }
 .prose .lead strong{color:var(--text);font-weight:600}
 
@@ -325,7 +365,7 @@
   margin-top:var(--s5);
   font-style:italic;
   font-size:calc(var(--fs-base) * .97);
-  line-height:1.68;
+  line-height:1.62;
   color:var(--text-muted);
   text-wrap:pretty;
   max-width:var(--measure);

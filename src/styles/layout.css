@@ -140,6 +140,15 @@
    (xem prose.css §lưới). Chép lại công thức chứ không áng chừng một con số:
    áng chừng thì lệch vài px, và mắt bắt được ngay cái lệch đó vì ba khối nằm
    chồng dọc nhau. */
+/* MỘT KHUNG DUY NHẤT cho cả trang bài: đầu bài, thân bài và chân bài dùng đúng
+   một công thức bề ngang. Đã thử cho đầu bài rộng hơn cột chữ — tiêu đề dài thì
+   dàn ra đẹp thật, nhưng ba khối xếp chồng dọc nhau mà lệch mép là mắt bắt được
+   ngay, và trang đọc ra là hai khung chồng lên nhau chứ không phải một.
+
+   Tiêu đề dài gãy hai dòng trong khung này là BÌNH THƯỜNG. Cái từng nhìn ra hỏng
+   là chuyện khác: lúc bài không có mục lục, lưới vẫn giữ chỗ 210px cho một cột
+   trống, nên khung chữ nằm lệch hẳn về trái giữa một khoảng rộng vô chủ. Nay mọi
+   bài đều có mục lục nên chuyện đó không còn. */
 .post-head,
 .post-foot{
   width:min(var(--measure), 100% - var(--gutter) * 2);
@@ -285,3 +294,42 @@
   .khung-b .toc-box .toc-title{display:none}
   .khung-b .toc ol{border-left:1px solid var(--line)}
 }
+
+/* ══════════════ KHUNG C — BÀI ẢNH NGẮN ══════════════
+   Vài tấm kỉ niệm bên trái, mấy dòng tản mạn bên phải. Kiểu bài này không hợp
+   khung đọc dài: bốn dòng chữ bày ra giữa cột 66 ký tự thì trông như bài bị cụt
+   giữa chừng.
+
+   Ở khổ rộng, băng ảnh DÍNH lại khi cuộn — chữ trôi qua bên cạnh trong khi ảnh
+   đứng yên. Đó là thứ làm khung này khác hẳn khung đọc dài: ảnh không phải minh
+   hoạ chèn giữa bài, ảnh là NỀN của bài.
+
+   Khổ hẹp thì xếp dọc, ảnh trước chữ sau — thứ tự đúng với cách người ta lướt
+   một bài ảnh trên điện thoại. */
+.post-layout.khung-c{
+  max-width:var(--measure-ui);
+  padding-inline:var(--gutter);
+}
+.khung-c .bang-anh{order:-1;margin-bottom:var(--s7)}
+
+@media (min-width:900px){
+  .post-layout.khung-c{
+    grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
+    column-gap:var(--s9);
+    align-items:start;
+  }
+  /* Đặt chỗ TƯỜNG MINH cho cả bốn khối. Để lưới tự xếp thì nó lấp theo hàng và
+     chân bài nhảy sang cột ảnh — đúng lỗi đã vấp ở khung A. */
+  .khung-c .bang-anh {grid-column:1;grid-row:1 / span 3;position:sticky;top:calc(var(--header-h) + var(--s6));margin-bottom:0}
+  .khung-c .post-head{grid-column:2;grid-row:1}
+  .khung-c .prose    {grid-column:2;grid-row:2}
+  .khung-c .post-foot{grid-column:2;grid-row:3}
+  /* Ba khối chữ ở cột phải thôi tự khoá bề ngang: cột đã hẹp sẵn rồi, khoá thêm
+     lần nữa là chữ co vào giữa một cột vốn đã vừa. */
+  .khung-c :is(.post-head,.post-foot){width:100%}
+  .khung-c .prose{grid-template-columns:[full-start][wide-start][text-start] minmax(0,1fr) [text-end][wide-end][full-end]}
+}
+
+/* Không có mục lục ở khung C: bài ngắn thì mục lục là thừa, và cột phải đã dành
+   cho chữ rồi. */
+.khung-c .toc{display:none}

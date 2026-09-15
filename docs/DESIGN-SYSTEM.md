@@ -938,3 +938,89 @@ không hết mà vẫn không có cách nào lọc.
 Dưới lưới có **hai** lối đi chứ không phải một — Posts xếp theo chuyên mục,
 Archive xếp theo năm. Hai cách tìm khác nhau, nên để cả hai thay vì bắt người
 đọc đoán.
+
+---
+
+## 18 · CHỮ ĐỂ ĐỌC — THÂN BÀI
+
+Mục này trả lời câu "Medium làm gì mà đọc êm thế, có gì học được không".
+Câu trả lời ngắn: **ba con số** — cỡ chữ, khoảng dòng, và bề ngang cột chữ —
+và chúng phải được chọn **cùng nhau**, không chọn riêng.
+
+### 18.1 · Ba con số, và vì sao chúng đi với nhau
+
+| | Trước | Nay | Vì sao |
+|---|---|---|---|
+| Cỡ chữ thân bài | 16.5–18.5px | **16.5–17.5px** | xem dưới |
+| Khoảng dòng | 1.78 | **1.65** | 1.78 là khoảng của thơ, không phải của văn xuôi |
+| Bề ngang cột chữ | 58ch | **66ch** | khoảng đọc êm là 60–75 ký tự một dòng |
+| Cách hai đoạn | 1.5 × cỡ chữ | **1.25 ×** | phải NHỎ HƠN một chiều cao dòng |
+| Cách quanh ảnh | 1.9 × | **1.45 ×** | 1.9 là một khoảng trắng to bằng cả đoạn văn |
+
+**Chữ "to" thường không phải lỗi của cỡ chữ.** Cảm giác "chữ to quá" ở bản
+trước đến từ khoảng dòng 1.78 cộng cột chữ 58ch: khối chữ nở ra, mỗi dòng ít
+chữ, và mắt phải xuống dòng liên tục. Hạ khoảng dòng và nới cột chữ thì cùng
+một cỡ chữ đã đọc ra là vừa. Cỡ chữ chỉ hạ một bậc nhỏ.
+
+**Vì sao vẫn 1.65 chứ không 1.5 như tiếng Anh.** Tiếng Việt có dấu chồng cả
+trên (ế, ữ) lẫn dưới (ạ, ộ). Khoảng dòng của tiếng Anh làm dấu của dòng dưới
+đụng dấu của dòng trên. 1.65 là chỗ vừa đủ hở.
+
+**Vì sao khoảng cách hai đoạn phải nhỏ hơn một dòng.** Lớn hơn thì mỗi đoạn
+thành một hòn đảo, và mắt phải NHẢY từ đảo này sang đảo kia thay vì trôi. Đây
+là chỗ trang này từng sai rõ nhất.
+
+### 18.2 · Căn đều hai bên — và vì sao ở đây nó được phép
+
+Sách giáo khoa dạy: **đừng căn đều khi không có ngắt âm tiết.** Thiếu ngắt thì
+trình duyệt phải kéo giãn khoảng trắng để lấp cho đủ dòng, và những khoảng
+giãn ấy xếp chồng nhau thành "dòng sông" trắng chạy dọc giữa đoạn.
+
+Luật ấy đúng — **cho tiếng Anh.** Khoảng trắng chỉ phải giãn nhiều khi một từ
+DÀI không chịu xuống dòng. Nên câu hỏi thật là: *tiếng Việt có từ dài không?*
+
+Đo trên chính kho bài này:
+
+```
+5.888 từ
+dài trung bình      3,5 ký tự
+phân vị 95           5  ký tự
+dài nhất            11  ký tự
+từ dài quá 8 ký tự  0,1%
+```
+
+**Gần như không có từ dài nào.** Tiếng Việt viết rời từng âm tiết, nên mỗi
+"từ" trên trang chỉ là một âm — và một dòng 66 ký tự chứa tới ~15 từ. Giãn
+chỗ hở ra 15 khe thì mỗi khe chỉ nhích vài phần mười milimét.
+
+Nên ở đây **căn đều được phép**, và không cần ngắt âm tiết (`hyphens:auto` vẫn
+phải TẮT — trình duyệt sẽ cắt "nghiêng" thành "ngh-iêng").
+
+**Một điều kiện còn lại: cột phải đủ rộng.** Dưới khoảng 45 ký tự một dòng thì
+mọi ngôn ngữ đều hở, vì mỗi dòng chỉ còn 8–10 khe để chia. Nên dưới 560px —
+điện thoại đứng — căn đều tự tắt, trả về căn trái.
+
+### 18.3 · Đầu bài rộng hơn cột chữ
+
+Luật 60–75 ký tự viết cho **văn xuôi**. Tiêu đề, dòng phân cấp và hàng meta đều
+là dòng NGẮN, chúng không phải tuân theo luật ấy.
+
+Khoá đầu bài đúng bằng cột chữ thì tiêu đề dài gãy làm đôi trong khi nửa phải
+trang bỏ trống — đọc ra là hỏng bố cục. `--measure-de` (58rem) rộng hơn
+`--measure` (66ch) đúng vì thế. Riêng ô tóm tắt trong đầu bài vẫn giữ bề ngang
+cột chữ: nó là văn xuôi thật.
+
+Và khi bài **không có mục lục** (dưới hai tiêu đề), lưới phải thu về một cột.
+Giữ chỗ 210px cho một cột trống là bóp đầu bài lại mà chẳng để làm gì.
+
+### 18.4 · Một câu dẫn, một khuôn
+
+Ô tóm tắt dưới tiêu đề và câu dẫn trong thân bài (`.lead`) làm **cùng một
+việc**: nói trước bài này về cái gì. Nên chúng dùng chung một khuôn — cùng chữ
+nghiêng, cùng gạch dọc bên trái, cùng màu. Trước đây mỗi chỗ một kiểu và người
+đọc gặp hai thứ trông khác nhau trong cùng một trang.
+
+Hệ quả cho bài nhập từ nơi khác: bản xuất WordPress hay mở bài bằng một khối
+trích dẫn — chính là câu dẫn. Công cụ nhập lấy nó làm tóm tắt **và bỏ nó khỏi
+thân bài**; giữ cả hai là bắt người đọc đọc một đoạn hai lần, cách nhau chưa
+tới một màn.
