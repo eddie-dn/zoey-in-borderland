@@ -7,7 +7,13 @@
 
 .ds-trang,.trang-chu{padding-block:var(--s9) var(--s11)}
 
-.ds-dau,.chu-dau{margin-bottom:var(--s8)}
+/* Đầu trang danh sách: s8 (40px) là khoảng của một trang BÀI, nơi tiêu đề
+   phải tách hẳn khỏi thân bài. Trang danh sách thì tiêu đề và danh sách là
+   một khối việc — 24px là đủ, còn 40px làm danh sách bị đẩy xuống dưới nếp
+   gấp trên laptop 13".
+   Trang bài (.chu-dau) giữ nguyên s8. */
+.ds-dau{margin-bottom:var(--s6)}
+.chu-dau{margin-bottom:var(--s8)}
 .ds-dau h1,.chu-dau h1{
   font-size:var(--fs-h1);font-style:italic;
   line-height:var(--lh-tight);text-wrap:balance;margin:0;
@@ -27,11 +33,11 @@
    `min(300px,100%)` chứ không phải 300px trơn: thiếu min() thì ở khổ hẹp hơn
    300px, cột vẫn giữ 300px và trang tràn ngang. Đã vấp chuyện này ở lưới khác. */
 .ds-luoi{
-  display:grid;gap:var(--s4);
+  display:grid;gap:var(--s3);
   grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
 }
 
-.the-bai{display:flex;flex-direction:column;gap:var(--s3);padding:var(--s5)}
+.the-bai{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s5) var(--s5) var(--s4)}
 .the-bai h3{
   margin:0;font-size:var(--fs-h4);font-style:italic;
   line-height:1.28;text-wrap:balance;
@@ -116,33 +122,51 @@
 
    Bản trước đặt `position:absolute; inset:0` lên cả khung hero, nên chữ Z bị xén
    ở MÉP CỬA SỔ. Sai chỗ: mép cửa sổ không phải một đường nét của trang, nó chỉ
-   là chỗ màn hình hết. Xén ở đó trông như chữ bị tràn ra ngoài chứ không như
-   chữ được đặt vào khuôn.
+   là chỗ màn hình hết. Nay khối chữ chiếm đúng ô lưới thứ hai, nên hai đường kẻ
+   dọc của lưới thành hai lưỡi dao — từ cuối chạy khỏi đường kẻ phải.
 
-   Nay khối chữ chiếm đúng ô lưới thứ hai, cùng ô với cột giữa. Hai đường kẻ dọc
-   của lưới thành hai lưỡi dao: chữ đầu chạm và bị xén ở đường kẻ TRÁI, từ cuối
-   chạy khỏi đường kẻ PHẢI. Đó mới là bố cục — chữ bị chính cấu trúc của trang
-   cắt, chứ không phải bị cửa sổ cắt.
+   ── BỐN CHỖ QUYẾT ĐỊNH CÁCH VIẾT ───────────────────────────────────────
 
-   Cỡ chữ dùng `cqw` (phần trăm bề ngang CỦA Ô) chứ không dùng `vw`: ô này rộng
-   khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo khổ màn. Lấy vw thì trên màn
-   rộng chữ phình ra quá ô, trên màn hẹp lại teo.
+   1. XẾP DÒNG BÌNH THƯỜNG + flex CĂN GIỮA DỌC, không đặt tuyệt đối từng dòng.
+      Bản trước cho mỗi dòng một toạ độ `top` riêng, và chữ đầu lấy `top` âm để
+      bị viền trên xén. Kết quả: chữ Z bay lên quá cao và mất mất một phần. Nay
+      hai dòng nằm trong dòng chảy, `justify-content:center` lo phần căn giữa —
+      cụm chữ luôn nằm giữa ô theo chiều dọc và KHÔNG mất chữ nào.
 
-   RÊ CHUỘT vào khung thì cả khối co lại và tên hiện đủ trong ô; rời chuột thì
-   về lại khối bị xén. Màn cảm ứng lấy luôn trạng thái hiện đủ — không có chuột
-   thì không bao giờ rê được. */
+   2. TỪ GIỮA ("in") NẰM TRONG DÒNG MỘT, không phải một dòng riêng.
+      Chỉ khi nó là chữ cùng dòng thì lúc co lại nó mới về đúng hàng với từ đầu.
+      Ba khối tuyệt đối tách rời thì CSS phải biết trước bề rộng chữ "Zoey" mới
+      xếp được "in" ngay sau — mà bề rộng ấy đổi theo font và theo cỡ. Lúc nghỉ
+      nó bị đẩy lệch xuống-phải bằng `translate`, tức là dịch chỗ NHÌN mà không
+      dịch chỗ NẰM, nên lúc hover chỉ cần trả `translate` về 0 là nó tự về hàng.
+
+   3. PHẦN CÒN LẠI CỦA TỪ ĐẦU GIẤU BẰNG letter-spacing ÂM, không bằng width:0
+      hay max-width: hai cái kia phải biết trước bề rộng chữ, còn overflow:hidden
+      thì xén mất phần vươn của chữ nghiêng. letter-spacing âm co chỗ lại mà
+      không cắt gì, và nó animate được.
+
+   4. CỠ CHỮ DÙNG `cqw` (phần trăm bề ngang CỦA Ô), không dùng `vw`: ô này rộng
+      khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo khổ màn. */
 .hero-danh{
   grid-column:2;grid-row:1;
   position:relative;overflow:hidden;min-width:0;
   container-type:inline-size;
+  display:flex;flex-direction:column;justify-content:center;
   margin:0;z-index:0;pointer-events:none;user-select:none;
   font-family:var(--font-display);font-style:italic;font-weight:600;
   line-height:.78;letter-spacing:-.03em;
   color:var(--text);opacity:.17;
 
-  --s1:62cqw;  --x1:-2%;  --y1:-14%;
-  --s2:9cqw;   --x2:46%;  --y2:33%;
-  --s3:24cqw;  --x3:4%;   --y3:46%;
+  --s1:58cqw;  --x1:-.04em;
+  --s3:24cqw;  --x3:.06em;
+  /* Cỡ và độ lệch của "in" tính theo em CỦA CHÍNH NÓ, nên đổi --in-co là mọi
+     con số còn lại tự co theo — không phải chỉnh ba chỗ. */
+  /* "in" nằm BÊN PHẢI chữ đầu, không nằm dưới. Bản đầu đẩy nó xuống 1.25em và
+     nó rơi trúng thân chữ "Borderland" — hai lớp chữ chồng nhau thì không đọc
+     ra chữ nào. Khoảng trống thật nằm ở bên phải chữ đầu: chữ đầu chỉ chiếm
+     khoảng một phần ba bề ngang ô, phần còn lại của dòng bỏ không. */
+  --in-co:.2em;  --in-x:1.15em;  --in-y:-.15em;  --in-mo:.6;
+
   --nhip:.62s cubic-bezier(.22,.61,.36,1);
   transition:opacity var(--nhip);
 }
@@ -150,46 +174,48 @@
 :root:not([data-theme="light"]) .hero-danh{opacity:.22}
 
 .hd-hang{
-  position:absolute;display:block;white-space:nowrap;
-  transition:font-size var(--nhip),left var(--nhip),top var(--nhip),
-             opacity var(--nhip);
+  display:block;white-space:nowrap;
+  transition:font-size var(--nhip),margin-left var(--nhip);
 }
-.hd-hang--1{font-size:var(--s1);left:var(--x1);top:var(--y1)}
-.hd-hang--2{font-size:var(--s2);left:var(--x2);top:var(--y2);opacity:.62}
-.hd-hang--3{font-size:var(--s3);left:var(--x3);top:var(--y3)}
+.hd-hang--1{font-size:var(--s1);margin-left:var(--x1)}
+.hd-hang--3{font-size:var(--s3);margin-left:var(--x3)}
 
-/* Giấu phần còn lại của từ đầu bằng letter-spacing ÂM, không bằng width:0 hay
-   max-width: hai cái kia phải biết trước bề rộng chữ (đổi theo font và theo cỡ),
-   còn overflow:hidden thì xén mất phần vươn của chữ nghiêng. */
 .hd-con{
   display:inline-block;opacity:0;letter-spacing:-.58em;
   transition:opacity var(--nhip),letter-spacing var(--nhip);
 }
+.hd-in{
+  display:inline-block;font-size:var(--in-co);opacity:var(--in-mo);
+  letter-spacing:-.01em;
+  translate:var(--in-x) var(--in-y);
+  transition:font-size var(--nhip),translate var(--nhip),opacity var(--nhip);
+}
 
+/* Trạng thái HIỆN ĐỦ. Từ cuối chỉ co NHẸ (24 → 20cqw): cỡ lúc mờ đã đúng rồi,
+   co mạnh là mất luôn cái sức nặng của nó. Từ đầu co nhiều hơn vì nó phải nhường
+   chỗ cho phần chữ vừa chạy vào. */
 .hero:hover .hero-danh,
 .hero:focus-within .hero-danh{
   opacity:.96;
-  --s1:20cqw;  --x1:5%;   --y1:19%;
-  --s2:8cqw;   --x2:11%;  --y2:44%;
-  --s3:13cqw;  --x3:13%;  --y3:54%;
+  --s1:27cqw;   --x1:.02em;
+  --s3:20cqw;   --x3:.06em;
+  --in-co:.4em; --in-x:.26em; --in-y:0em; --in-mo:.78;
 }
 .hero:hover .hd-con,
 .hero:focus-within .hd-con{opacity:1;letter-spacing:-.03em}
-.hero:hover .hd-hang--2,
-.hero:focus-within .hd-hang--2{opacity:.8}
 
 @media (hover:none) and (min-width:1001px){
   .hero-danh{
     opacity:.96;
-    --s1:20cqw;  --x1:5%;   --y1:19%;
-    --s2:8cqw;   --x2:11%;  --y2:44%;
-    --s3:13cqw;  --x3:13%;  --y3:54%;
+    --s1:27cqw;   --x1:.02em;
+    --s3:20cqw;   --x3:.06em;
+    --in-co:.4em; --in-x:.26em; --in-y:0em; --in-mo:.78;
   }
   .hd-con{opacity:1;letter-spacing:-.03em}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .hero-danh,.hd-hang,.hd-con{transition:none}
+  .hero-danh,.hd-hang,.hd-con,.hd-in{transition:none}
 }
 /* ── ẢNH HERO (tuỳ chọn) ──
    Nằm GIỮA chữ khổng lồ và nội dung: đè lên chữ, nhưng chữ tiêu đề vẫn nằm
@@ -436,15 +462,16 @@
      Ba dòng chuyển từ đặt tuyệt đối sang xếp dòng bình thường; bậc thang làm
      bằng `margin-left` tính theo `em`, nên nó co giãn cùng cỡ chữ. */
   .hero-danh{
-    order:0;position:static;overflow:visible;
-    container-type:normal;opacity:1;
+    order:0;overflow:visible;
+    container-type:normal;opacity:1;display:block;
     padding:var(--s8) var(--gutter) var(--s7);
   }
-  .hd-hang{position:static;display:block}
-  .hd-hang--1{font-size:clamp(44px,16vw,92px)}
-  .hd-hang--2{font-size:clamp(16px,5.4vw,30px);margin-left:1.1em;opacity:.7}
+  .hd-hang--1{font-size:clamp(44px,16vw,92px);margin-left:0}
   .hd-hang--3{font-size:clamp(29px,10.4vw,60px);margin-left:.45em}
   .hd-con{opacity:1;letter-spacing:-.03em}
+  /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng và
+     lùi vào một bậc — rõ hơn là để nó nép bên cạnh chữ đầu. */
+  .hd-in{display:block;translate:none;font-size:.33em;margin-left:1.1em;opacity:.7}
 
   .hero-quote{flex:1;min-width:0}
   .hero-moc,.hero-tem{display:none}
@@ -457,6 +484,73 @@
     justify-content:flex-start}
   .hero-quote{width:100%}
 }
+/* ══════════ BỘ SỐ TRANG ══════════
+   Chỉ có mặt khi danh sách dài hơn một trang, và do JavaScript dựng ra — nên
+   người tắt JavaScript thấy trọn danh sách, không thấy bộ số. Đó là trạng thái
+   đúng chứ không phải hỏng: danh sách đầy đủ vẫn đọc được, chỉ là dài. */
+.pt{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:var(--s4);margin-top:var(--s7);padding-top:var(--s5);
+  border-top:1px solid var(--line);
+}
+.pt-so{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.pt-nut{
+  min-width:32px;height:32px;padding:0 8px;
+  border:none;border-radius:var(--r-sm);background:none;
+  box-shadow:inset 0 0 0 1px var(--line);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  color:var(--text-muted);cursor:pointer;
+  /* tabular-nums: số không đổi bề rộng, nên nút không nhấp nháy co giãn khi
+     đổi từ trang 9 sang trang 10. */
+  font-variant-numeric:tabular-nums;
+  transition:color var(--dur-fast),box-shadow var(--dur-fast),
+             background var(--dur-fast);
+}
+.pt-nut:hover:not(:disabled),.pt-nut:focus-visible{
+  color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+}
+.pt-nut--nay{
+  background:var(--accent-wash);color:var(--accent-ink);
+  box-shadow:inset 0 0 0 1px var(--accent);
+}
+.pt-nut:disabled{opacity:.3;cursor:default}
+.pt-lung{padding:0 2px;color:var(--text-faint)}
+.pt-chon{
+  display:inline-flex;align-items:center;gap:var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.pt-chon select{
+  height:32px;padding:0 6px;border-radius:var(--r-sm);
+  border:none;box-shadow:inset 0 0 0 1px var(--line);
+  background:var(--bg);color:var(--text);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  cursor:pointer;
+}
+.pt-chon select:focus-visible{box-shadow:inset 0 0 0 1px var(--accent);outline:none}
+
+/* Khổ hẹp: bộ số xuống dòng riêng, ô chọn số bài canh trái cho thẳng với
+   danh sách phía trên. */
+@media (max-width:520px){
+  .pt{flex-direction:column;align-items:flex-start;gap:var(--s3)}
+}
+
+/* ── LỐI ĐI DƯỚI LƯỚI BÀI Ở TRANG CHỦ ──
+   Trang chủ chỉ giữ 6 bài, nên dưới lưới phải nói rõ xem tiếp ở đâu — và có
+   HAI lối, vì hai cách tìm khác nhau: Posts xếp theo chuyên mục, Archive xếp
+   theo năm. */
+.ds-chan{
+  display:flex;flex-wrap:wrap;gap:var(--s4) var(--s7);
+  margin-top:var(--s6);padding-top:var(--s5);
+  border-top:1px solid var(--line);
+}
+.ds-loi{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-muted);text-decoration:none;
+  transition:color var(--dur-fast);
+}
+.ds-loi:hover,.ds-loi:focus-visible{color:var(--accent-ink);outline:none}
 /* ── TRANG CHỦ ── */
 
 .trang-chu{scroll-margin-top:var(--header-h)}
@@ -542,11 +636,11 @@
 /* ── KHO LƯU ──
    Danh sách dày chứ không phải lưới thẻ: kho lưu là chỗ đi TÌM một bài đã biết
    tên, không phải chỗ lướt xem có gì. Thẻ to làm việc tìm chậm đi. */
-.kho-nam{margin-bottom:var(--s9)}
+.kho-nam{margin-bottom:var(--s7)}
 .kho-nam:last-child{margin-bottom:0}
 .kho-so{
   display:flex;align-items:baseline;gap:var(--s3);
-  margin:0 0 var(--s4);padding-bottom:var(--s3);
+  margin:0 0 var(--s3);padding-bottom:var(--s2);
   border-bottom:1px solid var(--line);
   font-family:var(--font-display);font-style:italic;font-weight:600;
   font-size:var(--fs-h3);color:var(--text);
@@ -560,7 +654,7 @@
   display:flex;flex-direction:column;gap:2px}
 .kho-dong{
   display:flex;align-items:baseline;gap:var(--s4);
-  padding:var(--s3) var(--s3) var(--s3) 0;border-radius:var(--r-sm);
+  padding:6px var(--s3) 6px 0;border-radius:var(--r-sm);
   transition:background var(--dur-fast);
 }
 .kho-dong:hover{background:var(--accent-wash)}

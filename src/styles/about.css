@@ -208,7 +208,6 @@
   margin:0;font-size:var(--fs-sm);color:var(--text-faint);
 }
 .q-ai::before{content:"— "}
-.q-ai[hidden]{display:none}
 
 /* Nút xem câu khác — góc dưới phải, mờ cho tới khi rê vào ô */
 .q-nut{

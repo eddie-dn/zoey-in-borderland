@@ -763,8 +763,13 @@ làm nên nó — thiếu thứ nào là nó xẹp về một khối chữ căn 
 
 ### 16.2 · Khối chữ lớn: hai trạng thái
 
-Tên trang tách làm ba mảnh — chữ đầu, từ giữa, từ cuối — mỗi mảnh là một ô đặt
-tuyệt đối, có cỡ chữ và toạ độ riêng cho từng trạng thái.
+Tên trang tách làm ba mảnh — chữ đầu, từ giữa, từ cuối — nhưng **chỉ có HAI
+dòng**: từ giữa nằm ngay trong dòng một.
+
+Hai dòng ấy **xếp theo dòng chảy bình thường**, và cả cụm căn giữa theo chiều dọc
+bằng flex. Bản đầu cho mỗi dòng một toạ độ `top` riêng, dòng đầu lấy toạ độ âm để
+bị viền trên xén — kết quả là chữ đầu bay quá cao và **mất mất một phần**. Căn
+giữa bằng flex thì không mất chữ nào, mà từ cuối vẫn chạy khỏi đường kẻ phải.
 
 **Khối chữ là MỘT Ô CỦA LƯỚI**, chiếm chung ô thứ hai với cột giữa. Đây là chỗ
 bản đầu làm sai: nó phủ `position:absolute; inset:0` lên cả khung hero, nên chữ
@@ -778,17 +783,23 @@ rộng khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo kh�
 
 | | Lúc nghỉ | Lúc rê chuột |
 |---|---|---|
-| chữ đầu | nhô lên góc trái, viền trên xén mất một phần | co lại, nằm gọn trong khung |
+| chữ đầu | rất lớn, chạm đường kẻ trái, **không bị cắt** | co lại còn khoảng một nửa |
 | phần còn lại của từ đầu | giấu bằng `letter-spacing` âm | chạy vào, hiện đủ |
-| từ giữa | nhỏ, đứng lệch | lớn theo, thẳng hàng |
-| từ cuối | tụt xuống một tầng, chạy khỏi mép phải | tụt xuống một tầng, nằm trong khung |
-| độ mờ | 16% (sáng) · 20% (tối) | 96% |
+| từ giữa | nhỏ, nép bên phải chữ đầu | **về cùng hàng** với từ đầu |
+| từ cuối | tụt xuống một tầng, chạy khỏi đường kẻ phải | co **nhẹ**, nằm trong khung |
+| độ mờ | 17% (sáng) · 22% (tối) | 96% |
+
+Từ cuối chỉ co nhẹ (24 → 20cqw) chứ không co mạnh: cỡ lúc mờ đã đúng rồi, co
+mạnh là mất luôn sức nặng của nó.
 
 **Ba chỗ quyết định cách viết:**
 
-- **Mỗi mảnh một ô tuyệt đối.** Xếp ba mảnh trên một dòng rồi để trình duyệt tự
-  dồn thì lúc hiện đủ, từ giữa phải nằm ngay sau từ đầu — mà bề rộng từ đầu thì
-  CSS không biết, nó đổi theo font và theo cỡ.
+- **Từ giữa nằm TRONG dòng một, không phải một khối riêng.** Chỉ khi nó là chữ
+  cùng dòng thì lúc co lại nó mới về đúng hàng với từ đầu — ba khối tách rời thì
+  CSS phải biết trước bề rộng chữ "Zoey" mới xếp được "in" ngay sau, mà bề rộng
+  ấy đổi theo font và theo cỡ. Lúc nghỉ nó bị đẩy lệch sang phải bằng `translate`
+  — dịch chỗ **nhìn** mà không dịch chỗ **nằm** — nên lúc co lại chỉ cần trả
+  `translate` về 0 là nó tự về hàng.
 - **Giấu chữ bằng `letter-spacing` âm, không bằng `width:0`.** Hai cái kia phải
   biết trước bề rộng chữ; `overflow:hidden` thì xén mất phần vươn của chữ
   nghiêng. `letter-spacing` âm co chỗ lại mà không cắt gì, và animate được.
@@ -860,3 +871,70 @@ khoá cứng, và cho nội dung bên trong tự co (`min-height:0` trên mỗi 
 
 Dưới 1000px thì cho hero **giãn** (`height:auto`): xếp dọc thì ba khối cộng lại
 luôn cao hơn một màn, mà cắt mất chữ tệ hơn nhiều so với việc phải cuộn.
+
+---
+
+## 17 · TRANG DANH SÁCH: SỐ TRANG VÀ GIÃN CÁCH
+
+### 17.1 · Số trang cắt ở trình duyệt, không cắt lúc dựng
+
+Cách quen thuộc là dựng sẵn `/posts/`, `/posts/2/`, `/posts/3/`… Không làm thế,
+vì hai lẽ:
+
+1. **Người đọc được chọn số bài mỗi trang** (10 · 20 · 50 · tất cả, nhớ lại cho
+   lần sau). Cắt lúc dựng thì mỗi lựa chọn là một bộ file riêng — và số file
+   nhân lên theo từng chuyên mục, từng tag.
+2. **Không tải lại trang.** Bấm sang trang 2 là đổi ngay.
+
+Cái giá: mọi bài nằm sẵn trong HTML. Với blog cá nhân vài trăm bài thì đó là
+vài chục KB — rẻ hơn một vòng mạng. Tới khi kho bài lớn tới mức HTML nặng thật
+thì mới phải đổi cách.
+
+**Không có JavaScript:** thấy đủ mọi bài, không có bộ số. Đó là trạng thái đúng
+chứ không phải hỏng — máy tìm kiếm cũng đọc được trọn danh sách thay vì phải mò
+theo từng trang.
+
+Mặc định khai ở `site.config.json` → `moiTrang` (10). Danh sách ngắn hơn con số
+ấy thì không bọc khung phân trang — thêm một lớp div và một ô chọn chẳng để làm
+gì.
+
+### 17.2 · `[hidden]` phải thắng mọi khai báo `display`
+
+```css
+[hidden]{display:none !important}
+```
+
+Trình duyệt cài sẵn `[hidden]{display:none}` ở mức **user agent**, tức là yếu
+hơn bất cứ luật nào mình viết. Nên `.the-bai{display:flex}` thắng nó, và
+`el.hidden = true` trong JavaScript **không giấu được gì cả**.
+
+Đã vấp thật khi làm bộ số trang: JavaScript đặt `hidden` cho đúng số thẻ, không
+lỗi nào cả, mà trang vẫn hiện nguyên tám bài. Đọc `el.hidden` thì thấy `true` —
+phải đo `getComputedStyle` mới lộ ra. Bài học cho việc kiểm thử: **đo cái mắt
+thấy, đừng tin thuộc tính**.
+
+`!important` ở đây là đúng chỗ: `hidden` mang nghĩa "không liên quan lúc này",
+và không có ngoại lệ nào cho nó.
+
+### 17.3 · Giãn cách: trang danh sách khác trang bài
+
+| | Trang bài | Trang danh sách |
+|---|---|---|
+| dưới đầu đề | 40px | **24px** |
+| giữa các thẻ | — | **12px** |
+| trong thẻ | — | 20px trên, 16px dưới |
+| giữa các năm (Archive) | — | **32px** |
+
+40px dưới đầu đề là khoảng của một trang **bài**, nơi tiêu đề phải tách hẳn khỏi
+thân bài. Ở danh sách thì tiêu đề và danh sách là **một khối việc** — 24px là
+đủ, còn 40px đẩy bài đầu tiên xuống dưới nếp gấp trên laptop 13".
+
+### 17.4 · Trang chủ giữ tối đa 6 bài
+
+`site.config.json` → `baiTrangChu` (6), không kể bài nổi bật. Trang chủ là chỗ
+**mời vào**, không phải chỗ liệt kê kho bài: đổ hết bài ra đây thì cuộn mãi
+không hết mà vẫn không có cách nào lọc.
+
+Dưới lưới có **hai** lối đi chứ không phải một — Posts xếp theo chuyên mục,
+Archive xếp theo năm. Hai cách tìm khác nhau, nên để cả hai thay vì bắt người
+đọc đoán.

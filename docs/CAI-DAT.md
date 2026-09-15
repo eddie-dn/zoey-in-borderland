@@ -208,10 +208,75 @@ Xem `docs/DUA-LEN-MANG.md` §3 — có đủ ba ô phải điền và mấy cái
 
 ---
 
-## 4 · Bảng tra nhanh: cái gì hỏng thì mất gì
+## 4 · Đo lượt xem — tuỳ chọn, mặc định TẮT
+
+Cloudflare Web Analytics. **Không đặt cookie**, nên không phải dựng banner xin
+phép. Vì sao chọn nó chứ không phải Google Analytics: `docs/DUA-LEN-MANG.md` §9.1.
+
+### 4.1 · Phải deploy trước
+
+Web Analytics gắn theo **hostname**, nên chưa có trang trên mạng thì chưa lấy
+được token. Làm xong mục 3 rồi hãy quay lại đây.
+
+### 4.2 · Lấy token
+
+1. Cloudflare Dashboard → **Analytics & Logs** → **Web Analytics**
+2. **Add a site** → nhập hostname (`ten-trang.pages.dev`, hoặc tên miền thật
+   nếu đã trỏ xong)
+3. Nó đưa một đoạn như thế này:
+
+```html
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "a1b2c3d4e5f6..."}'></script>
+```
+
+**Chỉ lấy phần token**, bỏ cả đoạn còn lại — bộ dựng tự sinh thẻ script.
+
+### 4.3 · Dán vào cấu hình
+
+```json
+"phanTich": {
+  "bat": true,
+  "token": "a1b2c3d4e5f6..."
+}
+```
+
+```bash
+npm run kiem     # có phép kiểm canh: bật mà quên token là báo đỏ
+npm run build
+```
+
+Commit + push → Cloudflare tự dựng lại. Số liệu hiện sau vài phút, và chỉ đếm
+lượt truy cập **thật**: mở bằng `npm run dev` ở máy mình không tính.
+
+### 4.4 · Hai chỗ dễ sai
+
+**Đừng bật ở cả hai nơi.** Cloudflare Pages cũng có nút tự chèn đoạn beacon
+(Pages project → Settings). Bật cả hai thì một trang có hai đoạn beacon, và mỗi
+lượt xem đếm thành hai. Chọn một:
+
+| Cách | Khi nào dùng |
+|---|---|
+| `site.config.json` | muốn cấu hình nằm trong repo, đi cùng bản dựng, có phép kiểm canh |
+| Nút trên dashboard | muốn bật/tắt không cần đụng code — lúc đó giữ `"bat": false` |
+
+**Token này CÔNG KHAI**, khác hẳn `GEMINI_KEY`. Nó nằm nguyên văn trong HTML mọi
+trang, ai xem mã nguồn cũng thấy — nên để trong repo là đúng chỗ, không phải lỗ
+hổng. `GEMINI_KEY` thì ngược lại: không bao giờ được rời khỏi Cloudflare.
+
+### 4.5 · Đoán trước trang kế — đã bật sẵn, không cần cài gì
+
+`"doanTruoc": true` trong `site.config.json`. Trình duyệt tải sẵn trang mà người
+đọc rê chuột vào, nên bấm xong hiện gần như tức thì. Không gọi dịch vụ nào, không
+cần token. Đặt `false` để tắt. Chi tiết: `docs/DUA-LEN-MANG.md` §9.3.
+
+---
+
+## 5 · Bảng tra nhanh: cái gì hỏng thì mất gì
 
 | Hỏng | Người đọc thấy gì |
 |---|---|
+| `phanTich.bat` = false | Không có gì thay đổi với người đọc — chỉ là chủ trang không biết bài nào có người xem. |
 | Chưa khai `binhLuan.url` | Form bình luận ẩn, có một dòng nhắc nhỏ. Bài đọc bình thường. |
 | Apps Script hết hạn quyền | Bình luận cũ không tải được, form vẫn gửi được. Không có thông báo lỗi to. |
 | Chưa khai `GEMINI_KEY` | Ô trích dẫn dùng kho câu sẵn. Không phân biệt được. |

@@ -27,6 +27,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.01 | 2026-09-15 | 01 | phân trang có số cho Posts và Archive · người đọc chọn số bài mỗi trang |
+| V3.00 | 2026-09-15 | 00 | trang chủ giữ tối đa 6 bài · hai lối đi sang Posts và Archive |
+| V2.09 | 2026-09-15 | 09 | khối chữ lớn căn giữa không mất chữ · gộp Zoey in cùng hàng khi co lại |
+| V2.08 | 2026-09-15 | 08 | hướng dẫn bật đo lượt xem từng bước |
 | V2.07 | 2026-09-15 | 07 | khối chữ lớn xén theo đường kẻ lưới · dựng lại bố cục khổ dọc |
 | V2.06 | 2026-09-15 | 06 | đo lượt xem không cookie · đoán trước trang kế |
 | V2.05 | 2026-09-15 | 05 | luật số phiên bản: đuôi chỉ chạy 00 đến 09 |
@@ -51,6 +55,58 @@
 
 ---
 
+## V3.01 — 15-Sep-2026
+
+- **Posts và Archive có số trang.** Danh sách dài hơn 10 bài thì tự có bộ số
+  ‹ 1 2 3 › ở cuối, và **người đọc chọn được số bài mỗi trang** — 10, 20, 50
+  hay tất cả. Trình duyệt nhớ lựa chọn đó cho lần sau. Cắt trang làm ở trình
+  duyệt chứ không cắt lúc dựng: cắt lúc dựng thì mỗi lựa chọn là một bộ file
+  riêng, nhân lên theo từng chuyên mục và từng tag. Người tắt JavaScript thấy
+  trọn danh sách — dài hơn, nhưng không thiếu bài nào.
+
+- **Giãn cách vừa lại.** Trang danh sách trước dùng khoảng cách của trang BÀI,
+  nơi tiêu đề phải tách hẳn khỏi thân bài. Ở danh sách thì tiêu đề và danh sách
+  là một khối việc, nên khoảng cách rút lại — và trên laptop 13" giờ thấy được
+  bài đầu tiên ngay khi mở, không phải cuộn.
+
+- **Sửa một lỗi giấu mặt.** Trình duyệt cài sẵn `hidden` ở mức yếu hơn mọi luật
+  CSS mình viết, nên thẻ bài vẫn hiện nguyên dù đã bị đánh dấu ẩn. Không lỗi
+  nào cả — bộ số trang chạy đúng, đếm đúng, mà trang vẫn ra đủ tám bài. Chỉ lộ
+  ra khi đo màu sắc thật của phần tử thay vì tin vào thuộc tính.
+
+## V3.00 — 15-Sep-2026
+
+- **Trang chủ giữ tối đa 6 bài**, không kể bài nổi bật. Trang chủ là chỗ mời
+  vào, không phải chỗ liệt kê kho bài: đổ hết bài ra đây thì cuộn mãi không hết
+  mà vẫn không có cách nào lọc.
+
+- **Hai lối đi dưới lưới bài.** Posts xếp theo chuyên mục, Archive xếp theo
+  năm — hai cách tìm khác nhau, nên để cả hai thay vì bắt người đọc đoán.
+
+## V2.09 — 15-Sep-2026
+
+- **Chữ Z thôi bay lên và thôi bị cắt.** Bản trước cho mỗi dòng một toạ độ
+  riêng, và dòng đầu lấy toạ độ âm để bị viền trên xén — kết quả là chữ Z bay
+  quá cao và mất mất một phần. Nay hai dòng nằm trong dòng chảy bình thường và
+  cả cụm căn giữa theo chiều dọc: không mất chữ nào, mà từ cuối vẫn chạy khỏi
+  đường kẻ phải như cũ.
+
+- **Từ cuối chỉ co nhẹ khi rê chuột.** Cỡ lúc mờ đã đúng rồi; co mạnh là mất
+  luôn sức nặng của nó.
+
+- **"Zoey in" về cùng một hàng khi co lại.** Muốn thế thì "in" phải là chữ nằm
+  CÙNG DÒNG chứ không phải một khối riêng — ba khối tách rời thì CSS phải biết
+  trước bề rộng chữ "Zoey" mới xếp được "in" ngay sau, mà bề rộng ấy đổi theo
+  font và theo cỡ. Lúc nghỉ nó bị đẩy lệch sang phải bằng phép dịch hình, tức
+  là dịch chỗ NHÌN mà không dịch chỗ NẰM, nên lúc co lại chỉ cần trả phép dịch
+  về 0 là nó tự về hàng.
+## V2.08 — 15-Sep-2026
+
+- **File cài đặt có mục đo lượt xem.** Bốn bước, kèm hai chỗ dễ sai: bật ở cả
+  `site.config.json` lẫn nút trên bảng điều khiển Cloudflare thì một trang có
+  hai đoạn beacon và mỗi lượt xem đếm thành hai; và token đo lượt xem là thứ
+  CÔNG KHAI, khác hẳn khoá Gemini — nó nằm nguyên văn trong HTML mọi trang nên
+  để trong repo là đúng chỗ.
 ## V2.07 — 15-Sep-2026
 
 - **Chữ lớn bị đường kẻ của lưới xén, không phải bị mép cửa sổ xén.** Bản trước

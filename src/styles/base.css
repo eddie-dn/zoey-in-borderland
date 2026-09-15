@@ -6,6 +6,19 @@
 *,*::before,*::after{box-sizing:border-box}
 *{margin:0}
 
+/* ── `hidden` PHẢI THẮNG MỌI KHAI BÁO display ──
+   Trình duyệt cài sẵn `[hidden]{display:none}` ở mức USER AGENT, tức là yếu
+   hơn bất cứ luật nào mình viết. Nên `.the-bai{display:flex}` thắng nó, và
+   `el.hidden = true` trong JavaScript không giấu được gì cả.
+
+   Đã vấp thật khi làm bộ số trang: JavaScript đặt `hidden` cho đúng số thẻ,
+   không lỗi nào cả, mà trang vẫn hiện nguyên tám bài. Đọc `el.hidden` thì
+   thấy `true` — phải đo `getComputedStyle` mới lộ ra.
+
+   `!important` ở đây là đúng chỗ: `hidden` mang nghĩa "không liên quan lúc
+   này", và không có ngoại lệ nào cho nó. */
+[hidden]{display:none !important}
+
 html{
   -webkit-text-size-adjust:100%;    /* iOS xoay ngang tự phóng chữ to lên — chặn */
   scroll-behavior:smooth;

@@ -193,7 +193,8 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 
 | Trang | Dựa vào |
 |---|---|
-| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra danh sách | `trangChu()` |
+| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra **tối đa 6 bài** | `trangChu()` |
+| Số trang cho Posts · Tags · Archive, người đọc chọn được số bài mỗi trang | `trang-so.js` |
 | `/posts/` và `/posts/<mục>/` | `congKhai` + `_muc.json` |
 | `/tags/` và `/tags/<tag>/` | `tags.json` |
 | `/search/` — tìm ngay trên máy người đọc, không gọi máy chủ | `search-index.json` + trường `kd` |

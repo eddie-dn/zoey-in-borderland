@@ -138,6 +138,11 @@ const NHAN = {
   latest      : 'Latest',
   index       : 'Index',
   profile     : 'Profile',
+  perPage     : 'Per page',
+  allItems    : 'All',
+  pages       : 'Pages',
+  prevPage    : 'Previous page',
+  nextPage    : 'Next page',
   aboutMe     : 'About me',
   pinned      : 'Pinned',
   more        : 'More writing',
@@ -1204,9 +1209,27 @@ function theBai(b, { hienMuc = true } = {}) {
 
 /* Lưới thẻ. `min(300px,100%)` chứ không phải 300px trơn: thiếu `min()` thì ở
    khổ hẹp hơn 300px, cột vẫn giữ 300px và trang tràn ngang. */
+/* ── BỌC MỘT DANH SÁCH VÀO KHUNG PHÂN TRANG ──
+   Chỉ bọc khi danh sách DÀI HƠN một trang. Ngắn hơn mà vẫn bọc thì trang có
+   thêm một lớp div và một ô chọn số bài chẳng để làm gì.
+
+   Nhãn gửi qua attribute dạng JSON, cùng cách với khung bình luận và ô tìm
+   kiếm: chữ hiển thị nằm trong bảng NHAN ở đầu file này, không gõ cứng vào
+   file .js. Có phép kiểm canh khối JSON ấy parse được. */
+function bocPhanTrang(than, chonItem, so) {
+  const moiTrang = Math.max(1, Number(CAU.moiTrang) || 10);
+  if (so <= moiTrang) return than;
+  const nhan = JSON.stringify({
+    perPage: NHAN.perPage, all: NHAN.allItems, pages: NHAN.pages,
+    prevPage: NHAN.prevPage, nextPage: NHAN.nextPage
+  });
+  return `<div class="phan-trang" data-phan-trang="${attr(chonItem)}"` +
+         ` data-moi-trang="${moiTrang}" data-nhan="${attr(nhan)}">${than}</div>`;
+}
 function luoiThe(ds, trong) {
   if (!ds.length) return `<p class="ds-trong">${trong}</p>`;
-  return `<div class="ds-luoi">${ds.map((b) => theBai(b)).join('')}</div>`;
+  const luoi = `<div class="ds-luoi">${ds.map((b) => theBai(b)).join('')}</div>`;
+  return bocPhanTrang(luoi, '.the-bai', ds.length);
 }
 
 /* Hàng chip lọc. `nay` là chip đang bật. */
@@ -1227,7 +1250,8 @@ function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, descr
     canonical: canonical || `${CAU.url}${BASE}${duong}`,
     duong,
     scripts: ((CAU.baoVeChu || {}).bat === false ? ''
-      : `<script src="${BASE}/assets/copy-guard.js" defer></script>`) + scripts,
+      : `<script src="${BASE}/assets/copy-guard.js" defer></script>`) +
+      `\n<script src="${BASE}/assets/trang-so.js" defer></script>` + scripts,
     content: `
 <div class="container ds-trang">
   <header class="ds-dau">
@@ -1295,7 +1319,12 @@ function trangChu(bai) {
      mới là điểm của nó. */
   const dauTien = xep.slice(0, 3);
   const noiBat  = xep[0];
-  const conLai  = xep.slice(1, 1 + Math.max(1, Number(CAU.postsPerPage) || 6));
+  /* TRANG CHỦ CHỈ GIỮ 6 BÀI ngoài bài nổi bật. Màn đầu là chỗ mời vào, không
+     phải chỗ liệt kê kho bài: đổ hết bài ra đây thì cuộn mãi không hết mà vẫn
+     không có cách nào lọc. Ai muốn xem nhiều hơn thì có trang Posts (xếp theo
+     chuyên mục) và trang Archive (xếp theo năm) — hai lối đi ấy để sẵn ở dưới
+     lưới. */
+  const conLai  = xep.slice(1, 1 + Math.max(1, Number(CAU.baiTrangChu) || 6));
 
   /* ══════════ MÀN HERO ══════════
      Dựng theo khuôn tạp chí / catalogue triển lãm, không phải khuôn "header
@@ -1320,6 +1349,10 @@ function trangChu(bai) {
   const tuDe   = CAU.title.trim().split(/\s+/);
   const tuDau  = tuDe[0] || 'Z';
   const tuCuoi = tuDe.length > 1 ? tuDe[tuDe.length - 1] : '';
+  /* Từ giữa ("in") nằm NGAY TRONG dòng một, không phải một dòng riêng: chỉ khi
+     nó là chữ cùng dòng thì lúc co lại nó mới về đúng hàng với "Zoey". Ba khối
+     đặt tuyệt đối tách rời thì CSS phải biết trước bề rộng chữ "Zoey" mới xếp
+     được "in" ngay sau — mà bề rộng ấy đổi theo font và theo cỡ. */
   const tuGiua = tuDe.slice(1, -1).join(' ');
 
   const hero = `
@@ -1334,8 +1367,7 @@ function trangChu(bai) {
     </div>
 
     <h1 class="hero-danh" aria-label="${attr(CAU.title)}">
-      <span class="hd-hang hd-hang--1" aria-hidden="true"><span class="hd-dau">${escapeHtml(tuDau[0])}</span><span class="hd-con">${escapeHtml(tuDau.slice(1))}</span></span>
-      ${tuGiua ? `<span class="hd-hang hd-hang--2" aria-hidden="true">${escapeHtml(tuGiua)}</span>` : ''}
+      <span class="hd-hang hd-hang--1" aria-hidden="true"><span class="hd-dau">${escapeHtml(tuDau[0])}</span><span class="hd-con">${escapeHtml(tuDau.slice(1))}</span>${tuGiua ? `<span class="hd-in">${escapeHtml(tuGiua)}</span>` : ''}</span>
       ${tuCuoi ? `<span class="hd-hang hd-hang--3" aria-hidden="true">${escapeHtml(tuCuoi)}</span>` : ''}
     </h1>
 
@@ -1416,6 +1448,10 @@ function trangChu(bai) {
       ${coTrang('/posts/') ? `<a class="ds-them" href="${BASE}/posts/">${NHAN.allPosts} →</a>` : ''}
     </div>
     ${luoiThe(conLai, '')}
+    ${(coTrang('/posts/') || coTrang('/archive/')) ? `<div class="ds-chan">
+      ${coTrang('/posts/') ? `<a class="ds-loi" href="${BASE}/posts/">${NHAN.allPosts} →</a>` : ''}
+      ${coTrang('/archive/') ? `<a class="ds-loi" href="${BASE}/archive/">${NHAN.archive} →</a>` : ''}
+    </div>` : ''}
   </section>` : ''}
 
   ${!bai.length ? `<p class="ds-trong">${NHAN.noPosts}</p>` : ''}
@@ -1573,7 +1609,7 @@ function trangArchive(bai) {
     theoNam.get(n).push(b);
   }
   const than = [...theoNam.entries()].map(([nam, ds]) => `
-    <section class="kho-nam">
+    <section class="kho-nam" data-nhom>
       <h2 class="kho-so">${nam}<span class="kho-dem">${ds.length}</span></h2>
       <ul class="kho-ds">${ds.map((b) => `
         <li class="kho-dong">
@@ -1586,7 +1622,8 @@ function trangArchive(bai) {
   return trangDanhSach({
     tieuDe: NHAN.archive,
     dan: `${bai.length} bài · ${theoNam.size} năm`,
-    than: bai.length ? than : `<p class="ds-trong">${NHAN.noPosts}</p>`,
+    than: bai.length ? bocPhanTrang(than, '.kho-dong', bai.length)
+                     : `<p class="ds-trong">${NHAN.noPosts}</p>`,
     duong: '/archive/'
   });
 }
@@ -1728,7 +1765,7 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
-                     'nen.js']) {
+                     'nen.js', 'trang-so.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
