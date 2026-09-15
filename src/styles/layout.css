@@ -81,11 +81,41 @@
 }
 /* Tem hai dòng, đúng quy ước §4 của DESIGN-SYSTEM cũ:
    dòng ký tên nằm TRÊN, dòng phiên bản nằm DƯỚI. */
+/* ── TEM CHÂN TRANG ──
+   Đời trước để 8.5px. Quá nhỏ: chủ trang mở trang lên còn không thấy dòng
+   phiên bản của chính mình, tưởng build chưa in ra. 8.5px cộng letter-spacing
+   .18em cộng chữ hoa cộng màu --text-faint là bốn thứ cùng kéo độ đọc xuống
+   một lúc. Nay 10.5px, giãn chữ nhẹ hơn, và dòng phiên bản đậm hơn dòng ký
+   tên — dòng đó vừa là thông tin vừa là cửa vào sổ lịch sử. */
 .stamp{
-  font-family:var(--font-label);font-size:8.5px;font-weight:400;
-  letter-spacing:.18em;text-transform:uppercase;
-  color:var(--text-faint);line-height:1.75;text-align:right;
+  display:flex;flex-direction:column;align-items:flex-end;gap:1px;
+  font-family:var(--font-label);font-size:10.5px;font-weight:400;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-faint);line-height:1.7;text-align:right;
 }
+.stamp-ky{padding-right:3px}
+.stamp-ban{
+  color:var(--text-muted);font-weight:500;
+  cursor:default;-webkit-tap-highlight-color:transparent;
+  /* Lề trong 3px cho vùng bấm rộng hơn chữ một chút. KHÔNG bù bằng
+     margin-right âm: lề âm đẩy ô ra khỏi mép cha 3px, và vì .stamp không cắt
+     tràn nên 3px đó chạy thẳng vào scrollWidth của trang. Bù bằng cách cho
+     dòng ký tên cùng một lề trong — hai dòng thẳng nhau mà không ai thò ra. */
+  border-radius:var(--r-sm);padding:1px 3px;
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+/* Trỏ vào mới lộ ra là bấm được. Đứng yên thì không có dấu vết gì — cửa hậu
+   mà nhìn phát thấy ngay thì hết là cửa hậu. */
+.stamp-ban:hover,.stamp-ban:focus-visible{
+  color:var(--accent-ink);background:var(--accent-wash);outline:none;
+}
+/* Nháy một cái theo mỗi nhịp bấm, từ nhịp thứ hai — bấm lỡ tay một cái thì
+   không thấy gì, nhưng ai đang cố tình bấm thì biết máy có nghe. */
+.stamp-ban.go{animation:so-nhip .2s var(--ease-glass)}
+@keyframes so-nhip{
+  50%{color:var(--accent-ink);background:var(--accent-wash);transform:scale(1.04)}
+}
+@media (prefers-reduced-motion:reduce){.stamp-ban.go{animation:none}}
 .foot-links{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);
   font-size:var(--fs-sm);color:var(--text-muted)}
 

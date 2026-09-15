@@ -159,7 +159,7 @@ có chủ ý — blog cá nhân cần chạy được sau năm năm không ai b�
 
 | Nơi | Cách |
 |---|---|
-| **Vercel** / **Netlify** | build `npm run build`, thư mục xuất `dist` |
+| **Cloudflare Pages** | build `npm run build`, thư mục xuất `dist`, hàm ở `functions/` |
 | **GitHub Pages** | đẩy `dist/` lên nhánh `gh-pages` |
 | **Máy chủ riêng** | `rsync -a dist/ may-chu:/var/www/blog/` |
 

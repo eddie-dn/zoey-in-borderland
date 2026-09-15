@@ -373,7 +373,7 @@ Gạch chân mặc định của trình duyệt **cắt ngang dấu tiếng Vi�
 Giữ nguyên quy ước §4 của design system cũ — hai dòng, **ký tên trên, phiên bản dưới**:
 
 ```
-@Designed by Honghandangiu
+@Designed by Zoey
 Last updated 14-Sep-2026 · V0.10
 ```
 

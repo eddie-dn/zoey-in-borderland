@@ -1,8 +1,8 @@
 # ĐƯA LÊN MẠNG & XEM THỬ
 
 > Ba cách xem trang: **mở file trên máy**, **xem qua WiFi từ điện thoại**, và
-> **đưa lên mạng thật**. Phần cuối giải thích vì sao Vercel hay báo 404 ở lần
-> đầu, và sửa thế nào.
+> **đưa lên mạng thật trên Cloudflare Pages**. §3 giải thích vì sao lần đầu hay
+> ra 404, và chỗ nào của mã phải viết khác đi so với Vercel.
 
 ---
 
@@ -62,77 +62,93 @@ chạy**, và tường lửa của máy không chặn cổng 4321 (macOS/Windows
 
 ---
 
-## 3 · Đưa lên mạng thật — Vercel
+## 3 · Đưa lên mạng thật — Cloudflare Pages
 
-### 3.1 · Vì sao lần đầu hay ra 404
+### 3.1 · Mười phút đầu
 
-Vercel không tự biết trang web nằm ở `dist/`. Khi không nhận ra framework nào,
-nó dùng preset **"Other"**, và preset đó **mặc định lấy thư mục `public/`** làm
-nơi chứa trang — nếu thư mục đó tồn tại.
+1. Đẩy repo lên GitHub (xem §5 nếu upload tay).
+2. Vào **dash.cloudflare.com** → **Workers & Pages** → **Create** →
+   tab **Pages** → **Connect to Git**.
+3. Chọn repo `zoey-in-borderland`. Cloudflare hỏi quyền GitHub lần đầu — cho.
+4. Ở màn hình **Set up builds and deployments**, điền đúng ba ô:
 
-Repo này **có** `public/`, nhưng trong đó chỉ có ảnh, không có `index.html`.
-Nên Vercel dựng xong, đi lấy `public/`, không thấy trang chủ, và trả về 404.
+   | Ô | Điền |
+   |---|---|
+   | Framework preset | **None** |
+   | Build command | `npm run build` |
+   | Build output directory | `dist` |
 
-### 3.2 · Cách sửa — đã có sẵn `vercel.json`
+5. **Save and Deploy**. Khoảng một phút sau ra địa chỉ
+   `https://<tên-dự-án>.pages.dev`.
+6. Mở `site.config.json`, sửa `url` thành đúng địa chỉ đó, rồi đẩy lên lại.
+   Không sửa thì thẻ canonical, ảnh chia sẻ và sitemap đều trỏ sai chỗ.
 
-File `vercel.json` ở gốc repo nói rõ cho Vercel biết:
+### 3.2 · Ba ô đó sai là hỏng kiểu gì
 
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
-}
-```
+**Build output directory để trống hoặc để `/`** → Cloudflare phục vụ gốc repo.
+Ở đó không có `index.html` nào cả, nên ra **404** — mà log build thì xanh
+hoàn toàn, không có dòng lỗi nào để lần. Đây là cái bẫy số một.
 
-**Chỉ cần file này có mặt trong repo là Vercel làm đúng.** Không phải cài gì
-trong giao diện Vercel cả.
+**Để `public`** → cũng 404, và khó đoán hơn nữa: thư mục `public/` CÓ tồn tại,
+trong đó có ảnh, nên Cloudflare không báo gì. Chỉ là nó không có `index.html`.
 
-Nếu anh đã lỡ import project trước khi có file này, vào
-**Project → Settings → General**, xoá mọi giá trị đã gõ tay ở *Build Command*
-và *Output Directory* (để trống, nút Override tắt) rồi **Deployments → … →
-Redeploy**. Giá trị gõ tay trong giao diện **thắng** `vercel.json`, nên còn sót
-là còn sai.
+**Framework preset chọn nhầm** → preset ghi đè build command bằng lệnh của
+framework đó (`next build`, `astro build`…), và lệnh đó không có ở đây.
 
-### 3.3 · Nếu Vercel không thấy repo trong danh sách
+`npm run kiem` có một phép kiểm cho `dist/_headers`, nhưng KHÔNG kiểm được ba ô
+này — chúng nằm trong bảng điều khiển Cloudflare, không nằm trong repo.
 
-Đây là chuyện quyền, không phải chuyện mã:
+### 3.3 · Không cần cài gì cả
 
-1. Vào [vercel.com/new](https://vercel.com/new)
-2. Ở khung chọn repo, bấm **Adjust GitHub App Permissions** (hoặc
-   **Configure GitHub App**)
-3. Chọn **All repositories**, hoặc thêm riêng `zoey-in-borderland` vào danh sách
-4. Lưu, quay lại Vercel, danh sách repo sẽ có nó
+Dự án này **không có dependency nào**. `package.json` không có khoá
+`dependencies`, nên `npm install` chạy xong trong một giây và không tải gì.
+Cloudflare vẫn chạy nó, và đó là chuyện bình thường.
 
-Repo tạo **sau** lúc nối Vercel với GitHub thì gần như chắc chắn rơi vào trường
-hợp này — Vercel chỉ thấy những repo đã được cấp quyền tại thời điểm cài.
+### 3.4 · `_headers` — luật cache
 
-### 3.4 · Sau khi deploy xong
+Cloudflare không đọc `vercel.json` hay bất kỳ file cấu hình nào ở gốc repo. Nó
+đọc đúng một file tên **`_headers`**, và file đó phải nằm **trong thư mục xuất
+bản** (`dist/`), không phải gốc repo.
 
-Sửa `site.config.json`, đổi `url` thành địa chỉ thật Vercel cấp:
+Ở đây nó nằm ở `public/_headers`; build chép trọn `public/` sang `dist/` nên nó
+tự đi theo. Đặt nhầm chỗ thì nó im lặng vô tác dụng — trang vẫn lên, ảnh vẫn
+hiện, chỉ là mỗi lần vào lại tải lại từ đầu, và không có lỗi nào để thấy.
 
-```json
-"url": "https://zoey-in-borderland.vercel.app"
-```
+### 3.5 · Hàm `/api/quote` — chỗ khác Vercel nhiều nhất
 
-Không đổi thì thẻ canonical, ảnh chia sẻ lên Facebook và sitemap đều trỏ sai.
-`npm run kiem` sẽ nhắc việc này.
+Ô "Quote of the day" chạy được **không cần** hàm này (kho câu nhúng sẵn trong
+HTML). Hàm chỉ là lớp thêm nếm, bật lên thì mỗi ngày có một câu Gemini viết mới.
+
+Nếu bật, nhớ ba điều — đây là chỗ mã viết cho Vercel **không chạy** trên
+Cloudflare:
+
+| | Vercel | Cloudflare Pages |
+|---|---|---|
+| Thư mục | `api/quote.js` | **`functions/api/quote.js`** |
+| Tên hàm | `export default (req, res)` | **`export async function onRequest({ request, env })`** |
+| Trả về | `res.status(200).end(...)` | **`return new Response(...)`** |
+| Biến môi trường | `process.env.X` | **`env.X`** (tham số của `onRequest`) |
+| Đọc file | `fs.readFileSync` chạy được | **không có đĩa** — phải nướng sẵn lúc build |
+
+Chỗ cuối là chỗ nặng nhất. Workers không phải Node: không `fs`, không
+`process`, không `__dirname`. Nên nguồn câu ở `content/quote-nguon.md` được
+build đọc một lần rồi ghi ra `functions/api/_nguon.js`, và hàm `import` file
+đó. File sinh ra ấy **được commit**, không gitignore.
+
+`npm run kiem` có một phép kiểm quét cả `functions/` để bắt bốn lỗi trên.
+
+Cách khai khoá Gemini: xem `docs/CAI-DAT.md` §2.
 
 ---
 
 ## 4 · Các chỗ khác
 
-| Nơi | Build Command | Output |
-|---|---|---|
-| **Netlify** | `npm run build` | `dist` |
-| **Cloudflare Pages** | `npm run build` | `dist` |
-| **GitHub Pages** | đẩy riêng `dist/` lên nhánh `gh-pages` | — |
-| **Máy chủ riêng** | `rsync -a dist/ may-chu:/var/www/blog/` | — |
-
-:::warn GitHub Pages dạng user.github.io/ten-repo
-Phải đặt `"base": "/zoey-in-borderland"` trong `site.config.json`. Để rỗng thì
-mọi đường dẫn CSS và ảnh trỏ về gốc tên miền — trang ra trắng trơn.
-Vercel và Netlify chạy ở gốc tên miền nên **để `base` rỗng**.
-:::
+| Chỗ | Cách làm |
+|---|---|
+| **Netlify** | build `npm run build`, xuất `dist`. Cũng đọc `_headers`. Hàm phải viết lại theo `netlify/functions/`. |
+| **Vercel** | build `npm run build`, xuất `dist`. Cần `vercel.json` trỏ `outputDirectory: "dist"`, không thì 404. Hàm phải chuyển về `api/` và viết lại kiểu `(req, res)`. |
+| **GitHub Pages** | được, nhưng không chạy được hàm `/api/quote` — GitHub Pages chỉ phục vụ file tĩnh. Ô trích dẫn vẫn chạy bằng kho câu sẵn. |
+| **Tên miền riêng** | Cloudflare → dự án → **Custom domains** → **Set up a domain**. Nhớ sửa `url` trong `site.config.json` cho khớp. |
 
 ---
 
@@ -173,12 +189,15 @@ không phân biệt dấu chấm.
 
 | Hiện tượng | Nguyên nhân |
 |---|---|
-| Vercel deploy xong ra **404** | Thiếu `vercel.json`, hoặc Output Directory gõ tay trong Settings đang đè lên nó |
-| Trang lên nhưng **trắng trơn, không màu mè** | Deploy lên GitHub Pages mà chưa đặt `base`; hoặc đang mở bằng `file://` |
-| Vercel **không thấy repo** | Chưa cấp quyền cho GitHub App — xem §3.3 |
+| Deploy xong ra **404** | Build output directory chưa đặt là `dist` — xem §3.2 |
+| Trang lên nhưng **trắng trơn, không màu mè** | Đang mở bằng `file://`; hoặc deploy lên GitHub Pages mà chưa đặt `base` |
+| Cloudflare **không thấy repo** | Chưa cấp quyền GitHub App — dự án → Settings → Build → Manage GitHub app |
 | Ảnh chia sẻ Facebook ra **ô trắng** | `url` trong `site.config.json` còn là địa chỉ tạm |
+| Ảnh **tải lại mỗi lần vào** | `dist/_headers` không có — kiểm bằng `npm run kiem` |
+| `/api/quote` trả **500** | Hàm còn dùng `process.env` / `fs` / `module.exports` — `npm run kiem` bắt được; log ở Cloudflare → dự án → **Functions** → **Real-time Logs** |
+| `/api/quote` trả **404** | Hàm để nhầm thư mục. Phải là `functions/api/quote.js`, không phải `api/quote.js` |
 | Điện thoại **không vào được** `192.168.x.x` | Khác WiFi, `npm run dev` đã tắt, hoặc tường lửa chặn cổng 4321 |
-| Build trên Vercel **hỏng** | Xem log — thường là Node dưới 18. Vercel Settings → Node.js Version → 20.x |
+| Build **hỏng** | Xem log — thường là Node dưới 18. Cloudflare → Settings → Variables → thêm `NODE_VERSION` = `20` |
 
 ---
 

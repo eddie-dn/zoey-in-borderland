@@ -71,16 +71,21 @@
       <span>© {{year}} {{author}}</span>
       {{footLinks}}
     </div>
-    <!-- Tem hai dòng: ký tên TRÊN, phiên bản DƯỚI — đúng §4 của DESIGN-SYSTEM. -->
+    <!-- Tem hai dòng: ký tên TRÊN, phiên bản DƯỚI — đúng §4 của DESIGN-SYSTEM.
+         Dòng DƯỚI là cửa vào sổ lịch sử: bấm 5 nhịp thì mở. Cửa là chính dòng
+         chữ, không phải một cái nút — xem đầu src/js/so-tay.js. -->
     <div class="stamp">
-      @Designed by {{author}}<br>
-      Last updated {{buildDate}} · {{version}}
+      <span class="stamp-ky">@Designed by {{author}}</span>
+      <span class="stamp-ban" data-so-tay tabindex="0" role="button"
+            aria-label="Last updated {{buildDate}}, {{version}}">Last updated {{buildDate}} · {{version}}</span>
     </div>
   </div>
 </footer>
 </div>
 
 <script src="{{base}}/assets/theme.js" defer></script>
+<script type="application/json" id="so-tay-data">{{soTay}}</script>
+<script src="{{base}}/assets/so-tay.js" defer></script>
 {{scripts}}
 </body>
 </html>

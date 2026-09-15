@@ -15,7 +15,8 @@ import { fileURLToPath } from 'node:url';
 import { docFrontMatter, kiemBai } from './lib/frontmatter.mjs';
 import { render } from './lib/markdown.mjs';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
-import { docSo, temNgay } from './lib/lichsu.mjs';
+import { docSo, docChiTiet, temNgay } from './lib/lichsu.mjs';
+import { docNguon } from './lib/doc-nguon.mjs';
 import {
   slugify, escapeHtml, attr, phutDoc, ngayAnh, ngayISO, ngayTem, tomTat, boDau, noiChu
 } from './lib/text.mjs';
@@ -57,47 +58,105 @@ if (CAU.version) {
   CANH_BAO.push('site.config.json còn khoá `version` — bỏ đi, phiên bản nay lấy từ docs/LICH-SU.md');
 }
 
+/* SỔ TAY — cả bảng phiên bản kèm chi tiết, nhúng vào mọi trang cho cửa hậu ở
+   chân trang đọc (xem src/js/so-tay.js). Cùng một gốc với tem Vx.yy in ra
+   ngay cạnh đó, nên hai thứ không bao giờ lệch nhau.
+
+   Là HÀM chứ không phải hằng: nó đọc NHAN, mà NHAN khai bên dưới. Hằng thì
+   chạy ngay lúc nạp file và NHAN lúc đó còn chưa tồn tại. */
+const SO_TAY = () => JSON.stringify({
+  ban: SO.ban.map((b) => ({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh })),
+  chiTiet: docChiTiet(GOC),
+  nhan: {
+    history: NHAN.history, builds: NHAN.builds, patches: NHAN.patches,
+    noInfo: NHAN.noInfo, close: NHAN.close, back: NHAN.back
+  }
+/* `</` phải chẻ đôi: chuỗi `</script>` nằm trong nội dung một thẻ <script> thì
+   trình duyệt đóng thẻ NGAY TẠI ĐÓ, phần còn lại của JSON đổ thẳng ra trang
+   thành chữ. Sổ này có ghi tên thẻ HTML nên chuyện đó xảy ra thật. */
+}).replace(/<\//g, '<\\/');
+
 /* ══════════ BẢNG NHÃN GIAO DIỆN ══════════
    Mọi chữ KHÔNG phải nội dung bài đều lấy từ đây — tiếng Anh, để phần khung
    trang đọc ra đồng bộ với nhau và tách bạch hẳn khỏi nội dung tiếng Việt.
    Đổi ngôn ngữ giao diện là sửa đúng khối này, không phải đi lùng từng chuỗi
    nằm rải trong code. */
 const NHAN = {
-  posts      : 'Posts',
-  tagged     : 'Tagged',
-  readNext   : 'Read next',
-  onThisPage : 'On this page',
-  contents   : 'Contents',
-  minRead    : 'min read',
-  updated    : 'Updated',
-  draft      : 'Draft',
-  soon       : 'Coming soon',
-  search     : 'Search',
-  skipToMain : 'Skip to content',
-  toLight    : 'Switch to light',
-  toDark     : 'Switch to dark',
-  anchor     : 'Link to this section',
-  related    : 'Related',
-  comments   : 'Leave a note',
-  yourName   : 'Name',
-  yourNote   : 'Your note',
-  optional   : 'optional',
-  emailNote  : 'optional · never shown',
-  namePh     : 'Ai ghé ngang đây?',
-  emailPh    : 'Để mình trả lời riêng',
-  notePh     : 'Viết gì cũng được…',
-  send       : 'Send',
-  quoteToday : 'Quote of the day',
-  quoteMore  : 'Một câu khác',
-  based      : 'Based in',
+  /* MỌI chữ trên giao diện nằm ở đây, và đều là TIẾNG ANH. Trang viết bằng
+     tiếng Việt nhưng phần khung — nhãn, nút, huy hiệu — thì tiếng Anh cho
+     đồng bộ: nửa nọ nửa kia thì mỗi khối một giọng, đọc rất chắp vá. Chữ
+     tiếng Việt chỉ còn ở NỘI DUNG do người viết gõ ra.
+
+     Mấy nhãn có {n} là chỗ để thay số lúc chạy. */
+
+  /* ── điều hướng và khung chung ── */
+  posts       : 'Posts',
+  topics      : 'Topics',
+  tagged      : 'Tagged',
+  readNext    : 'Read next',
+  related     : 'Related',
+  onThisPage  : 'On this page',
+  contents    : 'Contents',
+  minRead     : 'min read',
+  updated     : 'Updated',
+  draft       : 'Draft',
+  soon        : 'Coming soon',
+  search      : 'Search',
+  skipToMain  : 'Skip to content',
+  toLight     : 'Switch to light',
+  toDark      : 'Switch to dark',
+  anchor      : 'Link to this section',
+  older       : 'Older',
+  newer       : 'Newer',
+
+  /* ── trang giới thiệu ── */
+  based       : 'Based in',
   writingSince: 'Writing since',
-  posts      : 'Posts',
-  topics     : 'Topics',
-  lately     : 'Lately',
-  findMe     : 'Find me',
-  older      : 'Older',
-  newer      : 'Newer'
+  lately      : 'Lately',
+  findMe      : 'Find me',
+  quoteToday  : 'Quote of the day',
+  quoteMore   : 'Another one',
+
+  /* ── bình luận: khung ── */
+  comments    : 'Leave a note',
+  yourName    : 'Name',
+  yourNote    : 'Your note',
+  optional    : 'optional',
+  emailNote   : 'optional · never shown',
+  namePh      : 'Who dropped by?',
+  emailPh     : 'So I can reply privately',
+  notePh      : 'Anything at all…',
+  send        : 'Send',
+
+  /* ── bình luận: phần do JS dựng ra ──
+     Gửi sang comments.js qua thuộc tính data-nhan. Để chung một bảng ở đây
+     thay vì rải trong file .js: sửa chữ thì chỉ mở đúng một chỗ. */
+  author      : 'Author',
+  anon        : 'Anonymous',
+  reply       : 'Reply',
+  replyTo     : 'Replying to {n}',
+  cancelReply : 'Cancel reply',
+  moreReplies : 'Show {n} earlier replies',
+  noComments  : 'No notes yet. Yours can be the first.',
+  sending     : 'Sending…',
+  tooShort    : 'Write a few words first.',
+  sent        : 'Got it, thank you ✦ I read everything before it goes up.',
+  failed      : 'Could not send. Try again in a bit.',
+  netErr      : 'Network hiccup. Try again in a moment.',
+  notLinked   : 'Comments are not connected to a server yet — see docs/BINH-LUAN.md.',
+  charsLeft   : '{n} characters left',
+
+  /* ── sổ lịch sử phiên bản ── */
+  history     : 'Version history',
+  builds      : '{n} builds · source: docs/LICH-SU.md',
+  patches     : '{n} patches recorded in this build',
+  noInfo      : 'no info',
+  close       : 'Close',
+  back        : 'Back'
 };
+
+/* Thay {n} trong một nhãn. */
+const nhan = (k, n) => String(NHAN[k] || '').replace('{n}', n);
 
 const mau = {
   do:   (s) => `\x1b[31m${s}\x1b[0m`,
@@ -148,21 +207,57 @@ function tenMuc(duongDanTuongDoi) {
    hoàn toàn có thể chứa em dash giữa chừng ("Ta là thứ ta làm — lặp đi lặp
    lại — mỗi ngày"), tách ở dấu đầu là cụt câu. */
 function docTrichDan() {
-  const f = path.join(THU_MUC.content, 'quotes.md');
-  if (!fs.existsSync(f)) return [];
-  const raw = fs.readFileSync(f, 'utf8').replace(/^---[\s\S]*?---\n/, '');
+  /* Dùng CHUNG bộ đọc với hàm /api/quote — xem tools/lib/doc-nguon.mjs. Trang và
+     máy chủ đọc cùng một file bằng cùng một bộ đọc, nên kho câu hiện ra ngoại
+     tuyến không bao giờ lệch với kho máy chủ dùng làm dự phòng.
 
-  return raw.split('\n')
-    .map((d) => d.match(/^\s*-\s+(.*)$/))
-    .filter(Boolean)
-    .map((m) => m[1].trim())
-    .filter(Boolean)
-    .map((cau) => {
-      const i = cau.lastIndexOf('—');
-      if (i < 0) return { chu: cau, ai: '' };
-      return { chu: cau.slice(0, i).trim(), ai: cau.slice(i + 1).trim() };
-    })
-    .filter((q) => q.chu);
+     Chỉ lấy `### Câu sẵn`. Ba mục kia (chủ đề · nguồn · lời dặn) là việc của
+     máy chủ, nhúng vào trang thì vừa thừa vừa lộ nguyên lời dặn ra HTML. */
+  const kq = docNguon(GOC);
+  if (kq.thieuFile) {
+    CANH_BAO.push('thiếu content/quote-nguon.md — ô trích dẫn chỉ còn một câu dự phòng');
+  }
+  if (kq.loi) CANH_BAO.push(`content/quote-nguon.md đọc không được: ${kq.loi}`);
+  return kq.san;
+}
+
+/* ── NƯỚNG NGUỒN QUOTE CHO HÀM CLOUDFLARE ──
+
+   Hàm `/api/quote` chạy trên Cloudflare Workers, mà Workers KHÔNG CÓ ĐĨA:
+   không `fs`, không `readFileSync`, không có thư mục `content/` nào để mở.
+   Nên nó không thể tự đọc `content/quote-nguon.md` như bản chạy trên Vercel.
+
+   Cách chữa: build đọc file .md một lần rồi GHI RA một module JS mà hàm kia
+   `import` thẳng vào. Cloudflare gói cả cây import lại lúc deploy, nên tới lúc
+   chạy mọi thứ đã nằm sẵn trong bộ nhớ.
+
+   File sinh ra ĐƯỢC COMMIT, không bỏ vào .gitignore. Lý do: nếu vì cớ gì đó
+   build không chạy trước lúc Cloudflare gói hàm thì thiếu file là hỏng cả hàm.
+   Có bản commit sẵn thì chậm nhất cũng chỉ là nguồn cũ một nhịp — và có một
+   phép kiểm bắt đúng chuyện "bản nướng lệch với file .md" (xem kiem-dinh.mjs),
+   nên lệch thì biết ngay chứ không âm thầm.
+
+   KHÔNG nướng `### Câu sẵn` vào đây: kho câu đã nhúng thẳng vào HTML rồi, hàm
+   trên mạng không dùng tới. Nướng cả vào thì mỗi lần deploy lại đẩy thêm mấy
+   chục câu qua mạng mà chẳng ai đọc. */
+function nuongNguonQuote() {
+  const k = docNguon(GOC);
+  const dau = [
+    '/* SINH TỰ ĐỘNG bởi tools/build.mjs — ĐỪNG SỬA TAY.',
+    '   Sửa nội dung ở `content/quote-nguon.md` rồi chạy `npm run build`.',
+    '   Vì sao phải nướng sẵn: Cloudflare Workers không có `fs` để đọc file .md',
+    '   lúc chạy — xem chú thích ở `nuongNguonQuote` trong tools/build.mjs. */',
+    'export default '
+  ].join('\n');
+
+  const ra = dau +
+    JSON.stringify({ chuDe: k.chuDe, nguon: k.nguon, nhac: k.nhac }, null, 2) + ';\n';
+
+  const f = path.join(GOC, 'functions', 'api', '_nguon.js');
+  fs.mkdirSync(path.dirname(f), { recursive: true });
+  /* Chỉ ghi khi KHÁC — ghi đè mỗi lần build thì git thấy file đổi liên tục dù
+     nội dung y hệt, và mỗi lần chạy dev là một dòng "modified" giả. */
+  if (!fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== ra) fs.writeFileSync(f, ra);
 }
 
 /* ══════════════ 2. ĐỌC MỘT BÀI ══════════════ */
@@ -283,6 +378,8 @@ function docTrang(file) {
     nghe       : String(fm.nghe || ''),
     dangLam    : cap('dangLam'),
     lienHe     : cap('lienHe'),
+    anh        : fm.anh ? String(fm.anh) : null,
+    anhAlt     : String(fm.anhAlt || ''),
     cover      : fm.cover ? String(fm.cover) : null,
     coverAlt   : String(fm.coverAlt || ''),
     lang       : String(fm.lang || CAU.lang),
@@ -389,7 +486,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     headExtra,
     year      : new Date().getFullYear(),
     buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
-    version   : BAN.ten
+    version   : BAN.ten,
+    soTay     : SO_TAY(),
   }));
 }
 
@@ -498,11 +596,34 @@ function goiY(bai, congKhai, soLuong = 3) {
 function binhLuanHTML(bai) {
   const c = CAU.binhLuan || {};
   if (c.bat === false) return '';
+  /* Đầu khối là một cái NÚT, không phải một dòng chữ: cả khối đóng mở được.
+     `aria-expanded` bắt đầu ở "true" vì mặc định là MỞ — giấu bình luận đi thì
+     người đọc không biết là có, và Google cũng không đọc được chữ trong đó.
+     Nút chỉ để ai muốn gấp lại cho gọn thì gấp. */
+  /* Bảng nhãn đi kèm dưới dạng JSON: comments.js dựng ra một nửa giao diện
+     bằng JS, mà những chữ đó vẫn phải nằm chung bảng NHAN ở đầu file này.
+     Rải chữ sang file .js thì sửa một nhãn phải nhớ có hai chỗ. */
+  const nhanJS = attr(JSON.stringify({
+    author: NHAN.author, anon: NHAN.anon, reply: NHAN.reply,
+    replyTo: NHAN.replyTo, cancelReply: NHAN.cancelReply,
+    moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
+    sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
+    failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
+    charsLeft: NHAN.charsLeft
+  }));
+
   return `<section class="binh-luan" data-binh-luan="${attr(c.url || '')}"
-           data-trang="${attr(bai.url)}">
+           data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     <div class="eyebrow"><i></i></div>
-    <p class="label">${NHAN.comments} <span class="bl-dem"></span></p>
+    <button class="bl-mo" type="button" aria-expanded="true" aria-controls="bl-than">
+      <span class="label">${NHAN.comments} <span class="bl-dem"></span></span>
+      <i class="bl-mui" aria-hidden="true"></i>
+    </button>
+
+    <div class="bl-than" id="bl-than">
     <p class="bl-moi">${escapeHtml(c.loiMoi || 'Ghé ngang thì để lại một dòng cũng được.')}</p>
+
+    <ul class="bl-ds"></ul>
 
     <form class="bl-form" novalidate>
       <div class="bl-hang">
@@ -534,7 +655,7 @@ function binhLuanHTML(bai) {
     </form>
 
     <p class="bl-bao" role="status" aria-live="polite"></p>
-    <ul class="bl-ds"></ul>
+    </div>
   </section>`;
 }
 
@@ -704,8 +825,17 @@ function khungBento(t, soBai, soTag) {
      phải trang gọn gàng.
 
      Cách chữa: nhét mọi ô số vào MỘT dải chiếm trọn 6 cột, bên trong dải đó
-     mới chia đều. Khai 2 field hay 4 field thì lưới ngoài vẫn kín như nhau. */
+     mới chia đều. Khai 2 field hay 4 field thì lưới ngoài vẫn kín như nhau.
+
+     ── CÓ ẢNH THÌ HÀNG ĐẦU CHIA BA ─────────────────────────────────────────
+     Khai `anh:` trong front matter thì hàng đầu thành  ảnh 2 · giới thiệu 2 ·
+     trích dẫn 2, vẫn trọn 6 cột. Không khai thì về khuôn cũ  giới thiệu 4 ·
+     trích dẫn 2. Hai đường đều KÍN LƯỚI — đó là lý do phải đổi cả ô giới
+     thiệu chứ không chỉ chèn thêm một ô ảnh vào. */
   const o = [];
+  const coAnh = !!anhBento(t);
+
+  if (coAnh) o.push(anhBento(t));
 
   o.push(`<div class="bo bo--intro card">
     <div class="eyebrow"><i></i></div>
@@ -722,8 +852,13 @@ function khungBento(t, soBai, soTag) {
     soTag   && { nhan: NHAN.topics, chu: String(soTag) }
   ].filter(Boolean);
   if (soLieu.length) {
+    /* Ô số vốn dựng cho giá trị NGẮN: "2016", "12", "Hà Nội". Gặp chuỗi dài
+       như "TP. Hồ Chí Minh" thì cỡ 32px vỡ thành hai dòng và đẩy lệch cả dải.
+       Không ép người viết phải viết tắt — hạ cỡ chữ theo độ dài thay vì vậy.
+       Ngưỡng 11 ký tự là chỗ chuỗi bắt đầu không vừa một dòng ở ô hẹp nhất
+       (150px) trong dải. */
     o.push(`<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
-      <span class="bo-so">${escapeHtml(x.chu)}</span>
+      <span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>
       <span class="label label--muted">${escapeHtml(x.nhan)}</span>
     </div>`).join('')}</div>`);
   }
@@ -754,7 +889,37 @@ function khungBento(t, soBai, soTag) {
 
   o.push(`<div class="bo bo--chu"><div class="prose">${t.html}</div></div>`);
 
-  return `<div class="bento">${o.filter(Boolean).join('\n')}</div>`;
+  return `<div class="bento${coAnh ? ' bento--anh' : ''}">${o.filter(Boolean).join('\n')}</div>`;
+}
+
+/* Ô ẢNH CHÂN DUNG. Trả '' nếu không khai `anh:` — lưới tự về khuôn cũ.
+
+   Ảnh phủ kín ô bằng object-fit:cover, KHÔNG giữ tỉ lệ gốc. Cố ý: ô này cao
+   đúng bằng hàng đầu của lưới, mà chiều cao hàng đó do ô giới thiệu quyết
+   định. Giữ tỉ lệ gốc thì ảnh dọc làm thủng lưới, ảnh ngang chừa băng trống
+   trên dưới — đúng cái bệnh đã chữa ở dải số. Người dùng bỏ ảnh dọc hay ngang
+   vào cũng ra một ô kín như nhau.
+
+   Vẫn đọc kích thước thật để ghi width/height: cover thì không lệch khung,
+   nhưng thiếu hai thuộc tính đó trình duyệt vẫn phải chờ tải xong mới biết
+   chỗ mà đặt, và Lighthouse trừ điểm CLS. */
+function anhBento(t) {
+  if (!t.anh) return '';
+  const ngoai = /^https?:/.test(t.anh);
+  let dim = '';
+  if (!ngoai) {
+    const that = path.join(THU_MUC.public, t.anh.replace(/^\//, ''));
+    if (!fs.existsSync(that)) {
+      CANH_BAO.push(`${t.nhan}: ảnh chân dung không tồn tại: ${t.anh}`);
+      return '';
+    }
+    const kt = kichThuocAnh(that);
+    if (kt) dim = ` width="${kt.w}" height="${kt.h}"`;
+  }
+  return `<figure class="bo bo--anh card">` +
+    `<img src="${attr(ngoai ? t.anh : BASE + t.anh)}" alt="${attr(t.anhAlt)}"${dim}` +
+    ` loading="eager" fetchpriority="high" decoding="async">` +
+    `</figure>`;
 }
 
 function khungChuong(t, soBai, soTag) {
@@ -1010,11 +1175,12 @@ async function chay() {
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
-                     'copy-guard.js', 'reveal.js']) {
+                     'copy-guard.js', 'reveal.js', 'so-tay.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
+    nuongNguonQuote();
 
     /* Gợi ý chỉ lấy trong danh sách CÔNG KHAI: gợi ý cả bản nháp thì bạn đọc
        bấm vào là rơi vào một bài chưa viết xong. */

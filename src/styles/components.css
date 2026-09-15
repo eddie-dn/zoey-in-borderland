@@ -83,6 +83,31 @@
 }
 .tip:hover::after,.tip:focus-visible::after{opacity:1;translate:-50% 0}
 
+/* ── TOOLTIP CHỈ CÓ Ở NƠI CÓ CON TRỎ ──
+   Máy cảm ứng không có trạng thái "rê vào" nên tooltip ở đó không bao giờ hiện
+   ra. Nhưng nó VẪN CHIẾM CHỖ: dựng bằng ::after, `position:absolute` nhưng
+   không có vật chứa nào `overflow:hidden`, nên bề ngang của nó vẫn tính vào
+   scrollWidth của trang.
+
+   Đo ở khổ 390px: nút đổi theme nằm 333..371, tooltip "Switch to dark" rộng
+   101px căn giữa nút ⇒ mép phải chạm 402px. Trang tràn ngang 12px vì một thứ
+   người dùng điện thoại không bao giờ nhìn thấy.
+
+   Lỗi này có từ trước, không phải mới: quét `querySelectorAll('*')` không thấy
+   pseudo-element nên mấy lượt kiểm trước đi qua mà không bắt được. Muốn thấy
+   phải đo `document.scrollWidth` rồi lần lại bằng getComputedStyle(el,'::after'). */
+@media (hover:none){
+  .tip::after{content:none}
+}
+
+/* Còn ở máy có con trỏ: tooltip của phần tử sát mép phải vẫn có thể thò ra
+   ngoài khi cửa sổ hẹp. Neo nó vào mép phải của nút thay vì căn giữa. */
+@media (hover:hover) and (max-width:620px){
+  .nav > :last-child.tip::after{left:auto;right:0;translate:0 -4px}
+  .nav > :last-child.tip:hover::after,
+  .nav > :last-child.tip:focus-visible::after{translate:0 0}
+}
+
 /* ── CHIP TAG ──
    Một hình dáng duy nhất cho tag ở mọi nơi: đầu bài, thẻ bài, trang /tags/.
    Khác nhau chỉ ở cỡ, qua biến --chip-fs. */
@@ -181,3 +206,105 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
   transition:opacity .3s var(--ease-glass), translate .3s var(--ease-glass);
 }
 .copy-nhac.hien{opacity:1;translate:-50% 0}
+
+/* ══════════════ SỔ LỊCH SỬ PHIÊN BẢN ══════════════
+   Mở bằng 5 nhịp bấm vào dòng phiên bản ở chân trang — xem src/js/so-tay.js. */
+
+.so-nen{
+  position:fixed;inset:0;z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  padding:var(--s5);
+  background:rgba(24,14,40,.34);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  opacity:0;transition:opacity .2s var(--ease-glass);
+}
+.so-nen.hien{opacity:1}
+/* Khoá cuộn NỀN khi hộp đang mở. Thiếu dòng này thì cuộn trong hộp tới đáy
+   rồi cuộn tiếp là trang phía sau chạy — người đọc đóng hộp ra thấy mình đang
+   ở một chỗ khác trên trang mà không hiểu vì sao. */
+body.so-khoa{overflow:hidden}
+
+.so-hop{
+  width:min(620px,100%);max-height:min(76vh,640px);
+  display:flex;flex-direction:column;
+  border-radius:var(--r-lg);overflow:hidden;
+  translate:0 10px;transition:translate .24s var(--spring);
+}
+.so-nen.hien .so-hop{translate:0 0}
+
+.so-dau{
+  display:flex;align-items:center;gap:var(--s3);
+  padding:var(--s4) var(--s5);
+  border-bottom:1px solid var(--line);
+}
+.so-dau .label{margin:0;flex:1}
+.so-x,.so-lui{flex:none;width:30px;height:30px}
+.so-x svg,.so-lui svg{width:15px;height:15px}
+
+.so-cuon{overflow-y:auto;overscroll-behavior:contain;padding:var(--s3) var(--s5)}
+
+.so-bang{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.so-bang tr{border-bottom:1px solid var(--line)}
+.so-bang tr:last-child{border-bottom:none}
+.so-bang td{padding:var(--s3) var(--s2);vertical-align:baseline}
+.so-ver{
+  font-family:var(--font-label);font-weight:600;letter-spacing:.04em;
+  color:var(--accent-ink);white-space:nowrap;
+}
+.so-ngay,.so-dem{
+  font-size:var(--fs-2xs);color:var(--text-faint);white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.so-viec{color:var(--text-muted);line-height:1.5;position:relative;padding-right:var(--s5)}
+
+/* Dòng có chi tiết thì bấm được; dòng không có thì đứng yên, không giả vờ. */
+.so-co{cursor:pointer;transition:background var(--dur-fast)}
+.so-co:hover,.so-co:focus-visible{background:var(--accent-wash);outline:none}
+.so-co:hover .so-ver,.so-co:focus-visible .so-ver{color:var(--accent-ink-hover)}
+.so-mui{
+  position:absolute;right:var(--s2);top:50%;translate:0 -50%;
+  width:6px;height:6px;border-right:1.5px solid var(--line-strong);
+  border-top:1.5px solid var(--line-strong);rotate:45deg;
+  transition:translate var(--dur-fast),border-color var(--dur-fast);
+}
+.so-co:hover .so-mui{translate:2px -50%;border-color:var(--accent-ink)}
+
+.so-y{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--s4)}
+.so-y li{
+  font-size:var(--fs-sm);line-height:1.62;color:var(--text-muted);
+  padding-left:var(--s5);position:relative;
+}
+.so-y li::before{
+  content:"";position:absolute;left:0;top:.62em;
+  width:5px;height:5px;border-radius:50%;background:var(--accent);
+}
+.so-y b{color:var(--text);font-weight:600}
+.so-y code{
+  font-family:var(--font-mono);font-size:.88em;
+  background:var(--surface-sunken);padding:1px 5px;border-radius:var(--r-sm);
+}
+
+.so-trong{
+  margin:var(--s6) 0;text-align:center;
+  font-family:var(--font-label);font-size:var(--fs-2xs);letter-spacing:var(--ls-label);
+  text-transform:uppercase;color:var(--text-faint);
+}
+.so-chan{
+  margin:0;padding:var(--s3) var(--s5);
+  border-top:1px solid var(--line);
+  font-family:var(--font-label);font-size:var(--fs-2xs);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-faint);
+}
+
+/* Điện thoại: hộp dán đáy màn hình như tấm phiếu trượt lên — giữa màn hình thì
+   ngón cái với không tới nút đóng. */
+@media (max-width:560px){
+  .so-nen{align-items:flex-end;padding:0}
+  .so-hop{
+    width:100%;max-height:82vh;
+    border-radius:var(--r-lg) var(--r-lg) 0 0;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .so-bang td{padding:var(--s3) var(--s1)}
+  .so-ngay{display:none}     /* cột ngày là thứ bỏ được đầu tiên khi hết chỗ */
+}

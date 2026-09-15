@@ -20,6 +20,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { docSo } from './lib/lichsu.mjs';
+import { docNguon } from './lib/doc-nguon.mjs';
 import { boDau } from './lib/text.mjs';
 
 const GOC  = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -130,6 +131,18 @@ const KIEM = [
           const src = (m[0].match(/src="([^"]*)"/) || [])[1] || '';
           return !src.includes('ytimg.com');
         })
+        .filter((m) => {
+          /* Ảnh chân dung trong ô .bo--anh cũng vậy: ô đó do LƯỚI quyết định
+             kích thước, ảnh nằm tuyệt đối phủ kín bằng object-fit:cover. Tỉ lệ
+             tấm ảnh gốc không ảnh hưởng gì tới bố cục nên không có chỗ nhảy chữ.
+
+             Khai --ar cho nó thì vừa thừa vừa SAI: không luật CSS nào đọc biến
+             đó ở đây, mà số ghi ra lại gợi ý rằng ô này cao theo tỉ lệ ảnh —
+             người sửa sau đọc vào là hiểu nhầm. Miễn cho nó ở đây, và nói rõ
+             vì sao, đúng hơn là nhét một con số cho phép kiểm im mồm. */
+          const i = t.than.indexOf(m[0]);
+          return !/class="bo bo--anh[^"]*"[^>]*>\s*$/.test(t.than.slice(Math.max(0, i - 120), i));
+        })
         .map((m) => `${t.url} — img thiếu --ar: ${(m[0].match(/src="([^"]*)"/) || [])[1]}`))
   },
   {
@@ -208,7 +221,7 @@ const KIEM = [
     muc: 'canh',
     chay: ({ cau }) => {
       const r = [];
-      if (/example\.com|localhost|vercel\.app$/.test(cau.url)) {
+      if (/example\.com|localhost|vercel\.app$|pages\.dev$/.test(cau.url)) {
         r.push(`url còn là "${cau.url}" — đổi thành tên miền thật, không thì ` +
                `canonical, ảnh OG và sitemap đều trỏ sai`);
       }
@@ -296,27 +309,127 @@ const KIEM = [
   },
 
   {
-    /* Vercel preset "Other" mặc định lấy thư mục `public/` làm nơi chứa trang
-       nếu nó tồn tại — mà repo này có public/, trong đó chỉ có ảnh. Không có
-       vercel.json trỏ sang dist/ thì deploy xong ra 404, và log build lại hoàn
-       toàn sạch nên rất khó đoán ra. */
-    ten: 'vercel.json trỏ đúng vào dist/',
+    /* Cloudflare Pages đọc luật header từ một file tên `_headers` nằm ở GỐC
+       THƯ MỤC XUẤT BẢN — tức là trong `dist/`, không phải gốc repo. Để nhầm
+       chỗ thì nó im lặng không có tác dụng gì: trang vẫn lên, ảnh vẫn hiện,
+       chỉ là mỗi lần tải lại tải lại từ đầu. Không có lỗi nào để mà thấy.
+
+       Nó nằm ở `public/_headers` trong repo và được build chép sang. */
+    ten: 'Cloudflare `_headers` có mặt trong dist/ và đặt cache cho media',
     muc: 'canh',
     chay: ({ goc }) => {
-      const f = path.join(goc, 'vercel.json');
+      const f = path.join(DIST, '_headers');
       if (!fs.existsSync(f)) {
-        return ['thiếu vercel.json — Vercel sẽ lấy nhầm thư mục public/ và ra 404 ' +
-                '(xem docs/DUA-LEN-MANG.md §3)'];
+        return ['thiếu dist/_headers — Cloudflare sẽ không đặt cache cho ảnh ' +
+                '(file gốc phải nằm ở public/_headers; xem docs/DUA-LEN-MANG.md)'];
       }
-      let v;
-      try { v = JSON.parse(fs.readFileSync(f, 'utf8')); }
-      catch (e) { return [`vercel.json đọc không được: ${e.message}`]; }
+      const t = fs.readFileSync(f, 'utf8');
       const r = [];
-      if (v.outputDirectory !== 'dist') {
-        r.push(`vercel.json: outputDirectory là "${v.outputDirectory}" — phải là "dist"`);
+      if (!/^\/media\/\*/m.test(t)) r.push('dist/_headers: chưa có luật cho /media/*');
+      if (!/^\/assets\/\*/m.test(t)) r.push('dist/_headers: chưa có luật cho /assets/*');
+      /* Đây là chỗ dễ sai nhất và hậu quả nặng nhất: đặt cache dài cho assets
+         thì sửa CSS xong người đọc cũ vẫn thấy giao diện cũ hàng tháng trời. */
+      const kAssets = (t.match(/^\/assets\/\*[\s\S]*?(?=^\/|\Z)/m) || [''])[0];
+      if (/max-age=\s*([1-9]\d{3,})/.test(kAssets)) {
+        r.push('dist/_headers: /assets/* đang đặt cache dài — tên file không có ' +
+               'vân tay nội dung nên sửa giao diện xong người đọc cũ vẫn thấy bản cũ');
       }
-      if (!v.buildCommand) r.push('vercel.json: thiếu buildCommand "npm run build"');
       return r;
+    }
+  },
+
+  {
+    /* ── BỘ ĐỌC NGUỒN QUOTE CÓ THẬT SỰ ĐỌC ĐƯỢC KHÔNG ──
+       `docNguon` cố ý DỄ TÍNH: mục nào đọc không ra thì lặng lẽ lấy bản dự
+       phòng cho mục đó. Tính dễ tính ấy giữ cho trang không bao giờ sập —
+       nhưng nó cũng nuốt luôn lỗi gõ nhầm. Đổi `### Chủ đề` thành `### Chu de`
+       hay `## Chủ đề` là cả danh sách 8 chủ đề biến mất, còn đúng một chủ đề
+       dự phòng, và KHÔNG CÓ GÌ BÁO: trang vẫn chạy, quote vẫn ra, chỉ là mỗi
+       ngày đều một chủ đề.
+
+       (Phép kiểm đời đầu ở chỗ này so bản nướng `_nguon.js` với file .md để
+       bắt "nướng lệch". Vô dụng: `npm run kiem` dựng lại trước khi kiểm, nên
+       bản nướng lúc nào cũng vừa mới sinh ra. Thử cắm lỗi vào thì nó vẫn báo
+       xanh. Bỏ đi, kiểm cái hỏng được thật.) */
+    ten: 'content/quote-nguon.md đọc ra đủ bốn mục',
+    muc: 'canh',
+    chay: ({ goc }) => {
+      const k = docNguon(goc);
+      const r = [];
+      if (k.thieuFile) return ['thiếu content/quote-nguon.md'];
+      if (k.loi) return [`content/quote-nguon.md: ${k.loi}`];
+      /* Mấy con số này là cỡ của bản dự phòng trong doc-nguon.mjs. Chạm sàn
+         nghĩa là mục tương ứng không đọc ra được gì. */
+      if (k.chuDe.length <= 1) r.push('content/quote-nguon.md: không đọc ra `### Chủ đề` — kiểm lại dòng tiêu đề');
+      if (k.nguon.length <= 3) r.push('content/quote-nguon.md: không đọc ra `### Nguồn` — kiểm lại dòng tiêu đề');
+      if (!k.nhac)             r.push('content/quote-nguon.md: không đọc ra `### Lời dặn` — lớp Gemini sẽ không chạy');
+      if (k.san.length <= 1)   r.push('content/quote-nguon.md: không đọc ra `### Câu sẵn` — ô trích dẫn chỉ còn một câu');
+      if (k.nhac && !/\{\{chuDe\}\}/.test(k.nhac)) {
+        r.push('content/quote-nguon.md: `### Lời dặn` thiếu {{chuDe}} — bốc chủ đề xong không gửi đi đâu cả');
+      }
+      if (k.nhac && !/\{\{nguon\}\}/.test(k.nhac)) {
+        r.push('content/quote-nguon.md: `### Lời dặn` thiếu {{nguon}} — bốc tác giả xong không gửi đi đâu cả');
+      }
+      return r;
+    }
+  },
+
+  {
+    /* Hàm Cloudflare `import` bản nướng này; thiếu nó là hàm không build được.
+       Nó ĐƯỢC COMMIT chứ không gitignore, nên phải có mặt trong repo. */
+    ten: 'functions/api/_nguon.js có mặt và nạp được',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'functions', 'api', '_nguon.js');
+      if (!fs.existsSync(f)) {
+        return ['thiếu functions/api/_nguon.js — chạy `npm run build` rồi commit file đó'];
+      }
+      const t = fs.readFileSync(f, 'utf8');
+      if (!/^export default/m.test(t)) {
+        return ['functions/api/_nguon.js không có `export default` — Workers chỉ chạy ESM'];
+      }
+      try { JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); }
+      catch (e) { return [`functions/api/_nguon.js hỏng cú pháp: ${e.message}`]; }
+      return [];
+    }
+  },
+
+  {
+    /* Workers KHÔNG phải Node. Bốn thứ dưới đây chạy ngon ở máy mình nhưng
+       chết ngay khi deploy, và lỗi chỉ hiện trong log Cloudflare chứ trang
+       thì cứ im lặng trả về hỏng. Bắt sớm ở đây rẻ hơn nhiều. */
+    ten: 'Hàm trong functions/ không dùng thứ Workers không có',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const thu = path.join(goc, 'functions');
+      if (!fs.existsSync(thu)) return [];
+      const ra = [];
+      const di = (d) => {
+        for (const x of fs.readdirSync(d, { withFileTypes: true })) {
+          const f = path.join(d, x.name);
+          if (x.isDirectory()) { di(f); continue; }
+          if (!/\.(js|mjs|ts)$/.test(x.name)) continue;
+          const t = fs.readFileSync(f, 'utf8');
+          const ten = path.relative(goc, f);
+          /* Bỏ chú thích trước khi dò, không thì chính mấy dòng giải thích
+             "Workers không có process.env" lại bị báo là lỗi. */
+          const ma = t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+          if (/\bprocess\.env\b/.test(ma)) {
+            ra.push(`${ten} — dùng process.env; trên Workers phải lấy từ tham số env của onRequest`);
+          }
+          if (/require\(|module\.exports/.test(ma)) {
+            ra.push(`${ten} — dùng CommonJS; Workers chỉ chạy ESM (import/export)`);
+          }
+          if (/from\s+['"]node:|require\(['"]fs['"]\)|\bfs\.(readFile|existsSync)/.test(ma)) {
+            ra.push(`${ten} — đọc file hoặc gọi module node:; Workers không có đĩa`);
+          }
+          if (/export\s+default\s+(async\s+)?function\s+handler/.test(ma)) {
+            ra.push(`${ten} — còn kiểu handler của Vercel; Cloudflare tìm hàm tên onRequest`);
+          }
+        }
+      };
+      di(thu);
+      return ra;
     }
   },
 
@@ -419,6 +532,39 @@ const KIEM = [
     chay: ({ trang }) => trang.flatMap((t) =>
       [...t.html.matchAll(/(?:src|href)="(file:\/\/|[A-Z]:\\|\/home\/|\/Users\/)[^"]*"/g)]
         .map((m) => `${t.url} — đường dẫn máy cá nhân lọt ra HTML: ${m[0].slice(0, 60)}`))
+  },
+  {
+    /* ── Ô BENTO NÀO CŨNG PHẢI CÓ TÊN TRONG LUẬT GỘP CỘT Ở MOBILE ──
+       Lưới bento khoá cứng vị trí từng ô bằng `grid-column`. Dưới 860px lưới
+       rút về một cột, và có một luật liệt kê tên từng ô để kéo chúng về cột 1.
+       Ô nào KHÔNG có tên trong danh sách đó thì ở lại cột cũ — trình duyệt
+       phải đẻ thêm cột ngầm cho đủ chỗ, mỗi ô teo lại còn mấy chục pixel và
+       trang tràn ngang.
+
+       Đã vấp thật khi thêm ô ảnh chân dung: trang tràn 402px trên màn 390px,
+       CSS không báo lỗi gì cả. Phép kiểm này đọc thẳng file .css nên bắt được
+       ngay lúc build, không phải đợi chụp ảnh màn hình mới thấy. */
+    ten: 'Ô bento nào cũng được kéo về một cột ở khổ hẹp',
+    muc: 'loi',
+    chay: () => {
+      const f = path.join(GOC, 'src', 'styles', 'about.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8');
+
+      /* Mọi ô có khai grid-column ở phần desktop (ngoài @media) */
+      const ngoai = css.split('@media')[0];
+      const o = new Set();
+      for (const m of ngoai.matchAll(/\.(bo--[\w-]+|bo-dai)\s*\{[^}]*grid-column/g)) o.add(m[1]);
+
+      /* Danh sách được kéo về cột 1 trong khối @media hẹp */
+      const kh = css.match(/@media\s*\(max-width:\s*860px\)\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*2/);
+      const ten = new Set();
+      if (kh) for (const m of kh[0].matchAll(/\.(bo--[\w-]+|bo-dai)/g)) ten.add(m[1]);
+
+      return [...o].filter((x) => !ten.has(x)).map((x) =>
+        `src/styles/about.css — ô .${x} có grid-column nhưng không nằm trong luật ` +
+        `gộp về một cột ở @media (max-width:860px) ⇒ trang sẽ tràn ngang trên điện thoại`);
+    }
   }
 ];
 

@@ -5,104 +5,139 @@
 
 ---
 
-## 1 · Lớp nền — kho câu tự viết
+## 1 · Một file tả NGUỒN, không phải một file chứa câu
 
-Sửa `content/quotes.md`. Mỗi gạch đầu dòng một câu:
+Mọi thứ của ô này nằm ở **`content/quote-nguon.md`**. File đó có bốn mục, và
+hai bên đọc hai phần khác nhau:
 
-```markdown
-- Ai nhìn ra ngoài thì mơ. Ai nhìn vào trong thì tỉnh. — Carl Jung
-- Đi chậm lại không làm mất thời gian, nó làm mình thấy thời gian. —
-```
+| Mục | Ai đọc | Lúc nào | Để làm gì |
+|---|---|---|---|
+| `### Chủ đề` | hàm `/api/quote` | mỗi ngày | bốc ngẫu nhiên MỘT chủ đề |
+| `### Nguồn` | hàm `/api/quote` | mỗi ngày | bốc ngẫu nhiên ~12 tác giả |
+| `### Lời dặn` | hàm `/api/quote` | mỗi ngày | khuôn câu hỏi gửi Gemini |
+| `### Câu sẵn` | `npm run build` | lúc dựng trang | kho nhúng thẳng vào HTML |
 
-Dấu `—` cuối câu tách phần tên người nói. Không có tên thì để trống sau dấu đó,
-hoặc bỏ hẳn dấu — câu vẫn hiện bình thường.
+Sửa cái gì cũng chỉ mở đúng file đó, gõ như gõ văn bản thường.
 
-Build nhúng cả kho vào trang. Không gọi mạng, không cần máy chủ.
+### 1.1 · Vì sao bốc ngẫu nhiên nguồn, không gửi cả danh sách
 
-### Cách chọn câu: CHIA BÀI, không phải chia dư
+Bản gốc bên dongchibinh-33 nhét cả bốn chủ đề và 46 cái tên vào một lời dặn.
+Kết quả đo được: Gemini bám vào mấy cái tên quen nhất — Jung, Seneca, Lão Tử —
+và gần như lúc nào cũng rơi vào chủ đề đứng đầu danh sách. Danh sách dài ra
+cũng không làm câu đa dạng hơn.
 
-Bản đầu băm chuỗi ngày rồi lấy dư theo số câu. Đo ra hỏng: 7 ngày liên tiếp cho
-`[1, 2, 3, 4, 1, 2, 10]` — vừa đi gần như tuần tự, vừa **trùng câu hai lần trong
-một tuần**. Lý do: hai ngày liền nhau chỉ khác một ký tự, và phần bit thấp của
-hàm băm không xáo đủ mạnh để giấu điều đó sau phép chia dư.
+Ở đây mỗi ngày bốc **một** chủ đề và **mười hai** tác giả rồi mới hỏi. Đo trên
+20 ngày liên tiếp: cả 8 chủ đề đều được dùng tới, cả 38 tác giả đều được nhắc
+tên ít nhất một lần.
 
-Cách đang dùng: coi kho câu như một **cỗ bài**. Mỗi vòng N ngày xáo lại một lần,
-rồi mỗi ngày rút một lá theo thứ tự.
+Số 12 là chỗ vừa: ít quá thì mấy hôm liền trùng người, nhiều quá thì lại quay
+về đúng cái bệnh cũ — Gemini bám vào cái tên quen nhất trong nhóm.
 
-| | Kết quả đo |
-|---|---|
-| Mỗi câu trong mỗi vòng N ngày | đúng **một lần**, không bao giờ trùng |
-| Khoảng cách gần nhất giữa hai lần trùng | **2 ngày** |
-| Phân bố qua 400 ngày | lệch nhiều nhất **2 lượt** giữa câu nhiều nhất và ít nhất |
-| Cùng một ngày, hai máy khác nhau | **cùng một câu** |
+### 1.2 · Cùng một ngày thì luôn ra cùng một chủ đề
 
-Đã kiểm với kho 5 · 8 · 12 · 20 · 40 câu, tất cả đều đạt.
+Hạt giống của bộ bốc là **chuỗi ngày**, không phải `Math.random()`. Nên gọi
+`/api/quote?ngay=2026-09-15` bao nhiêu lần cũng ra cùng chủ đề và cùng nhóm
+tác giả. Bắt buộc phải vậy: Cloudflare cache câu trả lời tới nửa đêm, mà cache
+chỉ khớp khi cùng đầu vào cho cùng đầu ra.
 
-:::note Chỗ nối giữa hai vòng
-Cái bẫy kinh điển của kiểu xáo bài: lá **cuối** vòng này và lá **đầu** vòng sau
-được xáo độc lập nên có thể trùng nhau — người đọc thấy một câu hai ngày liền,
-tức là thấy đúng cái mà cả cơ chế sinh ra để tránh. Code kiểm việc đó và đổi chỗ
-lá đầu với lá thứ hai nếu trùng.
+### 1.3 · Kho `### Câu sẵn` — lớp nền luôn chạy
+
+Kho này nhúng thẳng vào HTML lúc build, nên hiện ra tức thì: không cần mạng,
+không cần khoá, không tốn đồng nào. Gemini chỉ là lớp phủ lên trên.
+
+Cơ chế chọn là **chia bài**, không phải bốc ngẫu nhiên:
+
+- mỗi câu ra **đúng một lần** trong mỗi vòng N ngày (N = số câu trong kho)
+- không bao giờ trùng hai ngày liền, kể cả ở chỗ nối giữa hai vòng
+- tất định: cùng ngày, mọi máy ra cùng câu, không cần lưu gì
+- ngày tính theo **giờ máy người đọc**, không phải UTC
+
+Đo trên kho 5 / 8 / 12 / 20 / 40 câu, 400 ngày: mỗi vòng đủ cả N câu, khoảng
+cách gần nhất giữa hai lần trùng là 2 ngày, độ lệch phân bố ≤ 2.
+
+:::note Vì sao không dùng chia dư
+Bản đầu băm chuỗi ngày rồi lấy dư theo số câu. Đo 7 ngày liên tiếp ra
+`[1,2,3,4,1,2,10]` — vừa gần như tuần tự, vừa trùng câu hai lần trong một tuần.
+Hai ngày liền nhau chỉ khác một ký tự, và phần bit thấp của hàm băm không xáo
+đủ mạnh để giấu điều đó sau phép chia dư.
 :::
 
-Ngày tính theo **giờ máy người đọc**: người ở Hà Nội sang ngày mới lúc 0h Hà Nội,
-không phải 7h sáng như nếu tính theo UTC.
+Thêm câu thì thêm vào `### Câu sẵn`, khuôn `- Nội dung — Tác giả` (gạch ngang
+DÀI `—`). Càng nhiều câu thì vòng càng dài.
+
+:::warn Tiêu đề phụ trong kho phải dùng `####`, đừng dùng `**đậm**`
+Đây là chỗ bản gốc đã vấp: bộ đọc bên đó nhận cả `-` lẫn `*` làm gạch đầu dòng,
+nên một dòng `**Tự biết mình**` bị hiểu thành một câu trích dẫn tên là
+`*Tự biết mình**`. Bộ đọc ở đây **chỉ nhận `-`**, nên viết đậm ở đâu cũng an
+toàn — nhưng cứ dùng `####` cho đúng ý.
+:::
 
 ---
 
-## 2 · Lớp Gemini — tuỳ chọn
+## 2 · Lớp Gemini — tuỳ chọn, mặc định TẮT
 
-Mặc định **tắt**. Bật lên thì mỗi ngày trang xin thêm một câu viết mới qua
-`/api/quote`, đè lên câu lấy từ kho.
+Cách bật, cách lấy khoá, cách khai biến môi trường: xem **`docs/CAI-DAT.md` §2**.
 
-Cách làm học từ `api/quote.js` bên **dongchiBinh-33** (nhánh
-`feature/v2-birthday-surprise`), giữ nguyên mấy nguyên tắc của bản đó.
+### 2.1 · Ba luật của lớp này
 
-### 2.1 · Bật
+1. **Mỗi ngày gọi đúng một lần.** Cloudflare cache tới nửa đêm; trình duyệt còn
+   cất thêm một bản trong `localStorage` theo ngày. Tải lại trang không gọi
+   mạng lần nữa.
+2. **Hỏng thì im.** Không mạng, chưa deploy, chưa khai khoá, Gemini chậm — câu
+   từ kho sẵn vẫn đang nằm đó, người đọc không thấy gì khác thường.
+3. **Bỏ cuộc sau 3 giây.** Lâu hơn thì thà giữ câu sẵn: không ai đứng chờ một ô
+   trích dẫn.
 
-```json
-"quoteAI": { "bat": true, "api": "/api/quote" }
-```
+### 2.2 · Sàn và trần độ dài
 
-Rồi trên Vercel: **Settings → Environment Variables** thêm `GEMINI_KEY`, và
-**Redeploy** — biến môi trường chỉ ăn từ lần deploy sau.
+Câu nhận được phải dài **40 đến 150 ký tự**, ngoài khoảng đó thì vứt.
 
-Lấy khoá ở [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+Trần thì dễ hiểu. **Sàn cũng cần**: câu 30 ký tự làm ô chừa hẳn một mảng trống
+bên phải, nhìn như bị cắt cụt — bản gốc đã vấp đúng chỗ này và phải nới trần
+lên sau khi bỏ `text-wrap:balance`.
 
-| Biến | Bắt buộc | Mặc định |
-|---|---|---|
-| `GEMINI_KEY` | có | — |
-| `GEMINI_MODEL_QUOTE` | không | `gemini-flash-lite-latest` |
-| `GEMINI_MODEL` | không | `gemini-2.0-flash` (chỉ dùng khi model trên lỗi) |
+### 2.3 · Chạy trên Cloudflare Workers, không phải Node
 
-### 2.2 · Bốn nguyên tắc của lớp này
+Workers **không có đĩa**. Hàm không thể tự đọc `content/quote-nguon.md` lúc
+chạy. Nên build đọc file đó một lần rồi ghi ra `functions/api/_nguon.js`, và
+hàm `import` file ấy.
 
-**Khoá không bao giờ xuống trình duyệt.** Nó nằm ở biến môi trường trên Vercel;
-`api/quote.js` chạy phía máy chủ, trang chỉ nhận về một câu chữ.
+Nghĩa là: **sửa `content/quote-nguon.md` xong phải chạy `npm run build`.** Đẩy
+lên GitHub thì Cloudflare tự chạy build nên cũng xong.
 
-**Hỏng kiểu gì cũng không ai thấy.** Chưa deploy, chưa khai khoá, mất mạng,
-Gemini chậm hay trả câu không dùng được — câu từ kho sẵn vẫn đang nằm đó, người
-đọc không thấy gì khác thường. Không có thông báo lỗi nào hiện ra.
+File `_nguon.js` **được commit**, không gitignore — thiếu nó là hàm không build
+được.
 
-**Mỗi ngày gọi đúng một lần.** Câu được cất vào `localStorage` theo ngày; tải
-lại trang là lấy từ đó. Vercel cũng cache câu trả lời tới hết ngày, nên nhiều
-người đọc cùng ngày chỉ tốn một lượt gọi Gemini.
+### 2.4 · Một chỗ cố ý khác bản gốc
 
-**Bỏ cuộc sau 3 giây.** Máy chủ tự ngắt ở 2,6 giây, trang ngắt ở 3 giây. Không
-ai chờ một ô trích dẫn.
-
-### 2.3 · Đổi giọng câu
-
-Lời dặn gửi cho Gemini nằm trong biến `NHAC` ở đầu `api/quote.js`. Sửa ở đó.
+Bản gốc là "lời chào", mỗi lần tải là một câu mới. Ô này là "câu **của hôm
+nay**" nên cả ngày phải một câu. Đổi mỗi lần bấm F5 thì nó không còn là câu của
+ngày nữa, chỉ là một cái máy xổ số.
 
 ---
 
-## 3 · Nút đổi câu
+## 3 · Nút "Another one"
 
-Góc dưới phải ô trích dẫn. Bấm thì đi **vòng tròn** qua kho, không bốc ngẫu
-nhiên — bốc ngẫu nhiên thì bấm ba lần có khi trúng lại câu cũ, người bấm tưởng
-nút hỏng. Nhãn ô đổi thành `QUOTE OF THE DAY · thêm` để người đọc biết mình
-đang xem thêm chứ không phải câu của ngày.
+Góc dưới phải ô trích dẫn.
+
+**Chưa bật Gemini:** bấm thì đi **vòng tròn** qua kho, không bốc ngẫu nhiên —
+bốc ngẫu nhiên thì bấm ba lần có khi trúng lại câu cũ, người bấm tưởng nút hỏng.
+
+**Đã bật Gemini:** bấm là xin một câu **viết mới** (`?moi=1`, không cache), bốc
+lại chủ đề và nhóm tác giả thật ngẫu nhiên. Đây mới là chỗ "random đổi mới"
+đúng nghĩa.
+
+Nhưng mạng có thể chậm, mà không ai đứng chờ một ô trích dẫn. Nên nó chạy song
+song một cái hẹn **700ms**:
+
+- Gemini về trước → hiện câu của Gemini
+- hẹn tới trước → lật sang câu kế trong kho, và nếu Gemini về muộn thì chỉ
+  **nhét thêm** vào kho chứ không giật lại màn hình
+
+Chữ đang đọc dở mà tự đổi là thứ khó chịu hơn cả phải chờ.
+
+Nhãn ô đổi thành `QUOTE OF THE DAY · thêm` để người đọc biết mình đang xem thêm
+chứ không phải câu của ngày.
 
 ---
 

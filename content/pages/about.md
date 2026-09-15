@@ -1,14 +1,23 @@
 ---
 title: Về tôi
 khung: bento
-summary: Honghandangiu — ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ xong.
+summary: Ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ xong.
 
 # ─────────── KHUNG BENTO đọc mấy field dưới đây ───────────
+# Muốn sửa chữ trên trang About thì sửa NGAY Ở ĐÂY, không phải sửa mã.
+# Xem docs/HUONG-DAN-DANG-BAI.md §7 để biết field nào hiện ra chỗ nào.
+
 # Câu mở. Một hoặc hai câu, đừng dài hơn.
 gioiThieu: Mình viết ở đây những thứ chưa kịp nghĩ xong — sách đọc dở, chuyện nghe được, vài ý loanh quanh về cách con người tự hiểu mình.
 
-# Mấy ô nhỏ bên phải
-viTri: Hà Nội
+# Ảnh chân dung — BỎ TRỐNG hoặc xoá hẳn hai dòng này thì lưới tự về khung cũ
+# (ô giới thiệu rộng 4 cột). Có ảnh thì thành ảnh 2 cột + giới thiệu 2 cột.
+# Bỏ ảnh vào public/media/ rồi trỏ đường dẫn tính từ public/.
+anh: /media/chan-dung.png
+anhAlt: Ảnh chân dung
+
+# Mấy ô số liệu. posts và topics KHÔNG khai ở đây — máy tự đếm mỗi lần build.
+viTri: TP. Hồ Chí Minh
 tuNam: 2016
 nghe: Nhạc không lời, buổi sáng
 
@@ -21,11 +30,9 @@ dangLam:
 
 # Ô liên hệ — dạng  Tên · địa chỉ
 lienHe:
-  - Email · honghandangiu@example.com
-  - Instagram · @honghandangiu
+  - Email · zoey@borderland.in
+  - Instagram · @zoeyinborderland
 ---
-
-Mình là Honghandangiu.
 
 Ban ngày mình đi dạy. Buổi tối, thỉnh thoảng, mình ngồi xuống viết lại mấy thứ
 đã nghĩ trong ngày — phần lớn là để tự mình đọc lại sau, phần nhỏ là vì viết ra

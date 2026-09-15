@@ -1,10 +1,10 @@
 {
   "title": "Zoey in Borderland",
   "tagline": "Personal notes",
-  "description": "Blog cá nhân của Honghandangiu — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
-  "author": "Honghandangiu",
+  "description": "Blog cá nhân — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
+  "author": "Zoey",
   "lang": "vi",
-  "url": "https://zoey-in-borderland.vercel.app",
+  "url": "https://zoey-in-borderland.pages.dev",
   "base": "",
   "locale": "vi_VN",
   "postsPerPage": 12,

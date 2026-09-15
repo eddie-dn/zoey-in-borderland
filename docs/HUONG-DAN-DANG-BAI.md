@@ -350,7 +350,100 @@ bài nháp hoặc file ghi chú mà không sợ nó bị đăng.
 
 ---
 
-## 6 · TRA NHANH
+## 6 · SỬA TRANG GIỚI THIỆU
+
+Mọi chữ trên trang `/about/` nằm ở **một file duy nhất**:
+`content/pages/about.md`. Không phải sửa mã, không phải đụng vào CSS.
+
+File có hai phần. Phần trên giữa hai dòng `---` là **front matter** — mỗi dòng
+điền vào một ô trên trang. Phần dưới là **thân bài**, viết Markdown như một bài
+thường.
+
+### 6.1 · Field nào hiện ở đâu
+
+| Field | Hiện ở đâu trên trang |
+|---|---|
+| `title` | tiêu đề lớn trong ô giới thiệu |
+| `gioiThieu` | câu mở, ngay dưới tiêu đề |
+| `anh` · `anhAlt` | ô ảnh chân dung bên trái |
+| `viTri` | ô số `BASED IN` |
+| `tuNam` | ô số `WRITING SINCE` |
+| `nghe` | dòng nghiêng ở đáy ô `LATELY` |
+| `dangLam` | danh sách trong ô `LATELY` |
+| `lienHe` | danh sách trong ô `FIND ME` |
+| phần dưới `---` | khối chữ dài bên dưới lưới |
+
+**`POSTS` và `TOPICS` không khai ở đâu cả** — máy tự đếm mỗi lần build: số bài
+công khai, và số tag khác nhau. Viết thêm bài là hai con số đó tự lên.
+
+### 6.2 · Khuôn `Nhãn · Nội dung`
+
+`dangLam` và `lienHe` dùng dấu chấm giữa `·` để tách nhãn khỏi nội dung:
+
+```yaml
+dangLam:
+  - Đọc · Sách Đỏ, bản in màu
+  - Học · dựng trang web không cần framework
+
+lienHe:
+  - Email · zoey@borderland.in
+  - Instagram · @zoeyinborderland
+```
+
+Không có dấu `·` thì cả dòng là nội dung, nhãn để trống — vẫn hiện được.
+
+Dòng nào có nhãn chứa chữ "mail" và nội dung có `@` thì tự thành link `mailto:`.
+Dòng nào bắt đầu bằng `http` thì tự thành link.
+
+### 6.3 · Ảnh chân dung
+
+```yaml
+anh: /media/chan-dung.png
+anhAlt: Ảnh chân dung
+```
+
+Bỏ ảnh vào `public/media/`, đường dẫn tính **từ `public/`** (nên bắt đầu bằng
+`/media/`).
+
+Có ảnh thì hàng đầu của lưới chia ba: ảnh 2 cột · giới thiệu 2 cột · trích dẫn
+2 cột. **Xoá hai dòng đó đi** thì lưới tự về khuôn cũ — giới thiệu 4 cột ·
+trích dẫn 2 cột. Cả hai đường đều kín lưới, không để lỗ hổng.
+
+Ảnh dọc hay ngang đều được: nó phủ kín ô bằng `object-fit:cover`, không kéo
+giãn, không để băng trống. Ảnh chân dung thì căn ở 38% chiều cao chứ không phải
+giữa — căn giữa thì cắt mất trán trước khi cắt tới cằm.
+
+### 6.4 · Hai khung
+
+Dòng `khung:` trong front matter đổi cả cách bày trang, cùng một nội dung:
+
+| `khung:` | Ra cái gì |
+|---|---|
+| `bento` | lưới ô kính, đọc lướt được ngay như tấm danh thiếp |
+| `chuong` | các chương chữ lớn, hiện dần khi cuộn — yên hơn, giống một bài viết |
+
+### 6.5 · Chữ trên giao diện thì sao
+
+`BASED IN`, `LATELY`, `FIND ME`, `AUTHOR`, `Reply`… — mấy chữ đó **không nằm ở
+đây**. Chúng ở bảng `NHAN` đầu file `tools/build.mjs`, và đều là tiếng Anh.
+
+Cố ý tách như vậy: nội dung tiếng Việt do bạn gõ, phần khung tiếng Anh cho đồng
+bộ. Nửa nọ nửa kia thì mỗi khối một giọng, đọc rất chắp vá.
+
+Muốn đổi thì mở `tools/build.mjs`, sửa trong bảng đó — một chỗ, mọi trang đổi
+theo.
+
+### 6.6 · Thêm trang tĩnh khác
+
+Bỏ một file `.md` mới vào `content/pages/`. Tên file thành đường dẫn:
+`content/pages/lien-he.md` → `/lien-he/`.
+
+Nhớ thêm vào `nav` trong `site.config.json` nếu muốn nó lên thanh menu, và bỏ
+đường dẫn đó khỏi `chuaDung` nếu nó đang nằm trong danh sách "chưa dựng".
+
+---
+
+## 7 · TRA NHANH
 
 ```bash
 npm run new "Tên bài" <chuyên-mục>    # tạo bài mới

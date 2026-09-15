@@ -469,3 +469,102 @@ a.rn-card:hover{color:var(--text)}
    nên không ai đẩy được nội dung lệch đi bằng một dãy dấu cách. */
 .bl-nd{margin:0;white-space:pre-line;font-size:calc(var(--fs-base) * .96);
   line-height:1.7;color:var(--text-muted);overflow-wrap:break-word}
+
+/* ── ĐẦU KHỐI: NÚT ĐÓNG MỞ ── */
+.bl-mo{
+  display:flex;align-items:center;gap:var(--s3);
+  width:100%;padding:0;margin:0 0 var(--s2);
+  background:none;border:none;cursor:pointer;text-align:left;
+  color:inherit;font:inherit;
+}
+.bl-mo .label{margin:0}
+.bl-mo:hover .label,.bl-mo:focus-visible .label{color:var(--accent-ink)}
+.bl-mo:focus-visible{outline:2px solid var(--accent-ink);outline-offset:4px;border-radius:var(--r-sm)}
+.bl-mui{
+  width:7px;height:7px;flex:none;
+  border-right:1.5px solid var(--line-strong);border-bottom:1.5px solid var(--line-strong);
+  rotate:45deg;translate:0 -2px;
+  transition:rotate var(--dur) var(--ease-glass),border-color var(--dur-fast);
+}
+/* Mũi chỉ XUỐNG khi đang mở, chỉ SANG PHẢI khi đã gấp — hướng mũi phải nói
+   trạng thái hiện tại, không phải nói việc sẽ xảy ra khi bấm. */
+.bl-mo[aria-expanded="false"] .bl-mui{rotate:-45deg;translate:0 0}
+.bl-mo:hover .bl-mui{border-color:var(--accent-ink)}
+
+.bl-trong{
+  font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
+  padding:var(--s4) 0;
+}
+
+/* ── HUY HIỆU TÁC GIẢ ── */
+.bl-hh{
+  flex:none;padding:2px 8px 3px;border-radius:var(--r-pill);
+  background:var(--accent-wash);box-shadow:inset 0 0 0 1px var(--line);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+}
+/* Dòng đầu là  tên · huy hiệu ·········· ngày. `margin-left:auto` trên thẻ
+   thời gian đẩy nó sang hẳn mép phải, chừa tên và huy hiệu đứng liền nhau bên
+   trái. Không có nó thì justify-content dàn đều ba thứ và huy hiệu trôi ra
+   giữa dòng, trông như một cái tag lạc chỗ. */
+.bl-dau .bl-luc{margin-left:auto}
+.bl-item--chu{box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-wash)}
+
+/* ── NÚT TRẢ LỜI ── */
+.bl-tra,.bl-them{
+  align-self:flex-start;padding:2px 0;margin-top:var(--s1);
+  background:none;border:none;cursor:pointer;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);transition:color var(--dur-fast);
+}
+.bl-tra:hover,.bl-them:hover,
+.bl-tra:focus-visible,.bl-them:focus-visible{color:var(--accent-ink);outline:none}
+
+/* ── NHÁNH TRẢ LỜI ──
+   Thụt vào bằng một đường kẻ dọc chứ không bằng lề trơn: đường kẻ nói rõ mấy
+   cái này thuộc về bình luận phía trên, còn lề trơn thì ở màn hẹp nhìn như
+   một bình luận gốc bị lệch. */
+.bl-nhanh{
+  margin-top:var(--s4);padding-left:var(--s5);
+  border-left:2px solid var(--line);
+}
+.bl-ds--con{margin:0;gap:var(--s3)}
+.bl-item--con{padding:var(--s4) 0 0;background:none;box-shadow:none}
+.bl-item--con .bl-nd{font-size:calc(var(--fs-base) * .92)}
+/* Trả lời của chủ trang trong nhánh: không dựng lại cả tấm kính, chỉ đổi màu
+   đường kẻ bên trái — tấm kính lồng trong tấm kính nhìn rối. */
+.bl-item--con.bl-item--chu{
+  background:none;box-shadow:none;
+  border-left:2px solid var(--accent);margin-left:calc(var(--s5) * -1 - 2px);
+  padding-left:var(--s5);
+}
+
+/* ── DÒNG "ĐANG TRẢ LỜI …" ── */
+.bl-chip{
+  display:flex;align-items:center;gap:var(--s3);
+  margin:0 0 var(--s4);padding:6px var(--s4);
+  border-radius:var(--r-pill);background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--line);
+  font-size:var(--fs-sm);color:var(--text-muted);
+}
+.bl-chip span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bl-chip-x{
+  flex:none;width:22px;height:22px;border:none;border-radius:50%;
+  background:none;cursor:pointer;color:var(--text-faint);
+  font-size:12px;line-height:1;
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+.bl-chip-x:hover,.bl-chip-x:focus-visible{
+  color:var(--accent-ink);background:var(--surface-solid);outline:none;
+}
+
+/* Form đem xuống dưới một bình luận thì lùi vào cho khớp nhánh trả lời. */
+.bl-item > .bl-form{margin-top:var(--s4);padding-left:var(--s5);
+  border-left:2px solid var(--line)}
+
+/* Ở CHỖ ĐỨNG GỐC (ngay dưới danh sách) thì form cần một quãng thở. Không có
+   dòng này thì ô NAME dính sát vào tấm kính của bình luận cuối, nhìn như nó
+   thuộc về bình luận đó. Chỉ áp cho form đang nằm ở gốc — lùi xuống dưới một
+   bình luận rồi thì đã có margin riêng ở luật trên. */
+.bl-than > .bl-form{margin-top:var(--s7)}

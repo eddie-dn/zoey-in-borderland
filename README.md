@@ -25,7 +25,8 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **Đưa lên mạng · xem trên điện thoại** | [`docs/DUA-LEN-MANG.md`](docs/DUA-LEN-MANG.md) |
 | Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
-| Cài khung bình luận | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
+| **Cài Apps Script · Gemini · Cloudflare — từng bước** | [`docs/CAI-DAT.md`](docs/CAI-DAT.md) |
+| Khung bình luận chạy thế nào, cách trả lời | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
 | Ô trích dẫn mỗi ngày | [`docs/QUOTE.md`](docs/QUOTE.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
@@ -35,16 +36,19 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 
 ```
 content/posts/<mục>/<mục-con>/YYYY-MM-DD-slug.md   ← bài viết; thư mục = chuyên mục
-content/pages/                                      trang tĩnh
+content/pages/                                      trang tĩnh (about…)
+content/quote-nguon.md                              nguồn + kho câu trích dẫn
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
+public/_headers                                     luật cache cho Cloudflare
 _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
-src/js/         theme · toc · media · comments · copy-guard · reveal
-src/templates/  shell.html · post.html
+src/js/         theme · toc · media · comments · copy-guard · reveal · so-tay
+src/templates/  shell.html · post.html · page.html
 tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
 tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
-api/            quote.js — hàm serverless xin câu trích dẫn từ Gemini (tuỳ chọn)
-docs/           tám file tài liệu ở bảng trên
+functions/api/  quote.js — hàm Cloudflare xin câu trích dẫn từ Gemini (tuỳ chọn)
+                _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay
+docs/           chín file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
@@ -128,6 +132,7 @@ Trang chủ hiện tại là **bản tạm**. Các trang `/posts/`, `/tags/`, `/
 
 `dist/` là thư mục tĩnh thuần, đâu nhận file tĩnh cũng chạy.
 
-- **Vercel / Netlify** — build `npm run build`, thư mục xuất `dist`
+- **Cloudflare Pages** — build `npm run build`, thư mục xuất `dist`
+  (xem `docs/DUA-LEN-MANG.md`; hàm `/api/quote` nằm ở `functions/`)
 - **GitHub Pages** — đẩy `dist/` lên nhánh `gh-pages`, và **nhớ đặt
   `"base": "/ten-repo"`** trong `site.config.json`

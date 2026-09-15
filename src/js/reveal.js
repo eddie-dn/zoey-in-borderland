@@ -120,10 +120,17 @@
               một ô trích dẫn. */
       if (hop.dataset.api) xinGemini(hop.dataset.api);
 
-      function xinGemini(api) {
+      /* Ngày theo GIỜ MÁY người đọc, dạng YYYY-MM-DD. Không dùng
+         toISOString(): hàm đó trả giờ UTC, nên từ 0h tới 7h sáng giờ Việt Nam
+         nó còn báo ngày hôm qua. */
+      function nayLa() {
         var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
         var d = new Date();
-        var nay = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+        return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+      }
+
+      function xinGemini(api) {
+        var nay = nayLa();
         var KHOA = 'zib-quote';
 
         /* Đã có câu của đúng hôm nay thì dùng luôn, khỏi gọi mạng */
@@ -156,12 +163,56 @@
       }
 
       if (nut) {
+        var dangXin = false;
         nut.addEventListener('click', function () {
-          /* Đi vòng tròn qua danh sách thay vì bốc ngẫu nhiên: bốc ngẫu nhiên
-             thì bấm ba lần có khi trúng lại câu cũ, người bấm tưởng nút hỏng. */
-          dangO = (dangO + 1) % ds.length;
-          ve(dangO, true);
+          /* ── BẤM NÚT: XIN CÂU MỚI, NHƯNG KHÔNG ĐỂ AI PHẢI CHỜ ──
+
+             Có lớp Gemini thì bấm nút là xin một câu VIẾT MỚI (`moi=1`, không
+             cache) chứ không chỉ lật sang câu kế trong kho — đúng ý "random
+             đổi mới chứ không chỉ dùng trong kho".
+
+             Nhưng mạng có thể chậm, mà không ai đứng chờ một ô trích dẫn. Nên:
+             chạy song song một cái hẹn 700ms. Gemini về trước thì hiện câu của
+             Gemini; hẹn tới trước thì lật sang câu kế trong kho, và nếu Gemini
+             về muộn thì chỉ NHÉT THÊM vào kho chứ không giật lại màn hình —
+             chữ đang đọc dở mà tự đổi là thứ khó chịu hơn cả phải chờ.
+
+             `dangXin` chặn bấm dồn: bấm năm cái liên tiếp mà bắn năm request
+             thì vừa tốn vừa về lộn xộn không biết cái nào tới sau. */
+          if (!hop.dataset.api || dangXin) { lat(); return; }
+
+          dangXin = true;
+          var xong = false;
+          var henLat = setTimeout(function () {
+            if (!xong) { xong = true; lat(); }
+          }, 700);
+
+          var ac = new AbortController();
+          var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
+
+          fetch(hop.dataset.api + '?moi=1&ngay=' + nayLa(),
+                { signal: ac.signal, cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (kq) {
+              if (!kq || !kq.ok || !kq.q) return;
+              ds.push({ chu: kq.q, ai: kq.tacGia || '' });
+              if (!xong) { xong = true; clearTimeout(henLat); dangO = ds.length - 1; ve(dangO, true); }
+            })
+            .catch(function () { /* im lặng — đã hoặc sắp lật sang câu trong kho */ })
+            .finally(function () {
+              clearTimeout(boCuoc);
+              if (!xong) { xong = true; clearTimeout(henLat); lat(); }
+              dangXin = false;
+            });
         });
+      }
+
+      /* Lật sang câu kế trong kho. Đi vòng tròn thay vì bốc ngẫu nhiên: bốc
+         ngẫu nhiên thì bấm ba lần có khi trúng lại câu cũ, người bấm tưởng
+         nút hỏng. */
+      function lat() {
+        dangO = (dangO + 1) % ds.length;
+        ve(dangO, true);
       }
     }
   }

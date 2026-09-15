@@ -27,70 +27,69 @@ không hề đọc cột email — nên không có đường nào moi nó ra qua
 
 ---
 
-## Cài — 6 bước
+## Cài đặt
 
-### 1 · Tạo Google Sheet
+Các bước bấm ở đâu, điền gì — xem **`docs/CAI-DAT.md` §1**. Để một chỗ thôi cho
+khỏi lệch: hai bản hướng dẫn song song thì sớm muộn một bản được sửa còn bản
+kia không.
 
-Vào [sheets.new](https://sheets.new), đặt tên gì cũng được (ví dụ
-`Blog — Bình luận`). Không phải tạo cột gì cả, script tự tạo ở lần chạy đầu.
+File này lo phần còn lại: cơ chế, cách trả lời, cách chống spam, và chỗ hay hỏng.
 
-### 2 · Mở trình soạn script
+---
 
-Trong Sheet đó: **Tiện ích mở rộng → Apps Script**
-(Extensions → Apps Script).
+## Trả lời — cây hai tầng
 
-### 3 · Dán mã
+### Cột trong Sheet
 
-Xoá sạch nội dung đang có trong `Code.gs`, dán **toàn bộ** file
-[`tools/apps-script/Code.gs`](../tools/apps-script/Code.gs) vào.
+Ba cột quyết định chuyện lồng nhau:
 
-Bấm **Lưu** (biểu tượng đĩa mềm).
-
-### 4 · Triển khai
-
-**Triển khai → Bản triển khai mới** (Deploy → New deployment).
-
-| Ô | Chọn |
+| Cột | Nghĩa |
 |---|---|
-| Loại | **Ứng dụng web** (Web app) |
-| Thực thi với tư cách | **Tôi** (Me) |
-| Ai có quyền truy cập | **Bất kỳ ai** (Anyone) |
+| `Ma` | mã riêng của mỗi bình luận, script tự sinh |
+| `Tra loi cho` | mã của bình luận cha. **Để trống ⇒ bình luận gốc** |
+| `Chu trang` | đánh `x` ⇒ hiện huy hiệu **AUTHOR** |
 
-:::warn Hai ô này phải đúng
-**"Thực thi với tư cách: Tôi"** — để script có quyền ghi vào Sheet của bạn.
-**"Ai có quyền truy cập: Bất kỳ ai"** — người đọc blog không đăng nhập Google,
-nên để "Bất kỳ ai có tài khoản Google" là họ gửi không được.
-:::
+Sheet lập từ bản cũ chỉ có 7 cột. **Không phải sửa tay**: script tự thêm cột
+còn thiếu vào cuối ở lần chạy sau. Nó chỉ THÊM, không bao giờ đổi hay xoá cột
+đang có.
 
-Google sẽ hỏi cấp quyền ở lần đầu. Màn hình cảnh báo "Google chưa xác minh ứng
-dụng này" là bình thường — đây là script của chính bạn, không phải của ai khác.
-Bấm **Nâng cao → Đi tới … (không an toàn)** rồi **Cho phép**.
+### Chỉ hai tầng, y như Facebook
 
-### 5 · Chép địa chỉ vào cấu hình
+Trả lời của trả lời cũng được kéo về gắn vào bình luận **gốc** của nhánh đó.
+Cho lồng vô hạn thì trên màn hình 390px, tới tầng thứ tư là cột chữ còn khoảng
+120px — mỗi dòng ba chữ.
 
-Sau khi triển khai xong, Google cho một địa chỉ dạng:
+### Gấp bớt
 
-```
-https://script.google.com/macros/s/AKfycb..................../exec
-```
+Một bình luận có quá **2** trả lời thì phần cũ gấp lại sau nút
+`Show N earlier replies`. Không gấp thì một nhánh 15 trả lời đẩy mọi bình luận
+khác xuống tận đáy trang.
 
-Dán vào `site.config.json`:
+### Cả khối cũng đóng mở được
 
-```json
-"binhLuan": {
-  "bat": true,
-  "url": "https://script.google.com/macros/s/AKfycb.../exec",
-  "loiMoi": "Ghé ngang thì để lại một dòng cũng được — không cần đăng ký gì cả."
-}
-```
+Đầu khối là một cái nút. Mặc định **mở** — giấu bình luận đi thì người đọc
+không biết là có, và Google cũng không đọc được chữ trong đó. Nút chỉ để ai
+muốn gấp cho gọn thì gấp.
 
-### 6 · Dựng lại
+### Mã cha phải có thật VÀ đã duyệt
 
-```bash
-npm run build
-```
+Script kiểm điều này trước khi ghi. Gửi mã bịa thì bỏ mã đi, coi như bình luận
+gốc. Hai lý do:
 
-Xong. Mở một bài, kéo xuống cuối, thử gõ một dòng rồi mở Sheet xem đã có chưa.
+- mã bịa ⇒ bình luận rơi vào một nhánh không tồn tại, trang dựng cây xong là nó
+  biến mất, người gửi tưởng bị nuốt bài
+- mã của bình luận **chưa duyệt** ⇒ người ngoài dò được bình luận nào đang nằm
+  chờ, tức là lộ thứ chưa công khai
+
+Thà tụt xuống thành bình luận gốc — vẫn hiện, vẫn đúng chỗ — còn hơn mất hẳn.
+
+### Một cái form, đem đi chỗ khác
+
+Bấm `Reply` thì chính cái form đang có được **di chuyển** xuống dưới bình luận
+đó, kèm dòng `Replying to <tên>` và một dấu ✕ để thôi.
+
+Dựng mỗi bình luận một form thì mười bình luận là mười cái form, mười bộ ô nhập
+trùng tên, và người dùng bàn phím phải Tab qua tất cả.
 
 ---
 

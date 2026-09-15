@@ -21,13 +21,14 @@ Không có mẹo nào khác: repo công khai thì ai cũng tải nguyên bộ v�
 
 Xong. Từ lúc đó `content/`, `src/`, `tools/`, bài nháp — không ai thấy được.
 
-### 1.2 · Vercel vẫn deploy được từ repo riêng tư
+### 1.2 · Cloudflare Pages vẫn deploy được từ repo riêng tư
 
-Gói **Hobby** (miễn phí) của Vercel deploy repo private bình thường. Không phải
-đổi gì, không phải trả tiền. Netlify và Cloudflare Pages cũng vậy.
+Gói miễn phí của Cloudflare Pages deploy repo private bình thường. Không phải
+đổi gì, không phải trả tiền.
 
-Nếu sau khi đổi sang private mà Vercel báo mất quyền: vercel.com → Settings →
-Git → **Disconnect** rồi nối lại, lúc đó GitHub sẽ hỏi cấp quyền cho repo private.
+Nếu sau khi đổi sang private mà Cloudflare báo mất quyền: dash.cloudflare.com →
+Workers & Pages → dự án → **Settings** → **Build** → **Manage GitHub app**, rồi
+cấp quyền cho repo private trong trang GitHub hiện ra.
 
 ### 1.3 · Repo riêng tư giấu được gì — và KHÔNG giấu được gì
 
@@ -63,12 +64,12 @@ Bộ kiểm định có một phép canh việc này, nên lỡ tay cũng không
 Đây là chỗ dễ lo nhầm nhất, nên nói rõ: **hai việc này không liên quan gì nhau.**
 
 ```
-GitHub repo  ──(Vercel dựng)──►  Trang web  ──(Google đọc)──►  Kết quả tìm kiếm
+GitHub repo  ──(Cloudflare dựng)──►  Trang web  ──(Google đọc)──►  Kết quả tìm kiếm
    private                        công khai
 ```
 
 Google **không bao giờ đọc repo** của anh. Nó đọc **trang web đã dựng** — tức
-là `dist/`, thứ Vercel phục vụ công khai. Repo private hay public, Google thấy
+là `dist/`, thứ Cloudflare phục vụ công khai. Repo private hay public, Google thấy
 y hệt nhau.
 
 | | Repo private | SEO |
@@ -175,7 +176,7 @@ vẫn lấy được bằng sáu cách ở §2.1. Em khuyên để `0` — chỉ
 
 Không phải mã, mà là dấu vết:
 
-- **Ghi rõ bản quyền ở chân trang** — đã có sẵn: `© 2026 Honghandangiu`.
+- **Ghi rõ bản quyền ở chân trang** — đã có sẵn: `© 2026 Zoey`.
 - **Đăng ở nhà mình trước.** Google nhìn ngày đánh chỉ mục để quyết định ai là
   bản gốc. Trang của anh có `sitemap.xml` và RSS nên được đọc sớm.
 - **Dòng nguồn trong clipboard** (§2.2) khiến bản sao tự mang theo địa chỉ gốc.

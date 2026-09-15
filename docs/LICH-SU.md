@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.06 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
 | V1.05 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
 | V1.04 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
 | V1.03 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
@@ -34,6 +35,29 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.06 — 15-Sep-2026
+
+- **Chuyển nhà sang Cloudflare Pages.** Hàm `/api/quote` phải viết lại hẳn:
+  Cloudflare chạy trên Workers chứ không phải Node, nên không có `fs`, không có
+  `process.env`, không có `req`/`res`. Nguồn câu nay được nướng sẵn lúc dựng
+  trang thay vì đọc file lúc chạy. Luật cache chuyển từ `vercel.json` sang
+  `_headers`. Thêm bốn phép kiểm tự động bắt đúng mấy lỗi đó.
+- **Bình luận có trả lời, đóng mở gọn như một post Facebook.** Cây hai tầng,
+  nhánh quá hai trả lời thì gấp lại, chủ trang trả lời có huy hiệu riêng. Cả
+  khối cũng gấp được. Sheet cũ tự thêm cột mới, không phải sửa tay.
+- **Ô trích dẫn nay lấy từ một file tả NGUỒN**, không chỉ xoay vòng trong kho:
+  mỗi ngày bốc ngẫu nhiên một chủ đề và mười hai tác giả rồi mới hỏi Gemini.
+  Đo 20 ngày liên tiếp thì cả 8 chủ đề và cả 38 tác giả đều được dùng tới.
+- **Trang giới thiệu thêm ô ảnh chân dung**, và dòng phiên bản ở chân trang nay
+  đọc được (cũ 8.5px, không ai thấy). Bấm năm nhịp vào dòng đó thì mở sổ lịch
+  sử phiên bản, đọc thẳng từ chính file này.
+- **Mọi chữ trên giao diện chuyển hết sang tiếng Anh** và gom về một bảng duy
+  nhất — `AUTHOR`, `Anonymous`, `Reply`, `Another one`…
+- **Sửa ba lỗi bố cục:** thêm ô ảnh làm trang tràn ngang 402px trên màn 390px;
+  tooltip của nút đổi theme thò ra ngoài mép phải ở khổ điện thoại (lỗi có sẵn
+  từ trước, mấy lượt kiểm cũ không thấy vì nó là pseudo-element); ô số vỡ hai
+  dòng khi giá trị dài như "TP. Hồ Chí Minh".
 
 ## V1.05 — 14-Sep-2026
 

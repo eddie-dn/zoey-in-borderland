@@ -87,3 +87,51 @@ export function temNgay(iso) {
   if (isNaN(d)) return iso;
   return `${String(d.getUTCDate()).padStart(2, '0')}-${M[d.getUTCMonth()]}-${d.getUTCFullYear()}`;
 }
+
+/* ── CHI TIẾT TỪNG BẢN ──
+   Dưới bảng, mỗi bản có một mục `## Vx.yy — dd-Mon-yyyy` với mấy gạch đầu dòng
+   `- **Tên việc.** mô tả`. Bảng điều khiển lịch sử (cửa hậu ở chân trang) đọc
+   mấy mục này để hiện chi tiết khi bấm vào một dòng.
+
+   Bộ đọc cố ý DỄ TÍNH, chỉ bám vào hai thứ: dòng `## V...` và các dòng bắt đầu
+   bằng `- `. Chữ nghĩa xung quanh gõ kiểu gì cũng được, gõ sai cũng không làm
+   sập build — mục nào không đọc được thì bản đó đơn giản là không có chi tiết,
+   bảng vẫn hiện dòng tóm tắt lấy từ bảng ở trên.
+
+   Đây là chỗ đã học từ `assets/lichsu.js` bên dongchibinh-33: chỗ nào không có
+   dữ liệu thì NÓI RÕ LÀ KHÔNG CÓ, không bịa một dòng nghe cho đẹp. */
+export function docChiTiet(goc) {
+  const f = duongDan(goc);
+  if (!fs.existsSync(f)) return {};
+
+  const raw = fs.readFileSync(f, 'utf8');
+  /* Chỉ đọc phần SAU bảng — trong phần ghi chú đầu file cũng có chữ `V1.00`,
+     đọc cả file thì mấy dòng ví dụ ở đó lọt vào thành chi tiết giả. */
+  const sau = raw.slice(raw.indexOf(DONG) + DONG.length);
+
+  const ra = {};
+  for (const khoi of sau.split(/^##[ \t]+/m).slice(1)) {
+    const dauDe = (khoi.split('\n')[0] || '').trim();
+    const m = dauDe.match(/^(V\d+\.\d+)/);
+    if (!m) continue;
+
+    const y = [];
+    let dem = null;
+    for (const d of khoi.split('\n').slice(1)) {
+      if (/^[ \t]*-[ \t]+/.test(d)) {
+        if (dem) y.push(dem);
+        dem = d.replace(/^[ \t]*-[ \t]+/, '').trim();
+      } else if (dem && d.trim() && !/^#/.test(d)) {
+        /* Dòng thụt vào là phần nối tiếp của gạch đầu dòng phía trên. Không
+           nối thì mỗi ý bị cắt ngang ở chỗ xuống dòng trong file .md — mà chỗ
+           xuống dòng đó chỉ là để file dễ đọc, không phải hết ý. */
+        dem += ' ' + d.trim();
+      } else if (!d.trim() && dem) {
+        y.push(dem); dem = null;
+      }
+    }
+    if (dem) y.push(dem);
+    if (y.length) ra[m[1]] = y;
+  }
+  return ra;
+}
