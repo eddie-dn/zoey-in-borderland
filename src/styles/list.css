@@ -185,7 +185,10 @@
      ấy nó thôi làm một phần của khối chữ mà thành một vật riêng đứng cạnh —
      đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 26 là tỉ lệ 1,7 lần: vẫn rõ
      ai là chính, mà hai dòng còn đọc ra là một khối. */
-  --s1:44cqw;  --x1:-.04em;
+  /* -.13em: chữ đầu lấn qua đường kẻ trái nhiều hơn, nên nét đứng của nó bị
+     xén hẳn một phần. Xén ít quá thì trông như đặt sát mép do vô ý; xén rõ
+     thì đọc ra là CỐ Ý — chữ được đặt vào khuôn rồi khuôn cắt bớt. */
+  --s1:44cqw;  --x1:-.13em;
   /* Từ cuối lùi vào một bậc để nó nằm DƯỚI phần sau của chữ đầu — hai dòng
      cài vào nhau thì đọc ra là một khối, xếp thẳng mép thì thành hai dòng rời. */
   --s3:26cqw;  --x3:.34em;
@@ -204,7 +207,7 @@
      khoảng một phần ba bề ngang ô, phần còn lại của dòng bỏ không. */
   /* Chữ giữa lại gần chữ đầu: xa quá thì nó trôi lửng lơ giữa khoảng trống,
      không còn nối được chữ đầu với từ cuối. */
-  --in-co:.24em;  --in-x:.95em;  --in-y:.12em;  --in-mo:.62;
+  --in-co:.24em;  --in-x:.42em;  --in-y:.12em;  --in-mo:.62;
 
   --nhip:.62s cubic-bezier(.22,.61,.36,1);
   transition:opacity var(--nhip);
@@ -237,10 +240,14 @@
 .hero:hover .hero-danh,
 .hero:focus-within .hero-danh{
   opacity:.96;
-  --s1:25cqw;   --x1:.03em;   --gap1:.13em;
+  /* Lúc HIỆN ĐỦ thì lùi hẳn vào trong khung. Lúc mờ, chữ lấn qua đường kẻ là
+     CỐ Ý — đó là trò xén. Nhưng khi chữ đã rõ và đọc được thì nó là chữ ĐỂ
+     ĐỌC, và chữ để đọc mà dính vào đường kẻ thì đọc ra là tràn lề chứ không
+     phải là bố cục. */
+  --s1:25cqw;   --x1:.1em;    --gap1:.13em;
   /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:19cqw;   --x3:.015em;  --ls3:.035em;
+  --s3:19cqw;   --x3:.135em;  --ls3:.035em;
   --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
 }
 .hero:hover .hd-con,
@@ -249,10 +256,14 @@
 @media (hover:none) and (min-width:1001px){
   .hero-danh{
     opacity:.96;
-    --s1:25cqw;   --x1:.03em;   --gap1:.13em;
+    /* Lúc HIỆN ĐỦ thì lùi hẳn vào trong khung. Lúc mờ, chữ lấn qua đường kẻ là
+     CỐ Ý — đó là trò xén. Nhưng khi chữ đã rõ và đọc được thì nó là chữ ĐỂ
+     ĐỌC, và chữ để đọc mà dính vào đường kẻ thì đọc ra là tràn lề chứ không
+     phải là bố cục. */
+  --s1:25cqw;   --x1:.1em;    --gap1:.13em;
     /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:19cqw;   --x3:.015em;  --ls3:.035em;
+  --s3:19cqw;   --x3:.135em;  --ls3:.035em;
     --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
   }
   .hd-con{opacity:1;letter-spacing:-.03em}
@@ -285,6 +296,11 @@
   position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;z-index:0;opacity:.9;
 }
+/* Ở TRANG TĨNH thì hạ hẳn xuống. Màn hero chỉ có mấy dòng nhãn nhỏ, nền động là
+   nhân vật chính ở đó. Trang giới thiệu thì ngược lại: kín chữ từ trên xuống
+   dưới, và cánh hoa rơi qua sau chữ ở độ đậm của màn hero làm mắt bị kéo đi
+   liên tục — đọc được, nhưng đọc mệt. */
+.nen-boc > .nen-canvas{opacity:.42}
 
 /* ── LƯỚI BA CỘT ──
    Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi
@@ -562,6 +578,100 @@
 @media (max-width:760px){
   .chu-the--anh{grid-template-columns:1fr}
   .chu-the--anh .chu-anh{aspect-ratio:16 / 7}
+}
+/* ── Ô TRÍCH DẪN Ở LỀ BÀI ──
+   Cùng khối dính-khi-cuộn với mục lục, nằm ngay dưới nó. Chỉ viền, không nền:
+   lề bài đã có mục lục làm khối chính, thêm một mảng đặc nữa là hai thứ tranh
+   chỗ trong một cột hẹp. */
+.quote-tab{
+  padding:var(--s5) var(--s5) var(--s6);
+  border-radius:var(--r-md);
+  background:none;
+  box-shadow:inset 0 0 0 1px var(--line);
+  gap:var(--s2);
+}
+.quote-tab .q-chu{font-size:clamp(15px,.88rem + .3vw,17px);line-height:1.42}
+.quote-tab .q-ai{font-size:12px}
+.quote-tab .q-nut{bottom:var(--s2);right:var(--s2);width:26px;height:26px}
+.quote-tab .q-nut svg{width:13px;height:13px}
+/* Màn thấp: mục lục được ưu tiên giữ, ô trích dẫn nhường chỗ. */
+@media (max-height:700px){.quote-tab{display:none}}
+/* ══════════ GHI CHÚ NGẮN (/notes/) ══════════
+   Không phải danh sách bài. Mỗi ghi chú là một khối chữ ngắn có ngày ở lề
+   trái — khuôn của một cuốn sổ tay, không phải của một trang blog.
+
+   Ngày nằm ở CỘT RIÊNG bên trái chứ không nằm trên chữ: đọc dọc xuống là thấy
+   ngay nhịp ghi (dày hay thưa, gần đây hay lâu rồi) mà không phải đọc chữ nào. */
+.gc-loc{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s7)}
+.gc-loc button{font:inherit;cursor:pointer}
+
+.gc-ds{list-style:none;margin:0;padding:0}
+.gc-mot{
+  display:grid;
+  grid-template-columns:8.5rem minmax(0,1fr);
+  gap:var(--s5);
+  padding:var(--s6) 0;
+  border-top:1px solid var(--line);
+}
+.gc-mot:first-child{border-top:none;padding-top:0}
+.gc-dau{display:flex;flex-direction:column;gap:4px}
+.gc-dau time{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:.08em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.gc-loai{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--accent-ink);
+}
+/* Ghi chú mượn lại khuôn chữ của thân bài, nhưng KHÔNG mượn lưới ba làn của
+   nó: một ghi chú bốn dòng không có ảnh nào để phá rào ra rộng hơn cột chữ. */
+.gc-chu.prose{display:block;font-size:calc(var(--fs-base) * .97)}
+.gc-chu.prose > * + *{margin-top:calc(var(--flow) * .9)}
+.gc-chu.prose p{text-align:left}
+
+@media (max-width:640px){
+  .gc-mot{grid-template-columns:1fr;gap:var(--s3);padding:var(--s5) 0}
+  .gc-dau{flex-direction:row;align-items:baseline;gap:var(--s3)}
+}
+/* ══════════ THƯ MỤC CHUYÊN MỤC (/posts/) ══════════
+   Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới
+   nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này
+   có mấy mảng, trước khi phải đọc một tiêu đề bài nào. */
+.muc-khoi + .muc-khoi{margin-top:var(--s9)}
+.muc-dau{
+  display:grid;
+  grid-template-columns:auto auto 1fr auto;
+  align-items:baseline;gap:var(--s3) var(--s4);
+  margin-bottom:var(--s5);padding-top:var(--s4);
+  border-top:1px solid var(--line);
+}
+.muc-dau h2{
+  margin:0;font-size:var(--fs-h3);font-style:italic;line-height:1.15;
+}
+.muc-dau h2 a{color:var(--text);text-decoration:none;background:none;
+  transition:color var(--dur-fast)}
+.muc-dau h2 a:hover{color:var(--accent-ink)}
+.muc-so{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:.1em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+/* Dòng mô tả xuống hàng riêng, chiếm trọn bề ngang: để nó nằm cùng hàng với
+   tên mục thì hàng ấy vừa có chữ nghiêng cỡ lớn vừa có chữ thường cỡ nhỏ, và
+   đường chân chữ so le trông như xếp nhầm. */
+.muc-mo{
+  grid-column:1 / -1;grid-row:2;margin:0;
+  font-size:var(--fs-sm);line-height:1.5;color:var(--text-muted);
+  max-width:60ch;
+}
+.muc-dau .ds-them{grid-column:4;grid-row:1;justify-self:end}
+
+@media (max-width:560px){
+  .muc-dau{grid-template-columns:auto 1fr auto}
+  .muc-dau .ds-them{grid-column:3}
+  .muc-khoi + .muc-khoi{margin-top:var(--s7)}
 }
 /* ══════════ BỘ SỐ TRANG ══════════
    Chỉ có mặt khi danh sách dài hơn một trang, và do JavaScript dựng ra — nên

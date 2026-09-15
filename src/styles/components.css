@@ -110,11 +110,33 @@
 }
 
 /* Còn ở máy có con trỏ: tooltip của phần tử sát mép phải vẫn có thể thò ra
-   ngoài khi cửa sổ hẹp. Neo nó vào mép phải của nút thay vì căn giữa. */
-@media (hover:hover) and (max-width:620px){
-  .nav > :last-child.tip::after{left:auto;right:0;translate:0 -4px}
+   ngoài khi cửa sổ hẹp. Neo nó vào mép phải của nút thay vì căn giữa.
+
+   ── DANH SÁCH NÀY PHẢI KỂ TÊN ĐỦ ──────────────────────────────────────────
+   Đây là lần thứ hai vấp: một nút mới nằm sát mép phải, tooltip của nó đẩy
+   `scrollWidth` vượt bề ngang màn, và KHÔNG có phần tử nào trong
+   `querySelectorAll('*')` lộ ra cả — pseudo-element không nằm trong đó. Chỉ
+   khi ĐO `scrollWidth` của từng nút mới thấy.
+
+   Nên: nút nào neo vào mép phải của ô chứa nó thì phải có tên ở đây. Bộ quét
+   khổ màn trong quy trình kiểm tra bắt được, nhưng nó bắt SAU khi đã sai. */
+@media (hover:hover) and (max-width:1079px){
+  .nav > :last-child.tip::after,
+  .q-nut.tip::after{left:auto;right:0;translate:0 -4px}
   .nav > :last-child.tip:hover::after,
-  .nav > :last-child.tip:focus-visible::after{translate:0 0}
+  .nav > :last-child.tip:focus-visible::after,
+  .q-nut.tip:hover::after,
+  .q-nut.tip:focus-visible::after{translate:0 0}
+}
+/* Ô trích dẫn ở màn rộng cũng vậy: nó nằm trong cột lề hẹp, và nút ở góc dưới
+   phải của ô. Neo giữa thì tooltip thò ra ngoài cột. */
+@media (hover:hover){
+  .quote-tab .q-nut.tip::after,
+  .hero-quote .q-nut.tip::after{left:auto;right:0;translate:0 -4px}
+  .quote-tab .q-nut.tip:hover::after,
+  .quote-tab .q-nut.tip:focus-visible::after,
+  .hero-quote .q-nut.tip:hover::after,
+  .hero-quote .q-nut.tip:focus-visible::after{translate:0 0}
 }
 
 /* ── CHIP TAG ──
@@ -398,9 +420,23 @@ body.so-khoa{overflow:hidden}
   scroll-snap-align:start;
   position:relative;
 }
+/* ── KHUNG ẢNH CỐ ĐỊNH, ẢNH VỪA TRỌN TRONG KHUNG ──
+   Khung cao cố định, và ảnh dùng `contain` chứ không `cover`.
+
+   `cover` (bản trước) phóng ảnh cho lấp kín khung rồi CẮT phần thừa. Với một
+   khung 4:5, tấm ảnh chụp ngang bị cắt mất hai bên — mà ảnh kỉ niệm thì phần
+   bị cắt hay lại là phần có người. `contain` thì ảnh nào cũng vào trọn, dọc hay
+   ngang đều được, đổi lại là có hai dải nền ở hai bên. Dải nền ấy chính là thứ
+   mọi phần mềm xem ảnh đều làm, và nó trung thực: không tự ý bỏ đi phần nào.
+
+   Chiều cao KHOÁ THEO MÀN (`vh`) chứ không theo tỉ lệ ảnh: khối này dính khi
+   cuộn, nên cả cụm ảnh + chú thích + hàng chấm phải lọt trong một màn. Cao theo
+   tỉ lệ ảnh thì một tấm dọc đẩy hàng chấm xuống dưới nếp gấp và người đọc không
+   bao giờ thấy là còn ảnh nữa — đúng lỗi đã gặp. */
 .ba-tam img{
-  width:100%;height:auto;display:block;
-  aspect-ratio:var(--ar,4/5);object-fit:cover;
+  width:100%;display:block;
+  height:min(52vh,460px);
+  object-fit:contain;
   border-radius:var(--r-lg);
   background:var(--accent-wash);
 }
@@ -408,6 +444,10 @@ body.so-khoa{overflow:hidden}
   margin-top:var(--s3);
   font-size:var(--fs-sm);line-height:1.5;color:var(--text-faint);
   text-align:left;
+  /* Kẹp hai dòng: chú thích dài ngắn khác nhau thì mỗi tấm đẩy hàng chấm xuống
+     một chỗ khác, và hàng chấm nhảy lên nhảy xuống mỗi lần trượt ảnh. */
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  line-clamp:2;overflow:hidden;min-height:2.6em;
 }
 
 /* Hàng chấm + hai nút: do JavaScript dựng, nên không có JS thì băng vẫn vuốt

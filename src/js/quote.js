@@ -90,8 +90,26 @@
       var elAi  = hop.querySelector('.q-ai');
       var nut   = hop.querySelector('.q-nut');
       var N      = ds.length;
-      var ngay   = ngayThu();
-      var homNay = laBai(N, Math.floor(ngay / N))[((ngay % N) + N) % N];
+
+      /* ── BƯỚC: mỗi ngày một câu, HOẶC cứ mấy trang một câu ──
+         `data-nhip="2"` nghĩa là cứ hai trang người đọc đi qua thì sang câu kế.
+         Đếm trong sessionStorage chứ không localStorage: "hai trang" là chuyện
+         của một lượt ghé thăm, không phải của cả đời cái máy — đóng trình duyệt
+         rồi mở lại thì đếm lại từ đầu, đúng như người đọc cảm nhận.
+
+         Vẫn cộng thêm số ngày vào bước, nên hai người mở cùng một trang ở hai
+         ngày khác nhau không gặp cùng một câu. */
+      var nhip = parseInt(hop.getAttribute('data-nhip'), 10) || 0;
+      var buoc = ngayThu();
+      if (nhip) {
+        var dem = 0;
+        try {
+          dem = (parseInt(sessionStorage.getItem('zoey:trang'), 10) || 0) + 1;
+          sessionStorage.setItem('zoey:trang', String(dem));
+        } catch (e) { dem = 1; }
+        buoc += Math.floor((dem - 1) / nhip);
+      }
+      var homNay = laBai(N, Math.floor(buoc / N))[((buoc % N) + N) % N];
       var dangO  = homNay;
 
       function ve(i, doiTay) {

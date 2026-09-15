@@ -149,6 +149,12 @@ const NHAN = {
   archive     : 'Archive',
   latest      : 'Latest',
   index       : 'Index',
+  notes       : 'Notes',
+  notesHint   : 'Mấy dòng nhặt dọc đường — sách, nhạc, và ý chưa thành bài',
+  noNotes     : 'Chưa có ghi chú nào.',
+  allNotes    : 'All',
+  filter      : 'Filter',
+  seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
   allItems    : 'All',
@@ -557,7 +563,14 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  /* Bảng chữ cho mốc thời gian tương đối. Đặt trên <html> chứ
                     không đặt trên từng mốc: một trang danh sách có tới vài chục
                     mốc, lặp cùng một bảng chữ vài chục lần là thừa vài KB. */
-                 `data-thoi="${attr(JSON.stringify(NHAN.thoi))}"`
+                 `data-thoi="${attr(JSON.stringify(NHAN.thoi))}"`,
+                 /* Địa chỉ hàm đếm lượt xem và chữ hiển thị, đặt trên <html> để
+                    mọi trang dùng chung một chỗ khai. Tắt thì không in gì cả và
+                    xem.js tự thoát ngay dòng đầu. */
+                 (CAU.luotXem || {}).bat
+                   ? `data-xem-api="${attr(BASE + ((CAU.luotXem || {}).api || '/api/xem'))}" ` +
+                     `data-xem-nhan="${attr(JSON.stringify({ one: NHAN.view1, many: NHAN.views }))}"`
+                   : ''
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
     logo      : LOGO,
@@ -602,6 +615,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
     scripts: `<script src="${BASE}/assets/moc.js" defer></script>\n` +
+             ((CAU.luotXem || {}).bat
+               ? `<script src="${BASE}/assets/xem.js" defer></script>\n` : '') +
              scripts + doanTruocHTML() + beaconHTML(),
     headExtra,
     year      : new Date().getFullYear(),
@@ -674,7 +689,7 @@ function bangAnhHTML(bai) {
     const src = /^https?:/.test(x.src) ? x.src : BASE + x.src;
     return `<figure class="ba-tam" id="ba-${bai.slug}-${i + 1}">
       <img src="${attr(src)}" alt="${attr(x.alt)}" loading="${i ? 'lazy' : 'eager'}"
-           decoding="async" style="--ar:4/5">
+           decoding="async">
       ${x.alt ? `<figcaption>${escapeHtml(x.alt)}</figcaption>` : ''}
     </figure>`;
   }).join('');
@@ -721,13 +736,20 @@ function tocHTML(headings) {
   if (!headings.length) return '';
   const li = headings.map((h) =>
     `<li class="lvl-${h.cap}"><a href="#${h.id}">${escapeHtml(h.chu)}</a></li>`).join('');
-  return `<details class="toc-box" open>
-    <summary>${NHAN.contents}</summary>
-    <nav class="toc" aria-label="${NHAN.onThisPage}">
-      <div class="toc-title">${NHAN.onThisPage}</div>
-      <ol>${li}</ol>
-    </nav>
-  </details>`;
+  /* Mục lục và ô trích dẫn gói chung trong MỘT khối bên lề. Trước đây mục lục
+     là con trực tiếp của lưới; muốn thêm ô trích dẫn xuống dưới nó thì phải khai
+     thêm một ô lưới nữa, và hai khối dính-khi-cuộn riêng lẻ sẽ chồng lên nhau
+     lúc cuộn. Gói lại thì chỉ một khối dính, và thứ tự bên trong tự đúng. */
+  return `<aside class="ben">
+    <details class="toc-box" open>
+      <summary>${NHAN.contents}</summary>
+      <nav class="toc" aria-label="${NHAN.onThisPage}">
+        <div class="toc-title">${NHAN.onThisPage}</div>
+        <ol>${li}</ol>
+      </nav>
+    </details>
+    ${oQuote('quote-tab', { nhip: 2 })}
+  </aside>`;
 }
 
 function crumbsHTML(bai) {
@@ -963,7 +985,8 @@ function trangBai(bai, congKhai) {
     lang       : bai.lang,
     duong      : '/posts/',
     content    : noiDung,
-    scripts    : (bai.khung === 'c'
+    scripts    : `<script src="${BASE}/assets/quote.js" defer></script>\n` +
+                 (bai.khung === 'c'
                    ? `<script src="${BASE}/assets/bang-anh.js" defer></script>\n` : '') +
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
@@ -1025,13 +1048,18 @@ function trangBai(bai, congKhai) {
              có nhịp. Hợp khi muốn kể hơn là liệt kê.
 */
 
-function oQuote(nhan) {
+function oQuote(nhan, { nhip = 0 } = {}) {
   /* Ô trích dẫn — dữ liệu nhúng sẵn dạng JSON, JS chỉ chọn theo ngày.
      Nhúng thẳng chứ không fetch: một file JSON riêng cho 12 câu thì tốn thêm
      một vòng mạng mà chẳng tiết kiệm được byte nào đáng kể. */
   if (!KHO_QUOTE.length) return '';
   const api = (CAU.quoteAI || {}).bat ? (CAU.quoteAI.api || '/api/quote') : '';
-  return `<div class="bo-quote card ${nhan}"${api ? ` data-api="${attr(BASE + api)}"` : ''}
+  /* `nhip` = cứ bấy nhiêu trang người đọc đi qua thì đổi câu một lần. Bỏ trống
+     thì giữ nếp cũ: mỗi ngày một câu. Ô ở lề bài dùng nhịp 2 — đọc hết một bài
+     rồi sang bài kế mà câu vẫn y nguyên thì nó thành một mảng trang trí chết;
+     đổi mỗi lần tải trang thì lại thành nhấp nháy, và người đang đọc dở quay
+     lại tab cũ sẽ thấy câu khác. Hai trang là chỗ ở giữa. */
+  return `<div class="bo-quote card ${nhan}"${nhip ? ` data-nhip="${nhip}"` : ''}${api ? ` data-api="${attr(BASE + api)}"` : ''}
     data-quote='${JSON.stringify(KHO_QUOTE)
       .replace(/'/g, '&#39;').replace(/</g, '\\u003c')}'>
     <p class="label label--muted">${NHAN.quoteToday}</p>
@@ -1351,11 +1379,15 @@ function xemHTML(b) {
   return `<span class="xem" data-xem="${attr(b.url)}" hidden></span>`;
 }
 function theBai(b, { hienMuc = true } = {}) {
+  /* HAI tag trên thẻ, không phải ba. Ba cái thì ở bề ngang một cột lưới thường
+     không đủ chỗ, và luật giữ cho thẻ cao bằng nhau sẽ cắt cái thứ ba làm đôi —
+     một chữ bị cắt giữa chừng đọc ra là trang hỏng, tệ hơn hẳn so với việc
+     thiếu mất một tag. */
   return `<article class="card the-bai">
     ${hangMeta(hienMuc ? b : { ...b, muc: [] })}
     <h3><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h3>
     <p class="the-tom">${escapeHtml(tomTat(b.summary, 150))}</p>
-    ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, 3).map((t) =>
+    ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, 2).map((t) =>
       `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
   </article>`;
 }
@@ -1653,13 +1685,46 @@ function cacTrangPosts(bai) {
 
   const theoNgay = [...bai].sort((a, b) => (a.date < b.date ? 1 : -1));
 
+  /* ── /posts/ LÀ THƯ MỤC CHUYÊN MỤC, KHÔNG PHẢI DANH SÁCH THEO NGÀY ──
+     Bản trước đổ toàn bộ bài ra một lưới xếp theo ngày. Đo ra thì nó liệt kê
+     ĐÚNG cùng tập bài với /archive/ — chỉ khác là có tóm tắt và tag. Hai trang
+     cùng trả lời một câu hỏi thì một trong hai là thừa.
+
+     Ba trang danh sách nay trả lời ba câu khác nhau:
+       /posts/    blog này viết về NHỮNG GÌ   → xếp theo chuyên mục
+       /archive/  viết vào LÚC NÀO            → xếp theo năm
+       /tags/     những sợi chỉ nào xuyên qua → xếp theo tag
+
+     Và nó còn co giãn được: 200 bài thì thư mục chuyên mục vẫn đọc trong một
+     màn, còn lưới theo ngày thành một cuộn vô tận. */
+  const mucCap1 = muc.filter((x) => !x.sau)
+    .sort((a, b) => b.so - a.so || a.ten.localeCompare(b.ten, 'vi'));
+  const MOI_MUC = 3;      /* mỗi mục khoe 3 bài mới nhất, còn lại vào trang mục */
+
+  const thuMuc = mucCap1.map((x) => {
+    const trong = theoNgay.filter((b) => b.muc.some((y) => y.url === x.url));
+    const duong = x.url.replace(BASE, '');
+    const moTa = tenMuc(duong.replace('/posts/', '').replace(/\/$/, '')).description || '';
+    return `<section class="muc-khoi">
+      <div class="muc-dau">
+        <h2><a href="${x.url}">${escapeHtml(x.ten)}</a></h2>
+        <span class="muc-so">${trong.length}</span>
+        ${moTa ? `<p class="muc-mo">${escapeHtml(moTa)}</p>` : ''}
+        ${trong.length > MOI_MUC
+          ? `<a class="ds-them" href="${x.url}">${NHAN.seeAll} →</a>` : ''}
+      </div>
+      <div class="ds-luoi">${trong.slice(0, MOI_MUC).map((b) =>
+        theBai(b, { hienMuc: false })).join('')}</div>
+    </section>`;
+  }).join('');
+
   ra.push({
     duong: '/posts/',
     html: trangDanhSach({
       tieuDe: NHAN.allPosts,
-      dan: `${theoNgay.length} ${theoNgay.length === 1 ? 'bài' : 'bài'} · ${muc.filter((x) => !x.sau).length} chuyên mục`,
+      dan: `${mucCap1.length} chuyên mục · ${theoNgay.length} bài`,
       chip: hangChip(chipDS, '/posts/'),
-      than: luoiThe(theoNgay, NHAN.noPosts),
+      than: theoNgay.length ? thuMuc : `<p class="ds-trong">${NHAN.noPosts}</p>`,
       duong: '/posts/'
     })
   });
@@ -1750,6 +1815,65 @@ function cacTrangTags(bai, bangTag) {
 /* ── /archive/ — theo năm ──
    Danh sách dày, không phải lưới thẻ: kho lưu là chỗ người ta ĐI TÌM một bài
    đã biết tên, không phải chỗ lướt xem có gì hay. Thẻ to làm việc tìm chậm đi. */
+/* ── /notes/ — GHI CHÚ NGẮN ──
+   Không phải bài viết. Bắt gặp một quyển sách, một bản nhạc, một ý thoáng qua
+   thì mở `content/ghi-chu.md` gõ vài dòng — không tiêu đề, không ảnh bìa,
+   không chuyên mục.
+
+   ── VÌ SAO MỘT FILE CHỨ KHÔNG PHẢI MỖI GHI CHÚ MỘT FILE ────────────────
+   Ma sát. Một ghi chú ba dòng mà phải tạo file, đặt tên, khai front matter thì
+   lần sau người ta không ghi nữa. Một file mở sẵn, thêm một khối, xong.
+
+   Khuôn khối: `## <ngày> · <loại>` rồi mấy dòng chữ. Loại muốn đặt gì cũng
+   được, trang tự gom thành bộ lọc — không có bảng loại nào phải khai trước. */
+function docGhiChu() {
+  const f = path.join(THU_MUC.content, 'ghi-chu.md');
+  if (!fs.existsSync(f)) return [];
+  const raw = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  const ra = [];
+  for (const khoi of raw.split(/^##[ \t]+/m).slice(1)) {
+    const dong = khoi.split('\n');
+    const dau = (dong[0] || '').trim();
+    /* Ngày là thứ DUY NHẤT bắt buộc. Thiếu thì bỏ qua khối — thà mất một ghi
+       chú còn hơn xếp nó sai chỗ trong dòng thời gian mà không ai biết. */
+    const m = dau.match(/^(\d{4}-\d{2}-\d{2})(?:\s*[·|-]\s*(.+))?$/);
+    if (!m) continue;
+    const than = dong.slice(1).join('\n').trim();
+    if (!than) continue;
+    ra.push({ ngay: m[1], loai: (m[2] || '').trim(),
+              html: render(than, { publicDir: THU_MUC.public, base: BASE }).html });
+  }
+  return ra.sort((a, b) => (a.ngay < b.ngay ? 1 : -1));
+}
+
+function trangGhiChu() {
+  const ds = docGhiChu();
+  const loai = [...new Set(ds.map((x) => x.loai).filter(Boolean))];
+  const than = ds.length ? `
+    ${loai.length > 1 ? `<nav class="gc-loc" data-gc-loc aria-label="${NHAN.filter}">
+      <button type="button" class="chip chip--nay" data-loai="">${NHAN.allNotes}</button>
+      ${loai.map((x) => `<button type="button" class="chip" data-loai="${attr(x)}">` +
+        `${escapeHtml(x)}<span class="chip-so">${ds.filter((y) => y.loai === x).length}</span>` +
+        `</button>`).join('')}
+    </nav>` : ''}
+    <ol class="gc-ds">${ds.map((x) => `
+      <li class="gc-mot" data-loai="${attr(x.loai)}">
+        <div class="gc-dau">
+          <time datetime="${x.ngay}">${ngayAnh(x.ngay)}</time>
+          ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
+        </div>
+        <div class="gc-chu prose">${x.html}</div>
+      </li>`).join('')}</ol>` : `<p class="ds-trong">${NHAN.noNotes}</p>`;
+
+  return trangDanhSach({
+    tieuDe: NHAN.notes,
+    dan: NHAN.notesHint,
+    than,
+    duong: '/notes/',
+    description: `${NHAN.notesHint} — ${CAU.title}.`,
+    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>`
+  });
+}
 function trangArchive(bai) {
   const theoNam = new Map();
   for (const b of [...bai].sort((a, b) => (a.date < b.date ? 1 : -1))) {
@@ -1932,7 +2056,7 @@ async function chay() {
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js',
-                     'bang-anh.js']) {
+                     'bang-anh.js', 'xem.js', 'ghi-chu.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
@@ -1963,6 +2087,7 @@ async function chay() {
       ...cacTrangPosts(canDung),
       ...cacTrangTags(canDung, bangTag),
       { duong: '/archive/', html: trangArchive(canDung) },
+      { duong: '/notes/',   html: trangGhiChu() },
       { duong: '/search/',  html: trangSearch() }
     ];
     for (const t of dsTrang) {

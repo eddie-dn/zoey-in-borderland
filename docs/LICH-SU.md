@@ -27,6 +27,11 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V4.05 | 2026-09-15 | 05 | trang ghi chú ngắn thay Tags trên thanh điều hướng |
+| V4.04 | 2026-09-15 | 04 | khung xem ảnh cố định · khối chữ lùi vào trong khung |
+| V4.03 | 2026-09-15 | 03 | đếm lượt xem thật bằng cơ sở dữ liệu D1 |
+| V4.02 | 2026-09-15 | 02 | trích dẫn thành tab bên lề bài, đổi sau mỗi hai trang · nền động nhạt ở trang tĩnh |
+| V4.01 | 2026-09-15 | 01 | trang Posts thành thư mục chuyên mục, thôi trùng với Archive |
 | V4.00 | 2026-09-15 | 00 | dải ngân hà dựng lại có nền sao và nhánh thật · cân lại khối chữ |
 | V3.09 | 2026-09-15 | 09 | thẻ bài: kính trong hơn · cao bằng nhau · trang chủ giữ 3 bài |
 | V3.08 | 2026-09-15 | 08 | logo hình vô cực · tên blog sắp lại khi rê chuột |
@@ -64,6 +69,66 @@
 
 ---
 
+## V4.05 — 15-Sep-2026
+
+- **Trang ghi chú ngắn.** Bắt gặp một quyển sách, một bản nhạc, một ý thoáng
+  qua thì mở `content/ghi-chu.md` gõ vài dòng — không tiêu đề, không ảnh bìa,
+  không chuyên mục. Một file duy nhất chứ không mỗi ghi chú một file: ba dòng
+  mà phải tạo file, đặt tên, khai front matter thì lần sau không ai ghi nữa.
+  Loại (sách · nhạc · ý · …) muốn đặt gì cũng được, trang tự gom thành bộ lọc.
+  Nó thay Tags trên thanh điều hướng; trang tag từng bài vẫn còn nguyên.
+
+## V4.04 — 15-Sep-2026
+
+- **Khung xem ảnh cố định.** Ảnh dùng `contain` chứ không `cover`: `cover`
+  phóng ảnh cho lấp kín khung rồi CẮT phần thừa, mà với ảnh kỉ niệm thì phần bị
+  cắt hay lại là phần có người. Nay dọc hay ngang đều vào trọn. Chiều cao khoá
+  theo màn chứ không theo tỉ lệ ảnh — khối này dính khi cuộn, nên cả cụm ảnh +
+  chú thích + hàng chấm phải lọt trong một màn; cao theo tỉ lệ ảnh thì một tấm
+  dọc đẩy hàng chấm xuống dưới nếp gấp và người đọc không biết là còn ảnh.
+
+- **Khối chữ lùi vào trong khung khi hiện đủ.** Lúc mờ, chữ lấn qua đường kẻ là
+  cố ý — đó là trò xén. Nhưng khi chữ đã rõ thì nó là chữ ĐỂ ĐỌC, và chữ để đọc
+  dính vào đường kẻ thì đọc ra là tràn lề. Chữ đầu cũng bị xén sâu hơn, và chữ
+  giữa kéo lại gần.
+
+- **Lại là cái tooltip.** Một nút mới nằm sát mép phải, tooltip của nó đẩy trang
+  tràn ngang 24px — và không phần tử nào lộ ra khi quét, vì pseudo-element không
+  nằm trong danh sách phần tử. Lần thứ hai vấp đúng chỗ này.
+
+## V4.03 — 15-Sep-2026
+
+- **Đếm lượt xem thật.** Cloudflare Web Analytics đếm rất tốt nhưng KHÔNG có
+  API đọc ngược — số liệu chỉ xem được trên bảng điều khiển, không in lên bài
+  được. Nên con số này giữ trong D1. Chọn D1 chứ không KV vì KV giới hạn mỗi
+  khoá một lượt ghi mỗi giây, mà bộ đếm đúng là cái kiểu ghi ấy.
+
+- **Nói thẳng nó gần đúng.** Bot biết chạy JavaScript vẫn lọt; tải lại trong
+  cùng phiên không cộng thêm nhưng mở tab mới thì tính lại; và không biết ai là
+  ai — cố ý không biết. Mặc định TẮT, chưa gắn D1 thì trang lặng lẽ bỏ qua.
+
+## V4.02 — 15-Sep-2026
+
+- **Trích dẫn thành tab bên lề bài**, ngay dưới mục lục, cùng một khối dính khi
+  cuộn. Đổi câu sau mỗi HAI trang: giữ nguyên cả phiên thì nó thành mảng trang
+  trí chết, đổi mỗi lần tải trang thì thành nhấp nháy và người quay lại tab cũ
+  thấy câu khác.
+
+- **Nền động nhạt hẳn ở trang tĩnh.** Màn hero chỉ có mấy nhãn nhỏ nên nền động
+  là nhân vật chính; trang giới thiệu thì kín chữ, và cánh hoa rơi sau chữ ở độ
+  đậm của màn hero làm mắt bị kéo đi liên tục.
+
+## V4.01 — 15-Sep-2026
+
+- **Trang Posts thành thư mục chuyên mục.** Đo ra thì nó đang liệt kê ĐÚNG cùng
+  9 bài với Archive, chỉ khác là có tóm tắt và tag — hai trang cùng trả lời một
+  câu hỏi thì một cái là thừa. Nay ba trang trả lời ba câu khác nhau: Posts =
+  blog này viết về những gì, Archive = viết vào lúc nào, tag = sợi chỉ nào xuyên
+  qua. Mỗi mục khoe ba bài mới nhất rồi dẫn vào trang mục.
+
+- **Thẻ bài giữ hai tag.** Ba cái thì ở bề ngang một cột lưới thường không đủ
+  chỗ, và luật giữ cho thẻ cao bằng nhau cắt cái thứ ba làm đôi — một chữ bị
+  cắt giữa chừng đọc ra là trang hỏng.
 ## V4.00 — 15-Sep-2026
 
 - **Dải ngân hà dựng lại từ đầu.** Bản trước cho ra một SỢI sao mảnh vắt chéo

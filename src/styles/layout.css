@@ -201,7 +201,7 @@
   .khung-a .post-head{grid-column:1;grid-row:1}
   .khung-a .prose    {grid-column:1;grid-row:2}
   .khung-a .post-foot{grid-column:1;grid-row:3}
-  .khung-a .toc-box  {grid-column:2;grid-row:2}
+  .khung-a .ben      {grid-column:2;grid-row:2}
 }
 
 .toc{font-size:var(--fs-sm);line-height:1.55}
@@ -222,7 +222,9 @@
 .toc a.active{color:var(--accent-ink);border-left-color:var(--accent)}
 
 @media (min-width:1080px){
-  .toc-box{position:sticky;top:calc(var(--header-h) + var(--s6));
+  .ben{position:sticky;top:calc(var(--header-h) + var(--s6));
+    display:flex;flex-direction:column;gap:var(--s6)}
+  .toc-box{
     max-height:calc(100dvh - var(--header-h) - var(--s9));overflow-y:auto}
   .toc-box summary{display:none}
   .toc-box[open],.toc-box{border:none;background:none;padding:0}

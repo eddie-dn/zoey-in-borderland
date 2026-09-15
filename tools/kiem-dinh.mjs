@@ -133,7 +133,7 @@ const KIEM = [
 
          Để thành DANH SÁCH thay vì viết ba nhánh `.filter()` riêng: thêm một ô
          kiểu này về sau chỉ phải thêm một chữ vào đây. */
-      const O_TU_CO = ['bo--anh', 'chu-anh', 'yt-facade'];
+      const O_TU_CO = ['bo--anh', 'chu-anh', 'yt-facade', 'ba-tam'];
 
       return trang.flatMap((t) =>
         [...t.than.matchAll(/<img\b[^>]*>/g)]
@@ -700,6 +700,26 @@ const KIEM = [
         if (/^\d+$/.test(b.so) && +b.so !== b.va) {
           ra.push(`${b.ten} — cột # ghi ${b.so} nhưng đuôi là ${String(b.va).padStart(2, '0')}`);
         }
+      }
+      return ra;
+    }
+  },
+  {
+    /* Bật đếm lượt xem mà thiếu hàm thì trang gọi một địa chỉ không tồn tại:
+       mỗi lượt mở bài là một lỗi 404 trong console của NGƯỜI ĐỌC, còn con số
+       thì không bao giờ hiện. Trang vẫn đọc được nên không ai báo. */
+    ten: 'Bật đếm lượt xem thì phải có hàm /api/xem',
+    muc: 'loi',
+    chay: ({ cau, goc, trang }) => {
+      if (!(cau.luotXem || {}).bat) return [];
+      const ra = [];
+      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'xem.js'))) {
+        ra.push('site.config.json bật luotXem nhưng thiếu functions/api/xem.js');
+      }
+      const bai = trang.filter((t) => /class="post-layout/.test(t.html));
+      const thieu = bai.filter((t) => !t.html.includes('data-xem='));
+      if (bai.length && thieu.length) {
+        ra.push(`${thieu.length} trang bài không có ô lượt xem, ví dụ ${thieu[0].url}`);
       }
       return ra;
     }

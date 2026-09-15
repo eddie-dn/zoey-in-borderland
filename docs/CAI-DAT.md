@@ -272,10 +272,73 @@ cần token. Đặt `false` để tắt. Chi tiết: `docs/DUA-LEN-MANG.md` §9.
 
 ---
 
-## 5 · Bảng tra nhanh: cái gì hỏng thì mất gì
+## 5 · Đếm lượt xem — tuỳ chọn, mặc định TẮT
+
+Khác hẳn mục 4. **Cloudflare Web Analytics đếm rất tốt nhưng KHÔNG có API đọc
+ngược**: số liệu chỉ xem được trên bảng điều khiển, không lấy ra in lên chính
+bài viết được. Muốn con số hiện trong hàng meta thì phải tự giữ lấy nó — và chỗ
+đúng để giữ là **D1**, cơ sở dữ liệu SQLite của Cloudflare.
+
+> **Vì sao D1 chứ không phải KV.** KV giới hạn mỗi khoá một lượt ghi mỗi giây.
+> Bộ đếm lượt xem đúng là cái kiểu ghi ấy — nhiều lượt vào cùng một khoá — nên
+> KV sai việc ngay từ hình dạng. D1 thì `so = so + 1` là một phép cộng nguyên tử.
+
+### 5.1 · Tạo cơ sở dữ liệu
+
+Cloudflare Dashboard → **Workers & Pages** → **D1** → **Create database**.
+Đặt tên gì cũng được, ví dụ `zoey-xem`.
+
+Mở tab **Console** của nó và chạy:
+
+```sql
+CREATE TABLE IF NOT EXISTS xem (
+  u   TEXT PRIMARY KEY,
+  so  INTEGER NOT NULL DEFAULT 0,
+  sua TEXT
+);
+```
+
+### 5.2 · Gắn vào dự án
+
+Pages project → **Settings** → **Bindings** → **Add** → **D1 database**:
+
+| Ô | Điền |
+|---|---|
+| Variable name | **`DB`** — đúng ba chữ này, hàm tìm đúng tên đó |
+| D1 database | chọn cơ sở dữ liệu vừa tạo |
+
+Nhớ thêm cho **cả hai** môi trường (Production và Preview), không thì bản xem
+thử im lặng không đếm.
+
+### 5.3 · Bật trong cấu hình
+
+```json
+"luotXem": { "bat": true, "api": "/api/xem" }
+```
+
+`npm run kiem` có phép kiểm canh: bật mà thiếu hàm, hoặc trang bài không có ô
+lượt xem, là báo đỏ.
+
+### 5.4 · Con số này gần đúng, không chính xác
+
+Nói thẳng còn hơn giả vờ:
+
+- **Bot cào trang cũng bị tính.** Chỉ đếm khi trình duyệt chạy JavaScript nên
+  chặn được phần lớn, nhưng bot biết chạy JS thì vẫn lọt.
+- **Tải lại trang trong cùng phiên không cộng thêm** — nhưng mở tab mới thì
+  tính lại.
+- **Không biết ai là ai**, và cố ý không biết: không cookie, không dấu vết.
+
+Chưa gắn D1 thì hàm trả về trạng thái tắt, trang lặng lẽ bỏ qua và hàng meta
+chỉ ngắn đi một mục — không có dòng đỏ nào trong console của người đọc.
+
+---
+
+## 6 · Bảng tra nhanh: cái gì hỏng thì mất gì
 
 | Hỏng | Người đọc thấy gì |
 |---|---|
+| `luotXem.bat` = false, hoặc chưa gắn D1 | Hàng meta thiếu mục lượt xem. Không có gì khác đổi. |
 | `phanTich.bat` = false | Không có gì thay đổi với người đọc — chỉ là chủ trang không biết bài nào có người xem. |
 | Chưa khai `binhLuan.url` | Form bình luận ẩn, có một dòng nhắc nhỏ. Bài đọc bình thường. |
 | Apps Script hết hạn quyền | Bình luận cũ không tải được, form vẫn gửi được. Không có thông báo lỗi to. |
