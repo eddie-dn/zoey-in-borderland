@@ -618,3 +618,146 @@ và không ai cuộn ngược để xem lại hiệu ứng.
 `prefers-reduced-motion` thì hiện hết ngay, không animate gì.
 
 Ô trích dẫn mỗi ngày: xem `docs/QUOTE.md`.
+
+
+---
+
+## 12 · NỀN ĐỘNG
+
+Hai hiệu ứng, tự đổi theo theme:
+
+| Theme | Hiệu ứng | Gốc |
+|---|---|---|
+| sáng | cánh hoa anh đào rơi chéo | HAN-961030-a |
+| tối | đĩa thiên hà xoắn ốc | HAN-961030-b |
+
+### 12.1 · Bật ở đâu
+
+**Trang tĩnh** (`content/pages/*.md`) — thêm vào front matter:
+
+```yaml
+nen: dong     # bật
+nen: tinh     # tắt (mặc định)
+```
+
+**Trang chủ** luôn bật, không khai gì cả.
+
+Mặc định là `tinh`. Bật ở mọi trang thì nó hết là điểm nhấn, và trang đọc bài
+cần yên để đọc.
+
+### 12.2 · Bốn thứ nó tự lo
+
+1. **Đổi theme là đổi hiệu ứng ngay**, kể cả khi người đọc bấm nút giữa chừng.
+2. **Tab bị ẩn thì dừng hẳn.** Trình duyệt có tiết lưu `requestAnimationFrame`
+   ở tab ẩn nhưng không dừng hẳn — vẫn tốn pin của người mở mười tab.
+3. **Cuộn qua khỏi thì dừng.** Nền chỉ ở màn đầu; vẽ tiếp là vẽ cho không ai xem.
+4. **`prefers-reduced-motion`**: vẫn vẽ MỘT khung hình tĩnh rồi dừng, không bỏ
+   trắng. Người tắt chuyển động vẫn xứng đáng được nhìn cái nền.
+
+### 12.3 · Mật độ theo diện tích, không theo số cố định
+
+Số cánh hoa và số sao tính từ `W × H` của khung. Để một con số cố định thì màn
+1440px thấy thưa thớt mà màn 390px thấy dày đặc.
+
+---
+
+## 13 · THEME TỐI — QUẦNG SÁNG
+
+Trên nền sáng, bóng đổ và quầng sáng gần như một thứ. Trên nền tối thì khác
+hẳn: **bóng đổ nói "vật này nằm trên nền", quầng sáng nói "vật này phát sáng"**.
+Chỉ có bóng đen thì mọi thứ trông như lún xuống, cả trang phẳng và tối.
+
+```css
+--glow       /* quầng dưới nút, chip đang bật */
+--glow-manh  /* khi rê chuột vào */
+--chu-bong   /* bóng chữ cho h1, h2 — `none` ở theme sáng */
+```
+
+Ở theme tối lấy thẳng từ HAN-961030-b: `0 12px 30px rgba(120,80,180,.50)` —
+quầng **tím**, không phải bóng đen. Đó chính là chỗ "độ bóng" đến từ.
+
+**Cả ba trạng thái theme phải khai đủ ba biến này** (`:root` · `@media dark` ·
+`[data-theme="dark"]`). Thiếu ở khối nào thì bấm nút đổi theme là quầng biến mất.
+
+---
+
+## 14 · ẢNH TRÊN THẺ BÀI
+
+| Chỗ | Có ảnh? | Vì sao |
+|---|---|---|
+| Lưới nhiều bài | **không** | sáu tấm cạnh nhau thành một mảng màu, không tấm nào nói được gì, mà trang nặng thêm nửa MB |
+| Một bài nổi bật | **có** | nó là thứ duy nhất trên màn đó; ảnh cho nó sức nặng để đọc ra là "bài chính" chứ không phải "bài đầu danh sách" |
+| Màn hero trang chủ | **không** | ba dòng tiêu đề, mỗi dòng một bài — ảnh ở đây phá nhịp |
+
+Thẻ nổi bật dựng **ảnh trái · chữ phải**, tỉ lệ 5:6 — cùng khuôn với Medium,
+Substack và The Verge. Dựng dọc (ảnh trên, chữ dưới) thì ảnh chiếm hết màn đầu
+và tiêu đề bị đẩy xuống dưới nếp gấp.
+
+Dưới 760px thì xuống một cột, ảnh thành băng ngang 16:9 — ô vuông trên màn hẹp
+chiếm gần nửa màn hình.
+
+---
+
+## 15 · TIÊU ĐỀ NGẮN
+
+Màn hero cho mỗi bài đúng **một dòng**. Tiêu đề 60 ký tự gãy làm ba dòng là
+hỏng cả bố cục.
+
+```yaml
+titleNgan: Vô thức tập thể      # tuỳ chọn
+```
+
+Không khai thì cắt tạm ở dấu phẩy (hoặc gạch ngang) đầu tiên. Tiêu đề tiếng
+Việt hay có dạng *"Vế chính, vế phụ"*, nên vế trước dấu phẩy gần như luôn là
+phần cốt lõi — `"Vô thức tập thể, và cái cớ để tin vào giấc mơ"` ra
+`"Vô thức tập thể"`.
+
+
+---
+
+## 16 · MÀN HERO TRANG CHỦ
+
+Khuôn tạp chí / catalogue triển lãm, không phải khuôn "header blog". Sáu thứ
+làm nên nó — thiếu thứ nào là nó xẹp về một khối chữ căn giữa:
+
+1. **Lưới có đường kẻ nhìn thấy được.** Ba cột, hairline giữa các cột. Mắt đọc
+   ra ngay là trang này có cấu trúc.
+2. **Một chữ khổng lồ bị khung cắt.** Chữ đầu của tên trang, cỡ 46vw, mờ 4.5%,
+   nằm dưới mọi thứ. Đây là thứ cho trang chiều sâu mà không cần ảnh.
+3. **Bất đối xứng.** Cột trái neo đáy, cột giữa neo giữa, cột phải neo đỉnh.
+   Cả ba cùng canh giữa thì lại ra một hàng ngay ngắn và vô vị.
+4. **Một khối đậm neo góc** — ô chỉ số bài. Mảng đặc duy nhất giữa nhiều
+   khoảng trắng; mắt cần một chỗ đậu.
+5. **Nhãn 9px in hoa giãn rộng đặt ở mép panel**, không ở giữa.
+6. **Dấu + làm mốc căn**, như dấu chồng màu của nhà in.
+
+### 16.1 · Ảnh hero — tuỳ chọn
+
+```json
+"heroAnh": "/media/hero.png"
+```
+
+Có ảnh thì nó đè lên chữ khổng lồ và nằm dưới tiêu đề — đúng thứ tự lớp của
+catalogue: nhân vật che một phần con số, chữ chạy đè lên cả hai.
+
+**Ảnh cắt nền (PNG trong suốt) đẹp nhất.** Ảnh chữ nhật đặc cũng dùng được,
+chỉ là nó che mất chữ lớn nhiều hơn.
+
+Để trống thì chữ lớn cộng nền động tự gánh — và đó vẫn là một màn hero hoàn
+chỉnh, không phải một chỗ trống chờ ảnh.
+
+### 16.2 · Chiều cao
+
+```css
+height: calc(100svh - var(--header-h));
+```
+
+Thanh đầu trang nằm trong dòng chảy nên hero bắt đầu ở y=64px. Để `100svh`
+trơn thì nó kết thúc ở 964px trên màn 900px — đúng 64px rơi xuống dưới nếp gấp
+và dòng cuối cột trái bị cắt ngang. Đo ra đúng con số đó ở cả bốn khổ thử.
+
+`min-height` cũng không cứu được: nội dung cột trái vẫn đẩy khối cao lên. Phải
+khoá cứng, và cho nội dung bên trong tự co (`min-height:0` trên mỗi cột).
+
+Dưới 1000px thì cho hero **giãn** (`height:auto`): xếp dọc thì ba khối cộng lại
+luôn cao hơn một màn, mà cắt mất chữ tệ hơn nhiều so với việc phải cuộn.

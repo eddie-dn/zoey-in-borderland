@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.09 | 2026-09-15 | 09 | trang chủ hai màn · nền động · quầng sáng theme tối · sửa tương phản chữ mờ |
 | V1.08 | 2026-09-15 | 08 | nhẹ đi 63% · nén ảnh · cắt chú thích CSS khi dựng · dọn nhãn và cấu hình chết |
 | V1.07 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
 | V1.06 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
@@ -37,6 +38,41 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.09 — 15-Sep-2026
+
+- **Trang chủ hai màn.** Màn đầu cao trọn màn hình: tên trang cỡ lớn và 1–3 bài
+  mới nhất, mỗi bài đúng một dòng tiêu đề ngắn. Cuộn xuống (hoặc bấm mũi tên)
+  thì ra đúng trang danh sách như cũ. Phần dưới KHÔNG bị giấu bằng `hidden` —
+  giấu đi thì Google chỉ thấy một màn hero trống, người tắt JavaScript không
+  bao giờ mở được, và trình đọc màn hình mất luôn nội dung.
+  Dựng lại theo khuôn tạp chí sau khi bản đầu bị chê đúng: nó chỉ là một khối
+  chữ căn giữa, không phải một trang được thiết kế. Sáu thứ làm nên bản mới —
+  lưới có đường kẻ nhìn thấy được, một chữ khổng lồ bị khung cắt làm nền đồ
+  hoạ, bất đối xứng ba tầng, một khối đậm neo góc, nhãn 9px in hoa ở mép panel,
+  và dấu + làm mốc căn. Có thêm khe cắm ảnh (`heroAnh`) để ảnh đè lên chữ lớn.
+
+- **Nền động.** Hoa anh đào rơi ở theme sáng, đĩa thiên hà xoắn ốc ở theme tối,
+  port từ HAN-961030-a và -b. Tự đổi khi người đọc bấm nút theme. Dừng hẳn khi
+  tab bị ẩn hoặc khi cuộn qua khỏi. Bật bằng `nen: dong` trong front matter —
+  trang chủ luôn bật, mặc định các trang khác là tắt.
+- **Theme tối có chiều sâu trở lại.** Nền trang vốn đã đúng bản gốc; chỗ thiếu
+  là **quầng sáng tím** dưới nút và bóng chữ ở tiêu đề lớn. Bóng đổ nói "vật
+  này nằm trên nền", quầng sáng nói "vật này phát sáng" — chỉ có bóng đen thì
+  cả trang trông lún xuống và tối. Lấy thẳng số từ HAN-961030-b.
+- **Trang chủ mặc định theme sáng** kể cả khi máy đang để tối. Nhưng nếu người
+  đọc đã tự bấm chọn thì theo họ — ép đè lên lựa chọn của người dùng là kiểu
+  trang web cãi lại chính người dùng.
+- **Ảnh trên thẻ bài.** Lưới nhiều bài: bỏ ảnh. Một bài nổi bật: có ảnh, dựng
+  ảnh-trái-chữ-phải như Medium và Substack. Sáu tấm gradient cạnh nhau thì
+  không tấm nào nói được gì, mà trang nặng thêm nửa MB.
+- **Sửa một lỗi tương phản có sẵn.** `--text-faint` chỉ đạt 3.60:1, kèm chú
+  thích "chỉ dùng cho chữ ≥12px" — chú thích đó sai, ngưỡng được miễn của WCAG
+  là 18.66px in đậm hoặc 24px thường. Mà màu đó lại đang dùng cho đúng loại chữ
+  nhỏ nhất trên trang: ngày tháng 11px, nhãn 12.5px. Nay 4.72:1 ở theme sáng và
+  4.9:1 ở theme tối.
+- Thêm hai phép kiểm: quầng sáng phải khai đủ ở cả ba trạng thái theme, và
+  `nen` chỉ nhận `tinh` hoặc `dong`.
 
 ## V1.08 — 15-Sep-2026
 

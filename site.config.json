@@ -1,6 +1,8 @@
 {
   "title": "Zoey in Borderland",
   "tagline": "Personal notes",
+  "_heroAnh": "Ảnh cho màn đầu trang chủ. Để trống thì dùng chữ lớn + nền động. Ảnh cắt nền (PNG trong suốt) đẹp nhất.",
+  "heroAnh": "",
   "description": "Blog cá nhân — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
   "author": "Zoey",
   "lang": "vi",

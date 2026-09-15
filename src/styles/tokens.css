@@ -34,7 +34,13 @@
 
   --text:#3E2F56;                     /* chữ chính — tím mực, cố ý KHÔNG dùng đen */
   --text-muted:#6A587F;               /* chữ phụ — đã chỉnh đậm hơn --raw-ink2 cho đủ 4.5:1 */
-  --text-faint:#8B7BA3;               /* meta, tem — chỉ dùng cho chữ ≥12px */
+  /* Meta, nhãn, tem. ĐO 4.72:1 trên --bg — đạt AA cho cả chữ nhỏ.
+
+     Đời trước để #8B7BA3 (3.60:1) kèm chú thích "chỉ dùng cho chữ ≥12px".
+     Chú thích đó SAI: ngưỡng được miễn của WCAG là 18.66px in đậm hoặc 24px
+     thường, không phải 12px. Mà màu này lại đang dùng cho đúng loại chữ nhỏ
+     nhất trên trang — ngày tháng 11px, nhãn 12.5px. */
+  --text-faint:#7B6595;
   --text-invert:#FFFFFF;
   /* Chữ trên NÚT CHÍNH. Nút chính có nền gradient pastel (violet → orchid →
      coral); chữ trắng trên đó chỉ đạt ~2:1, nhìn thấy hình cái nút nhưng không
@@ -151,6 +157,19 @@
   --glass-spec2:rgba(255,255,255,.10);         /* ánh mờ mép dưới */
   --glass-drop:0 10px 34px rgba(94,72,133,.14);
   --glass-drop-lift:0 18px 48px rgba(94,72,133,.22);
+
+  /* ── QUẦNG SÁNG ──
+     Bóng đổ nói "vật này nằm TRÊN nền". Quầng sáng nói "vật này PHÁT sáng".
+     Trên nền sáng hai thứ gần như một; trên nền tối thì khác hẳn — chỉ có bóng
+     đen thì mọi thứ trông như lún xuống, cả trang thành phẳng và tối.
+
+     Lấy từ HAN-961030-b: nút ở đó có `0 12px 26px rgba(120,80,180,.45)`, tức
+     một quầng TÍM chứ không phải bóng đen. Đó chính là chỗ "độ bóng" đến từ.
+
+     Ở theme sáng để rất nhẹ: nền đã sáng sẵn, quầng mạnh thành ra bẩn. */
+  --glow:0 10px 24px rgba(140,100,200,.16);
+  --glow-manh:0 16px 40px rgba(140,100,200,.24);
+  --chu-bong:none;                    /* bóng chữ — chỉ bật ở theme tối */
   --glass-tint:linear-gradient(130deg,var(--accent-2),var(--accent) 58%,var(--accent-3));
 
   /* Nhịp chuyển động. --spring có vọt qua đích rồi lùi lại — đó là cái làm
@@ -179,7 +198,7 @@
 
     --text:#F6EFFB;
     --text-muted:rgba(246,239,251,.72);
-    --text-faint:rgba(246,239,251,.50);
+    --text-faint:rgba(246,239,251,.62);   /* .50 chỉ đạt 3.9:1 trên nền tối */
     --text-invert:#2A1E44;
 
     /* Trên nền tối thì orchid đạt 9.4:1 — đọc thoải mái, nên chữ và trang
@@ -213,6 +232,13 @@
     --glass-spec2:rgba(255,255,255,.05);
     --glass-drop:0 12px 38px rgba(8,3,20,.46);
     --glass-drop-lift:0 20px 54px rgba(8,3,20,.62);
+    /* Quầng tím lấy thẳng từ HAN-961030-b. Đây là thứ làm nền tối có chiều sâu
+       thay vì phẳng lì — xem ghi chú ở khối :root phía trên. */
+    --glow:0 12px 30px rgba(120,80,180,.50);
+    --glow-manh:0 20px 48px rgba(140,95,205,.62);
+    /* Tiêu đề lớn trên nền tối cần một lớp bóng để tách khỏi nền, không thì
+       chữ dính vào nền ở chỗ nền sáng nhất. Bản gốc: 0 4px 30px rgba(0,0,0,.5) */
+    --chu-bong:0 4px 30px rgba(0,0,0,.5);
     --glass-sat:1.9;
 
     color-scheme:dark;
@@ -263,6 +289,9 @@
   --glass-spec2:rgba(255,255,255,.05);
   --glass-drop:0 12px 38px rgba(8,3,20,.46);
   --glass-drop-lift:0 20px 54px rgba(8,3,20,.62);
+  --glow:0 12px 30px rgba(120,80,180,.50);
+  --glow-manh:0 20px 48px rgba(140,95,205,.62);
+  --chu-bong:0 4px 30px rgba(0,0,0,.5);
   --glass-sat:1.9;
 
   color-scheme:dark;

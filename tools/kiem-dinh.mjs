@@ -121,29 +121,83 @@ const KIEM = [
   {
     ten: 'Mọi thẻ img có khoá sẵn tỉ lệ (không làm nhảy chữ)',
     muc: 'loi',
-    chay: ({ trang }) => trang.flatMap((t) =>
-      [...t.than.matchAll(/<img\b[^>]*>/g)]
-        .filter((m) => !/--ar:/.test(m[0]) && !/position:absolute/.test(m[0]) &&
-                       !/class="[^"]*yt/.test(m[0]))
-        .filter((m) => {
-          /* Ảnh trong .yt-facade nằm tuyệt đối phủ kín khung 16/9 của thẻ cha
-             nên không cần --ar riêng. Nhận ra nó qua src trỏ sang ytimg. */
-          const src = (m[0].match(/src="([^"]*)"/) || [])[1] || '';
-          return !src.includes('ytimg.com');
-        })
-        .filter((m) => {
-          /* Ảnh chân dung trong ô .bo--anh cũng vậy: ô đó do LƯỚI quyết định
-             kích thước, ảnh nằm tuyệt đối phủ kín bằng object-fit:cover. Tỉ lệ
-             tấm ảnh gốc không ảnh hưởng gì tới bố cục nên không có chỗ nhảy chữ.
+    chay: ({ trang }) => {
+      /* ── Ô TỰ ĐỊNH CỠ ──
+         Mấy ô này cao rộng theo LƯỚI hoặc theo aspect-ratio của chính chúng,
+         còn ảnh bên trong nằm tuyệt đối phủ kín bằng object-fit:cover. Tỉ lệ
+         tấm ảnh gốc không ảnh hưởng gì tới bố cục nên không có chỗ nhảy chữ.
 
-             Khai --ar cho nó thì vừa thừa vừa SAI: không luật CSS nào đọc biến
-             đó ở đây, mà số ghi ra lại gợi ý rằng ô này cao theo tỉ lệ ảnh —
-             người sửa sau đọc vào là hiểu nhầm. Miễn cho nó ở đây, và nói rõ
-             vì sao, đúng hơn là nhét một con số cho phép kiểm im mồm. */
-          const i = t.than.indexOf(m[0]);
-          return !/class="bo bo--anh[^"]*"[^>]*>\s*$/.test(t.than.slice(Math.max(0, i - 120), i));
-        })
-        .map((m) => `${t.url} — img thiếu --ar: ${(m[0].match(/src="([^"]*)"/) || [])[1]}`))
+         Khai `--ar` cho chúng thì vừa thừa vừa SAI: không luật CSS nào đọc
+         biến đó ở đây, mà con số ghi ra lại gợi ý rằng ô cao theo tỉ lệ ảnh —
+         người sửa sau đọc vào là hiểu nhầm.
+
+         Để thành DANH SÁCH thay vì viết ba nhánh `.filter()` riêng: thêm một ô
+         kiểu này về sau chỉ phải thêm một chữ vào đây. */
+      const O_TU_CO = ['bo--anh', 'chu-anh', 'yt-facade'];
+
+      return trang.flatMap((t) =>
+        [...t.than.matchAll(/<img\b[^>]*>/g)]
+          .filter((m) => !/--ar:/.test(m[0]) && !/position:absolute/.test(m[0]))
+          .filter((m) => {
+            /* Ảnh nằm trong một ô tự định cỡ? Soi 160 ký tự HTML ngay trước
+               thẻ img — đủ để trùm cái thẻ mở của ô chứa nó. */
+            const i = t.than.indexOf(m[0]);
+            const truoc = t.than.slice(Math.max(0, i - 160), i);
+            return !O_TU_CO.some((c) => truoc.includes(`class="${c}`) ||
+                                        truoc.includes(` ${c}"`) ||
+                                        truoc.includes(` ${c} `));
+          })
+          .map((m) => `${t.url} — img thiếu --ar: ${(m[0].match(/src="([^"]*)"/) || [])[1]}`));
+    }
+  },
+  {
+    /* Ba biến quầng sáng phải có ở CẢ BA trạng thái theme. Thiếu ở khối nào
+       thì đúng khối đó mất quầng — mà người đọc chỉ gặp một khối tại một thời
+       điểm, nên lỗi này rất dễ lọt: thử ở theme hệ điều hành thì thấy đẹp, chỉ
+       ai bấm nút đổi theme mới gặp bản phẳng lì. */
+    ten: 'Quầng sáng khai đủ ở cả ba trạng thái theme',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'styles', 'tokens.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8');
+      const KHOI = [
+        ['theme sáng (:root)', /^:root\{/m],
+        ['@media prefers-color-scheme: dark', /prefers-color-scheme: dark/],
+        ['[data-theme="dark"]', /:root\[data-theme="dark"\]\{/]
+      ];
+      const ra = [];
+      for (const [ten, re] of KHOI) {
+        const i = css.search(re);
+        if (i < 0) { ra.push(`tokens.css thiếu hẳn khối ${ten}`); continue; }
+        const khoi = css.slice(i, css.indexOf('\n}', i));
+        for (const k of ['--glow:', '--glow-manh:', '--chu-bong:']) {
+          if (!khoi.includes(k)) ra.push(`tokens.css — khối ${ten} thiếu ${k}`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* `nen` chỉ nhận hai giá trị. Gõ `nen: động` (có dấu) hay `nen: true` thì
+       bộ dựng lặng lẽ coi như `tinh` — trang vẫn lên, chỉ là không có nền động
+       và không ai biết vì sao. */
+    ten: 'Front matter `nen` chỉ nhận tinh hoặc dong',
+    muc: 'canh',
+    chay: ({ goc }) => {
+      const thu = path.join(goc, 'content', 'pages');
+      if (!fs.existsSync(thu)) return [];
+      return fs.readdirSync(thu).filter((x) => x.endsWith('.md')).flatMap((x) => {
+        const raw = fs.readFileSync(path.join(thu, x), 'utf8');
+        const m = raw.match(/^---\n([\s\S]*?)\n---/);
+        if (!m) return [];
+        const v = (m[1].match(/^nen:[ \t]*(.+)$/m) || [])[1];
+        if (!v) return [];
+        const g = v.trim().toLowerCase();
+        return (g === 'tinh' || g === 'dong') ? []
+          : [`content/pages/${x} — \`nen: ${v.trim()}\` không có; chỉ nhận \`tinh\` hoặc \`dong\``];
+      });
+    }
   },
   {
     ten: 'Ảnh không quá nặng',

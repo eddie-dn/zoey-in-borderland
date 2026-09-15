@@ -1,6 +1,9 @@
 ---
 title: Về tôi
 khung: bento
+
+# Nền động: hoa rơi ở theme sáng, thiên hà ở theme tối. Đổi thành tinh để tắt.
+nen: dong
 summary: Ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ xong.
 
 # ─────────── KHUNG BENTO đọc mấy field dưới đây ───────────

@@ -28,8 +28,17 @@
   font-family:var(--font-label);font-size:var(--fs-xs);font-weight:600;
   letter-spacing:.18em;text-transform:uppercase;
   color:var(--btn-ink);
+  /* Quầng sáng chồng LÊN bóng kính, không thay nó. Bóng nói vật nằm trên nền,
+     quầng nói vật phát sáng — trên nền tối thiếu quầng thì nút trông như một
+     vết lõm. Xem --glow trong tokens.css. */
+  box-shadow:inset 0 0 0 1px var(--glass-spec), var(--glass-drop), var(--glow);
+  transition:box-shadow var(--dur) var(--ease-glass),
+             transform .34s var(--spring);
 }
-.btn:hover{color:var(--btn-ink)}
+.btn:hover{
+  color:var(--btn-ink);
+  box-shadow:inset 0 0 0 1px var(--glass-spec), var(--glass-drop-lift), var(--glow-manh);
+}
 /* Nút phụ là kính TRONG, không màu — để nó cũng có màu nhấn thì màn nào cũng
    có hai thứ tranh nhau làm nút chính. */
 .btn--ghost{color:var(--text-muted)}

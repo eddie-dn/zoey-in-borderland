@@ -136,9 +136,12 @@ const NHAN = {
   allTopics   : 'All topics',
   archive     : 'Archive',
   latest      : 'Latest',
+  index       : 'Index',
   pinned      : 'Pinned',
   more        : 'More writing',
   noPosts     : 'Nothing here yet.',
+  readOn      : 'Read on',
+  browse      : 'Browse everything',
   noTags      : 'No topics yet.',
   searchHint  : 'Search by title, topic or category. Accents optional.',
   searchPh    : 'Type to search…',
@@ -345,6 +348,11 @@ function docBai(file) {
     file, nhan, url,
     duongDanRa : path.join(THU_MUC.dist, ...duong, 'index.html'),
     title      : String(fm.title),
+    /* Tiêu đề NGẮN cho màn đầu trang chủ. Ở đó mỗi bài chỉ có một dòng, tiêu
+       đề 60 ký tự gãy làm ba dòng là hỏng cả bố cục. Không khai thì cắt tạm
+       ở dấu phẩy đầu tiên — tiêu đề tiếng Việt hay có dạng "Vế chính, vế phụ",
+       nên vế trước dấu phẩy gần như luôn là phần cốt lõi. */
+    titleNgan  : String(fm.titleNgan || String(fm.title).split(/\s*[,—–]\s*/)[0]),
     slug,
     date       : ngayISO(fm.date),
     updated    : fm.updated ? ngayISO(fm.updated) : null,
@@ -411,6 +419,10 @@ function docTrang(file) {
     title      : String(fm.title),
     summary    : String(fm.summary || tomTat(kq.tho)),
     khung      : String(fm.khung || 'bento').trim().toLowerCase(),
+    /* `nen: dong` bật nền động (hoa rơi ở theme sáng, thiên hà ở theme tối).
+       Mặc định `tinh` — nền động ở MỌI trang thì nó hết là điểm nhấn, và
+       trang đọc bài cần yên để đọc. Xem docs/DESIGN-SYSTEM.md §12. */
+    nen        : String(fm.nen || 'tinh').trim().toLowerCase(),
     gioiThieu  : String(fm.gioiThieu || ''),
     viTri      : String(fm.viTri || ''),
     tuNam      : String(fm.tuNam || ''),
@@ -483,13 +495,18 @@ function boChuThich(html) {
 }
 
 function trang({ title, description, canonical, ogTitle, ogImage, ogType, content,
-                 scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/' }) {
+                 scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/',
+                 epTheme = '' }) {
   return boChuThich(dienMau(MAU_SHELL, {
     lang,
     /* `data-base` để JS biết gốc trang khi deploy vào thư mục con (GitHub
        Pages kiểu /ten-repo/). search.js đọc nó để dựng đường dẫn tới
        search-index.json — gắn cứng '/' thì trang ở thư mục con tìm 404. */
-    htmlAttr  : BASE ? `data-base="${attr(BASE)}"` : '',
+    /* `data-ep` = theme MẶC ĐỊNH của riêng trang này, dùng khi người đọc chưa
+       tự chọn gì. Đoạn script trong <head> đọc nó. KHÔNG đặt thẳng data-theme
+       ở đây: làm vậy là đè lên lựa chọn của người đọc. */
+    htmlAttr  : [BASE ? `data-base="${attr(BASE)}"` : '',
+                 epTheme ? `data-ep="${attr(epTheme)}"` : ''].filter(Boolean).join(' '),
     title     : escapeHtml(title),
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
@@ -1003,9 +1020,15 @@ function khungChuong(t, soBai, soTag) {
 }
 
 function trangTinh(t, soBai, soTag) {
-  const than = t.khung === 'chuong'
+  let than = t.khung === 'chuong'
     ? khungChuong(t, soBai, soTag)
     : khungBento(t, soBai, soTag);
+
+  /* Nền động bọc NGOÀI nội dung, không chèn vào giữa: canvas phải phủ cả khối
+     mà không đẩy chữ đi đâu cả. */
+  if (t.nen === 'dong') {
+    than = `<div class="nen-boc" data-nen>${than}</div>`;
+  }
 
   return trang({
     title      : `${t.title} · ${CAU.title}`,
@@ -1017,6 +1040,7 @@ function trangTinh(t, soBai, soTag) {
     duong      : t.url.replace(BASE, ''),
     content    : dienMau(MAU_PAGE, { khung: t.khung, than }),
     scripts    : `<script src="${BASE}/assets/reveal.js" defer></script>` +
+                 (t.nen === 'dong' ? `\n<script src="${BASE}/assets/nen.js" defer></script>` : '') +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
     headExtra  : `<script type="application/ld+json">${JSON.stringify({
@@ -1153,27 +1177,132 @@ function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, descr
   });
 }
 
-/* ── TRANG CHỦ ── */
+/* ── ẢNH MÀN HERO (tuỳ chọn) ──
+   Khai `heroAnh` trong site.config.json thì ảnh đè lên chữ khổng lồ, đúng kiểu
+   nhân vật đè lên con số lớn trong mấy trang catalogue triển lãm. Không khai
+   thì chữ lớn cộng nền động tự gánh — và đó vẫn là một màn hero hoàn chỉnh,
+   không phải một chỗ trống chờ ảnh.
+
+   Ảnh nền PNG/WebP có phần trong suốt thì đẹp nhất (ảnh cắt nền). Ảnh chữ nhật
+   đặc cũng dùng được, chỉ là nó che mất chữ lớn nhiều hơn.
+
+   `aria-hidden` + `alt=""`: đây là ĐỒ HOẠ trang trí. Nội dung thật của màn này
+   là tên trang và ba dòng bài; ảnh chỉ tạo không khí. Bắt trình đọc màn hình
+   đọc "ảnh trang trí" trước khi tới tiêu đề là làm phiền người ta. */
+function heroAnhHTML() {
+  const a = CAU.heroAnh;
+  if (!a) return '';
+  const ngoai = /^https?:/.test(a);
+  if (!ngoai) {
+    const that = path.join(THU_MUC.public, String(a).replace(/^\//, ''));
+    if (!fs.existsSync(that)) {
+      CANH_BAO.push(`site.config.json: heroAnh trỏ vào file không có — ${a}`);
+      return '';
+    }
+  }
+  return `<img class="hero-anh" src="${attr(ngoai ? a : BASE + a)}" alt=""` +
+         ` aria-hidden="true" loading="eager" fetchpriority="high" decoding="async">`;
+}
+
+/* ── TRANG CHỦ ──
+
+   HAI MÀN, MỘT TRANG.
+
+     màn 1  hero cao trọn màn hình: tên trang + 1–3 bài mới nhất, mỗi bài đúng
+            MỘT DÒNG tiêu đề ngắn. Nền động chạy sau lưng.
+     màn 2  cuộn xuống (hoặc bấm mũi tên) thì ra đúng trang danh sách như cũ.
+
+   ── VÌ SAO KHÔNG GIẤU MÀN 2 BẰNG `hidden` ────────────────────────────────
+   "Bấm mới mở xuống" nghe như phải giấu phần dưới đi rồi bấm mới hiện. Làm vậy
+   mất ba thứ cùng lúc:
+     · Google đọc trang thấy một màn hero trống rỗng, không thấy bài nào
+     · người tắt JavaScript không bao giờ mở được phần dưới
+     · người dùng trình đọc màn hình mất luôn nội dung
+
+   Cách ở đây: màn 2 LUÔN có trong HTML, chỉ nằm dưới màn 1. Hero cao 100vh nên
+   cuộn xuống là gặp; nút mũi tên cuộn mượt xuống đó. Cảm giác "mở ra" giữ
+   nguyên, mà không đánh đổi gì. */
 function trangChu(bai) {
   /* Bài ghim lên trước, rồi tới mới nhất. `pinned: true` trong front matter. */
   const xep = [...bai].sort((a, b) =>
     (b.pinned - a.pinned) || (a.date < b.date ? 1 : -1));
-  const noiBat = xep[0];
-  /* `postsPerPage` trong site.config.json quyết định trang chủ liệt kê bao
-     nhiêu bài dưới bài nổi bật. Trước đây khoá này khai mà KHÔNG AI ĐỌC — sửa
-     nó không có tác dụng gì, đúng kiểu cấu hình nói dối.
 
-     Chưa cắt trang cho /posts/: ba bài thì cắt trang là thừa. Khi nào danh sách
-     dài tới mức phải cuộn lâu mới tính, và lúc đó dùng lại chính khoá này. */
-  const conLai = xep.slice(1, 1 + Math.max(1, Number(CAU.postsPerPage) || 6));
+  /* Màn đầu: TỐI ĐA BA bài. Bốn dòng trở lên là màn hero hết thoáng, mà thoáng
+     mới là điểm của nó. */
+  const dauTien = xep.slice(0, 3);
+  const noiBat  = xep[0];
+  const conLai  = xep.slice(1, 1 + Math.max(1, Number(CAU.postsPerPage) || 6));
+
+  /* ══════════ MÀN HERO ══════════
+     Dựng theo khuôn tạp chí / catalogue triển lãm, không phải khuôn "header
+     blog". Sáu thứ làm nên nó, và thiếu thứ nào là nó xẹp về một khối chữ:
+
+       1. LƯỚI CÓ ĐƯỜNG KẺ NHÌN THẤY ĐƯỢC. Ba cột, kẻ hairline giữa các cột.
+          Mắt đọc ra ngay là trang này có cấu trúc, không phải chữ thả trôi.
+       2. MỘT CHỮ KHỔNG LỒ BỊ KHUNG CẮT. Chữ Z cỡ 40vw, mờ, nằm dưới mọi thứ,
+          tràn ra ngoài mép. Đây là thứ cho trang chiều sâu mà không cần ảnh.
+       3. BẤT ĐỐI XỨNG. Khối trái neo đáy, khối giữa neo giữa, khối phải neo
+          đỉnh. Cả ba cùng canh giữa là lại ra một hàng ngay ngắn, vô vị.
+       4. MỘT KHỐI ĐẬM NEO GÓC. Ô chỉ số bên trái là mảng đặc duy nhất giữa
+          nhiều khoảng trắng — mắt có chỗ đậu.
+       5. NHÃN NHỎ IN HOA Ở GÓC PANEL. Chữ 9px giãn rộng, đặt ở mép chứ không
+          ở giữa. Đây là chi tiết khiến trang "đọc ra là đồ hoạ".
+       6. DẤU + LÀM MỐC CĂN, như dấu chồng màu của nhà in.
+
+     Căn theo MÉP KHUNG, không căn giữa một cột chữ. */
+  const hero = `
+<section class="hero" data-nen>
+  <span class="hero-chu-lon" aria-hidden="true">${escapeHtml(CAU.title.trim()[0] || 'Z')}</span>
+  ${heroAnhHTML()}
+
+  <div class="hero-luoi">
+
+    <div class="hero-cot hero-cot--trai">
+      <p class="hero-nhan">${escapeHtml(CAU.tagline)}</p>
+      <div class="hero-khoi">
+        <span class="hero-dem">${bai.length}</span>
+        <span class="hero-dem-nhan">${NHAN.posts}</span>
+      </div>
+      <p class="hero-nho">${escapeHtml(tomTat(CAU.description, 62))}</p>
+    </div>
+
+    <div class="hero-cot hero-cot--giua">
+      <p class="hero-nhan hero-nhan--tren">${escapeHtml(NHAN.latest)}</p>
+      <h1 class="hero-ten">${escapeHtml(CAU.title)}</h1>
+      <a class="hero-xuong" href="#doc-tiep">
+        <span>${escapeHtml(NHAN.readOn)}</span>
+        <i aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <div class="hero-cot hero-cot--phai">
+      <p class="hero-nhan">${escapeHtml(NHAN.index)}</p>
+      ${dauTien.length ? `<ol class="hero-ds">${dauTien.map((b, i) => `
+        <li class="hero-dong">
+          <a href="${b.url}">
+            <span class="hero-so">${String(i + 1).padStart(2, '0')}</span>
+            <span class="hero-tt">${noiChu(escapeHtml(b.titleNgan))}</span>
+            <time class="hero-ngay" datetime="${b.date}">${ngayAnh(b.date).replace(/ \d{4}$/, '')}</time>
+          </a>
+        </li>`).join('')}</ol>` : ''}
+      ${coTrang('/posts/') ? `<a class="hero-them" href="${BASE}/posts/">${NHAN.allPosts} →</a>` : ''}
+    </div>
+  </div>
+
+  <!-- Mốc căn ở bốn góc, như dấu chồng màu của nhà in -->
+  <i class="hero-moc hero-moc--tt" aria-hidden="true"></i>
+  <i class="hero-moc hero-moc--tp" aria-hidden="true"></i>
+  <i class="hero-moc hero-moc--dt" aria-hidden="true"></i>
+  <span class="hero-tem" aria-hidden="true">${BAN.ten}</span>
+</section>`;
 
   return trang({
     title: `${CAU.title} · ${CAU.tagline}`,
     description: CAU.description,
     canonical: `${CAU.url}${BASE}/`,
     duong: '/',
-    /* Trang chủ khai WebSite + Person: đây là chỗ Google lấy tên trang và tên
-       tác giả để hiện trong kết quả, thay vì tự đoán từ thẻ <title>. */
+    /* Trang chủ LUÔN theme sáng — xem ghi chú `ep` trong hàm trang(). */
+    epTheme: 'light',
     headExtra: `<script type="application/ld+json">${JSON.stringify({
       '@context': 'https://schema.org',
       '@graph': [
@@ -1183,27 +1312,29 @@ function trangChu(bai) {
         { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` }
       ]
     })}</script>`,
-    scripts: (CAU.baoVeChu || {}).bat === false ? ''
-      : `<script src="${BASE}/assets/copy-guard.js" defer></script>`,
-    content: `
-<div class="container trang-chu">
-  <header class="chu-dau">
-    <div class="eyebrow"><i></i></div>
-    <h1>${escapeHtml(CAU.title)}</h1>
-    <p class="chu-dan">${escapeHtml(CAU.description)}</p>
-  </header>
-
+    scripts: `<script src="${BASE}/assets/nen.js" defer></script>` +
+      ((CAU.baoVeChu || {}).bat === false ? ''
+        : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
+    content: hero + `
+<div class="container trang-chu" id="doc-tiep">
   ${noiBat ? `<section class="chu-nb">
     <p class="label label--muted">${noiBat.pinned ? NHAN.pinned : NHAN.latest}</p>
-    <article class="card chu-the">
-      <div class="meta-row">
-        <time datetime="${noiBat.date}">${ngayAnh(noiBat.date)}</time>
-        <span>${noiBat.phut} ${NHAN.minRead}</span>
+    <article class="card chu-the${noiBat.cover ? ' chu-the--anh' : ''}">
+      ${noiBat.cover ? `<div class="chu-anh">
+        <img src="${attr(/^https?:/.test(noiBat.cover) ? noiBat.cover : BASE + noiBat.cover)}"
+             alt="${attr(noiBat.coverAlt)}" loading="lazy" decoding="async">
+      </div>` : ''}
+      <div class="chu-chu">
+        <div class="meta-row">
+          <time datetime="${noiBat.date}">${ngayAnh(noiBat.date)}</time>
+          <span>${noiBat.phut} ${NHAN.minRead}</span>
+          ${noiBat.muc.length ? `<span>${escapeHtml(noiBat.muc[noiBat.muc.length - 1].ten)}</span>` : ''}
+        </div>
+        <h2><a class="stretch" href="${noiBat.url}">${noiChu(escapeHtml(noiBat.title))}</a></h2>
+        <p class="chu-tom">${escapeHtml(tomTat(noiBat.summary, 220))}</p>
+        ${noiBat.tags.length ? `<div class="tag-row">${noiBat.tags.map((t) =>
+          `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
       </div>
-      <h2><a class="stretch" href="${noiBat.url}">${noiChu(escapeHtml(noiBat.title))}</a></h2>
-      <p class="chu-tom">${escapeHtml(tomTat(noiBat.summary, 220))}</p>
-      ${noiBat.tags.length ? `<div class="tag-row">${noiBat.tags.map((t) =>
-        `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
     </article>
   </section>` : ''}
 
@@ -1524,7 +1655,7 @@ async function chay() {
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
-                     'copy-guard.js', 'reveal.js', 'so-tay.js', 'search.js']) {
+                     'copy-guard.js', 'reveal.js', 'so-tay.js', 'search.js', 'nen.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }

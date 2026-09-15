@@ -26,9 +26,18 @@
      nhịp mới tối lại. Đoạn này cố tình để trần, không bọc hàm, cho chạy sớm nhất. -->
 <script>
 (function(){try{
+  var h=document.documentElement;
   var t=localStorage.getItem('zib-theme');
-  if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);
-  else t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  if(t==='dark'||t==='light'){
+    /* Người đọc đã tự chọn thì theo họ, kể cả trên trang có ép theme. Ép đè
+       lên lựa chọn của người dùng là kiểu trang web cãi lại chính người dùng. */
+    h.setAttribute('data-theme',t);
+  }else{
+    /* Chưa chọn gì: trang nào khai data-ep thì theo trang (trang chủ ép sáng
+       để màn hero luôn ra đúng tông đã thiết kế), còn lại theo hệ điều hành. */
+    t=h.getAttribute('data-ep')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    h.setAttribute('data-theme',t);
+  }
   if(t==='dark')document.querySelector('meta[name=theme-color]').content='#120C22';
 }catch(e){}})();
 </script>

@@ -78,6 +78,12 @@ h1,h2,h3,h4,h5,h6{
   letter-spacing:var(--ls-tight);
   text-wrap:balance;               /* tiêu đề không bao giờ để rớt 1 chữ xuống dòng */
 }
+/* Bóng chữ CHỈ ở theme tối (--chu-bong là `none` ở theme sáng). Trên nền tối
+   có vầng sáng ở giữa, tiêu đề lớn dính vào nền đúng chỗ nền sáng nhất; một
+   lớp bóng mờ tách nó ra mà không làm chữ dày lên.
+   Lấy từ HAN-961030-b: `text-shadow:0 4px 30px rgba(0,0,0,.5)`.
+   Chỉ h1 và h2 — chữ nhỏ mà đổ bóng thì thành nhoè. */
+h1,h2{text-shadow:var(--chu-bong)}
 
 p,li,dd{text-wrap:pretty}          /* chặn chữ mồ côi cuối đoạn */
 

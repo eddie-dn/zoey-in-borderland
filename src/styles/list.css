@@ -69,17 +69,324 @@
 }
 .chip--nay{
   color:var(--btn-ink);background:var(--glass-tint);
-  box-shadow:inset 0 0 0 1px var(--glass-spec);
+  /* Chip đang bật là thứ duy nhất trong hàng có màu — cho nó quầng sáng như
+     nút chính, để trên nền tối nó không chìm xuống ngang mấy chip kia. */
+  box-shadow:inset 0 0 0 1px var(--glass-spec), var(--glow);
 }
 .chip--nay:hover{color:var(--btn-ink);background:var(--glass-tint)}
 .chip-so{
   font-variant-numeric:tabular-nums;opacity:.6;font-weight:400;
 }
 
+/* ══════════════ MÀN HERO ══════════════
+   Khuôn tạp chí / catalogue triển lãm. Xem ghi chú ở hàm trangChu trong
+   tools/build.mjs để biết sáu thứ làm nên nó. */
+
+.hero{
+  position:relative;
+  /* `100svh` chứ không `100vh`: trên điện thoại `vh` tính theo lúc thanh địa
+     chỉ đã cuộn đi mất, nên lúc mới mở hero cao hơn màn hình thật. */
+  /* `height` chứ không `min-height`, và nội dung phải VỪA trong đó.
+
+     Bản đầu dùng `min-height:100svh` cộng `padding-top` cho thanh đầu trang.
+     Nội dung cột trái cao hơn phần còn lại nên đẩy cả khối lên 964px trên màn
+     900px — 64px cuối rơi xuống dưới nếp gấp và dòng mô tả bị cắt ngang. Màn
+     hero mà phải cuộn mới đọc hết thì nó không còn là màn hero.
+
+     Nay khoá cứng chiều cao; mọi thứ bên trong tự co theo (xem `clamp` ở cỡ
+     chữ và `min-height:0` ở các cột). */
+  /* TRỪ chiều cao thanh đầu trang.
+
+     Thanh đầu nằm trong DÒNG CHẢY (không phải position:fixed), nên hero bắt
+     đầu ở y = 64px. Để `height:100svh` thì nó kết thúc ở 964px trên màn 900px
+     — đúng 64px rơi xuống dưới nếp gấp, và dòng mô tả cuối cột trái bị cắt
+     ngang. Đo ra đúng con số đó ở cả bốn khổ thử.
+
+     `min-height` cũng không cứu được: nội dung cột trái vẫn đẩy khối cao lên.
+     Phải khoá cứng, và cho nội dung bên trong tự co. */
+  height:calc(100svh - var(--header-h));
+  box-sizing:border-box;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  margin-inline:calc(50% - 50vw);     /* tràn hết bề ngang màn hình */
+}
+
+/* ── CHỮ KHỔNG LỒ ──
+   Nằm dưới mọi thứ, bị khung cắt cả hai đầu. Đây là thứ cho trang chiều sâu
+   mà không cần một tấm ảnh nào.
+
+   `user-select:none` + aria-hidden: nó là ĐỒ HOẠ, không phải chữ để đọc. Thiếu
+   hai thứ này thì bôi đen cả trang sẽ dính một chữ Z vô nghĩa, và trình đọc
+   màn hình đọc to nó lên. */
+.hero-chu-lon{
+  position:absolute;
+  left:48%;top:46%;translate:-50% -50%;
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:min(46vw,58vh);line-height:.78;
+  color:var(--text);opacity:.045;
+  user-select:none;pointer-events:none;z-index:0;
+}
+:root[data-theme="dark"] .hero-chu-lon,
+:root:not([data-theme="light"]) .hero-chu-lon{opacity:.07}
+
+/* ── ẢNH HERO (tuỳ chọn) ──
+   Nằm GIỮA chữ khổng lồ và nội dung: đè lên chữ, nhưng chữ tiêu đề vẫn nằm
+   trên nó. Đúng thứ tự lớp của mấy trang catalogue — nhân vật che một phần
+   con số, rồi chữ chạy đè lên cả hai.
+
+   Neo theo MÉP DƯỚI và lệch phải: ảnh cắt nền thường có chân/thân bị cắt ở
+   đáy, neo giữa thì thấy rõ chỗ cắt. */
+.hero-anh{
+  position:absolute;z-index:0;
+  right:clamp(2%,14vw,22%);bottom:0;
+  height:min(78%,68vh);width:auto;max-width:44%;
+  object-fit:contain;object-position:bottom center;
+  pointer-events:none;user-select:none;
+}
+@media (max-width:1000px){
+  /* Màn hẹp: ảnh lùi hẳn về sau, mờ đi và nhỏ lại. Giữ nguyên cỡ thì nó chen
+     vào giữa ba khối chữ đang xếp dọc. */
+  .hero-anh{right:-6%;height:38%;max-width:66%;opacity:.42}
+}
+
+.nen-canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;opacity:.9;
+}
+
+/* ── LƯỚI BA CỘT ──
+   Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi
+   thì ba khối chữ trôi lửng lơ và trang xẹp về một cái header blog. */
+.hero-luoi{
+  position:relative;z-index:1;flex:1;
+  display:grid;
+  grid-template-columns:minmax(190px,1fr) minmax(0,2.1fr) minmax(250px,1.15fr);
+  width:100%;max-width:1520px;margin-inline:auto;
+  border-top:1px solid var(--line);
+}
+.hero-cot{
+  display:flex;flex-direction:column;
+  padding:var(--s6) var(--s6) var(--s7);
+  min-width:0;
+  /* `min-height:0` cho phép cột co lại dưới chiều cao nội dung — mặc định của
+     flex item là `min-height:auto`, tức là KHÔNG co, và đó là thứ đẩy cả hero
+     cao quá màn hình. */
+  min-height:0;
+  border-left:1px solid var(--line);
+}
+.hero-cot:last-child{border-right:1px solid var(--line)}
+
+/* BẤT ĐỐI XỨNG — ba khối neo ba tầng khác nhau. Cùng canh giữa cả ba thì lại
+   ra một hàng ngay ngắn, và mất hẳn cái nhịp của trang. */
+.hero-cot--trai{justify-content:flex-end;gap:var(--s5)}
+.hero-cot--giua{justify-content:center;gap:var(--s5);align-items:flex-start}
+.hero-cot--phai{justify-content:flex-start;gap:var(--s5)}
+
+/* ── NHÃN NHỎ IN HOA ──
+   9px giãn rộng, đặt ở MÉP panel chứ không ở giữa. Chi tiết nhỏ này là thứ
+   khiến trang đọc ra là đồ hoạ chứ không phải một trang chữ. */
+.hero-nhan{
+  margin:0;
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--text-faint);
+}
+.hero-nhan--tren{margin-bottom:var(--s2)}
+
+/* ── KHỐI ĐẬM NEO GÓC ──
+   Mảng đặc duy nhất giữa nhiều khoảng trắng. Mắt cần một chỗ đậu. */
+.hero-khoi{
+  display:flex;align-items:baseline;gap:var(--s3);
+  align-self:flex-start;
+  padding:var(--s4) var(--s5) var(--s4) var(--s4);
+  border-radius:var(--r-md);
+  background:var(--glass-tint);
+  box-shadow:inset 0 0 0 1px var(--glass-spec),var(--glow);
+  color:var(--btn-ink);
+}
+.hero-dem{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:clamp(30px,1.5rem + 1.6vw,46px);line-height:.9;
+  font-variant-numeric:tabular-nums;
+}
+.hero-dem-nhan{
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;opacity:.72;
+}
+.hero-nho{
+  margin:0;max-width:26ch;
+  font-size:var(--fs-sm);line-height:1.5;color:var(--text-muted);
+}
+/* Màn thấp (laptop 13", cửa sổ chia đôi): bỏ bớt thứ bỏ được thay vì để tràn.
+   Dòng mô tả là thứ đầu tiên bỏ được — nó lặp lại điều thẻ meta đã nói. */
+@media (max-height:820px){
+  .hero-nho{display:none}
+}
+@media (max-height:680px){
+  .hero-khoi{padding:var(--s3) var(--s4)}
+  .hero-cot{padding-block:var(--s5)}
+}
+
+/* ── CỘT GIỮA: TÊN TRANG ── */
+.hero-ten{
+  margin:0;
+  font-size:clamp(46px,2rem + 6.4vw,132px);
+  font-style:italic;line-height:.94;letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.hero-xuong{
+  display:inline-flex;align-items:center;gap:var(--s3);
+  margin-top:var(--s4);padding:10px var(--s5) 10px var(--s4);
+  border-radius:var(--r-pill);text-decoration:none;background:none;
+  box-shadow:inset 0 0 0 1px var(--line);
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--text-muted);
+  transition:color var(--dur-fast),box-shadow var(--dur-fast);
+}
+.hero-xuong:hover,.hero-xuong:focus-visible{
+  color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+}
+.hero-xuong i{
+  width:8px;height:8px;
+  border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;
+  rotate:45deg;
+  animation:xuong-nhip 2.1s var(--ease-glass) infinite;
+}
+@keyframes xuong-nhip{
+  0%,100%{transform:translateY(0);opacity:.55}
+  50%    {transform:translateY(4px);opacity:1}
+}
+@media (prefers-reduced-motion:reduce){.hero-xuong i{animation:none;opacity:.8}}
+
+/* ── CỘT PHẢI: CHỈ MỤC BÀI ── */
+.hero-ds{
+  list-style:none;margin:0;padding:0;
+  border-top:1px solid var(--line);
+}
+.hero-dong{border-bottom:1px solid var(--line)}
+.hero-dong a{
+  display:grid;grid-template-columns:auto 1fr;
+  gap:2px var(--s3);align-items:baseline;
+  padding:var(--s4) 0;
+  text-decoration:none;background:none;color:inherit;
+  transition:padding-left var(--dur) var(--ease-glass),color var(--dur-fast);
+}
+/* Thụt vào khi rê chuột — chuyển động NGANG đọc ra là "đi tiếp vào trong",
+   hợp với một danh sách dẫn sang chỗ khác hơn là nhấc lên như tấm thẻ. */
+.hero-dong a:hover,.hero-dong a:focus-visible{
+  padding-left:var(--s3);color:var(--accent-ink);outline:none;
+}
+.hero-so{
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.14em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.hero-tt{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:clamp(17px,.9rem + .5vw,22px);line-height:1.2;
+  text-wrap:balance;min-width:0;
+}
+.hero-ngay{
+  grid-column:2;
+  font-family:var(--font-label);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-faint);
+}
+.hero-them{
+  align-self:flex-start;margin-top:var(--s2);
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;
+  color:var(--text-faint);text-decoration:none;background:none;
+  transition:color var(--dur-fast);
+}
+.hero-them:hover,.hero-them:focus-visible{color:var(--accent-ink);outline:none}
+
+/* ── MỐC CĂN Ở GÓC ──
+   Dấu + như dấu chồng màu của nhà in. Thuần trang trí, nhưng là loại trang trí
+   nói "trang này được canh chỉnh", không phải "trang này có thêm hình vẽ". */
+.hero-moc{
+  position:absolute;z-index:1;width:9px;height:9px;pointer-events:none;
+  opacity:.5;
+}
+.hero-moc::before,.hero-moc::after{
+  content:"";position:absolute;background:var(--line-strong);
+}
+.hero-moc::before{left:50%;top:0;width:1px;height:100%;translate:-50% 0}
+.hero-moc::after{top:50%;left:0;height:1px;width:100%;translate:0 -50%}
+.hero-moc--tt{left:var(--s5);top:calc(var(--header-h) + var(--s5))}
+.hero-moc--tp{right:var(--s5);top:calc(var(--header-h) + var(--s5))}
+.hero-moc--dt{left:var(--s5);bottom:var(--s5)}
+.hero-tem{
+  position:absolute;right:var(--s5);bottom:var(--s5);z-index:1;
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.2em;color:var(--text-faint);opacity:.75;
+  user-select:none;pointer-events:none;
+}
+
+/* ── KHỔ HẸP ──
+   Ba cột kẻ dọc trên màn 390px thì mỗi cột còn 120px. Xếp dọc, và đổi đường kẻ
+   từ DỌC sang NGANG để cấu trúc vẫn nhìn thấy được. */
+@media (max-width:1000px){
+  /* Xếp dọc thì ba khối cộng lại luôn cao hơn một màn. Cho hero GIÃN thay vì
+     khoá cứng — khoá cứng ở đây là cắt mất chữ, mà cắt chữ tệ hơn nhiều so với
+     việc màn đầu dài hơn một màn trên điện thoại. Người dùng điện thoại vốn
+     đã quen cuộn. */
+  .hero{height:auto;min-height:calc(100svh - var(--header-h))}
+  .hero-luoi{grid-template-columns:1fr;border-top:none}
+  .hero-cot{
+    border-left:none;border-right:none;
+    border-top:1px solid var(--line);
+    padding:var(--s6) var(--gutter);
+  }
+  .hero-cot:last-child{border-right:none;border-bottom:1px solid var(--line)}
+  /* Trên màn hẹp, thứ tự đọc quan trọng hơn bất đối xứng: tên trang lên đầu. */
+  .hero-cot--giua{order:-1;justify-content:flex-start;padding-top:var(--s9)}
+  .hero-cot--trai{order:1}
+  .hero-cot--phai{order:0}
+  .hero-chu-lon{font-size:min(74vw,42vh);opacity:.04;top:30%}
+  .hero-moc,.hero-tem{display:none}
+}
+
 /* ── TRANG CHỦ ── */
+
+.trang-chu{scroll-margin-top:var(--header-h)}
 .chu-nb{margin-bottom:var(--s9)}
 .chu-nb .label{margin:0 0 var(--s4)}
 .chu-the{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s7)}
+
+/* ── THẺ NỔI BẬT CÓ ẢNH ──
+   Lưới nhiều bài thì KHÔNG cần ảnh: sáu tấm gradient cạnh nhau thành một mảng
+   màu, không tấm nào nói được gì, mà trang thì nặng thêm nửa megabyte.
+
+   Một bài NỔI BẬT thì ngược lại — nó là thứ duy nhất trên màn đó, và ảnh cho
+   nó sức nặng để đọc ra là "bài chính", không phải "bài đầu danh sách".
+
+   Ảnh bên trái, chữ bên phải, tỉ lệ 5:4 — cùng khuôn với thẻ bài nổi bật của
+   Medium, Substack và The Verge. Dựng dọc (ảnh trên, chữ dưới) thì ảnh chiếm
+   hết màn đầu và tiêu đề bị đẩy xuống dưới nếp gấp. */
+.chu-the--anh{
+  display:grid;grid-template-columns:5fr 6fr;gap:0;
+  padding:0;overflow:hidden;align-items:stretch;
+}
+.chu-anh{position:relative;min-height:230px;overflow:hidden}
+.chu-anh img{
+  position:absolute;inset:0;
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .6s var(--ease-glass);
+}
+/* Ảnh phóng rất nhẹ khi rê vào cả thẻ — dấu hiệu "mở ra được", cùng ngôn ngữ
+   với việc thẻ nhấc lên, nhưng không làm chữ nhảy. */
+.chu-the--anh:hover .chu-anh img{transform:scale(1.04)}
+.chu-chu{
+  display:flex;flex-direction:column;gap:var(--s4);
+  padding:var(--s7);min-width:0;
+}
+.chu-the--anh .chu-tom{max-width:none}
+@media (max-width:760px){
+  /* Xuống một cột thì ảnh thành băng ngang 16:9 ở trên, không phải ô vuông:
+     ô vuông trên màn hẹp chiếm gần nửa màn hình. */
+  .chu-the--anh{grid-template-columns:1fr}
+  .chu-anh{min-height:0;aspect-ratio:16 / 9}
+  .chu-chu{padding:var(--s6)}
+}
 .chu-the h2{
   margin:0;font-size:var(--fs-h2);font-style:italic;
   line-height:var(--lh-tight);text-wrap:balance;
