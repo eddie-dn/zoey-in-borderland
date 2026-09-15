@@ -12,7 +12,8 @@
     "clean": "rm -rf dist",
     "ver": "node tools/version.mjs",
     "kiem": "node tools/kiem-dinh.mjs",
-    "anh": "node tools/anh.mjs"
+    "anh": "node tools/anh.mjs",
+    "bia": "node tools/bia.mjs"
   },
   "engines": {
     "node": ">=18"

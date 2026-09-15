@@ -116,7 +116,16 @@
   will-change:transform;
 }
 @media (hover:hover){
-  .lift:hover,.card:hover,.bo:hover{
+  /* `.bo:not(.bo--chu)` — ô thân bài trên trang giới thiệu KHÔNG phải tấm kính:
+     nó cố ý `background:none; box-shadow:none`, chỉ là chữ chảy tiếp.
+
+     Thiếu phần loại trừ này thì rê chuột vào đoạn văn là cả khối chữ nhấc lên
+     3px VÀ mọc ra một cái viền kính với bóng đổ — luật hover ở đây khai lại
+     `box-shadow`, đè lên `box-shadow:none` của luật kia. Người đọc thấy nguyên
+     một đoạn văn tự bay khỏi trang, mà chẳng bấm vào đâu được.
+
+     Nhấc lên là tín hiệu "cái này mở ra được". Khối chữ không mở ra cái gì. */
+  .lift:hover,.card:hover,.bo:not(.bo--chu):hover{
     transform:translateY(-3px);
     box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
   }
@@ -150,7 +159,7 @@
    Bỏ hẳn phần nhấc lên và lún xuống; giữ đổi màu và bóng đổ, vì đó là tín hiệu
    cho biết nút đang được nhắm tới — bỏ luôn thì không còn gì báo. */
 @media (prefers-reduced-motion:reduce){
-  .lift:hover,.card:hover,.bo:hover{ transform:none }
+  .lift:hover,.card:hover,.bo:not(.bo--chu):hover{ transform:none }
   .press:active,.btn:active{ transform:none }
   .sheen::after,.btn::after{ display:none }
 }

@@ -35,7 +35,7 @@
 
   var DU;
   try { DU = JSON.parse(nodeData.textContent) || {}; } catch (e) { return; }
-  if (!DU.ban || !DU.ban.length) return;
+  if (!DU.build || !DU.build.length) return;
 
   /* Chữ lấy từ bảng NHAN trong tools/build.mjs, gửi kèm trong chính khối JSON
      này — cùng lý do như bên comments.js: một bảng nhãn, một chỗ để sửa. */
@@ -74,7 +74,7 @@
     document.body.appendChild(nen);
     document.body.classList.add('so-khoa');
 
-    veDanhSach();
+    veBuild();
     requestAnimationFrame(function () { nen.classList.add('hien'); });
 
     nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
@@ -118,55 +118,93 @@
       .replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
-  function veDanhSach() {
-    var hang = DU.ban.map(function (b, i) {
-      var coChi = DU.chiTiet && DU.chiTiet[b.ten] && DU.chiTiet[b.ten].length;
-      return '<tr class="' + (coChi ? 'so-co' : 'so-khong') + '"' +
-             (coChi ? ' tabindex="0" role="button" data-i="' + i + '"' : '') + '>' +
-               '<td class="so-ver">' + an(b.ten) + '</td>' +
-               '<td class="so-ngay">' + an(b.ngay) + '</td>' +
-               '<td class="so-dem">' + an(b.so) + '</td>' +
-               '<td class="so-viec">' + an(b.suaChinh) +
-                 (coChi ? '<i class="so-mui" aria-hidden="true"></i>' : '') +
-               '</td>' +
-             '</tr>';
+  /* ══════════ BA TẦNG ══════════
+     1. danh sách BUILD   V1 · V0
+     2. các bản vá trong một build   V1.06 · V1.05 …
+     3. chi tiết một bản vá
+
+     Gom như vậy vì mỗi dòng trong docs/LICH-SU.md là một bản vá, còn cái người
+     xem muốn thấy trước là các MỐC LỚN. Rải phẳng tám dòng ngang hàng thì
+     không đọc ra đâu là mốc. */
+
+  function veDau(tieuDe, coLui, luiVe) {
+    return '<div class="so-dau">' +
+      (coLui
+        ? '<button class="ico-btn so-lui" type="button" aria-label="' + an(L('back')) + '">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>' +
+          '</button>'
+        : '') +
+      '<p class="label label--muted">' + tieuDe + '</p>' +
+      '<button class="ico-btn so-x" type="button" aria-label="' + an(L('close')) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
+      '</button>' +
+    '</div>';
+  }
+
+  function noiNut(luiVe) {
+    hop.querySelector('.so-x').addEventListener('click', dong);
+    var l = hop.querySelector('.so-lui');
+    if (l && luiVe) { l.addEventListener('click', luiVe); l.focus(); }
+    else hop.querySelector('.so-x').focus();
+  }
+
+  /* ── TẦNG 1: BUILD ── */
+  function veBuild() {
+    var hang = DU.build.map(function (b, i) {
+      /* Mô tả build = việc chính của bản vá MỚI NHẤT trong build đó. Gộp cả
+         bảy dòng lại thì ra một đoạn dài không ai đọc. */
+      var moi = b.va[0];
+      var khoang = b.tuNgay === b.denNgay ? an(b.tuNgay)
+                 : an(b.tuNgay) + ' → ' + an(b.denNgay);
+      return '<tr class="so-co so-build" tabindex="0" role="button" data-i="' + i + '">' +
+          '<td class="so-ver so-ver--lon">' + an(b.ten) + '</td>' +
+          '<td class="so-ngay">' + khoang + '</td>' +
+          '<td class="so-dem">' + an(b.soVa) + '</td>' +
+          '<td class="so-viec">' + an(moi.suaChinh) +
+            '<i class="so-mui" aria-hidden="true"></i></td>' +
+        '</tr>';
     }).join('');
 
     hop.innerHTML =
-      '<div class="so-dau">' +
-        '<p class="label label--muted">' + an(L('history')) + '</p>' +
-        '<button class="ico-btn so-x" type="button" aria-label="' + an(L('close')) + '">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
-        '</button>' +
-      '</div>' +
+      veDau(an(L('history')), false) +
       '<div class="so-cuon"><table class="so-bang"><tbody>' + hang + '</tbody></table></div>' +
-      '<p class="so-chan">' + an(L('builds', DU.ban.length)) + '</p>';
+      '<p class="so-chan">' + an(L('builds', DU.build.length)) + '</p>';
 
-    hop.querySelector('.so-x').addEventListener('click', dong);
-    hop.querySelectorAll('[data-i]').forEach(function (n) {
-      function vao() { veChiTiet(+n.getAttribute('data-i')); }
-      n.addEventListener('click', vao);
-      n.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); vao(); }
-      });
-    });
-    hop.querySelector('.so-x').focus();
+    noiNut(null);
+    gan(function (i) { veVa(i); });
   }
 
-  function veChiTiet(i) {
-    var b  = DU.ban[i];
-    var ds = (DU.chiTiet && DU.chiTiet[b.ten]) || [];
+  /* ── TẦNG 2: BẢN VÁ TRONG MỘT BUILD ── */
+  function veVa(iB) {
+    var b = DU.build[iB];
+    var hang = b.va.map(function (v, i) {
+      var coChi = DU.chiTiet && DU.chiTiet[v.ten] && DU.chiTiet[v.ten].length;
+      return '<tr class="' + (coChi ? 'so-co' : 'so-khong') + '"' +
+             (coChi ? ' tabindex="0" role="button" data-i="' + i + '"' : '') + '>' +
+          '<td class="so-ver">' + an(v.ten) + '</td>' +
+          '<td class="so-ngay">' + an(v.ngay) + '</td>' +
+          '<td class="so-dem">' + an(v.so) + '</td>' +
+          '<td class="so-viec">' + an(v.suaChinh) +
+            (coChi ? '<i class="so-mui" aria-hidden="true"></i>' : '') + '</td>' +
+        '</tr>';
+    }).join('');
 
     hop.innerHTML =
-      '<div class="so-dau">' +
-        '<button class="ico-btn so-lui" type="button" aria-label="' + an(L('back')) + '">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>' +
-        '</button>' +
-        '<p class="label label--muted">' + an(b.ten) + ' · ' + an(b.ngay) + '</p>' +
-        '<button class="ico-btn so-x" type="button" aria-label="' + an(L('close')) + '">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
-        '</button>' +
-      '</div>' +
+      veDau(an(b.ten), true) +
+      '<div class="so-cuon"><table class="so-bang"><tbody>' + hang + '</tbody></table></div>' +
+      '<p class="so-chan">' + an(L('patches', b.soVa)) + '</p>';
+
+    noiNut(veBuild);
+    gan(function (i) { veChiTiet(iB, i); });
+  }
+
+  /* ── TẦNG 3: CHI TIẾT MỘT BẢN VÁ ── */
+  function veChiTiet(iB, iV) {
+    var v  = DU.build[iB].va[iV];
+    var ds = (DU.chiTiet && DU.chiTiet[v.ten]) || [];
+
+    hop.innerHTML =
+      veDau(an(v.ten) + ' · ' + an(v.ngay), true) +
       '<div class="so-cuon">' +
         (ds.length
           ? '<ul class="so-y">' + ds.map(function (y) {
@@ -174,10 +212,19 @@
             }).join('') + '</ul>'
           : '<p class="so-trong">' + an(L('noInfo')) + '</p>') +
       '</div>' +
-      '<p class="so-chan">' + an(L('patches', b.so)) + '</p>';
+      '<p class="so-chan">' + an(v.suaChinh) + '</p>';
 
-    hop.querySelector('.so-x').addEventListener('click', dong);
-    hop.querySelector('.so-lui').addEventListener('click', veDanhSach);
-    hop.querySelector('.so-lui').focus();
+    noiNut(function () { veVa(iB); });
+  }
+
+  /* Gắn bấm + Enter/Space cho mọi dòng có data-i. Một chỗ cho cả ba tầng. */
+  function gan(vao) {
+    hop.querySelectorAll('[data-i]').forEach(function (n) {
+      function di() { vao(+n.getAttribute('data-i')); }
+      n.addEventListener('click', di);
+      n.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); di(); }
+      });
+    });
   }
 })();

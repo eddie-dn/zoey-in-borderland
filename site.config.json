@@ -36,12 +36,7 @@
     "baoVeChu": "Chép một đoạn DÀI thì tự kèm dòng nguồn. nguong = từ bao nhiêu ký tự trở lên mới can thiệp (dưới ngưỡng chép nguyên, để người ta trích một câu cho dễ). gioiHan = 0 nghĩa là không cắt, chỉ thêm nguồn; đặt số > 0 thì đoạn chép bị rút gọn còn bấy nhiêu ký tự. ĐÂY LÀ GỜ GIẢM TỐC CHỨ KHÔNG PHẢI Ổ KHOÁ — không có cách nào chặn được sao chép trên web. Đặt bat:false để tắt.",
     "quoteAI": "Lớp làm phong phú ô trích dẫn bằng Gemini. bat:false thì trang chỉ dùng kho câu trong content/quotes.md — vẫn chạy đầy đủ, không cần mạng, không cần khoá. Bật lên thì trang xin thêm một câu viết mới cho mỗi ngày qua /api/quote; hỏng kiểu gì cũng lặng lẽ quay về kho sẵn. Cần khai GEMINI_KEY trong Environment Variables trên Vercel. Xem docs/QUOTE.md."
   },
-  "chuaDung": [
-    "/posts/",
-    "/tags/",
-    "/archive/",
-    "/search/"
-  ],
+  "chuaDung": [],
   "binhLuan": {
     "bat": true,
     "url": "",

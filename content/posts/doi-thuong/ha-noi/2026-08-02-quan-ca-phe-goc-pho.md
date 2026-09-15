@@ -3,6 +3,8 @@ title: Quán cà phê góc phố, 6 giờ sáng
 date: 2026-08-02
 summary: Một bài ngắn, đặt trong thư mục con doi-thuong/ha-noi/ để làm ví dụ cho cấu trúc chuyên mục lồng nhau và đường dẫn phân cấp.
 tags: [hà nội, đời thường]
+cover: /media/2026/quan-ca-phe-goc-pho/bia.png
+coverAlt: Quán cà phê góc phố, 6 giờ sáng
 ---
 
 Sáu giờ sáng, quán mới mở, ghế còn úp lên bàn. Cô chủ pha ấm nước đầu tiên rồi

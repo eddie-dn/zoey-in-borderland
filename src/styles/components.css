@@ -161,7 +161,25 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
   font-variant-numeric:tabular-nums;
 }
 .meta-row > * {display:inline-flex;align-items:center;gap:6px}
-.meta-row .dot{width:3px;height:3px;border-radius:50%;background:var(--line-strong)}
+
+/* ── DẤU NGĂN GẮN VÀO MỤC SAU, KHÔNG PHẢI MỘT THẺ RIÊNG ──
+   Đời đầu chèn `<span class="dot">` giữa các mục. Hỏng khi hàng gãy dòng: dấu
+   chấm là một phần tử flex độc lập nên nó ở lại cuối dòng trên, còn chữ nó đi
+   kèm rơi xuống dòng dưới — thành ra dòng kết thúc bằng một dấu · lửng lơ.
+   Thấy rõ trên thẻ bài dài ở khổ hẹp.
+
+   Nay dấu ngăn là `::before` của CHÍNH mục phía sau. Nó dính liền với chữ, nên
+   gãy dòng thì cả hai cùng xuống — không bao giờ còn dấu nào đứng một mình.
+   Thẻ .dot vẫn nhận nhưng không vẽ gì, để HTML cũ không lòi ra chấm thừa. */
+.meta-row > * + *::before{
+  content:"·";
+  margin-right:6px;
+  color:var(--line-strong);
+}
+.meta-row .dot{display:none}
+/* Huy hiệu (Nháp…) là một khối riêng, không cần dấu ngăn phía trước. */
+.meta-row > .badge + *::before,
+.meta-row > .badge::before{content:none;margin:0}
 
 /* ── HUY HIỆU TRẠNG THÁI ── */
 .badge{
@@ -210,13 +228,24 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
 /* ══════════════ SỔ LỊCH SỬ PHIÊN BẢN ══════════════
    Mở bằng 5 nhịp bấm vào dòng phiên bản ở chân trang — xem src/js/so-tay.js. */
 
+/* ── TẤM NỀN ──
+   Đời đầu: `rgba(24,14,40,.34)` + `blur(3px)`. Nhìn bợt: nền quá nhạt nên
+   trang phía sau vẫn đọc được lờ mờ, blur quá yếu nên chữ sau lưng thành một
+   mảng lem nhem, và cái tím trong màu nền hoà vào đúng tông tím của tấm kính
+   — hộp không tách khỏi nền, cả màn hình thành một vũng tím.
+
+   Nay: đậm hơn hẳn, và ngả TRUNG TÍNH (gần đen xanh) thay vì tím. Nền trung
+   tính thì tấm kính tím nổi lên như một vật thật đặt trên đó. Blur mạnh gấp
+   bốn để chữ sau lưng tan hẳn thành mảng màu, không còn đọc được — mắt thôi
+   cố đọc nó và dồn vào hộp. */
 .so-nen{
   position:fixed;inset:0;z-index:300;
   display:flex;align-items:center;justify-content:center;
   padding:var(--s5);
-  background:rgba(24,14,40,.34);
-  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
-  opacity:0;transition:opacity .2s var(--ease-glass);
+  background:rgba(16,12,26,.62);
+  -webkit-backdrop-filter:blur(12px) saturate(.72);
+  backdrop-filter:blur(12px) saturate(.72);
+  opacity:0;transition:opacity .22s var(--ease-glass);
 }
 .so-nen.hien{opacity:1}
 /* Khoá cuộn NỀN khi hộp đang mở. Thiếu dòng này thì cuộn trong hộp tới đáy
@@ -224,11 +253,29 @@ a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--gla
    ở một chỗ khác trên trang mà không hiểu vì sao. */
 body.so-khoa{overflow:hidden}
 
+/* ── HỘP ──
+   KHÔNG dùng `.glass` trơn ở đây. Tấm kính vốn dựa vào việc lấy nền phía sau
+   mà lọc; nhưng nền phía sau nay đã bị làm mờ và tối hẳn rồi, nên lọc thêm
+   lần nữa chỉ ra một mảng xám. Hộp này cần là một MẶT THẬT đặt lên trên, nên
+   nó có nền đục của riêng nó, chỉ giữ chút trong ở viền.
+
+   Bóng đổ hai lớp: một lớp sát và đậm cho cạnh, một lớp xa và loãng cho khối.
+   Một lớp thôi thì hoặc ra viền cứng, hoặc ra vệt mờ không có hình. */
 .so-hop{
-  width:min(620px,100%);max-height:min(76vh,640px);
+  width:min(600px,100%);max-height:min(74vh,620px);
   display:flex;flex-direction:column;
   border-radius:var(--r-lg);overflow:hidden;
-  translate:0 10px;transition:translate .24s var(--spring);
+  background:
+    linear-gradient(168deg,
+      color-mix(in srgb, var(--surface-solid) 96%, var(--accent) 4%),
+      var(--surface-solid) 62%);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-spec),
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 2px 8px rgba(16,12,26,.16),
+    0 26px 70px -12px rgba(16,12,26,.42);
+  translate:0 12px;
+  transition:translate .26s var(--spring);
 }
 .so-nen.hien .so-hop{translate:0 0}
 
@@ -236,6 +283,7 @@ body.so-khoa{overflow:hidden}
   display:flex;align-items:center;gap:var(--s3);
   padding:var(--s4) var(--s5);
   border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, var(--accent-wash), transparent);
 }
 .so-dau .label{margin:0;flex:1}
 .so-x,.so-lui{flex:none;width:30px;height:30px}
@@ -256,6 +304,11 @@ body.so-khoa{overflow:hidden}
   font-variant-numeric:tabular-nums;
 }
 .so-viec{color:var(--text-muted);line-height:1.5;position:relative;padding-right:var(--s5)}
+
+/* Dòng BUILD là mốc lớn — to và đậm hơn dòng bản vá bên trong, để hai tầng
+   nhìn ra ngay là hai cấp chứ không phải cùng một danh sách. */
+.so-ver--lon{font-size:var(--fs-md);letter-spacing:.02em}
+.so-build td{padding-block:var(--s4)}
 
 /* Dòng có chi tiết thì bấm được; dòng không có thì đứng yên, không giả vờ. */
 .so-co{cursor:pointer;transition:background var(--dur-fast)}

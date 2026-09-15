@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.07 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
 | V1.06 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
 | V1.05 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
 | V1.04 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
@@ -35,6 +36,31 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.07 — 15-Sep-2026
+
+- **Dựng xong bốn trang còn thiếu.** `/posts/` có hàng chip lọc theo chuyên
+  mục, `/tags/` là mây chủ đề cỡ chữ theo số bài, `/archive/` xếp theo năm dạng
+  danh sách dày cho dễ dò, `/search/` tìm ngay trên trình duyệt. Menu Posts và
+  mấy cái tag nay bấm được — trước chúng chỉ là chữ mờ kèm tooltip "sắp có".
+- **Tìm kiếm gõ không dấu vẫn ra.** "tam ly" ra "tâm lý". Xếp hạng theo chỗ
+  trùng chứ không theo ngày: trúng ở tiêu đề đáng giá hơn trúng ở thân bài, nên
+  bài viết hẳn về từ khoá luôn đứng trên bài chỉ nhắc thoáng qua. Lọc thêm được
+  bằng chip chủ đề. Không có máy chủ nào cả, chạy offline sau lần tải đầu.
+- **Chuyên mục lấy thẳng từ thư mục.** Bỏ bài vào `content/posts/<tên mục>/` là
+  chuyên mục đó tự có trang riêng và tự lên hàng chip — không phải khai thêm ở
+  đâu. Đặt tên hiển thị bằng một file `_muc.json` nhỏ trong chính thư mục ấy.
+- **Thêm `npm run bia`** — sinh ảnh đại diện cho bài. Không đi tải ảnh trên
+  mạng: mỗi tấm một giấy phép, và tông màu lạ phá bảng màu của trang. Ảnh được
+  vẽ ra từ chính tên bài nên cùng tên luôn ra cùng tấm, và luôn đúng bảng màu.
+- **Sổ lịch sử gom theo build.** V1 là một dòng, bấm mới sổ ra bảy bản vá bên
+  trong, bấm tiếp mới tới chi tiết. Nền hộp làm lại: tối và trung tính hơn để
+  tấm kính nổi lên, thay vì cả màn hình thành một vũng tím.
+- **Sửa hai lỗi.** Rê chuột vào khối chữ trang About thì cả đoạn văn nhấc lên
+  kèm một cái viền ma — luật `.bo:hover` cấp bóng đổ cho một khối cố ý không có
+  tấm kính. Và dấu `·` trong hàng ngày tháng đứng lại cuối dòng khi hàng gãy,
+  vì nó là một thẻ riêng; nay nó là `::before` của mục phía sau nên đi theo chữ.
+- **Bài mới:** *Chiếc gương*, trong chuyên mục Musings.
 
 ## V1.06 — 15-Sep-2026
 

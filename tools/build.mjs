@@ -65,7 +65,30 @@ if (CAU.version) {
    Là HÀM chứ không phải hằng: nó đọc NHAN, mà NHAN khai bên dưới. Hằng thì
    chạy ngay lúc nạp file và NHAN lúc đó còn chưa tồn tại. */
 const SO_TAY = () => JSON.stringify({
-  ban: SO.ban.map((b) => ({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh })),
+  /* GOM THEO BUILD, không rải mỗi bản vá một dòng.
+
+     Bản đầu liệt kê thẳng V1.06, V1.05, V1.04… ra trang ngoài. Sai về bản
+     chất của cách đánh số: theo quy ước ở đầu docs/LICH-SU.md, mỗi dòng bảng
+     là một BUILD LỚN và số đuôi là bản vá trong build đó. Rải phẳng ra thì
+     người xem thấy tám dòng ngang hàng nhau, không đọc được đâu là mốc lớn.
+
+     Nay ba tầng:  V1 (build)  →  các bản vá V1.yy  →  chi tiết từng bản. */
+  build: (() => {
+    const m = new Map();
+    for (const b of SO.ban) {
+      const lon = b.ten.split('.')[0];              /* 'V1.06' → 'V1' */
+      if (!m.has(lon)) m.set(lon, { ten: lon, va: [] });
+      m.get(lon).va.push({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh });
+    }
+    return [...m.values()].map((x) => ({
+      ten: x.ten,
+      /* Bảng xếp mới nhất trước, nên phần tử đầu là bản mới nhất của build. */
+      tuNgay: x.va[x.va.length - 1].ngay,
+      denNgay: x.va[0].ngay,
+      soVa: x.va.length,
+      va: x.va
+    }));
+  })(),
   chiTiet: docChiTiet(GOC),
   nhan: {
     history: NHAN.history, builds: NHAN.builds, patches: NHAN.patches,
@@ -108,6 +131,23 @@ const NHAN = {
   anchor      : 'Link to this section',
   older       : 'Older',
   newer       : 'Newer',
+
+  /* ── trang danh sách ── */
+  allPosts    : 'All posts',
+  allTopics   : 'All topics',
+  archive     : 'Archive',
+  latest      : 'Latest',
+  pinned      : 'Pinned',
+  more        : 'More writing',
+  noPosts     : 'Nothing here yet.',
+  noTags      : 'No topics yet.',
+  searchHint  : 'Search by title, topic or category. Accents optional.',
+  searchPh    : 'Type to search…',
+  clear       : 'Clear',
+  results     : '{n} results',
+  oneResult   : '1 result',
+  noResults   : 'Nothing matched.',
+  typeMore    : 'Keep typing…',
 
   /* ── trang giới thiệu ── */
   based       : 'Based in',
@@ -447,7 +487,10 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/' }) {
   return boChuThich(dienMau(MAU_SHELL, {
     lang,
-    htmlAttr  : '',
+    /* `data-base` để JS biết gốc trang khi deploy vào thư mục con (GitHub
+       Pages kiểu /ten-repo/). search.js đọc nó để dựng đường dẫn tới
+       search-index.json — gắn cứng '/' thì trang ở thư mục con tìm 404. */
+    htmlAttr  : BASE ? `data-base="${attr(BASE)}"` : '',
     title     : escapeHtml(title),
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
@@ -704,7 +747,7 @@ function trangBai(bai, congKhai) {
     dateText    : ngayAnh(bai.date),
     readingTime : bai.phut,
     updatedBlock: bai.updated
-      ? `<span class="dot" aria-hidden="true"></span><span>${NHAN.updated} ${ngayAnh(bai.updated)}</span>`
+      ? `<span>${NHAN.updated} ${ngayAnh(bai.updated)}</span>`
       : '',
     draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
 
@@ -1009,7 +1052,7 @@ function gopCSS() {
      (xem tools/kiem-dinh.mjs). Bản trước thiếu glass.css ở đây, và vì CSS
      thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
   const thuTu = ['tokens.css', 'base.css', 'glass.css', 'layout.css',
-                 'components.css', 'prose.css', 'about.css'];
+                 'components.css', 'list.css', 'prose.css', 'about.css'];
   return thuTu.map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
     if (!fs.existsSync(p)) { CANH_BAO.push(`thiếu file style: ${f}`); return ''; }
@@ -1017,24 +1060,79 @@ function gopCSS() {
   }).join('\n\n');
 }
 
-/* ══════════════ 5. TRANG TẠM & FILE PHỤ ══════════════ */
+/* ══════════════ 5. TRANG DANH SÁCH ══════════════
 
-/* Trang chủ ở đây là BẢN TẠM có chủ đích: lượt này chỉ dựng khung sườn, trang
-   chủ / trang tag / trang tìm kiếm đầy đủ nằm ở lượt sau. Vẫn dựng để trang
-   không rơi vào ngõ cụt, và để soi thử khung đọc bài trên máy. */
-function trangChuTam(bai) {
-  const the = bai.map((b) => `
-    <article class="card">
-      <div class="meta-row">
-        <time datetime="${b.date}">${ngayAnh(b.date)}</time>
-        <span class="dot" aria-hidden="true"></span><span>${b.phut} phút đọc</span>
-        ${b.draft ? '<span class="badge badge--draft">Nháp</span>' : ''}
-      </div>
-      <h3><a class="stretch" href="${b.url}">${escapeHtml(b.title)}</a></h3>
-      <p class="meta">${escapeHtml(tomTat(b.summary, 150))}</p>
-      ${b.tags.length ? `<div class="tag-row">${b.tags.map((t) =>
-        `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
-    </article>`).join('');
+   Sáu trang dùng chung một khuôn: trang chủ · /posts/ · /posts/<mục>/ ·
+   /tags/ · /tags/<tag>/ · /archive/. Khác nhau ở tiêu đề, bộ lọc và danh
+   sách bài truyền vào — không trang nào có bố cục riêng.
+
+   Cố ý vậy: sáu bố cục riêng thì sửa khoảng cách một cái là phải mở sáu file
+   và chắc chắn sót một chỗ. Một khuôn thì sửa một lần.
+   ============================================================ */
+
+/* Thẻ một bài. Dùng ở mọi trang danh sách và ở khối "đọc tiếp" cuối bài. */
+function theBai(b, { hienMuc = true } = {}) {
+  const muc = hienMuc && b.muc.length ? b.muc[b.muc.length - 1] : null;
+  return `<article class="card the-bai">
+    <div class="meta-row">
+      <time datetime="${b.date}">${ngayAnh(b.date)}</time>
+      <span>${b.phut} ${NHAN.minRead}</span>
+      ${muc ? `<span>${escapeHtml(muc.ten)}</span>` : ''}
+      ${b.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : ''}
+    </div>
+    <h3><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h3>
+    <p class="the-tom">${escapeHtml(tomTat(b.summary, 150))}</p>
+    ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, 3).map((t) =>
+      `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+  </article>`;
+}
+
+/* Lưới thẻ. `min(300px,100%)` chứ không phải 300px trơn: thiếu `min()` thì ở
+   khổ hẹp hơn 300px, cột vẫn giữ 300px và trang tràn ngang. */
+function luoiThe(ds, trong) {
+  if (!ds.length) return `<p class="ds-trong">${trong}</p>`;
+  return `<div class="ds-luoi">${ds.map((b) => theBai(b)).join('')}</div>`;
+}
+
+/* Hàng chip lọc. `nay` là chip đang bật. */
+function hangChip(ds, nay) {
+  if (!ds.length) return '';
+  return `<nav class="chip-hang" aria-label="Filter">${ds.map((x) =>
+    `<a class="chip${x.href === nay ? ' chip--nay' : ''}" href="${BASE}${x.href}"` +
+    `${x.href === nay ? ' aria-current="page"' : ''}>${escapeHtml(x.ten)}` +
+    `${x.so != null ? `<span class="chip-so">${x.so}</span>` : ''}</a>`).join('')}</nav>`;
+}
+
+/* Khuôn chung của mọi trang danh sách. */
+function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, description,
+                        scripts = '' }) {
+  return trang({
+    title: title || `${tieuDe} · ${CAU.title}`,
+    description: description || CAU.description,
+    canonical: canonical || `${CAU.url}${BASE}${duong}`,
+    duong,
+    scripts: ((CAU.baoVeChu || {}).bat === false ? ''
+      : `<script src="${BASE}/assets/copy-guard.js" defer></script>`) + scripts,
+    content: `
+<div class="container ds-trang">
+  <header class="ds-dau">
+    <div class="eyebrow"><i></i></div>
+    <h1>${noiChu(escapeHtml(tieuDe))}</h1>
+    ${dan ? `<p class="ds-dan">${escapeHtml(dan)}</p>` : ''}
+    ${chip || ''}
+  </header>
+  ${than}
+</div>`
+  });
+}
+
+/* ── TRANG CHỦ ── */
+function trangChu(bai) {
+  /* Bài ghim lên trước, rồi tới mới nhất. `pinned: true` trong front matter. */
+  const xep = [...bai].sort((a, b) =>
+    (b.pinned - a.pinned) || (a.date < b.date ? 1 : -1));
+  const noiBat = xep[0];
+  const conLai = xep.slice(1, 7);
 
   return trang({
     title: `${CAU.title} · ${CAU.tagline}`,
@@ -1052,29 +1150,244 @@ function trangChuTam(bai) {
         { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` }
       ]
     })}</script>`,
+    scripts: (CAU.baoVeChu || {}).bat === false ? ''
+      : `<script src="${BASE}/assets/copy-guard.js" defer></script>`,
     content: `
-<div class="container" style="padding-block:var(--s10) var(--s8)">
-  <div class="eyebrow"><i></i></div>
-  <h1 style="font-size:var(--fs-display);font-style:italic">${escapeHtml(CAU.title)}</h1>
-  <p class="lead" style="max-width:var(--measure);font-size:var(--fs-md);color:var(--text-muted);margin-top:var(--s4)">
-    ${escapeHtml(CAU.description)}
-  </p>
-  <div class="callout callout--note" style="margin-top:var(--s8);max-width:var(--measure)">
-    <b class="callout-lab">Bản tạm</b>
-    <p style="margin-top:var(--s2)">Đây là trang chủ dựng tạm của lượt "khung sườn".
-    Trang chủ thật, trang tag và trang tìm kiếm nằm ở lượt sau — xem
-    <code>docs/IA.md</code> phần "Việc còn lại".</p>
-  </div>
-</div>
-<div class="container" style="padding-bottom:var(--s10)">
-  <div class="eyebrow"><i></i></div>
-  <p class="label" style="margin-bottom:var(--s5)">${bai.length} bài</p>
-  <div style="display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))">
-    ${the || '<p style="color:var(--text-muted)">Chưa có bài nào. Chạy <code>npm run new "Tên bài"</code>.</p>'}
-  </div>
+<div class="container trang-chu">
+  <header class="chu-dau">
+    <div class="eyebrow"><i></i></div>
+    <h1>${escapeHtml(CAU.title)}</h1>
+    <p class="chu-dan">${escapeHtml(CAU.description)}</p>
+  </header>
+
+  ${noiBat ? `<section class="chu-nb">
+    <p class="label label--muted">${noiBat.pinned ? NHAN.pinned : NHAN.latest}</p>
+    <article class="card chu-the">
+      <div class="meta-row">
+        <time datetime="${noiBat.date}">${ngayAnh(noiBat.date)}</time>
+        <span>${noiBat.phut} ${NHAN.minRead}</span>
+      </div>
+      <h2><a class="stretch" href="${noiBat.url}">${noiChu(escapeHtml(noiBat.title))}</a></h2>
+      <p class="chu-tom">${escapeHtml(tomTat(noiBat.summary, 220))}</p>
+      ${noiBat.tags.length ? `<div class="tag-row">${noiBat.tags.map((t) =>
+        `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+    </article>
+  </section>` : ''}
+
+  ${conLai.length ? `<section class="chu-ds">
+    <div class="ds-thanh">
+      <p class="label label--muted">${NHAN.more}</p>
+      ${coTrang('/posts/') ? `<a class="ds-them" href="${BASE}/posts/">${NHAN.allPosts} →</a>` : ''}
+    </div>
+    ${luoiThe(conLai, '')}
+  </section>` : ''}
+
+  ${!bai.length ? `<p class="ds-trong">${NHAN.noPosts}</p>` : ''}
 </div>`
   });
 }
+
+/* ── /posts/ VÀ /posts/<chuyên mục>/ ──
+   Chuyên mục lấy từ CHÍNH CẤU TRÚC THƯ MỤC trong content/posts/, không phải
+   từ một danh sách khai tay. Bỏ bài vào thư mục mới là chuyên mục mới tự có
+   trang riêng, tự lên hàng chip. Đó là điểm quan trọng cho việc đăng bài về
+   sau: không phải nhớ khai thêm ở đâu cả. */
+function gomMuc(bai) {
+  const m = new Map();
+  for (const b of bai) {
+    for (let i = 0; i < b.muc.length; i++) {
+      const x = b.muc[i];
+      if (!m.has(x.url)) m.set(x.url, { ...x, so: 0, sau: i > 0 });
+      m.get(x.url).so++;
+    }
+  }
+  return [...m.values()];
+}
+
+/* Bảng tag: tên hiển thị (giữ dấu) ↔ slug ↔ số bài.
+   Gộp theo SLUG chứ không theo tên: "Tâm lý" và "tâm lý" phải là một chủ đề,
+   không phải hai trang riêng. Tên hiển thị lấy theo lần xuất hiện đầu tiên. */
+function gomTag(bai) {
+  const m = new Map();
+  for (const b of bai) {
+    for (const t of b.tags) {
+      const s = slugify(t);
+      if (!m.has(s)) m.set(s, { slug: s, ten: t, so: 0, bai: [] });
+      const o = m.get(s); o.so++; o.bai.push(b.url);
+    }
+  }
+  return [...m.values()].sort((a, b) => b.so - a.so || a.ten.localeCompare(b.ten, 'vi'));
+}
+
+function cacTrangPosts(bai) {
+  const ra = [];
+  const muc = gomMuc(bai);
+  /* Chip chỉ hiện chuyên mục CẤP MỘT. Đổ cả cấp hai vào thì một blog có sáu
+     mục con là hàng chip dài hơn cả danh sách bài. Mục con vẫn có trang riêng,
+     vào từ dòng chuyên mục trên mỗi thẻ bài. */
+  const chipDS = [{ ten: NHAN.allPosts, href: '/posts/' }]
+    .concat(muc.filter((x) => !x.sau)
+               .sort((a, b) => b.so - a.so || a.ten.localeCompare(b.ten, 'vi'))
+               .map((x) => ({ ten: x.ten, href: x.url.replace(BASE, ''), so: x.so })));
+
+  const theoNgay = [...bai].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  ra.push({
+    duong: '/posts/',
+    html: trangDanhSach({
+      tieuDe: NHAN.allPosts,
+      dan: `${theoNgay.length} ${theoNgay.length === 1 ? 'bài' : 'bài'} · ${muc.filter((x) => !x.sau).length} chuyên mục`,
+      chip: hangChip(chipDS, '/posts/'),
+      than: luoiThe(theoNgay, NHAN.noPosts),
+      duong: '/posts/'
+    })
+  });
+
+  for (const x of muc) {
+    const duong = x.url.replace(BASE, '');
+    const trong = theoNgay.filter((b) => b.muc.some((y) => y.url === x.url));
+    ra.push({
+      duong,
+      html: trangDanhSach({
+        tieuDe: x.ten,
+        dan: `${trong.length} bài trong chuyên mục này`,
+        chip: hangChip(chipDS, duong),
+        than: luoiThe(trong, NHAN.noPosts),
+        duong,
+        description: moTaDanhSach(
+          tenMuc(x.url.replace(`${BASE}/posts/`, '').replace(/\/$/, '')).description ||
+          `Chuyên mục ${x.ten} trên ${CAU.title}`, trong)
+      })
+    });
+  }
+  return ra;
+}
+
+/* ── /tags/ VÀ /tags/<tag>/ ── */
+/* Ghép một câu mô tả đủ dài cho trang danh sách: câu mở + tên vài bài trong
+   đó. Google cắt ở ~170 ký tự nên dừng trước mốc ấy, và dừng ở RANH GIỚI BÀI
+   chứ không cắt giữa một cái tên — cắt giữa thì đoạn mô tả kết thúc lửng lơ. */
+function moTaDanhSach(mo, ds) {
+  let ra = mo.replace(/\.$/, '') + '.';
+  if (!ds.length) return ra;
+  const ten = [];
+  for (const b of ds) {
+    const thu = ra + ' ' + [...ten, b.title].join(' · ') + '.';
+    if (thu.length > 168) break;
+    ten.push(b.title);
+  }
+  return ten.length ? `${ra} ${ten.join(' · ')}.` : ra;
+}
+
+function cacTrangTags(bai, bangTag) {
+  const ra = [];
+
+  /* Cỡ chữ theo số bài — mây tag đọc ra ngay cái nào nhiều. Ba bậc thôi:
+     chia theo tỉ lệ liên tục thì tag 3 bài và tag 4 bài lệch nhau vài phần
+     trăm pixel, mắt không thấy mà mã thì phức tạp thêm. */
+  const max = Math.max(1, ...bangTag.map((t) => t.so));
+  const bac = (n) => (n >= max * 0.66 ? ' tag--to' : n >= max * 0.33 ? ' tag--vua' : '');
+
+  ra.push({
+    duong: '/tags/',
+    html: trangDanhSach({
+      tieuDe: NHAN.topics,
+      dan: `${bangTag.length} chủ đề trên ${bai.length} bài`,
+      than: bangTag.length
+        ? `<div class="may-tag">${bangTag.map((t) =>
+            `<a class="tag tag--may${bac(t.so)}" href="${BASE}/tags/${t.slug}/">` +
+            `${escapeHtml(t.ten)}<span class="tag-so">${t.so}</span></a>`).join('')}</div>`
+        : `<p class="ds-trong">${NHAN.noTags}</p>`,
+      duong: '/tags/'
+    })
+  });
+
+  for (const t of bangTag) {
+    const trong = bai.filter((b) => b.tags.some((x) => slugify(x) === t.slug))
+                     .sort((a, b) => (a.date < b.date ? 1 : -1));
+    ra.push({
+      duong: `/tags/${t.slug}/`,
+      html: trangDanhSach({
+        tieuDe: t.ten,
+        dan: `${trong.length} bài gắn chủ đề này`,
+        chip: coTrang('/tags/')
+          ? `<nav class="chip-hang"><a class="chip" href="${BASE}/tags/">← ${NHAN.allTopics}</a></nav>` : '',
+        than: luoiThe(trong, NHAN.noPosts),
+        duong: `/tags/${t.slug}/`,
+        title: `${t.ten} · ${NHAN.topics} · ${CAU.title}`,
+        /* Mô tả phải dài 50–170 ký tự thì Google mới hiện trọn — ngắn quá nó
+           tự bịa một đoạn trích từ thân trang, mà thân trang danh sách thì
+           chỉ toàn tiêu đề bài, đọc ra rất cụt. Nên nhồi thêm TÊN MẤY BÀI
+           trong chủ đề đó: vừa đủ dài, vừa đúng là thứ người tìm muốn thấy. */
+        description: moTaDanhSach(`Các bài viết về ${t.ten} trên ${CAU.title}`, trong)
+      })
+    });
+  }
+  return ra;
+}
+
+/* ── /archive/ — theo năm ──
+   Danh sách dày, không phải lưới thẻ: kho lưu là chỗ người ta ĐI TÌM một bài
+   đã biết tên, không phải chỗ lướt xem có gì hay. Thẻ to làm việc tìm chậm đi. */
+function trangArchive(bai) {
+  const theoNam = new Map();
+  for (const b of [...bai].sort((a, b) => (a.date < b.date ? 1 : -1))) {
+    const n = b.date.slice(0, 4);
+    if (!theoNam.has(n)) theoNam.set(n, []);
+    theoNam.get(n).push(b);
+  }
+  const than = [...theoNam.entries()].map(([nam, ds]) => `
+    <section class="kho-nam">
+      <h2 class="kho-so">${nam}<span class="kho-dem">${ds.length}</span></h2>
+      <ul class="kho-ds">${ds.map((b) => `
+        <li class="kho-dong">
+          <time datetime="${b.date}">${ngayAnh(b.date).replace(/ \d{4}$/, '')}</time>
+          <a href="${b.url}">${escapeHtml(b.title)}</a>
+          ${b.muc.length ? `<span class="kho-muc">${escapeHtml(b.muc[b.muc.length - 1].ten)}</span>` : ''}
+        </li>`).join('')}</ul>
+    </section>`).join('');
+
+  return trangDanhSach({
+    tieuDe: NHAN.archive,
+    dan: `${bai.length} bài · ${theoNam.size} năm`,
+    than: bai.length ? than : `<p class="ds-trong">${NHAN.noPosts}</p>`,
+    duong: '/archive/'
+  });
+}
+
+/* ── /search/ — tìm ngay trên trình duyệt ──
+   Không có máy chủ tìm kiếm nào cả: build đã ghi sẵn `search-index.json`, trang
+   tải file đó một lần rồi lọc tại chỗ. Với một blog cá nhân (vài trăm bài) thì
+   cách này nhanh hơn gọi mạng, chạy được offline, và không tốn đồng nào.
+
+   Khi nào cần đổi: chỉ mục lớn hơn khoảng 1MB — lúc đó mới phải cắt trang hoặc
+   dựng chỉ mục đảo. Còn lâu mới tới. */
+function trangSearch() {
+  return trangDanhSach({
+    tieuDe: NHAN.search,
+    dan: NHAN.searchHint,
+    than: `
+<form class="tk-form" role="search" onsubmit="return false">
+  <label class="sr-only" for="tk-o">${NHAN.search}</label>
+  <div class="tk-hop">
+    <svg class="tk-kinh" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/>
+    </svg>
+    <input id="tk-o" class="tk-o" type="search" autocomplete="off" autofocus
+           placeholder="${attr(NHAN.searchPh)}" enterkeyhint="search">
+    <button class="tk-xoa" type="button" aria-label="${attr(NHAN.clear)}" hidden>✕</button>
+  </div>
+</form>
+<div class="tk-loc" id="tk-loc"></div>
+<p class="tk-dem" role="status" aria-live="polite"></p>
+<div class="tk-kq" id="tk-kq"></div>`,
+    duong: '/search/',
+    scripts: `<script src="${BASE}/assets/search.js" defer></script>`
+  });
+}
+
+/* ══════════════ FILE PHỤ ══════════════ */
+
 
 function rss(bai) {
   const muc = bai.slice(0, 30).map((b) => `    <item>
@@ -1175,7 +1488,7 @@ async function chay() {
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
-                     'copy-guard.js', 'reveal.js', 'so-tay.js']) {
+                     'copy-guard.js', 'reveal.js', 'so-tay.js', 'search.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
@@ -1194,10 +1507,28 @@ async function chay() {
       ghi(t.duongDanRa, trangTinh(t, congKhai.length, soTag));
     }
 
-    ghi(path.join(THU_MUC.dist, 'index.html'), trangChuTam(canDung));
+    ghi(path.join(THU_MUC.dist, 'index.html'), trangChu(canDung));
+
+    /* Bảng tag dựng MỘT LẦN rồi dùng cho cả trang /tags/ lẫn file tags.json —
+       hai nguồn thì sớm muộn lệch nhau về số đếm. */
+    const bangTag = gomTag(congKhai);
+
+    /* Trang danh sách. `duong` là đường dẫn trang, đổi thành thư mục + index.html
+       để máy chủ nào cũng phục vụ được mà không cần luật rewrite. */
+    const dsTrang = [
+      ...cacTrangPosts(canDung),
+      ...cacTrangTags(canDung, bangTag),
+      { duong: '/archive/', html: trangArchive(canDung) },
+      { duong: '/search/',  html: trangSearch() }
+    ];
+    for (const t of dsTrang) {
+      ghi(path.join(THU_MUC.dist, ...t.duong.split('/').filter(Boolean), 'index.html'), t.html);
+    }
+
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'),
-        sitemap(congKhai, trangTinhDS.map((t) => t.url)));
+        sitemap(congKhai, [...trangTinhDS.map((t) => t.url),
+                           ...dsTrang.map((t) => `${BASE}${t.duong}`)]));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
         `User-agent: *\nAllow: /\nSitemap: ${CAU.url}${BASE}/sitemap.xml\n`);
     ghi(path.join(THU_MUC.dist, 'version.json'), JSON.stringify({
@@ -1218,17 +1549,7 @@ async function chay() {
     }));
     ghi(path.join(THU_MUC.dist, 'search-index.json'), JSON.stringify(chiMuc));
 
-    /* Bảng tag: tên hiển thị (giữ dấu) ↔ slug ↔ số bài */
-    const tag = new Map();
-    for (const b of congKhai) {
-      for (const t of b.tags) {
-        const s = slugify(t);
-        if (!tag.has(s)) tag.set(s, { slug: s, ten: t, so: 0, bai: [] });
-        const o = tag.get(s); o.so++; o.bai.push(b.url);
-      }
-    }
-    ghi(path.join(THU_MUC.dist, 'tags.json'),
-        JSON.stringify([...tag.values()].sort((a, b) => b.so - a.so || a.ten.localeCompare(b.ten, 'vi'))));
+    ghi(path.join(THU_MUC.dist, 'tags.json'), JSON.stringify(bangTag));
   }
 
   /* ── Báo cáo ── */

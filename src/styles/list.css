@@ -1,0 +1,221 @@
+/* ============================================================
+   TRANG DANH SÁCH — trang chủ · /posts/ · /tags/ · /archive/ · /search/
+
+   Sáu trang dùng chung khuôn `.ds-trang`. Khác nhau ở phần thân, không ở
+   khung: thêm một trang danh sách mới thì không phải viết CSS mới.
+   ============================================================ */
+
+.ds-trang,.trang-chu{padding-block:var(--s9) var(--s11)}
+
+.ds-dau,.chu-dau{margin-bottom:var(--s8)}
+.ds-dau h1,.chu-dau h1{
+  font-size:var(--fs-h1);font-style:italic;
+  line-height:var(--lh-tight);text-wrap:balance;margin:0;
+}
+.chu-dau h1{font-size:var(--fs-display)}
+.ds-dan,.chu-dan{
+  margin:var(--s3) 0 0;max-width:var(--measure);
+  font-size:var(--fs-sm);color:var(--text-faint);
+}
+.chu-dan{font-size:var(--fs-md);color:var(--text-muted);line-height:1.6;margin-top:var(--s4)}
+
+.ds-trong{
+  margin:var(--s8) 0;font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
+}
+
+/* ── LƯỚI THẺ ──
+   `min(300px,100%)` chứ không phải 300px trơn: thiếu min() thì ở khổ hẹp hơn
+   300px, cột vẫn giữ 300px và trang tràn ngang. Đã vấp chuyện này ở lưới khác. */
+.ds-luoi{
+  display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
+}
+
+.the-bai{display:flex;flex-direction:column;gap:var(--s3);padding:var(--s5)}
+.the-bai h3{
+  margin:0;font-size:var(--fs-h4);font-style:italic;
+  line-height:1.28;text-wrap:balance;
+}
+.the-bai h3 a{color:var(--text);text-decoration:none;background:none}
+.the-bai:hover h3 a{color:var(--accent-ink)}
+.the-tom{
+  margin:0;font-size:var(--fs-sm);line-height:1.6;color:var(--text-muted);
+  text-wrap:pretty;
+}
+/* Tag trên thẻ bài là NHÃN, không phải link: cả tấm thẻ đã là một link rồi
+   (`a.stretch` phủ kín), nên link lồng trong link vừa sai HTML vừa không bấm
+   được. Muốn lọc theo tag thì vào trang bài hoặc trang /tags/. */
+.tag--tinh{cursor:inherit}
+.the-bai .tag-row{margin-top:auto;padding-top:var(--s2)}
+
+/* ── HÀNG CHIP LỌC ── */
+.chip-hang{
+  display:flex;flex-wrap:wrap;gap:var(--s2);
+  margin-top:var(--s5);
+}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 13px 7px;border-radius:var(--r-pill);
+  background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text-muted);text-decoration:none;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:500;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  transition:color var(--dur-fast),background var(--dur-fast),
+             box-shadow var(--dur-fast);
+}
+.chip:hover,.chip:focus-visible{
+  color:var(--accent-ink);background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+}
+.chip--nay{
+  color:var(--btn-ink);background:var(--glass-tint);
+  box-shadow:inset 0 0 0 1px var(--glass-spec);
+}
+.chip--nay:hover{color:var(--btn-ink);background:var(--glass-tint)}
+.chip-so{
+  font-variant-numeric:tabular-nums;opacity:.6;font-weight:400;
+}
+
+/* ── TRANG CHỦ ── */
+.chu-nb{margin-bottom:var(--s9)}
+.chu-nb .label{margin:0 0 var(--s4)}
+.chu-the{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s7)}
+.chu-the h2{
+  margin:0;font-size:var(--fs-h2);font-style:italic;
+  line-height:var(--lh-tight);text-wrap:balance;
+}
+.chu-the h2 a{color:var(--text);text-decoration:none;background:none}
+.chu-the:hover h2 a{color:var(--accent-ink)}
+.chu-tom{
+  margin:0;max-width:60ch;font-size:var(--fs-base);line-height:1.66;
+  color:var(--text-muted);text-wrap:pretty;
+}
+.ds-thanh{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:var(--s4);margin-bottom:var(--s4);
+}
+.ds-thanh .label{margin:0}
+.ds-them{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);text-decoration:none;background:none;
+  transition:color var(--dur-fast);
+}
+.ds-them:hover,.ds-them:focus-visible{color:var(--accent-ink);outline:none}
+
+/* ── MÂY TAG ── */
+.may-tag{display:flex;flex-wrap:wrap;gap:var(--s3)}
+.tag--may{
+  --chip-fs:var(--fs-sm);
+  gap:7px;padding:7px 14px 8px;text-decoration:none;
+}
+.tag--vua{--chip-fs:var(--fs-base)}
+.tag--to{--chip-fs:var(--fs-md);font-weight:500}
+.tag-so{
+  font-family:var(--font-label);font-size:.72em;font-weight:600;
+  font-variant-numeric:tabular-nums;color:var(--text-faint);
+  padding-left:6px;border-left:1px solid var(--line);
+}
+.tag--may:hover .tag-so,.tag--may:focus-visible .tag-so{
+  color:var(--accent-ink);border-color:var(--accent);
+}
+
+/* ── KHO LƯU ──
+   Danh sách dày chứ không phải lưới thẻ: kho lưu là chỗ đi TÌM một bài đã biết
+   tên, không phải chỗ lướt xem có gì. Thẻ to làm việc tìm chậm đi. */
+.kho-nam{margin-bottom:var(--s9)}
+.kho-nam:last-child{margin-bottom:0}
+.kho-so{
+  display:flex;align-items:baseline;gap:var(--s3);
+  margin:0 0 var(--s4);padding-bottom:var(--s3);
+  border-bottom:1px solid var(--line);
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:var(--fs-h3);color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.kho-dem{
+  font-family:var(--font-label);font-style:normal;font-size:var(--fs-2xs);
+  font-weight:500;letter-spacing:var(--ls-label);color:var(--text-faint);
+}
+.kho-ds{list-style:none;margin:0;padding:0;
+  display:flex;flex-direction:column;gap:2px}
+.kho-dong{
+  display:flex;align-items:baseline;gap:var(--s4);
+  padding:var(--s3) var(--s3) var(--s3) 0;border-radius:var(--r-sm);
+  transition:background var(--dur-fast);
+}
+.kho-dong:hover{background:var(--accent-wash)}
+.kho-dong time{
+  flex:none;width:5.2em;
+  font-family:var(--font-label);font-size:var(--fs-2xs);
+  letter-spacing:.06em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.kho-dong a{
+  flex:1;min-width:0;color:var(--text);text-decoration:none;background:none;
+  font-size:calc(var(--fs-base) * .97);line-height:1.45;
+}
+.kho-dong:hover a{color:var(--accent-ink)}
+.kho-muc{
+  flex:none;font-family:var(--font-label);font-size:var(--fs-2xs);
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+@media (max-width:560px){
+  /* Xuống một cột: ngày lên trên, tên bài xuống dưới. Ba thứ trên một dòng ở
+     khổ 390px thì tên bài còn khoảng 12 ký tự. */
+  .kho-dong{flex-wrap:wrap;gap:2px var(--s3)}
+  .kho-dong time{width:auto}
+  .kho-dong a{flex:1 0 100%;order:2}
+  .kho-muc{order:1}
+}
+
+/* ── TÌM KIẾM ── */
+.tk-form{margin-bottom:var(--s5)}
+.tk-hop{
+  position:relative;display:flex;align-items:center;
+  max-width:var(--measure);
+}
+.tk-kinh{
+  position:absolute;left:var(--s4);width:17px;height:17px;
+  fill:none;stroke:var(--text-faint);stroke-width:1.7;
+  stroke-linecap:round;pointer-events:none;
+}
+.tk-o{
+  width:100%;padding:13px var(--s9) 13px calc(var(--s4) * 2 + 17px);
+  border-radius:var(--r-pill);border:none;
+  background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text);font-family:var(--font-body);font-size:var(--fs-md);
+  transition:box-shadow var(--dur-fast);
+}
+.tk-o::placeholder{color:var(--text-faint)}
+.tk-o:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--accent-ink)}
+/* Chrome vẽ sẵn một nút ✕ cho input type=search, xấu và không theo theme.
+   Bỏ nó đi, dùng nút của mình. */
+.tk-o::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+.tk-xoa{
+  position:absolute;right:var(--s3);
+  width:28px;height:28px;border:none;border-radius:50%;
+  background:none;cursor:pointer;color:var(--text-faint);
+  font-size:13px;line-height:1;
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+.tk-xoa:hover,.tk-xoa:focus-visible{
+  color:var(--accent-ink);background:var(--accent-wash);outline:none;
+}
+.tk-loc{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s5)}
+.tk-loc:empty{margin:0}
+.tk-dem{
+  margin:0 0 var(--s5);
+  font-family:var(--font-label);font-size:var(--fs-2xs);
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.tk-dem:empty{margin:0}
+.tk-kq{
+  display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
+}
+/* Chữ trùng khớp được tô nền — đọc lướt là thấy ngay vì sao bài này lọt vào. */
+.tk-kq mark{
+  background:var(--accent-wash);color:var(--accent-ink);
+  padding:0 2px;border-radius:3px;font-weight:600;
+}
