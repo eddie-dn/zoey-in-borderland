@@ -23,6 +23,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V1.05 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
 | V1.04 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
 | V1.03 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
 | V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
@@ -33,6 +34,17 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V1.05 — 14-Sep-2026
+
+- **Trang giới thiệu, hai khung.** `bento` là lưới ô kính đọc như tấm danh
+  thiếp; `chuong` là các chương chữ lớn hiện dần khi cuộn. Đổi bằng một chữ
+  trong front matter, cùng dữ liệu, khác cách bày.
+- **Ô trích dẫn mỗi ngày.** Cả ngày một câu, chọn bằng cách chia bài nên mỗi câu
+  ra đúng một lần trong mỗi vòng và không bao giờ trùng hai ngày liền. Chạy
+  offline. Bật thêm lớp Gemini thì mỗi ngày có một câu viết mới.
+- **Dựng được trang tĩnh** từ `content/pages/` — `/about/` ra khỏi danh sách
+  chưa dựng.
 
 ## V1.04 — 14-Sep-2026
 

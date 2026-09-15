@@ -23,6 +23,8 @@
 .card,
 .btn,
 .ovp,
+.bo,
+.bo-quote,
 .prose pre .copy-btn{
   position:relative;
   isolation:isolate;                 /* giữ ::before của kính không đè lên nội dung */
@@ -36,7 +38,7 @@
    vẫn còn nền bán trong ở trên, chỉ mất phần nhoè — vẫn đọc được chữ.
    Nếu gộp chung thì máy cũ ra một tấm trong suốt hoàn toàn, chữ đè lên chữ. */
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .glass,.site-head,.card,.btn,.ovp,.prose pre .copy-btn{
+  .glass,.site-head,.card,.btn,.ovp,.bo,.bo-quote,.prose pre .copy-btn{
     -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
     backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   }
@@ -54,6 +56,8 @@
 .card::before,
 .btn::before,
 .ovp::before,
+.bo::before,
+.bo-quote::before,
 .prose pre .copy-btn::before{
   content:"";
   position:absolute;inset:0;z-index:-1;
@@ -106,13 +110,13 @@
      .press  lún xuống khi bấm  — cho nút, thứ thực thi một việc
    Cả hai chỉ động tới transform, box-shadow và filter: ba thuộc tính trình
    duyệt chạy được trên luồng vẽ riêng, không phải tính lại bố cục. */
-.lift,.card{
+.lift,.card,.bo{
   transition:transform var(--dur) var(--ease-glass),
              box-shadow var(--dur) var(--ease-glass);
   will-change:transform;
 }
 @media (hover:hover){
-  .lift:hover,.card:hover{
+  .lift:hover,.card:hover,.bo:hover{
     transform:translateY(-3px);
     box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
   }
@@ -146,7 +150,7 @@
    Bỏ hẳn phần nhấc lên và lún xuống; giữ đổi màu và bóng đổ, vì đó là tín hiệu
    cho biết nút đang được nhắm tới — bỏ luôn thì không còn gì báo. */
 @media (prefers-reduced-motion:reduce){
-  .lift:hover,.card:hover{ transform:none }
+  .lift:hover,.card:hover,.bo:hover{ transform:none }
   .press:active,.btn:active{ transform:none }
   .sheen::after,.btn::after{ display:none }
 }

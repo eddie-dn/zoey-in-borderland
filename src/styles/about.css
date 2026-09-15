@@ -1,0 +1,194 @@
+/* ============================================================
+   TRANG GIỚI THIỆU — hai khung
+     .bento   lưới ô kính
+     .chuong  các chương hiện dần khi cuộn
+   Cả hai dùng chung ô trích dẫn ở cuối file.
+   ============================================================ */
+
+.page-layout{
+  width:100%;max-width:var(--measure-ui);
+  margin-inline:auto;
+  padding:var(--s9) var(--gutter) var(--s11);
+}
+
+/* ══════════════ KHUNG BENTO ══════════════
+   Lưới 6 cột. Sáu chứ không phải bốn hay mười hai: sáu chia hết cho 2 và 3,
+   nên một ô chiếm 2, 3 hay 6 cột đều ra tỉ lệ đẹp mà không phải tính. */
+.bento{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:var(--s4);
+}
+.bo{
+  display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s6);
+  min-width:0;                    /* cho phép chữ dài co lại thay vì đẩy ô rộng ra */
+}
+
+.bo--intro{grid-column:1 / 5;grid-row:1 / 3;justify-content:center;gap:var(--s4)}
+.bo--quote{grid-column:5 / 7;grid-row:1 / 3}
+.bo-dai   {grid-column:1 / 7;display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+.bo--nay  {grid-column:1 / 4}
+.bo--lienhe{grid-column:4 / 7}
+.bo--chu  {grid-column:1 / 7;padding:0;background:none;box-shadow:none}
+
+.bo--intro h1{
+  font-size:clamp(28px,1.4rem + 2vw,44px);
+  font-style:italic;line-height:var(--lh-tight);text-wrap:balance;
+}
+.bo-lead{
+  font-size:var(--fs-md);line-height:1.6;color:var(--text-muted);
+  text-wrap:pretty;max-width:40ch;margin:0;
+}
+
+.bo--so{justify-content:center;align-items:flex-start;gap:2px;padding:var(--s5)}
+.bo-so{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:clamp(22px,1.1rem + 1.1vw,32px);line-height:1.1;color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.bo--so .label{margin:0}
+
+/* Thân bài KHÔNG phải tấm kính — nó là chữ chảy tiếp, không phải một ô. */
+.bo--chu{backdrop-filter:none;-webkit-backdrop-filter:none}
+.bo--chu::before{display:none}
+.bo--chu .prose{
+  margin-top:var(--s7);
+  /* HAI biến, phải đặt cả hai:
+       --measure:100%  cột chữ dùng trọn bề ngang, không tự căn giữa
+       --gutter:0      bỏ lề trong của lưới .prose
+
+     Chỉ đặt --measure thôi là chưa đủ. Làn chữ của .prose tính bằng
+     `min(--measure, 100% - --gutter*2)`, nên còn --gutter thì chữ vẫn thụt vào
+     32px so với mép ô kính phía trên. Đo ra đúng 32px — bằng giá trị --gutter
+     ở khổ 1440px. */
+  --measure:100%;
+  --gutter:0;
+}
+
+.bo-ds{list-style:none;padding:0;margin:0;
+  display:flex;flex-direction:column;gap:var(--s3)}
+.bo-ds li{
+  display:flex;gap:var(--s3);align-items:baseline;
+  font-size:calc(var(--fs-base) * .95);line-height:1.5;color:var(--text-muted);
+  min-width:0;
+}
+.bo-ds li b{
+  flex:none;min-width:4.4em;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+/* Địa chỉ email dài hơn bề ngang ô là chuyện thường. Không có hai dòng này
+   thì nó chạy tràn ra ngoài mép kính. */
+.bo-ds li > span{min-width:0;overflow-wrap:anywhere}
+.bo-ds a{overflow-wrap:anywhere}
+
+.bo-nghe{
+  margin:var(--s2) 0 0;padding-top:var(--s3);
+  border-top:1px solid var(--line);
+  font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
+}
+
+/* Dưới 860px: bỏ hẳn lưới 6 cột, xếp dọc một cột. Ép lưới xuống màn hẹp mà
+   vẫn giữ 6 cột thì mỗi ô còn vài chục pixel, không đọc được gì. */
+@media (max-width:860px){
+  .bento{grid-template-columns:1fr}
+  .bo--intro,.bo--quote,.bo-dai,.bo--nay,.bo--lienhe,.bo--chu{
+    grid-column:1 / 2;grid-row:auto;
+  }
+  /* :not(.bo--chu) — ô thân bài không phải tấm kính nên không có lề trong.
+     Thiếu phần loại trừ này thì luật ở đây (nằm sau) đè lên `padding:0` khai
+     phía trên, và thân bài thụt vào 20px so với mép mọi ô kính. Đo ra đúng
+     20px = --s5. */
+  .bo:not(.bo--chu){padding:var(--s5)}
+  .bo-dai{grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr))}
+}
+
+/* ══════════════ KHUNG CHƯƠNG ══════════════ */
+.chuong{
+  display:flex;flex-direction:column;gap:var(--s11);
+  max-width:var(--measure);margin-inline:auto;
+}
+.ch--mo h1{
+  font-size:clamp(32px,1.5rem + 2.6vw,52px);
+  font-style:italic;line-height:var(--lh-tight);text-wrap:balance;
+  margin-top:var(--s3);
+}
+.ch-lead{
+  margin:var(--s5) 0 0;font-size:var(--fs-md);line-height:1.62;
+  color:var(--text-muted);text-wrap:pretty;
+}
+.ch-so{
+  display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);margin-top:var(--s6);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:500;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.ch-so span{display:inline-flex;align-items:center;gap:var(--s2)}
+.ch-so span + span::before{content:"·";color:var(--line-strong);margin-right:var(--s2)}
+/* Cùng lý do như .bo--chu .prose ở trên: thiếu --gutter:0 thì thân chương
+   thụt vào 32px so với tiêu đề chương. */
+.ch .prose{--measure:100%;--gutter:0}
+.ch--lienhe{padding-top:var(--s7);border-top:1px solid var(--line)}
+.ch--lienhe .label{margin:0 0 var(--s4)}
+
+/* Hiện dần khi cuộn tới. Trạng thái đầu đặt ở CSS chứ không ở JS: JS chạy sau
+   khi trang vẽ xong, nên đặt bằng JS thì khối loé lên một nhịp rồi mới mờ đi. */
+[data-hien]{
+  opacity:0;translate:0 16px;
+  transition:opacity .62s var(--ease-glass), translate .62s var(--ease-glass);
+}
+[data-hien].hien{opacity:1;translate:0 0}
+@media (prefers-reduced-motion:reduce){
+  [data-hien]{opacity:1;translate:0 0;transition:none}
+}
+
+/* ══════════════ Ô TRÍCH DẪN ══════════════ */
+.bo-quote{
+  position:relative;
+  display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s6);
+  justify-content:center;
+}
+.bo-quote .label{margin:0}
+.q-chu{
+  margin:0;padding:0;border:none;
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:clamp(19px,1.05rem + .7vw,25px);line-height:1.4;
+  color:var(--text);text-wrap:pretty;
+}
+.q-chu::before{content:"“";color:var(--accent);margin-right:2px}
+.q-chu::after{content:"”";color:var(--accent);margin-left:2px}
+.q-ai{
+  margin:0;font-size:var(--fs-sm);color:var(--text-faint);
+}
+.q-ai::before{content:"— "}
+.q-ai[hidden]{display:none}
+
+/* Nút xem câu khác — góc dưới phải, mờ cho tới khi rê vào ô */
+.q-nut{
+  position:absolute;bottom:var(--s4);right:var(--s4);
+  width:32px;height:32px;opacity:0;
+  transition:opacity var(--dur-fast),transform .34s var(--spring),
+             color var(--dur-fast);
+}
+.q-nut svg{width:15px;height:15px}
+.bo-quote:hover .q-nut,.q-nut:focus-visible{opacity:.75}
+.q-nut:hover{opacity:1}
+.q-nut:active{transform:rotate(-90deg) scale(.9)}
+@media (hover:none){.q-nut{opacity:.6}}
+
+/* Đang đổi câu: mờ đi một nhịp rồi hiện câu mới — đổi phựt một cái thì mắt
+   không kịp nhận ra là chữ đã khác. */
+.bo-quote.q-mo .q-chu,.bo-quote.q-mo .q-ai{opacity:0}
+.bo-quote .q-chu,.bo-quote .q-ai{transition:opacity .18s linear}
+
+/* Câu KHÔNG phải của hôm nay: đổi nhãn để người đọc biết mình đang xem thêm,
+   không tưởng nhầm câu này là câu của ngày. */
+.bo-quote.q-khac .label::after{
+  content:" · thêm";color:var(--text-faint);font-weight:400;
+}
+
+/* Trong khung chương, ô trích dẫn nằm giữa và to hơn */
+.ch--quote .bo-quote{padding:var(--s8);text-align:center;align-items:center}
+.ch--quote .q-chu{font-size:clamp(22px,1.1rem + 1.1vw,30px);max-width:26ch}

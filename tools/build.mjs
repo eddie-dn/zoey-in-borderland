@@ -87,6 +87,14 @@ const NHAN = {
   emailPh    : 'Để mình trả lời riêng',
   notePh     : 'Viết gì cũng được…',
   send       : 'Send',
+  quoteToday : 'Quote of the day',
+  quoteMore  : 'Một câu khác',
+  based      : 'Based in',
+  writingSince: 'Writing since',
+  posts      : 'Posts',
+  topics     : 'Topics',
+  lately     : 'Lately',
+  findMe     : 'Find me',
   older      : 'Older',
   newer      : 'Newer'
 };
@@ -131,6 +139,30 @@ function tenMuc(duongDanTuongDoi) {
   }
   KHO_MUC.set(duongDanTuongDoi, ra);
   return ra;
+}
+
+/* ══════════════ 1b. ĐỌC KHO TRÍCH DẪN ══════════════
+   content/quotes.md — mỗi gạch đầu dòng một câu, dạng "Nội dung — Người nói".
+
+   Tách ở dấu — (em dash) CUỐI CÙNG chứ không phải dấu đầu tiên: nội dung câu
+   hoàn toàn có thể chứa em dash giữa chừng ("Ta là thứ ta làm — lặp đi lặp
+   lại — mỗi ngày"), tách ở dấu đầu là cụt câu. */
+function docTrichDan() {
+  const f = path.join(THU_MUC.content, 'quotes.md');
+  if (!fs.existsSync(f)) return [];
+  const raw = fs.readFileSync(f, 'utf8').replace(/^---[\s\S]*?---\n/, '');
+
+  return raw.split('\n')
+    .map((d) => d.match(/^\s*-\s+(.*)$/))
+    .filter(Boolean)
+    .map((m) => m[1].trim())
+    .filter(Boolean)
+    .map((cau) => {
+      const i = cau.lastIndexOf('—');
+      if (i < 0) return { chu: cau, ai: '' };
+      return { chu: cau.slice(0, i).trim(), ai: cau.slice(i + 1).trim() };
+    })
+    .filter((q) => q.chu);
 }
 
 /* ══════════════ 2. ĐỌC MỘT BÀI ══════════════ */
@@ -208,10 +240,64 @@ function docBai(file) {
   };
 }
 
+/* ══════════════ 2b. ĐỌC MỘT TRANG TĨNH ══════════════
+   content/pages/*.md → /<slug>/. Khác bài viết ở ba chỗ: không có chuyên mục,
+   không vào RSS/sitemap theo ngày, và đọc thêm mấy field riêng cho khung bento. */
+function docTrang(file) {
+  const raw  = fs.readFileSync(file, 'utf8');
+  const nhan = path.relative(GOC, file);
+
+  let fm, than;
+  try { ({ data: fm, than } = docFrontMatter(raw, nhan)); }
+  catch (e) { LOI.push(e.message); return null; }
+
+  if (!fm.title) { LOI.push(`${nhan}: thiếu \`title\``); return null; }
+
+  const slug = String(fm.slug || slugify(path.basename(file, '.md')));
+  const kq = render(than, {
+    publicDir: THU_MUC.public, base: BASE,
+    host: new URL(CAU.url).host,
+    canhBao: (m) => CANH_BAO.push(`${nhan}: ${m}`),
+    khongSapo: true
+  });
+
+  const mang = (k) => (Array.isArray(fm[k]) ? fm[k].map(String) : []);
+  /* "Đọc · Sách Đỏ" → { nhan:'Đọc', chu:'Sách Đỏ' }. Không có dấu · thì cả
+     dòng là nội dung, nhãn để trống — vẫn hiện được. */
+  const cap = (k) => mang(k).map((d) => {
+    const i = d.indexOf('·');
+    return i < 0 ? { nhan: '', chu: d.trim() }
+                 : { nhan: d.slice(0, i).trim(), chu: d.slice(i + 1).trim() };
+  });
+
+  return {
+    file, nhan, slug,
+    url        : `${BASE}/${slug}/`,
+    duongDanRa : path.join(THU_MUC.dist, slug, 'index.html'),
+    title      : String(fm.title),
+    summary    : String(fm.summary || tomTat(kq.tho)),
+    khung      : String(fm.khung || 'bento').trim().toLowerCase(),
+    gioiThieu  : String(fm.gioiThieu || ''),
+    viTri      : String(fm.viTri || ''),
+    tuNam      : String(fm.tuNam || ''),
+    nghe       : String(fm.nghe || ''),
+    dangLam    : cap('dangLam'),
+    lienHe     : cap('lienHe'),
+    cover      : fm.cover ? String(fm.cover) : null,
+    coverAlt   : String(fm.coverAlt || ''),
+    lang       : String(fm.lang || CAU.lang),
+    html       : kq.html,
+    headings   : kq.headings,
+    tho        : kq.tho,
+    phut       : phutDoc(kq.tho)
+  };
+}
+
 /* ══════════════ 3. DỰNG HTML ══════════════ */
 
 const MAU_SHELL = fs.readFileSync(path.join(THU_MUC.src, 'templates', 'shell.html'), 'utf8');
 const MAU_POST  = fs.readFileSync(path.join(THU_MUC.src, 'templates', 'post.html'), 'utf8');
+const MAU_PAGE  = fs.readFileSync(path.join(THU_MUC.src, 'templates', 'page.html'), 'utf8');
 
 /* Thay {{khoa}} bằng giá trị. Cố tình KHÔNG dùng regex chung cho mọi khoá:
    nội dung bài hoàn toàn có thể chứa chuỗi "{{...}}" (bài hướng dẫn về template
@@ -569,6 +655,170 @@ function trangBai(bai, congKhai) {
   });
 }
 
+/* ══════════════ 3b. TRANG GIỚI THIỆU — HAI KHUNG ══════════════
+
+   Cả hai khung dựng từ CÙNG dữ liệu trong front matter, chỉ khác cách bày.
+   Đổi `khung:` trong content/pages/about.md là đổi hẳn diện mạo, không phải
+   viết lại nội dung.
+
+     bento   lưới ô kính, mỗi ô một mẩu thông tin. Liếc một cái là nắm hết.
+             Hợp khi muốn trang giới thiệu đọc như một tấm danh thiếp.
+
+     chuong  các chương chữ lớn, hiện dần khi cuộn tới. Đọc như một đoạn văn
+             có nhịp. Hợp khi muốn kể hơn là liệt kê.
+*/
+
+function oQuote(nhan) {
+  /* Ô trích dẫn — dữ liệu nhúng sẵn dạng JSON, JS chỉ chọn theo ngày.
+     Nhúng thẳng chứ không fetch: một file JSON riêng cho 12 câu thì tốn thêm
+     một vòng mạng mà chẳng tiết kiệm được byte nào đáng kể. */
+  if (!KHO_QUOTE.length) return '';
+  const api = (CAU.quoteAI || {}).bat ? (CAU.quoteAI.api || '/api/quote') : '';
+  return `<div class="bo-quote card ${nhan}"${api ? ` data-api="${attr(BASE + api)}"` : ''}
+    data-quote='${JSON.stringify(KHO_QUOTE)
+      .replace(/'/g, '&#39;').replace(/</g, '\\u003c')}'>
+    <p class="label label--muted">${NHAN.quoteToday}</p>
+    <blockquote class="q-chu"></blockquote>
+    <p class="q-ai"></p>
+    <button class="q-nut ico-btn tip" type="button"
+            aria-label="${NHAN.quoteMore}" data-tip="${NHAN.quoteMore}">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4.2V1.4L7.6 5.8 12 10.2V7.4a4.8 4.8 0 1 1-4.8 4.8H4.6A7.4 7.4 0 1 0 12 4.2Z"
+              class="fill"/>
+      </svg>
+    </button>
+  </div>`;
+}
+
+function khungBento(t, soBai, soTag) {
+  /* CẤU TRÚC KHOÁ CỨNG, không để lưới tự xếp:
+
+       hàng 1–2   [ giới thiệu  4 cột × 2 hàng ] [ trích dẫn 2 cột × 2 hàng ]
+       hàng 3     [ dải số  6 cột — bên trong tự chia đều ]
+       hàng 4     [ dạo này  3 cột ]             [ liên hệ  3 cột ]
+       hàng 5     [ thân bài  6 cột ]
+
+     Bản đầu để mỗi ô một span rồi thả cho lưới tự lấp. Hỏng: số ô SỐ thay đổi
+     theo việc tác giả khai bao nhiêu field, nên hàng nào cũng có thể thừa 2
+     cột trống — và một lưới bento có lỗ hổng đọc ra là trang bị lỗi, không
+     phải trang gọn gàng.
+
+     Cách chữa: nhét mọi ô số vào MỘT dải chiếm trọn 6 cột, bên trong dải đó
+     mới chia đều. Khai 2 field hay 4 field thì lưới ngoài vẫn kín như nhau. */
+  const o = [];
+
+  o.push(`<div class="bo bo--intro card">
+    <div class="eyebrow"><i></i></div>
+    <h1>${noiChu(escapeHtml(t.title))}</h1>
+    ${t.gioiThieu ? `<p class="bo-lead">${escapeHtml(t.gioiThieu)}</p>` : ''}
+  </div>`);
+
+  o.push(oQuote('bo bo--quote'));
+
+  const soLieu = [
+    t.viTri && { nhan: NHAN.based, chu: t.viTri },
+    t.tuNam && { nhan: NHAN.writingSince, chu: t.tuNam },
+    soBai   && { nhan: NHAN.posts, chu: String(soBai) },
+    soTag   && { nhan: NHAN.topics, chu: String(soTag) }
+  ].filter(Boolean);
+  if (soLieu.length) {
+    o.push(`<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
+      <span class="bo-so">${escapeHtml(x.chu)}</span>
+      <span class="label label--muted">${escapeHtml(x.nhan)}</span>
+    </div>`).join('')}</div>`);
+  }
+
+  if (t.dangLam.length) {
+    o.push(`<div class="bo bo--nay card">
+      <p class="label label--muted">${NHAN.lately}</p>
+      <ul class="bo-ds">${t.dangLam.map((d) =>
+        `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>${escapeHtml(d.chu)}</span></li>`
+      ).join('')}</ul>
+      ${t.nghe ? `<p class="bo-nghe">${escapeHtml(t.nghe)}</p>` : ''}
+    </div>`);
+  }
+
+  if (t.lienHe.length) {
+    o.push(`<div class="bo bo--lienhe card">
+      <p class="label label--muted">${NHAN.findMe}</p>
+      <ul class="bo-ds">${t.lienHe.map((d) => {
+        const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu) &&
+                       d.nhan.toLowerCase().includes('mail');
+        const url = laMail ? `mailto:${d.chu}` : (/^https?:/.test(d.chu) ? d.chu : null);
+        const chu = escapeHtml(d.chu);
+        return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
+               `${url ? `<a href="${attr(url)}">${chu}</a>` : chu}</span></li>`;
+      }).join('')}</ul>
+    </div>`);
+  }
+
+  o.push(`<div class="bo bo--chu"><div class="prose">${t.html}</div></div>`);
+
+  return `<div class="bento">${o.filter(Boolean).join('\n')}</div>`;
+}
+
+function khungChuong(t, soBai, soTag) {
+  /* Cắt thân bài ở mỗi <h2> thành từng chương. Mỗi chương là một khối hiện dần
+     khi cuộn tới — xem src/js/reveal.js. Cắt bằng chuỗi chứ không dựng lại DOM:
+     bộ dựng Markdown đã ra HTML phẳng, các <h2> luôn ở cấp cao nhất. */
+  const phan = t.html.split(/(?=<h2 )/);
+  const dau  = phan[0];
+  const ch   = phan.slice(1);
+
+  return `<div class="chuong">
+    <header class="ch ch--mo" data-hien>
+      <div class="eyebrow"><i></i></div>
+      <h1>${noiChu(escapeHtml(t.title))}</h1>
+      ${t.gioiThieu ? `<p class="ch-lead">${escapeHtml(t.gioiThieu)}</p>` : ''}
+      <div class="ch-so">
+        ${[t.viTri && `${escapeHtml(t.viTri)}`,
+           t.tuNam && `${NHAN.writingSince} ${escapeHtml(t.tuNam)}`,
+           soBai && `${soBai} ${NHAN.posts.toLowerCase()}`
+          ].filter(Boolean).map((x) => `<span>${x}</span>`).join('')}
+      </div>
+    </header>
+
+    ${dau.trim() ? `<section class="ch" data-hien><div class="prose">${dau}</div></section>` : ''}
+    ${ch.map((x) => `<section class="ch" data-hien><div class="prose">${x}</div></section>`).join('\n')}
+
+    <section class="ch ch--quote" data-hien>${oQuote('')}</section>
+
+    ${t.lienHe.length ? `<section class="ch ch--lienhe" data-hien>
+      <p class="label label--muted">${NHAN.findMe}</p>
+      <ul class="bo-ds">${t.lienHe.map((d) =>
+        `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}${escapeHtml(d.chu)}</li>`
+      ).join('')}</ul>
+    </section>` : ''}
+  </div>`;
+}
+
+function trangTinh(t, soBai, soTag) {
+  const than = t.khung === 'chuong'
+    ? khungChuong(t, soBai, soTag)
+    : khungBento(t, soBai, soTag);
+
+  return trang({
+    title      : `${t.title} · ${CAU.title}`,
+    ogTitle    : t.title,
+    description: t.summary,
+    canonical  : `${CAU.url}${t.url}`,
+    ogType     : 'profile',
+    lang       : t.lang,
+    duong      : t.url.replace(BASE, ''),
+    content    : dienMau(MAU_PAGE, { khung: t.khung, than }),
+    scripts    : `<script src="${BASE}/assets/reveal.js" defer></script>` +
+                 ((CAU.baoVeChu || {}).bat === false ? ''
+                   : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
+    headExtra  : `<script type="application/ld+json">${JSON.stringify({
+      '@context': 'https://schema.org', '@type': 'ProfilePage',
+      name: t.title, description: t.summary, inLanguage: t.lang,
+      mainEntity: { '@type': 'Person', name: CAU.author,
+                    description: t.gioiThieu || t.summary,
+                    url: `${CAU.url}${BASE}/` }
+    })}</script>`
+  });
+}
+
 /* ══════════════ 4. GHI FILE ══════════════ */
 
 function ghi(duongDan, noiDung) {
@@ -594,7 +844,7 @@ function gopCSS() {
      (xem tools/kiem-dinh.mjs). Bản trước thiếu glass.css ở đây, và vì CSS
      thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
   const thuTu = ['tokens.css', 'base.css', 'glass.css', 'layout.css',
-                 'components.css', 'prose.css'];
+                 'components.css', 'prose.css', 'about.css'];
   return thuTu.map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
     if (!fs.existsSync(p)) { CANH_BAO.push(`thiếu file style: ${f}`); return ''; }
@@ -687,14 +937,15 @@ ${muc}
 /* lastmod giúp Google biết trang nào vừa đổi mà quay lại đọc, thay vì bò đều
    khắp trang mỗi lần. Với blog ít bài thì chưa khác biệt mấy, nhưng khi có vài
    trăm bài thì đây là thứ quyết định bài mới được đọc sau vài giờ hay vài ngày. */
-function sitemap(bai) {
+function sitemap(bai, trangKhac = []) {
   const moiNhat = bai.length
     ? bai.map((b) => b.updated || b.date).sort().at(-1)
     : new Date().toISOString().slice(0, 10);
 
   const u = [
     { loc: `${CAU.url}${BASE}/`, mod: moiNhat, uu: '1.0' },
-    ...bai.map((b) => ({ loc: `${CAU.url}${b.url}`, mod: b.updated || b.date, uu: '0.8' }))
+    ...bai.map((b) => ({ loc: `${CAU.url}${b.url}`, mod: b.updated || b.date, uu: '0.8' })),
+    ...trangKhac.map((u) => ({ loc: `${CAU.url}${u}`, mod: moiNhat, uu: '0.6' }))
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -710,14 +961,18 @@ const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
 
 /* ══════════════ 6. CHẠY ══════════════ */
 
+let KHO_QUOTE = [];
+
 async function chay() {
   const t0 = Date.now();
+  KHO_QUOTE = docTrichDan();
   console.log(mau.dam(`\n  ${CAU.title} — ${CHI_KIEM ? 'kiểm bài' : 'dựng trang'}\n`));
 
   const file = quet(THU_MUC.posts);
   if (!file.length) CANH_BAO.push('content/posts/ chưa có bài nào');
 
   const bai = file.map(docBai).filter(Boolean);
+  const trangTinhDS = quet(THU_MUC.pages).map(docTrang).filter(Boolean);
 
   /* Trùng URL là lỗi câm nhất trong mọi lỗi build: bài sau ghi đè bài trước,
      không báo gì cả, và mãi sau mới phát hiện mất một bài. */
@@ -754,7 +1009,8 @@ async function chay() {
 
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
-    for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js', 'copy-guard.js']) {
+    for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
+                     'copy-guard.js', 'reveal.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }
@@ -765,9 +1021,17 @@ async function chay() {
     const canDung = CO_NHAP ? bai : congKhai;
     for (const b of canDung) ghi(b.duongDanRa, trangBai(b, congKhai));
 
+    /* Trang tĩnh dựng sau bài viết, vì khung bento cần biết tổng số bài và
+       tổng số tag để điền mấy ô số. */
+    const soTag = new Set(congKhai.flatMap((b) => b.tags.map(slugify))).size;
+    for (const t of trangTinhDS) {
+      ghi(t.duongDanRa, trangTinh(t, congKhai.length, soTag));
+    }
+
     ghi(path.join(THU_MUC.dist, 'index.html'), trangChuTam(canDung));
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
-    ghi(path.join(THU_MUC.dist, 'sitemap.xml'), sitemap(congKhai));
+    ghi(path.join(THU_MUC.dist, 'sitemap.xml'),
+        sitemap(congKhai, trangTinhDS.map((t) => t.url)));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
         `User-agent: *\nAllow: /\nSitemap: ${CAU.url}${BASE}/sitemap.xml\n`);
     ghi(path.join(THU_MUC.dist, 'version.json'), JSON.stringify({
@@ -825,7 +1089,9 @@ async function chay() {
   }
 
   console.log(mau.xanh(`  ✓ ${congKhai.length} bài công khai` +
-    (nhap ? ` · ${nhap} bản nháp` : '')) +
+    (nhap ? ` · ${nhap} bản nháp` : '') +
+    (trangTinhDS.length ? ` · ${trangTinhDS.length} trang tĩnh` : '') +
+    (KHO_QUOTE.length ? ` · ${KHO_QUOTE.length} trích dẫn` : '')) +
     mau.mo(`  ·  ${BAN.ten} · ${BAN.ngay}`) +
     mau.mo(`  (${Date.now() - t0}ms)`));
   console.log(mau.mo(CHI_KIEM

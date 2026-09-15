@@ -26,6 +26,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | **Đưa lên mạng · xem trên điện thoại** | [`docs/DUA-LEN-MANG.md`](docs/DUA-LEN-MANG.md) |
 | Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
 | Cài khung bình luận | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
+| Ô trích dẫn mỗi ngày | [`docs/QUOTE.md`](docs/QUOTE.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
 ---
@@ -38,11 +39,12 @@ content/pages/                                      trang tĩnh
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
 _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
-src/js/         theme · toc · media · comments · copy-guard
+src/js/         theme · toc · media · comments · copy-guard · reveal
 src/templates/  shell.html · post.html
 tools/          build · new-post · anh · dev · version · kiem-dinh · lib/
 tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
-docs/           bảy file tài liệu ở bảng trên
+api/            quote.js — hàm serverless xin câu trích dẫn từ Gemini (tuỳ chọn)
+docs/           tám file tài liệu ở bảng trên
 site.config.json
 dist/           ← build sinh ra, không commit
 ```
@@ -84,6 +86,14 @@ cách nào chặn được sao chép trên web (`docs/RIENG-TU.md` §2.1).
 + `BreadcrumbList`, sitemap có `lastmod`, RSS, `max-image-preview:large`.
 Repo để private **không ảnh hưởng gì tới SEO** — Google đọc trang đã dựng, không
 đọc repo (`docs/RIENG-TU.md` §1.5).
+
+**Trang giới thiệu có hai khung** — `bento` (lưới ô kính) và `chuong` (các chương
+hiện dần khi cuộn). Đổi bằng một chữ trong front matter.
+
+**Ô trích dẫn mỗi ngày.** Cả ngày một câu, sang ngày mới đổi — chọn bằng cách
+chia bài nên mỗi câu xuất hiện đúng một lần trong mỗi vòng, không bao giờ trùng
+hai ngày liền. Không cần mạng. Bật thêm lớp Gemini thì mỗi ngày có một câu viết
+mới (`docs/QUOTE.md`).
 
 **Khung bình luận không cần máy chủ.** Google Apps Script + Google Sheet, miễn
 phí, dữ liệu nằm trong Drive của bạn. Không bình luận nào tự lên trang — mọi

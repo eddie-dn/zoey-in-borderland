@@ -559,3 +559,62 @@ Hai phép kiểm khác sinh ra từ cùng lượt đó:
 - **Luật ẩn nav bắt cả `<span>`.** Mục trỏ tới trang chưa dựng render thành
   `<span>`, không phải `<a>`. Luật `.nav a.nav-text{display:none}` bỏ sót
   chúng, và ở 390px bốn mục nav không ẩn được đã ép tên trang co về 0.
+
+
+---
+
+## 11 · TRANG GIỚI THIỆU — HAI KHUNG
+
+Chọn bằng `khung: bento | chuong` trong `content/pages/about.md`. Cả hai dựng
+từ **cùng dữ liệu** trong front matter, chỉ khác cách bày.
+
+| | Dáng | Hợp khi |
+|---|---|---|
+| **bento** | lưới ô kính, mỗi ô một mẩu thông tin | muốn trang đọc như một tấm danh thiếp — liếc một cái nắm hết |
+| **chuong** | các chương chữ lớn, hiện dần khi cuộn | muốn kể hơn là liệt kê |
+
+### 11.1 · Lưới bento KHOÁ CỨNG, không để tự xếp
+
+```
+hàng 1–2   [ giới thiệu  4 cột × 2 hàng ]  [ trích dẫn 2 cột × 2 hàng ]
+hàng 3     [ dải số  6 cột — bên trong tự chia đều ]
+hàng 4     [ dạo này  3 cột ]              [ liên hệ  3 cột ]
+hàng 5     [ thân bài  6 cột ]
+```
+
+> **Bẫy đã vấp.** Bản đầu cho mỗi ô một `span` rồi thả cho lưới tự lấp. Hỏng vì
+> số ô SỐ thay đổi theo việc tác giả khai bao nhiêu field, nên hàng nào cũng có
+> thể thừa 2 cột trống — và một lưới bento có lỗ hổng đọc ra là trang bị lỗi,
+> không phải trang gọn gàng.
+>
+> Cách chữa: nhét mọi ô số vào **một dải chiếm trọn 6 cột**, bên trong dải đó
+> mới chia đều bằng `auto-fit`. Khai 2 field hay 4 field thì lưới ngoài vẫn kín.
+
+### 11.2 · Thân bài phải thẳng mép với các ô kính
+
+```css
+.bo--chu .prose{ --measure:100%; --gutter:0 }
+```
+
+**Phải đặt cả hai biến.** Làn chữ của `.prose` tính bằng
+`min(--measure, 100% - --gutter*2)`, nên chỉ đặt `--measure` thì chữ vẫn thụt
+vào đúng bằng `--gutter` — đo ra 32px ở khổ 1440px.
+
+> **Bẫy thứ hai, chỉ lộ ở màn hẹp.** `@media (max-width:860px){ .bo{padding:20px} }`
+> nằm SAU `.bo--chu{padding:0}` nên đè lên nó, và thân bài thụt 20px so với mọi
+> ô kính. Phải viết `.bo:not(.bo--chu){padding:…}`.
+>
+> Đo lại sau khi sửa: **lệch 0px** ở cả 1440 · 820 · 390px.
+
+### 11.3 · Hiện dần khi cuộn
+
+Trạng thái đầu (`opacity:0; translate:0 16px`) đặt ở **CSS**, không ở JS: JS chạy
+sau khi trang vẽ xong, nên đặt bằng JS thì khối loé lên một nhịp rồi mới mờ đi.
+
+`IntersectionObserver` bỏ theo dõi ngay sau lần hiện đầu — hiện rồi thì thôi,
+không cho mờ lại lúc cuộn ngược. Chữ nhấp nháy khi cuộn lên gây khó chịu rõ rệt,
+và không ai cuộn ngược để xem lại hiệu ứng.
+
+`prefers-reduced-motion` thì hiện hết ngay, không animate gì.
+
+Ô trích dẫn mỗi ngày: xem `docs/QUOTE.md`.
