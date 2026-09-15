@@ -560,6 +560,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  `data-thoi="${attr(JSON.stringify(NHAN.thoi))}"`
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
+    logo      : LOGO,
+    /* Trang chủ KHÔNG in tên blog ở thanh đầu: màn hero ngay dưới đã là cái tên
+       ấy ở cỡ khổng lồ, in lại lần nữa cách đó 60px là thừa. Trang khác thì giữ,
+       nhưng để mờ — rê chuột vào mới sắp rõ ra. */
+    lopBrand  : duong === '/' ? ' brand--logo' : '',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
     author    : escapeHtml(CAU.author),
@@ -680,6 +685,29 @@ function bangAnhHTML(bai) {
          aria-label="${attr(bai.title)}">${tam}</div>
   </div>`;
 }
+/* ── LOGO ──
+   Ý gốc: chữ Z xoay ngang thì ba nét của nó (vạch trên · chéo · vạch dưới)
+   thành vạch TRÁI · chéo · vạch PHẢI. Nối hai đầu còn lại bằng một đường chéo
+   nữa là được một tứ giác có hai đường chéo cắt nhau — tức là hình vô cực vẽ
+   bằng nét thẳng. Chấm giữa là dấu chấm của chữ "i" trong "in", đặt đúng chỗ
+   hai đường chéo gặp nhau.
+
+   ── VÌ SAO KHÔNG VẼ DÀY NHƯ HÌNH MẪU ──────────────────────────────────
+   Hình mẫu có bốn đường chéo, tạo thêm một hình thoi nhỏ ở giữa. Đẹp ở cỡ
+   512px. Nhưng logo này sống ở thanh đầu trang, cao 26px — ở cỡ đó bốn nét
+   chéo cách nhau vài pixel sẽ dính vào nhau thành một vệt xám. Một logo phải
+   đọc được ở cỡ NHỎ NHẤT nó xuất hiện, không phải ở cỡ đẹp nhất.
+
+   ── NÉT VẼ DẦN ──
+   `stroke-dasharray` bằng đúng chiều dài đường, `stroke-dashoffset` chạy từ
+   đó về 0: nét tự vẽ ra như đang được viết. Chiều dài ~184 đơn vị, làm tròn
+   lên 190 cho chắc. Người tắt chuyển động thì hiện luôn nét đầy đủ. */
+const LOGO = `<svg class="logo" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
+  <path class="logo-net" d="M5 5 L5 35 L59 5 L59 35 Z" fill="none"
+        stroke="currentColor" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <circle class="logo-cham" cx="32" cy="20" r="3" fill="currentColor"/>
+</svg>`;
 function tocHTML(headings) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
      cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không

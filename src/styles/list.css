@@ -32,10 +32,20 @@
 /* ── LƯỚI THẺ ──
    `min(300px,100%)` chứ không phải 300px trơn: thiếu min() thì ở khổ hẹp hơn
    300px, cột vẫn giữ 300px và trang tràn ngang. Đã vấp chuyện này ở lưới khác. */
+/* ── LƯỚI THẺ BÀI ──
+   `grid-auto-rows:1fr` ép MỌI THẺ TRONG CÙNG MỘT HÀNG cao bằng nhau. Không có
+   nó thì mỗi thẻ cao theo lượng chữ của chính nó, và đáy hàng thành một đường
+   răng cưa — thứ đầu tiên mắt bắt được khi nhìn một lưới, trước cả khi đọc chữ.
+
+   Ép đều chiều cao chỉ có nghĩa khi TÓM TẮT cũng bị kẹp số dòng (xem `.the-tom`
+   dưới đây). Thiếu vế đó thì thẻ nào chữ dài sẽ kéo cả hàng cao lên, và ba thẻ
+   còn lại thừa ra một khoảng trắng to. */
 .ds-luoi{
   display:grid;gap:var(--s3);
   grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));
+  grid-auto-rows:1fr;
 }
+.the-bai{height:100%}
 
 .the-bai{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s5) var(--s5) var(--s4)}
 .the-bai h3{
@@ -52,7 +62,21 @@
    (`a.stretch` phủ kín), nên link lồng trong link vừa sai HTML vừa không bấm
    được. Muốn lọc theo tag thì vào trang bài hoặc trang /tags/. */
 .tag--tinh{cursor:inherit}
-.the-bai .tag-row{margin-top:auto;padding-top:var(--s2)}
+.the-bai .tag-row{margin-top:auto;padding-top:var(--s3)}
+/* Kẹp tóm tắt đúng ba dòng. Ba dòng là đủ để biết bài nói gì; dòng thứ tư trở
+   đi chỉ làm thẻ cao thêm mà không giúp người đọc quyết định nhanh hơn. */
+.the-tom{
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;
+  line-clamp:3;overflow:hidden;
+}
+/* Hàng tag kẹp một hàng: tag thứ tư xuống dòng là thẻ cao thêm hẳn một nhịp. */
+.the-bai .tag-row{flex-wrap:nowrap;overflow:hidden}
+
+/* Mốc cập nhật KHÔNG hiện trên thẻ nhỏ. Trên thẻ, hàng meta chỉ có một dòng, và
+   thêm "Updated 14 hours ago" là nó vắt sang dòng thứ hai — thẻ cao lệch nhau,
+   và cái mốc ấy cũng không phải thứ người ta cần khi đang LƯỚT. Trang bài và
+   thẻ bài nổi bật thì vẫn giữ. */
+.the-bai .meta-row .moc{display:none}
 
 /* ── HÀNG CHIP LỌC ── */
 .chip-hang{
@@ -157,8 +181,14 @@
   line-height:.78;letter-spacing:-.03em;
   color:var(--text);opacity:.17;
 
-  --s1:58cqw;  --x1:-.04em;
-  --s3:24cqw;  --x3:.06em;
+  /* 44cqw, không phải 58. Chữ đầu ở 58 cao gấp hai lần rưỡi từ cuối, và ở tỉ lệ
+     ấy nó thôi làm một phần của khối chữ mà thành một vật riêng đứng cạnh —
+     đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 26 là tỉ lệ 1,7 lần: vẫn rõ
+     ai là chính, mà hai dòng còn đọc ra là một khối. */
+  --s1:44cqw;  --x1:-.04em;
+  /* Từ cuối lùi vào một bậc để nó nằm DƯỚI phần sau của chữ đầu — hai dòng
+     cài vào nhau thì đọc ra là một khối, xếp thẳng mép thì thành hai dòng rời. */
+  --s3:26cqw;  --x3:.34em;
   /* KHOẢNG GIỮA HAI DÒNG, chỉ mở ra lúc hiện đủ.
      line-height .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc.
      Nhưng lúc hiện đủ thì đuôi chữ "y" của dòng trên thò xuống đúng chỗ thân
@@ -172,7 +202,9 @@
      nó rơi trúng thân chữ "Borderland" — hai lớp chữ chồng nhau thì không đọc
      ra chữ nào. Khoảng trống thật nằm ở bên phải chữ đầu: chữ đầu chỉ chiếm
      khoảng một phần ba bề ngang ô, phần còn lại của dòng bỏ không. */
-  --in-co:.2em;  --in-x:1.75em;  --in-y:-.15em;  --in-mo:.6;
+  /* Chữ giữa lại gần chữ đầu: xa quá thì nó trôi lửng lơ giữa khoảng trống,
+     không còn nối được chữ đầu với từ cuối. */
+  --in-co:.24em;  --in-x:.95em;  --in-y:.12em;  --in-mo:.62;
 
   --nhip:.62s cubic-bezier(.22,.61,.36,1);
   transition:opacity var(--nhip);
@@ -183,10 +215,10 @@
 .hd-hang{
   display:block;white-space:nowrap;
   transition:font-size var(--nhip),margin-left var(--nhip),
-             margin-bottom var(--nhip);
+             margin-bottom var(--nhip),letter-spacing var(--nhip);
 }
 .hd-hang--1{font-size:var(--s1);margin-left:var(--x1);margin-bottom:var(--gap1)}
-.hd-hang--3{font-size:var(--s3);margin-left:var(--x3)}
+.hd-hang--3{font-size:var(--s3);margin-left:var(--x3);letter-spacing:var(--ls3,-.03em)}
 
 .hd-con{
   display:inline-block;opacity:0;letter-spacing:-.58em;
@@ -206,7 +238,9 @@
 .hero:focus-within .hero-danh{
   opacity:.96;
   --s1:25cqw;   --x1:.03em;   --gap1:.13em;
-  --s3:19cqw;   --x3:.015em;
+  /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
+     khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
+  --s3:19cqw;   --x3:.015em;  --ls3:.035em;
   --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
 }
 .hero:hover .hd-con,
@@ -216,7 +250,9 @@
   .hero-danh{
     opacity:.96;
     --s1:25cqw;   --x1:.03em;   --gap1:.13em;
-    --s3:19cqw;   --x3:.015em;
+    /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
+     khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
+  --s3:19cqw;   --x3:.015em;  --ls3:.035em;
     --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
   }
   .hd-con{opacity:1;letter-spacing:-.03em}

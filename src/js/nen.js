@@ -165,142 +165,176 @@
     };
   }
 
-  /* ══════════ THIÊN HÀ ══════════ */
+  /* ══════════ THIÊN HÀ ══════════
+     Bản trước cho ra một SỢI sao mảnh vắt chéo màn hình. Sai ở chỗ mô hình: nó
+     rải sao dọc đường xoắn rồi thêm nhiễu vào GÓC. Nhiễu góc ở bán kính lớn thì
+     tãi rộng, ở bán kính nhỏ thì gần như không tãi — nên nhánh bó chặt ở trong
+     và loe ra ở ngoài, đọc ra là một sợi chỉ chứ không phải một dải.
+
+     Ngân hà thật có bốn tầng, thiếu tầng nào cũng không ra:
+
+       1. NỀN SAO   sao rải khắp khung, KHÔNG quay. Đây là thứ nói "đây là bầu
+                    trời", và là tầng bản trước thiếu hẳn.
+       2. NHÁNH     không phải đường mà là DẢI: đặt sao lên đường xoắn rồi đẩy
+                    lệch một khoảng ngẫu nhiên, có chia lại theo bán kính để bề
+                    dày THẬT của dải đều từ trong ra ngoài.
+       3. BỤI KHÍ   mảng sáng mờ bám theo cùng đường xoắn với sao, cộng sáng
+                    chồng lên nhau — tầng làm nhánh có KHỐI chứ không chỉ có chấm.
+       4. LÕI       quầng sáng nhỏ ở tâm, cộng vài cục lệch tâm cho lõi gợn.
+
+     Vẽ sao bằng `fillRect` chứ không `arc`: ở cỡ 1–2px mắt không phân biệt được
+     tròn hay vuông, mà fillRect rẻ hơn hẳn — ở đây có tới hơn hai nghìn ngôi. */
   function dungThienHa() {
     var MAU = ['#FFFFFF', '#FBE3F0', '#F5BCBA', '#E3AADD', '#C3C7F3', '#C8A8E9', '#FFF6FB'];
-    var sao = [], bui = [], vanMay = [];
+    var nen = [], sao = [], bui = [], cuc = [];
     /* Đĩa nghiêng và ép dẹt để thấy hình xoắn ốc, không phải một vòng tròn. */
-    var NGHIENG = -0.38, DET = 0.34;
-    /* R nằm ở đây chứ không nằm trong `dung` vì `ve` cũng cần nó (quầng lõi
-       bám theo cỡ đĩa). Để trong `dung` thì `ve` ném ReferenceError. */
+    var NGHIENG = -0.34, DET = 0.42;
     var R = 1;
+    var NHANH = 2;      /* hai nhánh chính; thêm nữa là rối, không phải là đẹp */
+    var VONG = 2.9;     /* nhánh quấn gần một vòng rưỡi */
 
-    /* Xoắn log: góc tăng theo bán kính. Đây là thứ làm ra hình xoắn ốc thật
-       thay vì mấy vòng tròn đồng tâm. */
-    function nhanh(t, k) {
-      /* Số hạng cuối là ĐỘ TÃI của nhánh. Để rộng thì sao rải đều khắp đĩa và
-         không thấy nhánh đâu cả; thu lại thì nhánh hiện rõ thành dải. Đây là
-         chỗ quyết định "giống ngân hà" hay "giống đám bụi". */
-      return t * 4.6 + k * Math.PI + (Math.random() - 0.5) * (0.44 - t * 0.26);
+    /* Xấp xỉ phân phối chuẩn bằng cách cộng bốn số ngẫu nhiên đều. Cần nó để sao
+       dồn về TRỤC nhánh và thưa dần ra hai bên — rải đều thì dải có mép cứng
+       như một cái băng dán. */
+    function chuan() {
+      return (Math.random() + Math.random() + Math.random() + Math.random() - 2) / 1.6;
     }
 
     return {
       dung: function () {
-        /* CỠ ĐĨA THEO CHIỀU NGANG, KHÔNG THEO min(W,H).
-           Đĩa đã bị ép dẹt còn 0.34 chiều cao, nên chiều dọc chưa bao giờ là
-           thứ chạm mép trước. Lấy min(W,H) trên màn ngang tức là trói cỡ đĩa
-           vào chiều CAO — và được một thiên hà bé tẹo nằm lọt thỏm giữa khung,
-           trông như cái huy hiệu dán lên nền chứ không như bầu trời.
-           0.52 cho đường kính ngang hơi tràn mép: thiên hà phải chạy RA KHỎI
-           khung mới ra dáng thiên hà.
-           Vế H*0.92 là cái CHẶN cho khung ngang-mà-thấp (1600x500): không có
-           nó thì cả màn chỉ còn thấy mỗi quầng lõi. */
-        /* TRÀN CẢ HAI MÉP, không chỉ mép phải.
-           Bản trước lấy 0.52 bề ngang với tâm ở 66% — đĩa chỉ vươn khỏi mép
-           phải, còn nửa trái màn hình trống trơn, nên cái đang thấy đọc ra là
-           một ĐỐM SÁNG nằm lệch chứ không phải một dải ngân hà. Ngân hà thật
-           thì khung hình nằm LỌT TRONG nó, không phải nó nằm lọt trong khung. */
-        R = Math.min(W * 0.78, H * 1.25);
-        sao = []; bui = []; vanMay = [];
-        /* Đếm theo diện tích MÀN chứ không theo diện tích đĩa — cái mắt người
-           thấy là bao nhiêu chấm trên mỗi vùng màn hình. Nhưng đĩa to ra gần
-           gấp đôi thì trần cũng phải nới, không thì từng ấy sao trải trên vùng
-           rộng gấp bốn và nhánh xoắn trông thủng lỗ chỗ. */
-        /* Đĩa rộng gấp rưỡi thì số sao phải tăng hơn thế, không thì nhánh xoắn
-           loãng ra thành vài chấm rời. Chấm nhỏ và mờ nên dày mà không rối —
-           cái làm rối là chấm TO, không phải chấm NHIỀU. */
-        var nSao = Math.max(140, Math.min(900, Math.round(W * H / 1900)));
-        var nBui = Math.round(nSao * 1.5);
+        R = Math.min(W * 0.8, H * 1.3);
+        nen = []; sao = []; bui = []; cuc = [];
 
-        for (var i = 0; i < nSao; i++) {
-          var t = Math.pow(Math.random(), 0.62);
-          sao.push({
-            r: R * t, g: nhanh(t, i % 2),
-            /* Vòng trong quay nhanh hơn vòng ngoài — đúng như thiên hà thật,
-               và chính cái chênh tốc độ đó làm nhánh xoắn "chảy". */
-            v: 0.00034 + 0.00055 / (0.28 + t),
-            s: 0.4 + Math.random() * 1.5,
+        /* ── 1. NỀN SAO ── toạ độ theo KHUNG, không theo đĩa, và không quay. */
+        var nNen = Math.max(120, Math.min(900, Math.round(W * H / 2600)));
+        for (var i = 0; i < nNen; i++) {
+          nen.push({
+            x: Math.random() * W, y: Math.random() * H,
+            s: Math.random() < 0.86 ? 1 : 1.6,
             m: MAU[(Math.random() * MAU.length) | 0],
-            o: 0.3 + Math.random() * 0.6,
-            nh: Math.random() * 6.28, ns: 0.01 + Math.random() * 0.03
+            o: 0.1 + Math.random() * 0.3,
+            nh: Math.random() * 6.28, ns: 0.006 + Math.random() * 0.02
           });
         }
-        for (i = 0; i < nBui; i++) {
+
+        /* ── 2. SAO TRONG NHÁNH ── */
+        var nSao = Math.max(260, Math.min(1700, Math.round(W * H / 950)));
+        var t, k, goc;
+        for (i = 0; i < nSao; i++) {
+          /* t = bán kính chuẩn hoá. Mũ 0.62 dồn sao về phía trong, đúng như đĩa
+             thật: càng ra ngoài càng thưa. */
+          t = Math.pow(Math.random(), 0.62);
+          k = i % NHANH;
+          goc = t * VONG * Math.PI + k * (6.2832 / NHANH);
+          /* Đẩy lệch theo GÓC, nhưng chia lại cho t: cùng một góc ở bán kính lớn
+             cho ra khoảng cách lớn hơn, nên không chia thì dải phình ở ngoài và
+             bó ở trong — đúng cái làm bản trước thành một sợi chỉ. */
+          /* Bề dày dải tính bằng PIXEL rồi mới đổi ra góc: một khoảng cách
+             cố định `w` ứng với góc `w/r`, nên chia cho t. Công thức trước nhân
+             thêm một hệ số theo t nữa, thành ra ở vòng trong góc tãi tới gần
+             một phần ba vòng tròn và cả đĩa trong bị xoá nhoè thành sương.
+             Kẹp trần 0.5 rad cho vùng sát tâm, nơi mọi thứ vốn đã chen chúc. */
+          goc += chuan() * Math.min(0.5, 0.075 / Math.max(0.1, t));
+          sao.push({
+            r: R * t * (1 + chuan() * 0.04), g: goc,
+            /* TỐC ĐỘ QUAY. Đủ chậm để không ai thấy chóng mặt, đủ nhanh để mở
+               trang một lúc là nhận ra đĩa đang quay — khoảng hai phút rưỡi một
+               vòng. Bản trước hạ xuống một phần ba con số này và nó thành đứng
+               yên trên thực tế.
+               Vòng trong quay nhanh hơn vòng ngoài một chút, đúng như đĩa thật,
+               và chính chênh lệch ấy làm nhánh xoắn "chảy". Chỉ một chút thôi:
+               chênh nhiều thì sau vài phút nhánh tự cuốn chặt và hình xoắn mất. */
+            v: 0.00042 + 0.00020 / (0.5 + t),
+            s: Math.random() < 0.9 ? 1 : 1.8,
+            m: MAU[(Math.random() * MAU.length) | 0],
+            o: 0.34 + Math.random() * 0.66,
+            nh: Math.random() * 6.28, ns: 0.008 + Math.random() * 0.026
+          });
+        }
+
+        /* ── 3. BỤI KHÍ ── cùng đường xoắn với sao, nên mảng sáng nằm ĐÚNG trên
+           nhánh chứ không trôi lung tung giữa các nhánh. */
+        /* 44 mảng, không phải 64. Bụi khí là lớp cho nhánh có khối; quá tay thì
+           nó phủ lên chính dải sao và xoá mất cái nét vừa làm ra. */
+        for (i = 0; i < 44; i++) {
           t = Math.pow(Math.random(), 0.5);
+          k = i % NHANH;
+          goc = t * VONG * Math.PI + k * (6.2832 / NHANH) + chuan() * 0.14;
           bui.push({
-            r: R * t, g: nhanh(t, i % 2),
-            v: 0.00030 + 0.00045 / (0.3 + t),
-            s: 0.3 + Math.random() * 0.8,
-            m: ['#E3AADD', '#C3C7F3', '#C8A8E9'][i % 3],
-            o: 0.10 + Math.random() * 0.18
+            r: R * t, g: goc,
+            v: 0.00042 + 0.00020 / (0.5 + t),
+            rad: R * (0.07 + Math.random() * 0.17),
+            m: ['#E3AADD', '#C3C7F3', '#F5BCBA', '#C8A8E9', '#9F7BD8', '#FBE3F0'][i % 6],
+            o: 0.024 + Math.random() * 0.035
           });
         }
-        for (i = 0; i < 26; i++) {
-          t = Math.pow(Math.random(), 0.55);
-          vanMay.push({
-            r: R * t, g: nhanh(t, i % 2),
-            v: 0.00030 + 0.00042 / (0.3 + t),
-            rad: R * (0.12 + Math.random() * 0.2),
-            m: ['#E3AADD', '#C3C7F3', '#F5BCBA', '#C8A8E9', '#9F7BD8'][i % 5],
-            o: 0.055 + Math.random() * 0.075
+
+        /* ── 4. CỤC SÁNG LỆCH TÂM ── để lõi gợn, không phẳng như một cái đèn pin. */
+        for (i = 0; i < 7; i++) {
+          cuc.push({
+            dx: chuan() * R * 0.1, dy: chuan() * R * 0.05,
+            rad: R * (0.05 + Math.random() * 0.09),
+            o: 0.06 + Math.random() * 0.07
           });
         }
       },
 
       ve: function (t) {
-        /* Lõi lệch khỏi tâm: để đúng giữa thì quầng sáng nằm ngay sau chữ và
-           chữ bị loá. Lệch xuống-phải thì chữ nằm trên vùng tối, còn người đọc
-           vẫn thấy trọn đĩa ngân hà. */
-        /* Tâm lệch phải VỪA PHẢI thôi (58%): lệch nhiều thì nửa trái màn hình
-           chỉ còn nền trơn. Ở 58% với bán kính mới, nhánh xoắn quét qua cả hai
-           mép, còn lõi sáng vẫn nằm lệch khỏi khối chữ. */
-        var cx = W * 0.58, cy = H * 0.62;
+        var cx = W * 0.56, cy = H * 0.6;
+        var i, o, x, y, g;
         ctx.clearRect(0, 0, W, H);
+
+        /* `lighter` để các lớp CỘNG ánh sáng vào nhau — đó là cách ánh sáng thật
+           hoạt động, và là lý do chỗ dày sao trông rực lên. */
+        ctx.globalCompositeOperation = 'lighter';
+
+        /* Nền sao vẽ TRƯỚC và KHÔNG xoay theo đĩa: nó là bầu trời phía sau. */
+        for (i = 0; i < nen.length; i++) {
+          o = nen[i];
+          var nhayN = itMotion ? 1 : 0.55 + 0.45 * Math.sin(t * o.ns + o.nh);
+          ctx.globalAlpha = o.o * nhayN;
+          ctx.fillStyle = o.m;
+          ctx.fillRect(o.x, o.y, o.s, o.s);
+        }
+
         ctx.save();
         ctx.translate(cx, cy); ctx.rotate(NGHIENG); ctx.translate(-cx, -cy);
-        /* `lighter` để các lớp CỘNG ánh sáng vào nhau — đó là cách ánh sáng
-           thật hoạt động, và là lý do chỗ dày sao trông rực lên. */
-        ctx.globalCompositeOperation = 'lighter';
-        var i, o, x, y, g;
 
-        for (i = 0; i < vanMay.length; i++) {
-          o = vanMay[i]; if (!itMotion) o.g += o.v;
+        for (i = 0; i < bui.length; i++) {
+          o = bui[i]; if (!itMotion) o.g += o.v;
           x = cx + Math.cos(o.g) * o.r; y = cy + Math.sin(o.g) * o.r * DET;
           g = ctx.createRadialGradient(x, y, 0, x, y, o.rad);
           g.addColorStop(0, o.m); g.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.globalAlpha = o.o; ctx.fillStyle = g;
           ctx.beginPath(); ctx.arc(x, y, o.rad, 0, 6.2832); ctx.fill();
         }
-        for (i = 0; i < bui.length; i++) {
-          o = bui[i]; if (!itMotion) o.g += o.v;
-          x = cx + Math.cos(o.g) * o.r; y = cy + Math.sin(o.g) * o.r * DET;
-          ctx.globalAlpha = o.o; ctx.fillStyle = o.m;
-          ctx.beginPath(); ctx.arc(x, y, o.s, 0, 6.2832); ctx.fill();
-        }
 
-        /* Quầng lõi — ba chặng màu cho sáng dần vào giữa */
-        /* Quầng lõi bám theo R chứ không theo màn: đĩa to mà lõi giữ nguyên
-           thì thành cái đèn pin giữa đám bụi. Hệ số 0.46 (thay vì 0.74 như
-           tỉ lệ cũ) để lõi chỉ nhỉnh lên một chút — phần to ra phải là NHÁNH
-           XOẮN, không phải cục sáng. */
-        /* Lõi chỉ còn 0.3 bán kính đĩa (trước 0.46). Đĩa to lên mà lõi giữ tỉ
-           lệ cũ thì cả màn hình thành một quầng sáng — đúng cái "đốm sáng" cần
-           bỏ. Phần to ra phải là NHÁNH XOẮN, không phải cục sáng. */
-        var Rl = R * 0.3;
+        /* Quầng lõi — nhỏ hơn hẳn bản trước. Lõi to thì cả màn thành một quầng
+           sáng và nhánh xoắn biến mất sau nó. */
+        var Rl = R * 0.17;
         g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rl);
-        g.addColorStop(0, 'rgba(255,248,253,.80)');
-        g.addColorStop(.16, 'rgba(251,227,240,.46)');
-        g.addColorStop(.42, 'rgba(227,170,221,.20)');
+        g.addColorStop(0, 'rgba(255,248,253,.6)');
+        g.addColorStop(0.2, 'rgba(251,227,240,.32)');
+        g.addColorStop(0.5, 'rgba(227,170,221,.16)');
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.globalAlpha = 1; ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(cx, cy, Rl, 0, 6.2832); ctx.fill();
 
+        for (i = 0; i < cuc.length; i++) {
+          o = cuc[i];
+          x = cx + o.dx; y = cy + o.dy;
+          g = ctx.createRadialGradient(x, y, 0, x, y, o.rad);
+          g.addColorStop(0, '#FFF6FB'); g.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.globalAlpha = o.o; ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(x, y, o.rad, 0, 6.2832); ctx.fill();
+        }
+
         for (i = 0; i < sao.length; i++) {
           o = sao[i]; if (!itMotion) o.g += o.v;
-          var nhay = itMotion ? 1 : 0.6 + 0.4 * Math.sin(t * o.ns + o.nh);
+          var nhay = itMotion ? 1 : 0.62 + 0.38 * Math.sin(t * o.ns + o.nh);
           x = cx + Math.cos(o.g) * o.r; y = cy + Math.sin(o.g) * o.r * DET;
           ctx.globalAlpha = o.o * nhay; ctx.fillStyle = o.m;
-          ctx.beginPath(); ctx.arc(x, y, o.s, 0, 6.2832); ctx.fill();
+          ctx.fillRect(x, y, o.s, o.s);
         }
 
         ctx.restore();

@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V4.00 | 2026-09-15 | 00 | dải ngân hà dựng lại có nền sao và nhánh thật · cân lại khối chữ |
+| V3.09 | 2026-09-15 | 09 | thẻ bài: kính trong hơn · cao bằng nhau · trang chủ giữ 3 bài |
+| V3.08 | 2026-09-15 | 08 | logo hình vô cực · tên blog sắp lại khi rê chuột |
 | V3.07 | 2026-09-15 | 07 | khung bài ảnh ngắn: băng ảnh bên trái, tản mạn bên phải |
 | V3.06 | 2026-09-15 | 06 | chữ thân bài đo lại · căn đều hai bên · đầu bài rộng hơn cột chữ |
 | V3.05 | 2026-09-15 | 05 | ngày đăng gốc kèm mốc cập nhật tự động · bỏ phút đọc |
@@ -61,6 +64,57 @@
 
 ---
 
+## V4.00 — 15-Sep-2026
+
+- **Dải ngân hà dựng lại từ đầu.** Bản trước cho ra một SỢI sao mảnh vắt chéo
+  màn hình. Sai ở mô hình: nó rải sao dọc đường xoắn rồi thêm nhiễu vào GÓC —
+  mà cùng một góc ở vòng ngoài cho ra khoảng cách lớn hơn nhiều so với vòng
+  trong, nên nhánh bó chặt ở trong và loe ra ở ngoài. Nay bề dày dải tính bằng
+  khoảng cách thật rồi mới đổi ra góc, nên dải đều từ trong ra ngoài.
+
+- **Thêm nền sao.** Sao rải khắp khung và KHÔNG quay theo đĩa — đây là tầng nói
+  "đây là bầu trời", và là thứ bản trước thiếu hẳn. Cộng thêm bụi khí bám đúng
+  theo nhánh, và lõi nhỏ lại có mấy cục sáng lệch tâm cho đỡ phẳng.
+
+- **Vẫn quay.** Khoảng hai phút rưỡi một vòng, vòng trong nhanh hơn vòng ngoài
+  một chút — chính chênh lệch ấy làm nhánh xoắn "chảy". Chỉ một chút thôi: chênh
+  nhiều thì sau vài phút nhánh tự cuốn chặt và hình xoắn biến mất.
+
+- **Khối chữ cân lại.** Chữ đầu từ 58 xuống 44 phần trăm bề ngang ô: ở cỡ cũ nó
+  cao gấp hai lần rưỡi từ cuối và thôi làm một phần của khối chữ, thành một vật
+  riêng đứng cạnh. Từ cuối lùi vào một bậc để hai dòng cài vào nhau, và khi co
+  lại thì giãn chữ ra bù cho phần cỡ vừa mất.
+
+## V3.09 — 15-Sep-2026
+
+- **Kính trong hơn.** Ruột kính ở theme tối đang dày gần gấp đôi mức cần, cộng
+  với mức nâng bão hoà 1,9 — nên thẻ bài đọc ra là những khối tím đặc chứ không
+  phải kính. Nay ruột mỏng đi và bão hoà về 1,25: thấy được nền phía sau, và
+  cái làm nên chữ "liquid" là vệt sáng ở mép chứ không phải mảng màu.
+
+- **Thẻ trong cùng một hàng cao bằng nhau.** Đáy hàng răng cưa là thứ đầu tiên
+  mắt bắt được khi nhìn một lưới, trước cả khi đọc chữ. Kèm theo: tóm tắt kẹp ba
+  dòng, hàng tag kẹp một hàng, và mốc cập nhật không hiện trên thẻ nhỏ — ba thứ
+  ấy mới là cái giữ cho chiều cao đoán trước được.
+
+- **Trang chủ giữ 3 bài** thay vì 6. Sáu thẻ dưới màn hero là một bức tường,
+  không phải một lời mời.
+
+## V3.08 — 15-Sep-2026
+
+- **Có logo.** Chữ Z xoay ngang thì ba nét của nó thành vạch trái · chéo · vạch
+  phải; nối hai đầu còn lại bằng một đường chéo nữa là ra một hình vô cực vẽ
+  bằng nét thẳng. Chấm giữa là dấu chấm của chữ "i" trong "in", đặt đúng chỗ hai
+  đường chéo gặp nhau. Nét tự vẽ ra khi mở trang.
+
+- **Vẽ đơn, không vẽ dày như hình mẫu.** Hình mẫu có bốn đường chéo và một hình
+  thoi ở giữa — đẹp ở cỡ lớn, nhưng logo này sống ở thanh đầu trang cao 26px, và
+  ở cỡ đó bốn nét cách nhau vài pixel sẽ dính thành một vệt xám.
+
+- **Tên blog sắp lại khi rê chuột.** Mặc định để mờ và các chữ nép sát nhau; rê
+  vào thì giãn ra và rõ hẳn. Ở trang chủ thì ẩn hẳn — màn hero ngay dưới đã in
+  cái tên ấy ở cỡ khổng lồ. Tên vẫn nằm trong `aria-label` nên trình đọc màn
+  hình luôn đọc được, kể cả ở trang chủ.
 ## V3.07 — 15-Sep-2026
 
 - **Khung C — bài ảnh ngắn.** Vài tấm kỉ niệm bên trái, mấy dòng tản mạn bên

@@ -150,11 +150,14 @@
                     ánh sáng bẻ qua mép kính, và là tầng làm nên "liquid"
        4. BÓNG ĐỔ  tách tấm kính khỏi nền phía sau */
   --glass-blur:18px;
-  --glass-sat:1.7;
+  --glass-sat:1.45;
   /* Ruột .55→.26 chứ không phải .78→.44. Trên nền pastel sáng, kính đục .78
      đọc ra là "một thanh trắng đặc", mất hẳn cảm giác nhìn xuyên qua. Trong
      hơn thì nội dung phía sau ánh lên — đó mới là kính. */
-  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.55),rgba(255,255,255,.26));
+  /* Ruột kính MỎNG ĐI (.55/.26 → .42/.17). Đặc quá thì tấm kính thành tấm
+     nhựa trắng: không thấy gì phía sau, và mảng màu của nó át cả chữ bên
+     trong. Kính phải để lọt nền qua thì mới ra kính. */
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
   /* HAI viền, hai việc khác nhau — đây là chỗ bản đầu làm sai:
        --glass-edge  viền CẤU TRÚC, tối nhẹ, tách tấm kính khỏi nền
        --glass-spec  vệt SÁNG ở mép, chỗ ánh sáng bẻ qua rìa
@@ -234,8 +237,8 @@
     /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
        hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
        đục, mất hẳn cảm giác kính. */
-    --glass-fill:linear-gradient(163deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
-    --glass-edge:rgba(227,170,221,.20);
+    --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
+    --glass-edge:rgba(227,170,221,.15);
     --glass-ring:rgba(227,170,221,.26);
     --glass-spec:rgba(255,255,255,.42);
     --glass-spec2:rgba(255,255,255,.05);
@@ -248,7 +251,7 @@
     /* Tiêu đề lớn trên nền tối cần một lớp bóng để tách khỏi nền, không thì
        chữ dính vào nền ở chỗ nền sáng nhất. Bản gốc: 0 4px 30px rgba(0,0,0,.5) */
     --chu-bong:0 4px 30px rgba(0,0,0,.5);
-    --glass-sat:1.9;
+    --glass-sat:1.25;
 
     color-scheme:dark;
   }
@@ -291,8 +294,8 @@
   /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
      hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
      đục, mất hẳn cảm giác kính. */
-  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.13),rgba(255,255,255,.055));
-  --glass-edge:rgba(227,170,221,.20);
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
+  --glass-edge:rgba(227,170,221,.15);
   --glass-ring:rgba(227,170,221,.26);
   --glass-spec:rgba(255,255,255,.42);
   --glass-spec2:rgba(255,255,255,.05);
@@ -301,7 +304,7 @@
   --glow:0 12px 30px rgba(120,80,180,.50);
   --glow-manh:0 20px 48px rgba(140,95,205,.62);
   --chu-bong:0 4px 30px rgba(0,0,0,.5);
-  --glass-sat:1.9;
+  --glass-sat:1.25;
 
   color-scheme:dark;
 }

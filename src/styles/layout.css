@@ -32,18 +32,51 @@
    flex:0 1 auto + min-width:0 — KHÔNG dùng flex:none. Để flex:none thì tên
    trang không co được, và ở 390px nó cộng với hai nút hình bên phải làm cả
    header rộng hơn màn hình, kéo theo cả trang trượt ngang. Đã đo thấy 473px. */
-.brand{display:flex;flex-direction:column;gap:1px;
-  color:var(--text);flex:0 1 auto;min-width:0;overflow:hidden}
+/* ══════════ LOGO + TÊN BLOG ══════════
+   Logo là chữ Z xoay ngang rồi nối hai đầu — một hình vô cực vẽ bằng nét thẳng.
+   Xem chú thích ở hằng LOGO trong tools/build.mjs.
+
+   Chữ tên blog nằm CẠNH logo, và mặc định để MỜ. Rê chuột vào vùng ấy thì nó
+   sắp rõ ra. Lý do: logo đã đủ để nhận ra trang, còn cái tên viết đầy đủ thì
+   chỉ cần khi người ta thật sự muốn biết mình đang ở đâu. Để nó mờ sẵn (chứ
+   không ẩn hẳn) nghĩa là nó vẫn ở đó, vẫn bôi đen chép được, vẫn đọc được bằng
+   trình đọc màn hình — chỉ là không tranh chỗ với nội dung.
+
+   Ở TRANG CHỦ thì ẩn hẳn: màn hero ngay dưới đã in cái tên ấy ở cỡ khổng lồ. */
+.brand{
+  display:flex;align-items:center;gap:10px;
+  color:var(--text);flex:0 1 auto;min-width:0;
+}
+.brand .logo{
+  flex:none;width:34px;height:21px;overflow:visible;
+  color:var(--accent-ink);
+}
+.brand:hover .logo{color:var(--accent-ink-hover)}
+.logo-net{
+  /* ~184 đơn vị là chiều dài thật của đường; 190 cho dư một chút. */
+  stroke-dasharray:190;stroke-dashoffset:190;
+  animation:logo-ve 1.1s cubic-bezier(.65,0,.35,1) .15s forwards;
+}
+.logo-cham{opacity:0;animation:logo-hien .5s ease 1.05s forwards}
+@keyframes logo-ve{to{stroke-dashoffset:0}}
+@keyframes logo-hien{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .logo-net{stroke-dashoffset:0;animation:none}
+  .logo-cham{opacity:1;animation:none}
+}
+
 .brand b{
   font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:19px;line-height:1.15;letter-spacing:var(--ls-tight);
+  font-size:19px;line-height:1.15;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  /* Trạng thái NGHỈ: mờ và các chữ nép sát vào nhau. Rê chuột thì nó giãn ra
+     đúng khoảng chữ bình thường và rõ hẳn — đọc ra là chữ đang "sắp lại". */
+  opacity:.26;letter-spacing:-.07em;
+  transition:opacity .45s ease,letter-spacing .45s cubic-bezier(.22,.61,.36,1);
 }
-.brand span{
-  font-family:var(--font-label);font-size:8.5px;font-weight:500;
-  letter-spacing:.26em;text-transform:uppercase;color:var(--text-faint);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.brand:hover b,.brand:focus-visible b{opacity:1;letter-spacing:var(--ls-tight)}
+/* Trang chủ: chỉ còn logo. */
+.brand--logo b{display:none}
 
 .nav{display:flex;align-items:center;gap:var(--s1);margin-left:auto;flex:none}
 .nav a{
