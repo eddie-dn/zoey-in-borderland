@@ -47,14 +47,24 @@ export function docSo(goc) {
 }
 
 /* Thêm một dòng ngay dưới hàng gạch của bảng.
-   `lon: true` mở build mới (V1.03 → V2.00); mặc định là thêm bản vá (V1.03 → V1.04). */
+   `lon: true` mở build mới (V1.03 → V2.00); mặc định là thêm bản vá (V1.03 → V1.04).
+   Đuôi bản vá chỉ chạy 00..09 — chạm 09 thì bản kế tự mở build mới. */
 export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
   const f = duongDan(goc);
   const raw = fs.readFileSync(f, 'utf8');
   const { moiNhat } = docSo(goc);
 
-  const build = moiNhat ? (lon ? moiNhat.build + 1 : moiNhat.build) : 1;
-  const va    = moiNhat ? (lon ? 0 : moiNhat.va + 1) : 0;
+  /* ĐUÔI BẢN VÁ CHỈ CHẠY 00..09.
+     Quy ước Vxx.yy có đúng hai chữ số cho mỗi vế, và vế sau dừng ở 09 — không
+     có V1.10. Chạm 09 rồi thì bản kế TỰ mở build mới, không cần ai nhớ gõ
+     --lon. Bản đầu không có cái chặn này nên sổ đã lỡ đi tới V1.14 trước khi
+     có người nhận ra; sửa tay thì lần sau lại lặp lại. */
+  const VA_TOI_DA = 9;
+  const moBuild = lon || (moiNhat ? moiNhat.va >= VA_TOI_DA : false);
+  const tuCuon  = !lon && moBuild;
+
+  const build = moiNhat ? (moBuild ? moiNhat.build + 1 : moiNhat.build) : 1;
+  const va    = moiNhat ? (moBuild ? 0 : moiNhat.va + 1) : 0;
   const ten   = `V${build}.${String(va).padStart(2, '0')}`;
 
   const d = ngay ? new Date(ngay) : new Date();
@@ -77,7 +87,7 @@ export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
   dong.splice(viTri + 1, 0, dongMoi);
   fs.writeFileSync(f, dong.join('\n'));
 
-  return { ten, ngay: ngayISO, va, build, suaChinh, lon };
+  return { ten, ngay: ngayISO, va, build, suaChinh, lon: moBuild, tuCuon };
 }
 
 /* "2026-09-14" → "14-Sep-2026" cho tem ở chân trang */

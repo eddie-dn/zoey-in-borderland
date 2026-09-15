@@ -137,6 +137,9 @@
     var sao = [], bui = [], vanMay = [];
     /* Đĩa nghiêng và ép dẹt để thấy hình xoắn ốc, không phải một vòng tròn. */
     var NGHIENG = -0.38, DET = 0.34;
+    /* R nằm ở đây chứ không nằm trong `dung` vì `ve` cũng cần nó (quầng lõi
+       bám theo cỡ đĩa). Để trong `dung` thì `ve` ném ReferenceError. */
+    var R = 1;
 
     /* Xoắn log: góc tăng theo bán kính. Đây là thứ làm ra hình xoắn ốc thật
        thay vì mấy vòng tròn đồng tâm. */
@@ -146,9 +149,22 @@
 
     return {
       dung: function () {
-        var R = Math.min(W, H) * 0.46;
+        /* CỠ ĐĨA THEO CHIỀU NGANG, KHÔNG THEO min(W,H).
+           Đĩa đã bị ép dẹt còn 0.34 chiều cao, nên chiều dọc chưa bao giờ là
+           thứ chạm mép trước. Lấy min(W,H) trên màn ngang tức là trói cỡ đĩa
+           vào chiều CAO — và được một thiên hà bé tẹo nằm lọt thỏm giữa khung,
+           trông như cái huy hiệu dán lên nền chứ không như bầu trời.
+           0.52 cho đường kính ngang hơi tràn mép: thiên hà phải chạy RA KHỎI
+           khung mới ra dáng thiên hà.
+           Vế H*0.92 là cái CHẶN cho khung ngang-mà-thấp (1600x500): không có
+           nó thì cả màn chỉ còn thấy mỗi quầng lõi. */
+        R = Math.min(W * 0.52, H * 0.92);
         sao = []; bui = []; vanMay = [];
-        var nSao = Math.max(70, Math.min(260, Math.round(W * H / 5200)));
+        /* Đếm theo diện tích MÀN chứ không theo diện tích đĩa — cái mắt người
+           thấy là bao nhiêu chấm trên mỗi vùng màn hình. Nhưng đĩa to ra gần
+           gấp đôi thì trần cũng phải nới, không thì từng ấy sao trải trên vùng
+           rộng gấp bốn và nhánh xoắn trông thủng lỗ chỗ. */
+        var nSao = Math.max(80, Math.min(420, Math.round(W * H / 3400)));
         var nBui = Math.round(nSao * 1.5);
 
         for (var i = 0; i < nSao; i++) {
@@ -190,7 +206,7 @@
         /* Lõi lệch khỏi tâm: để đúng giữa thì quầng sáng nằm ngay sau chữ và
            chữ bị loá. Lệch xuống-phải thì chữ nằm trên vùng tối, còn người đọc
            vẫn thấy trọn đĩa ngân hà. */
-        var cx = W * 0.62, cy = H * 0.58;
+        var cx = W * 0.66, cy = H * 0.60;
         ctx.clearRect(0, 0, W, H);
         ctx.save();
         ctx.translate(cx, cy); ctx.rotate(NGHIENG); ctx.translate(-cx, -cy);
@@ -215,7 +231,11 @@
         }
 
         /* Quầng lõi — ba chặng màu cho sáng dần vào giữa */
-        var Rl = Math.min(W, H) * 0.34;
+        /* Quầng lõi bám theo R chứ không theo màn: đĩa to mà lõi giữ nguyên
+           thì thành cái đèn pin giữa đám bụi. Hệ số 0.46 (thay vì 0.74 như
+           tỉ lệ cũ) để lõi chỉ nhỉnh lên một chút — phần to ra phải là NHÁNH
+           XOẮN, không phải cục sáng. */
+        var Rl = R * 0.46;
         g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rl);
         g.addColorStop(0, 'rgba(255,248,253,.80)');
         g.addColorStop(.16, 'rgba(251,227,240,.46)');

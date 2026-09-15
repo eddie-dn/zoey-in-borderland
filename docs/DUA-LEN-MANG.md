@@ -245,3 +245,153 @@ không đọc được SVG — link chia sẻ ra ô trắng. Trang vẫn hiện 
 `public/og.png` (1200×630) là ảnh dùng cho trang chủ và cho bài không khai
 `cover`. Đây là ảnh nền chuyển màu, không có chữ — thay được bằng bất kỳ ảnh
 nào cùng khổ, chỉ cần ghi đè file đó.
+
+---
+
+## 8 · Hệ sinh thái Cloudflare — cái nào nên dùng, cái nào không
+
+Cloudflare bán R2, D1, KV, Workers, Images, Queues… và mọi bài hướng dẫn
+"blog cá nhân trên Cloudflare" đều khuyên dùng gần hết. Phần lớn lời khuyên ấy
+viết cho người đang chạy WordPress. Trang này không phải WordPress, nên bảng
+dưới đây là câu trả lời riêng cho nó.
+
+| Dịch vụ | Dùng ở đây? | Vì sao |
+|---|---|---|
+| **Pages** | **Có, đang dùng** | Đây là chỗ trang ở |
+| **Workers / Pages Functions** | **Có, một hàm** | `/api/quote`. Không có gì khác cần máy chủ |
+| **R2** (lưu ảnh) | **Chưa cần** | Toàn bộ ảnh của trang chưa tới 1 MB. R2 miễn phí 10 GB — dư hơn mười nghìn lần. Đổi sang R2 là thêm một hệ thống, thêm một đường deploy, và mất tính chất "clone repo về là có đủ mọi thứ" |
+| **D1** (cơ sở dữ liệu) | **Chưa, nhưng có lý** | Xem §8.1 |
+| **KV** (kho khoá–giá trị) | **Không** | Người ta khuyên dùng KV để cache danh sách bài. Trang tĩnh đã nướng sẵn danh sách vào HTML và CDN trả từ máy gần nhất — đọc KV còn CHẬM HƠN đọc file tĩnh. Lời khuyên ấy viết cho trang động |
+| **Images** | **Không** | Ảnh bìa tự sinh bằng `npm run bia`, đã nén bằng `npm run nen` |
+
+### 8.1 · D1 cho bình luận — đúng mà chưa tới lúc
+
+Bình luận đang chạy Google Apps Script + Google Sheet. D1 sẽ nhanh hơn thật:
+Apps Script khởi động nguội mất một tới ba giây, D1 đọc trong vài mili-giây, và
+chuyển sang D1 thì bỏ được luôn cái mẹo gửi bằng `text/plain` để né kiểm tra
+CORS.
+
+Nhưng **cái Sheet không phải điểm yếu, nó là màn hình kiểm duyệt**. Muốn xoá
+một bình luận rác thì mở Sheet, xoá dòng, xong. D1 không có màn hình nào cả —
+chuyển sang D1 là phải viết thêm một trang quản trị, hoặc gõ lệnh mỗi lần.
+
+**Mốc để đổi:** khi bình luận đủ nhiều để độ trễ Apps Script thành phiền, hoặc
+khi chạm hạn ngạch của nó. Chưa tới thì giữ nguyên.
+
+### 8.2 · Nút ở bảng điều khiển: nên và không nên
+
+| Nút | Nên? |
+|---|---|
+| **Always Use HTTPS** | Bật |
+| **Minimum TLS Version 1.2** | Bật |
+| **Early Hints** | Bật, vô hại |
+| **HTTP/3 (QUIC)** | Đã bật sẵn |
+| **Brotli** | Đã bật sẵn, không phải nút cần gạt |
+| **Auto Minify** | Cloudflare đã bỏ nút này từ 8/2024. Bộ dựng cũng tự nén rồi |
+| **Bot Fight Mode** | **Cẩn thận.** Nó chèn một thử thách JavaScript, có thể chặn cả trình đọc RSS lẫn bot của Google — mà blog thì MUỐN được đánh chỉ mục. Nếu bật, chọn Super Bot Fight Mode mức "block definitely automated" |
+| **Email Obfuscation** | Bỏ qua. Nó chèn một script của Cloudflare vào MỌI trang, mà trang này đang không có script ngoài nào |
+
+### 8.3 · Chỗ dễ làm hỏng nhất: cache cho `/assets/`
+
+Mọi bài hướng dẫn đều khuyên đặt `Cache-Control: max-age=31536000` cho tài
+nguyên tĩnh. Làm đúng nguyên văn ở đây là **hỏng trang**.
+
+File `public/_headers` cố ý chia làm hai:
+
+```
+/media/*     max-age=31536000, immutable   ← đúng: tên file không đổi thì nội dung không đổi
+/assets/*    max-age=0, must-revalidate    ← CỐ Ý
+```
+
+Vì `style.css` và `nen.js` **không có vân tay nội dung trong tên**. Đặt cache
+một năm thì sửa giao diện xong, người đọc cũ vẫn thấy bản cũ suốt một năm —
+trừ khi họ tự xoá cache, mà không ai làm thế.
+
+**Việc đúng phải làm** không phải tăng `max-age`, mà là **gắn vân tay vào tên
+file** (`style.a3f19c.css`) rồi mới cache dài. Lúc đó sửa CSS thì tên đổi,
+trình duyệt tải bản mới ngay, còn bản cũ cache vĩnh viễn cũng không sao. Việc
+này nằm trong bộ dựng, không nằm ở bảng điều khiển. Xem `docs/IA.md` §6.0b.
+
+### 8.4 · Đường thoát nếu Gemini chạm hạn ngạch
+
+Hàm `/api/quote` gieo theo NGÀY nên mỗi ngày chỉ có một câu, và cache HTTP của
+Cloudflare giữ lại. Nhưng cache ấy **riêng từng trung tâm dữ liệu**, nên thực
+tế mỗi ngày gọi vài lần chứ không phải một. Nếu tới lúc con số ấy thành vấn
+đề, KV là chỗ đúng để giữ câu trong ngày — đây là công dụng duy nhất của KV ở
+trang này.
+
+---
+
+## 9 · Đo lượt xem và tốc độ
+
+### 9.1 · Vì sao Cloudflare Web Analytics, không phải Google Analytics
+
+| | Cloudflare Web Analytics | Google Analytics 4 |
+|---|---|---|
+| Cookie | **không có** | có |
+| Banner xin phép | **không cần** | cần ở EU, và nên có ở mọi nơi |
+| Theo dấu sang trang khác | không | có |
+| Core Web Vitals của người đọc thật | **có sẵn** | phải nối thêm |
+| Nặng thêm | một file ~6 KB, tải sau | ~50 KB, và chạy sớm |
+| Giá | miễn phí, không giới hạn | miễn phí tới hạn ngạch |
+
+Với một blog cá nhân, thứ cần biết là *bài nào có người đọc* và *trang có chậm
+với người dùng 4G không*. Cả hai đều nằm trong bản miễn phí, mà không phải dựng
+banner cookie — banner ấy là thứ đầu tiên người đọc gặp, và nó nói rằng trang
+này đang lấy gì đó của họ.
+
+### 9.2 · Bật lên
+
+1. Cloudflare Dashboard → **Web Analytics** → **Add a site** → gõ tên miền.
+2. Nó đưa một đoạn mã có `token: "…"`. **Chỉ cần token**, không cần cả đoạn.
+3. Dán vào `site.config.json`:
+
+```json
+"phanTich": { "bat": true, "token": "dán-token-vào-đây" }
+```
+
+4. `npm run kiem` — có một phép kiểm canh đúng chuyện này: bật mà quên token thì
+   script vẫn được chèn và lặng lẽ không ghi được lượt nào.
+
+**Token này công khai.** Nó nằm nguyên văn trong HTML mọi trang, ai xem mã nguồn
+cũng thấy — nên để trong repo là đúng chỗ. Đây là chỗ **khác hẳn** `GEMINI_KEY`:
+khoá ấy không bao giờ được rời khỏi Cloudflare (xem `docs/QUOTE.md`).
+
+> Cloudflare cũng có nút tự chèn đoạn mã này từ dashboard. Đừng dùng cả hai —
+> hai đoạn beacon trên một trang thì mỗi lượt xem đếm thành hai.
+
+### 9.3 · Đoán trước trang kế — đã bật sẵn
+
+Mỗi trang có một khối `speculationrules`: trình duyệt tải sẵn trang mà người đọc
+có vẻ sắp bấm, nên bấm xong trang hiện gần như tức thì.
+
+Hai lựa chọn có chủ đích trong đó:
+
+- **`prefetch`, không phải `prerender`.** prerender dựng hẳn trang trong nền,
+  tức là CHẠY script của trang đó — kể cả beacon đếm lượt xem. Thành ra mỗi link
+  người đọc rê chuột qua đều bị tính một lượt, và số liệu thành rác. prefetch
+  chỉ tải file về nằm sẵn.
+- **`eagerness: moderate`.** Đoán khi người đọc rê chuột vào link, không đoán mọi
+  link trong tầm nhìn. Trên trang danh sách 12 bài thì `eager` nghĩa là tải 12
+  trang cho một lượt đọc — tốn 4G của người ta để tiết kiệm 200ms của mình.
+
+Tắt bằng `"doanTruoc": false` trong `site.config.json`. Trình duyệt chưa hỗ trợ
+thì bỏ qua khối này, không lỗi gì.
+
+Cloudflare có tính năng **Speed Brain** làm việc tương tự ở phía máy chủ. Bật cả
+hai không hỏng gì, nhưng cũng không nhanh gấp đôi — chọn một.
+
+### 9.4 · Tốc độ: trang này đã có sẵn những gì
+
+| | Đã có |
+|---|---|
+| HTML tĩnh, không dựng lại khi có người vào | ✓ |
+| Không framework, không dependency | ✓ CSS ~57 KB, JS chia nhỏ theo trang |
+| Chú thích CSS cắt khi xuất bản | ✓ 91 KB → 57 KB |
+| Ảnh nén lại không mất chất lượng | ✓ `npm run nen` |
+| Ảnh khoá sẵn tỉ lệ, chữ không nhảy khi ảnh về | ✓ có phép kiểm canh |
+| Cache một năm cho ảnh | ✓ `_headers` |
+| Font hệ thống làm lớp dự phòng ngay | ✓ |
+
+Việc chưa làm: **gắn vân tay nội dung vào tên tệp CSS/JS**, để cache chúng dài
+như ảnh. Xem §8.3.

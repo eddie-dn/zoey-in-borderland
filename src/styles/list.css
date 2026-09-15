@@ -111,24 +111,86 @@
   margin-inline:calc(50% - 50vw);     /* tràn hết bề ngang màn hình */
 }
 
-/* ── CHỮ KHỔNG LỒ ──
-   Nằm dưới mọi thứ, bị khung cắt cả hai đầu. Đây là thứ cho trang chiều sâu
-   mà không cần một tấm ảnh nào.
+/* ── KHỐI CHỮ LỚN ──
+   NÓ LÀ MỘT Ô CỦA LƯỚI, không phải một lớp phủ lên cả màn.
 
-   `user-select:none` + aria-hidden: nó là ĐỒ HOẠ, không phải chữ để đọc. Thiếu
-   hai thứ này thì bôi đen cả trang sẽ dính một chữ Z vô nghĩa, và trình đọc
-   màn hình đọc to nó lên. */
-.hero-chu-lon{
-  position:absolute;
-  left:48%;top:46%;translate:-50% -50%;
+   Bản trước đặt `position:absolute; inset:0` lên cả khung hero, nên chữ Z bị xén
+   ở MÉP CỬA SỔ. Sai chỗ: mép cửa sổ không phải một đường nét của trang, nó chỉ
+   là chỗ màn hình hết. Xén ở đó trông như chữ bị tràn ra ngoài chứ không như
+   chữ được đặt vào khuôn.
+
+   Nay khối chữ chiếm đúng ô lưới thứ hai, cùng ô với cột giữa. Hai đường kẻ dọc
+   của lưới thành hai lưỡi dao: chữ đầu chạm và bị xén ở đường kẻ TRÁI, từ cuối
+   chạy khỏi đường kẻ PHẢI. Đó mới là bố cục — chữ bị chính cấu trúc của trang
+   cắt, chứ không phải bị cửa sổ cắt.
+
+   Cỡ chữ dùng `cqw` (phần trăm bề ngang CỦA Ô) chứ không dùng `vw`: ô này rộng
+   khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo khổ màn. Lấy vw thì trên màn
+   rộng chữ phình ra quá ô, trên màn hẹp lại teo.
+
+   RÊ CHUỘT vào khung thì cả khối co lại và tên hiện đủ trong ô; rời chuột thì
+   về lại khối bị xén. Màn cảm ứng lấy luôn trạng thái hiện đủ — không có chuột
+   thì không bao giờ rê được. */
+.hero-danh{
+  grid-column:2;grid-row:1;
+  position:relative;overflow:hidden;min-width:0;
+  container-type:inline-size;
+  margin:0;z-index:0;pointer-events:none;user-select:none;
   font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:min(46vw,58vh);line-height:.78;
-  color:var(--text);opacity:.045;
-  user-select:none;pointer-events:none;z-index:0;
-}
-:root[data-theme="dark"] .hero-chu-lon,
-:root:not([data-theme="light"]) .hero-chu-lon{opacity:.07}
+  line-height:.78;letter-spacing:-.03em;
+  color:var(--text);opacity:.17;
 
+  --s1:62cqw;  --x1:-2%;  --y1:-14%;
+  --s2:9cqw;   --x2:46%;  --y2:33%;
+  --s3:24cqw;  --x3:4%;   --y3:46%;
+  --nhip:.62s cubic-bezier(.22,.61,.36,1);
+  transition:opacity var(--nhip);
+}
+:root[data-theme="dark"] .hero-danh,
+:root:not([data-theme="light"]) .hero-danh{opacity:.22}
+
+.hd-hang{
+  position:absolute;display:block;white-space:nowrap;
+  transition:font-size var(--nhip),left var(--nhip),top var(--nhip),
+             opacity var(--nhip);
+}
+.hd-hang--1{font-size:var(--s1);left:var(--x1);top:var(--y1)}
+.hd-hang--2{font-size:var(--s2);left:var(--x2);top:var(--y2);opacity:.62}
+.hd-hang--3{font-size:var(--s3);left:var(--x3);top:var(--y3)}
+
+/* Giấu phần còn lại của từ đầu bằng letter-spacing ÂM, không bằng width:0 hay
+   max-width: hai cái kia phải biết trước bề rộng chữ (đổi theo font và theo cỡ),
+   còn overflow:hidden thì xén mất phần vươn của chữ nghiêng. */
+.hd-con{
+  display:inline-block;opacity:0;letter-spacing:-.58em;
+  transition:opacity var(--nhip),letter-spacing var(--nhip);
+}
+
+.hero:hover .hero-danh,
+.hero:focus-within .hero-danh{
+  opacity:.96;
+  --s1:20cqw;  --x1:5%;   --y1:19%;
+  --s2:8cqw;   --x2:11%;  --y2:44%;
+  --s3:13cqw;  --x3:13%;  --y3:54%;
+}
+.hero:hover .hd-con,
+.hero:focus-within .hd-con{opacity:1;letter-spacing:-.03em}
+.hero:hover .hd-hang--2,
+.hero:focus-within .hd-hang--2{opacity:.8}
+
+@media (hover:none) and (min-width:1001px){
+  .hero-danh{
+    opacity:.96;
+    --s1:20cqw;  --x1:5%;   --y1:19%;
+    --s2:8cqw;   --x2:11%;  --y2:44%;
+    --s3:13cqw;  --x3:13%;  --y3:54%;
+  }
+  .hd-con{opacity:1;letter-spacing:-.03em}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .hero-danh,.hd-hang,.hd-con{transition:none}
+}
 /* ── ẢNH HERO (tuỳ chọn) ──
    Nằm GIỮA chữ khổng lồ và nội dung: đè lên chữ, nhưng chữ tiêu đề vẫn nằm
    trên nó. Đúng thứ tự lớp của mấy trang catalogue — nhân vật che một phần
@@ -178,10 +240,50 @@
 
 /* BẤT ĐỐI XỨNG — ba khối neo ba tầng khác nhau. Cùng canh giữa cả ba thì lại
    ra một hàng ngay ngắn, và mất hẳn cái nhịp của trang. */
-.hero-cot--trai{justify-content:flex-end;gap:var(--s5)}
-.hero-cot--giua{justify-content:center;gap:var(--s5);align-items:flex-start}
-.hero-cot--phai{justify-content:flex-start;gap:var(--s5)}
+/* Bốn thứ trong lưới nhận vị trí RÕ RÀNG, không để lưới tự xếp: khối chữ lớn
+   nằm CHUNG ô với cột giữa, mà tự xếp thì nó chiếm mất một ô và đẩy cột giữa
+   sang ô thứ ba. Thứ tự trong HTML chỉ còn quyết định lớp vẽ — khối chữ viết
+   trước nên nằm dưới chữ của cột. */
+.hero-cot--trai{grid-column:1;grid-row:1;justify-content:flex-end;gap:var(--s5)}
+/* Cột giữa neo ĐÁY, không neo giữa. Neo giữa thì nhãn + khối số + nút READ ON
+   nằm đúng chỗ dòng "Borderland" chạy qua lúc rê chuột — nút bị chữ khổng lồ
+   đè lên, đọc không ra. Đẩy xuống đáy vừa tránh va, vừa đặt nút cuộn-xuống vào
+   đúng chỗ người ta quen tìm nó. */
+.hero-cot--giua{grid-column:2;grid-row:1;justify-content:flex-end;gap:var(--s5);align-items:flex-start}
+.hero-cot--phai{grid-column:3;grid-row:1;justify-content:flex-start;gap:var(--s5)}
 
+/* ── CỬA VÀO TRANG GIỚI THIỆU ──
+   Một dòng, đúng kiểu nhãn 9px như mọi nhãn khác ở màn đầu. Bản trước dựng hẳn
+   một khối ba dòng có viền trái — nhưng màn đầu đã có khối chữ lớn làm trọng
+   tâm rồi, thêm một khối nữa là hai thứ tranh nhau. */
+.hero-hoso{
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;
+  color:var(--text-muted);text-decoration:none;
+  transition:color var(--dur-fast);
+}
+.hero-hoso:hover,.hero-hoso:focus-visible{color:var(--accent-ink);outline:none}
+/* ── TRÍCH DẪN MỖI NGÀY Ở MÀN ĐẦU ──
+   Cùng một ô với trang giới thiệu cũ, chỉ thu nhỏ cho vừa cột. Không dựng lại
+   một ô riêng: hai ô cùng công dụng mà khác mã là hai chỗ phải sửa mỗi lần. */
+.hero-quote{
+  padding:var(--s5) var(--s5) var(--s6);
+  border-radius:var(--r-md);
+  /* CHỈ VIỀN, KHÔNG NỀN. Bản đầu lấy luôn nền kính pastel của ô số — hỏng hai
+     đường: màn đầu có đúng MỘT mảng đặc để mắt đậu (khối số bài), thêm mảng
+     thứ hai là mất chỗ đậu ấy; và chữ trích dẫn màu --text nằm trên nền hồng
+     sáng thì tương phản tụt hẳn ở theme tối. */
+  background:none;
+  box-shadow:inset 0 0 0 1px var(--line);
+  gap:var(--s2);
+}
+.hero-quote .q-chu{font-size:clamp(15px,.86rem + .42vw,19px);line-height:1.38}
+.hero-quote .q-ai{font-size:12px}
+.hero-quote .q-nut{bottom:var(--s2);right:var(--s2);width:26px;height:26px}
+.hero-quote .q-nut svg{width:13px;height:13px}
+/* Màn thấp: ô trích dẫn là thứ bỏ được đầu tiên ở cột trái — cửa vào trang
+   giới thiệu thì không. */
+@media (max-height:720px){.hero-quote{display:none}}
 /* ── NHÃN NHỎ IN HOA ──
    9px giãn rộng, đặt ở MÉP panel chứ không ở giữa. Chi tiết nhỏ này là thứ
    khiến trang đọc ra là đồ hoạ chứ không phải một trang chữ. */
@@ -192,47 +294,11 @@
 }
 .hero-nhan--tren{margin-bottom:var(--s2)}
 
-/* ── KHỐI ĐẬM NEO GÓC ──
-   Mảng đặc duy nhất giữa nhiều khoảng trắng. Mắt cần một chỗ đậu. */
-.hero-khoi{
-  display:flex;align-items:baseline;gap:var(--s3);
-  align-self:flex-start;
-  padding:var(--s4) var(--s5) var(--s4) var(--s4);
-  border-radius:var(--r-md);
-  background:var(--glass-tint);
-  box-shadow:inset 0 0 0 1px var(--glass-spec),var(--glow);
-  color:var(--btn-ink);
-}
-.hero-dem{
-  font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:clamp(30px,1.5rem + 1.6vw,46px);line-height:.9;
-  font-variant-numeric:tabular-nums;
-}
-.hero-dem-nhan{
-  font-family:var(--font-label);font-size:9px;font-weight:600;
-  letter-spacing:.2em;text-transform:uppercase;opacity:.72;
-}
-.hero-nho{
-  margin:0;max-width:26ch;
-  font-size:var(--fs-sm);line-height:1.5;color:var(--text-muted);
-}
-/* Màn thấp (laptop 13", cửa sổ chia đôi): bỏ bớt thứ bỏ được thay vì để tràn.
-   Dòng mô tả là thứ đầu tiên bỏ được — nó lặp lại điều thẻ meta đã nói. */
-@media (max-height:820px){
-  .hero-nho{display:none}
-}
 @media (max-height:680px){
-  .hero-khoi{padding:var(--s3) var(--s4)}
   .hero-cot{padding-block:var(--s5)}
 }
 
 /* ── CỘT GIỮA: TÊN TRANG ── */
-.hero-ten{
-  margin:0;
-  font-size:clamp(46px,2rem + 6.4vw,132px);
-  font-style:italic;line-height:.94;letter-spacing:-.025em;
-  text-wrap:balance;
-}
 .hero-xuong{
   display:inline-flex;align-items:center;gap:var(--s3);
   margin-top:var(--s4);padding:10px var(--s5) 10px var(--s4);
@@ -324,27 +390,73 @@
 /* ── KHỔ HẸP ──
    Ba cột kẻ dọc trên màn 390px thì mỗi cột còn 120px. Xếp dọc, và đổi đường kẻ
    từ DỌC sang NGANG để cấu trúc vẫn nhìn thấy được. */
+/* ══════════ MÀN ĐẦU Ở KHỔ DỌC ══════════
+   Không phải "lưới ba cột bị bóp lại" — đó là thứ bản trước làm và nó xấu thật:
+   nút READ ON nhảy lên đầu trang vì cột giữa được xếp trước, còn khối chữ lớn
+   thì nằm mờ phía sau và đè lên chữ.
+
+   Khổ dọc là một BỐ CỤC KHÁC, đọc từ trên xuống:
+
+       tên blog (chữ lớn, đọc được, xuống thang ba bậc)
+       ─────────────────────────
+       INDEX — ba bài mới nhất
+       ─────────────────────────
+       trích dẫn hôm nay · PROFILE →
+       ─────────────────────────
+       READ ON ⌄
+
+   Đổi lưới sang flex dọc để `order` làm đúng việc của nó mà không phải gỡ từng
+   khai báo grid-column/grid-row của khổ ngang. */
 @media (max-width:1000px){
-  /* Xếp dọc thì ba khối cộng lại luôn cao hơn một màn. Cho hero GIÃN thay vì
+  /* Xếp dọc thì các khối cộng lại luôn cao hơn một màn. Cho hero GIÃN thay vì
      khoá cứng — khoá cứng ở đây là cắt mất chữ, mà cắt chữ tệ hơn nhiều so với
-     việc màn đầu dài hơn một màn trên điện thoại. Người dùng điện thoại vốn
-     đã quen cuộn. */
+     việc màn đầu dài hơn một màn trên điện thoại. Người dùng điện thoại vốn đã
+     quen cuộn. */
   .hero{height:auto;min-height:calc(100svh - var(--header-h))}
-  .hero-luoi{grid-template-columns:1fr;border-top:none}
+  .hero-luoi{display:flex;flex-direction:column;border-top:none}
   .hero-cot{
     border-left:none;border-right:none;
     border-top:1px solid var(--line);
     padding:var(--s6) var(--gutter);
   }
-  .hero-cot:last-child{border-right:none;border-bottom:1px solid var(--line)}
-  /* Trên màn hẹp, thứ tự đọc quan trọng hơn bất đối xứng: tên trang lên đầu. */
-  .hero-cot--giua{order:-1;justify-content:flex-start;padding-top:var(--s9)}
-  .hero-cot--trai{order:1}
-  .hero-cot--phai{order:0}
-  .hero-chu-lon{font-size:min(74vw,42vh);opacity:.04;top:30%}
+  .hero-cot:last-child{border-right:none}
+
+  .hero-cot--phai{order:1;justify-content:flex-start}
+  .hero-cot--trai{order:2;justify-content:flex-start;
+    flex-direction:row-reverse;align-items:flex-end;
+    justify-content:space-between;gap:var(--s5)}
+  .hero-cot--giua{order:3;justify-content:flex-start;align-items:center;
+    border-bottom:1px solid var(--line)}
+
+  /* ── TÊN BLOG Ở KHỔ DỌC ──
+     Ở đây nó THÔI làm hoa văn mờ và trở lại làm tiêu đề thật: đọc được, xuống
+     thang ba bậc. Khổ dọc không có hai đường kẻ dọc để xén chữ, nên trò xén
+     không còn nghĩa gì — giữ lại chỉ ra một vệt chữ mờ đè lên nội dung.
+
+     Ba dòng chuyển từ đặt tuyệt đối sang xếp dòng bình thường; bậc thang làm
+     bằng `margin-left` tính theo `em`, nên nó co giãn cùng cỡ chữ. */
+  .hero-danh{
+    order:0;position:static;overflow:visible;
+    container-type:normal;opacity:1;
+    padding:var(--s8) var(--gutter) var(--s7);
+  }
+  .hd-hang{position:static;display:block}
+  .hd-hang--1{font-size:clamp(44px,16vw,92px)}
+  .hd-hang--2{font-size:clamp(16px,5.4vw,30px);margin-left:1.1em;opacity:.7}
+  .hd-hang--3{font-size:clamp(29px,10.4vw,60px);margin-left:.45em}
+  .hd-con{opacity:1;letter-spacing:-.03em}
+
+  .hero-quote{flex:1;min-width:0}
   .hero-moc,.hero-tem{display:none}
 }
 
+/* Khổ rất hẹp: ô trích dẫn và cửa vào trang giới thiệu thôi nằm cạnh nhau —
+   dưới 520px thì ô trích dẫn còn chưa tới 200px và chữ vỡ thành từng từ một. */
+@media (max-width:520px){
+  .hero-cot--trai{flex-direction:column;align-items:flex-start;
+    justify-content:flex-start}
+  .hero-quote{width:100%}
+}
 /* ── TRANG CHỦ ── */
 
 .trang-chu{scroll-margin-top:var(--header-h)}

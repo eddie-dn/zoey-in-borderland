@@ -182,20 +182,34 @@ const KIEM = [
     /* `nen` chỉ nhận hai giá trị. Gõ `nen: động` (có dấu) hay `nen: true` thì
        bộ dựng lặng lẽ coi như `tinh` — trang vẫn lên, chỉ là không có nền động
        và không ai biết vì sao. */
-    ten: 'Front matter `nen` chỉ nhận tinh hoặc dong',
+    ten: 'Front matter `nen` chỉ nhận tinh hoặc dong, và đặt đúng chỗ',
     muc: 'canh',
     chay: ({ goc }) => {
-      const thu = path.join(goc, 'content', 'pages');
+      /* SOI CẢ content/, KHÔNG RIÊNG content/pages/.
+         Bản đầu chỉ soi pages, vì lúc ấy chỉ trang tĩnh mới có nền động. Nhưng
+         người viết đâu biết ranh giới đó: gõ `nen: dong` vào một bài viết là
+         việc hợp lý hoàn toàn, và nó lặng lẽ không có tác dụng gì. Phép kiểm
+         chỉ soi đúng chỗ mình đã nghĩ tới thì nó canh cho chính mình, không
+         canh cho người dùng. */
+      const thu = path.join(goc, 'content');
       if (!fs.existsSync(thu)) return [];
-      return fs.readdirSync(thu).filter((x) => x.endsWith('.md')).flatMap((x) => {
-        const raw = fs.readFileSync(path.join(thu, x), 'utf8');
+      const O_PAGES = path.join('content', 'pages');
+      return quet(thu, (x) => x.endsWith('.md')).flatMap((f) => {
+        const raw = fs.readFileSync(f, 'utf8');
         const m = raw.match(/^---\n([\s\S]*?)\n---/);
         if (!m) return [];
         const v = (m[1].match(/^nen:[ \t]*(.+)$/m) || [])[1];
         if (!v) return [];
         const g = v.trim().toLowerCase();
-        return (g === 'tinh' || g === 'dong') ? []
-          : [`content/pages/${x} — \`nen: ${v.trim()}\` không có; chỉ nhận \`tinh\` hoặc \`dong\``];
+        const ten = path.relative(goc, f);
+        if (g !== 'tinh' && g !== 'dong') {
+          return [`${ten} — \`nen: ${v.trim()}\` không có; chỉ nhận \`tinh\` hoặc \`dong\``];
+        }
+        /* Giá trị đúng nhưng đặt sai chỗ cũng là im lặng không tác dụng. */
+        if (!f.includes(O_PAGES)) {
+          return [`${ten} — \`nen\` chỉ có tác dụng ở content/pages/; ở bài viết nó bị bỏ qua`];
+        }
+        return [];
       });
     }
   },
@@ -292,21 +306,6 @@ const KIEM = [
       .filter((f) => !fs.existsSync(path.join(dist, f)))
       .map((f) => `thiếu dist/${f}`)
   },
-  {
-    ten: 'Bản nháp không lọt vào sitemap hay RSS',
-    muc: 'loi',
-    chay: ({ trang, dist }) => {
-      const sm = fs.existsSync(path.join(dist, 'sitemap.xml'))
-        ? fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8') : '';
-      const rss = fs.existsSync(path.join(dist, 'feed.xml'))
-        ? fs.readFileSync(path.join(dist, 'feed.xml'), 'utf8') : '';
-      return trang.filter((t) => t.noindex)
-        .flatMap((t) => [
-          sm.includes(t.url) ? `${t.url} là bản nháp nhưng có trong sitemap.xml` : null,
-          rss.includes(t.url) ? `${t.url} là bản nháp nhưng có trong feed.xml` : null
-        ].filter(Boolean));
-    }
-  },
 
   /* ── CSS ── */
   {
@@ -353,6 +352,73 @@ const KIEM = [
         })
         .map((x) => `src/styles/${x} không có trong bundle — thêm vào mảng ` +
                     `thuTu ở tools/build.mjs (hàm gopCSS)`);
+    }
+  },
+  {
+    /* ── MỌI FILE src/js/ PHẢI LÊN dist/assets/ VÀ PHẢI ĐỌC ĐƯỢC CÚ PHÁP ──
+       build chép JS theo một DANH SÁCH GÕ TAY. Thêm một file vào src/js/ mà
+       quên thêm tên vào danh sách thì KHÔNG có lỗi nào cả: build chạy xong,
+       trang mở được, chỉ là tính năng ấy không bao giờ chạy. Đúng hạng lỗi đã
+       vấp một lần với bundle CSS — và hạng lỗi đó chỉ lộ ra khi có người hỏi
+       'ơ sao cái này không hoạt động', tức là muộn nhất có thể.
+
+       Vế thứ hai bắt hạng lỗi khác: file có mặt nhưng gõ sai cú pháp. Trình
+       duyệt bỏ nguyên file, tính năng biến mất, và chỗ báo lỗi là console của
+       NGƯỜI ĐỌC — máy mình thì im. */
+    ten: 'Mọi file src/js/ đều lên dist/assets/ và đọc được cú pháp',
+    muc: 'loi',
+    chay: ({ goc, dist }) => {
+      const thu = path.join(goc, 'src', 'js');
+      if (!fs.existsSync(thu)) return [];
+      const ra = [];
+      for (const x of fs.readdirSync(thu).filter((n) => n.endsWith('.js'))) {
+        const ich = path.join(dist, 'assets', x);
+        if (!fs.existsSync(ich)) {
+          ra.push(`src/js/${x} không được chép sang dist/assets/ — thêm tên file ` +
+                  `vào danh sách JS trong tools/build.mjs`);
+          continue;
+        }
+        /* Soi cú pháp file NGUỒN, không soi bản đã chép: bản chép chỉ đúng
+           khi vừa build xong, mà `npm run kiem -- --nhanh` thì không build.
+           Soi bản chép trong chế độ ấy là đọc file cũ rồi báo tên file mới. */
+        const r = spawnSync(process.execPath, ['--check', path.join(thu, x)],
+                            { stdio: 'pipe' });
+        if (r.status !== 0) {
+          const dong = String(r.stderr).split('\n').find((d) => /Error/.test(d));
+          ra.push(`src/js/${x} hỏng cú pháp: ${dong || 'chạy `node --check` để xem'}`);
+        }
+      }
+      return ra;
+    }
+  },
+
+  {
+    /* ── NHÃN GIAO DIỆN GỬI QUA ATTRIBUTE PHẢI PARSE ĐƯỢC ──
+       Mấy khối JS dựng giao diện (bình luận, sổ lịch sử, tìm kiếm) nhận chữ
+       hiển thị từ HTML qua một attribute chứa JSON, thay vì gõ cứng chữ vào
+       file .js. Escape sai một dấu nháy là `JSON.parse` ném lỗi ngay dòng đầu,
+       và CẢ KHỐI giao diện đó không dựng: khung bình luận trắng trơn, không
+       báo gì, HTML thì vẫn hợp lệ nên không phép kiểm nào khác thấy.
+
+       CHỖ NÓ KHÔNG VỚI TỚI: nếu escape hỏng tới mức lọt một dấu nháy kép TRẦN
+       vào giữa attribute thì attribute bị đứt sớm, chuỗi không còn khớp khuôn
+       dưới đây và phép kiểm lặng lẽ bỏ qua. Biết để không tin nó quá mức —
+       nhưng hạng lỗi ấy thì trình duyệt cũng hỏng ngay ở tầng HTML, dễ thấy
+       hơn nhiều so với JSON sai âm thầm. */
+    ten: 'Nhãn giao diện nhúng trong attribute đều là JSON hợp lệ',
+    muc: 'loi',
+    chay: ({ trang }) => {
+      /* Giải mã thực thể HTML. `&amp;` phải làm SAU CÙNG: làm trước thì
+         `&amp;quot;` biến thành `&quot;` rồi bị giải tiếp thành dấu nháy — tự
+         mình sinh ra JSON hỏng rồi báo lỗi giả. */
+      const go = (x) => x.replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+      return trang.flatMap((t) =>
+        [...t.html.matchAll(/data-([a-z-]+)="(\{&quot;[^"]*\})"/g)]
+          .flatMap((m) => {
+            try { JSON.parse(go(m[2])); return []; }
+            catch (e) { return [`${t.url} — data-${m[1]} không parse được: ${e.message}`]; }
+          }));
     }
   },
   {
@@ -518,12 +584,25 @@ const KIEM = [
     /* Bản nháp thường là thứ riêng tư nhất trên blog cá nhân. `noindex` chỉ
        bảo Google đừng đánh chỉ mục — file vẫn nằm công khai trên máy chủ, ai
        đoán trúng đường dẫn là đọc được. Nên nó phải KHÔNG có mặt trong dist. */
-    ten: 'Bản nháp không lọt vào bản dựng',
+    ten: 'Bản nháp không lọt vào bản dựng, sitemap hay RSS',
     muc: 'loi',
-    chay: ({ trang }) => trang
-      .filter((t) => t.noindex)
-      .map((t) => `${t.url} là bản nháp nhưng vẫn có file trong dist/ — ` +
-                  `chạy \`npm run build\` (không kèm --nhap) để dựng bản sạch`)
+    chay: ({ trang, dist }) => {
+      /* TRƯỚC ĐÂY LÀ HAI PHÉP KIỂM. Cái thứ hai soi sitemap.xml và feed.xml.
+         Nó không bao giờ chạy được: sitemap và feed dựng ra TỪ CHÍNH danh sách
+         trang trong dist, nên nháp chỉ lọt vào sitemap khi nó đã lọt vào dist —
+         mà lúc đó phép kiểm này đã báo đỏ rồi. Hai dòng xanh cho một việc là tự
+         dối mình. Gộp lại, và khi báo thì nói luôn nháp đang lộ ở những đâu. */
+      const doc = (f) => fs.existsSync(path.join(dist, f))
+        ? fs.readFileSync(path.join(dist, f), 'utf8') : '';
+      const sm = doc('sitemap.xml'), rss = doc('feed.xml');
+      return trang.filter((t) => t.noindex).map((t) => {
+        const them = [sm.includes(t.url) && 'sitemap.xml',
+                      rss.includes(t.url) && 'feed.xml'].filter(Boolean);
+        return `${t.url} là bản nháp nhưng vẫn có file trong dist/` +
+               (them.length ? ` — lọt cả vào ${them.join(' + ')}` : '') +
+               ` — chạy \`npm run build\` (không kèm --nhap) để dựng bản sạch`;
+      });
+    }
   },
 
   /* ── SEO ── */
@@ -547,13 +626,16 @@ const KIEM = [
     })
   },
   {
-    ten: 'Khối dữ liệu có cấu trúc (JSON-LD) đọc được',
+    /* Soi luôn khối `speculationrules`: nó cũng là JSON trong thẻ script, cũng
+       hỏng lặng lẽ (trình duyệt bỏ qua khối sai cú pháp mà không báo gì), và
+       hậu quả cũng là một tính năng biến mất không dấu vết. */
+    ten: 'Khối JSON trong thẻ script đọc được (JSON-LD · speculation rules)',
     muc: 'loi',
     chay: ({ trang }) => trang.flatMap((t) =>
-      [...t.html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      [...t.html.matchAll(/<script type="(?:application\/ld\+json|speculationrules)">([\s\S]*?)<\/script>/g)]
         .flatMap((m) => {
           try { JSON.parse(m[1]); return []; }
-          catch (e) { return [`${t.url} — JSON-LD hỏng cú pháp: ${e.message}`]; }
+          catch (e) { return [`${t.url} — khối JSON hỏng cú pháp: ${e.message}`]; }
         }))
   },
   {
@@ -594,6 +676,56 @@ const KIEM = [
     }
   },
 
+  {
+    /* ── ĐUÔI BẢN VÁ CHỈ CHẠY 00..09 ──
+       Quy ước Vxx.yy có đúng hai chữ số mỗi vế, và vế sau dừng ở 09. Bộ ghi sổ
+       bản đầu không có cái chặn ấy nên cứ cộng dồn: sổ đã đi tới V1.14 rồi mới
+       có người nhận ra. Sửa tay thì lần sau lặp lại y hệt, nên luật phải có chỗ
+       canh. Phép kiểm này canh CẢ SỔ, không riêng dòng mới — dòng cũ sai thì
+       cái tem ở chân trang cũng sai theo.
+
+       Kiểm luôn cột `#`: theo quy ước nó bằng đúng số bản vá của dòng đó. Lệch
+       là có người sửa bảng bằng tay. */
+    ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const so = docSo(goc);
+      if (so.loi || !so.ban.length) return [];
+      const ra = [];
+      for (const b of so.ban) {
+        if (b.va > 9) {
+          ra.push(`${b.ten} — đuôi bản vá chỉ chạy 00..09; sau V${b.build}.09 là ` +
+                  `V${b.build + 1}.00, không phải ${b.ten}`);
+        }
+        if (/^\d+$/.test(b.so) && +b.so !== b.va) {
+          ra.push(`${b.ten} — cột # ghi ${b.so} nhưng đuôi là ${String(b.va).padStart(2, '0')}`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* Bật đo lượt xem mà quên dán token thì KHÔNG có lỗi nào cả: script vẫn
+       được chèn, vẫn tải về, và lặng lẽ không ghi được lượt nào. Chủ trang chỉ
+       phát hiện ra sau vài tuần khi mở bảng thống kê và thấy số 0. */
+    ten: 'Bật đo lượt xem thì phải có token',
+    muc: 'loi',
+    chay: ({ cau, trang }) => {
+      const c = cau.phanTich || {};
+      const ra = [];
+      if (c.bat && !String(c.token || '').trim()) {
+        ra.push('site.config.json: phanTich.bat = true nhưng token rỗng — ' +
+                'lấy token ở Cloudflare Dashboard → Web Analytics → Add a site');
+      }
+      /* Bật thật thì script phải có mặt trên MỌI trang, không riêng trang chủ. */
+      if (c.bat && String(c.token || '').trim()) {
+        const thieu = trang.filter((t) => !t.html.includes('data-cf-beacon'));
+        if (thieu.length) ra.push(`${thieu.length} trang không có mã đo lượt xem, ` +
+                                  `ví dụ ${thieu[0].url}`);
+      }
+      return ra;
+    }
+  },
   /* ── Thân bài ── */
   {
     /* Soi CẢ TRANG, không chỉ trong <article>. Bản đầu cắt lấy đoạn giữa

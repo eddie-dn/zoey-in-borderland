@@ -8,7 +8,7 @@ summary: Ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ 
 
 # ─────────── KHUNG BENTO đọc mấy field dưới đây ───────────
 # Muốn sửa chữ trên trang About thì sửa NGAY Ở ĐÂY, không phải sửa mã.
-# Xem docs/HUONG-DAN-DANG-BAI.md §7 để biết field nào hiện ra chỗ nào.
+# Xem docs/HUONG-DAN-DANG-BAI.md §6 để biết field nào hiện ra chỗ nào.
 
 # Câu mở. Một hoặc hai câu, đừng dài hơn.
 gioiThieu: Mình viết ở đây những thứ chưa kịp nghĩ xong — sách đọc dở, chuyện nghe được, vài ý loanh quanh về cách con người tự hiểu mình.

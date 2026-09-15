@@ -11,10 +11,14 @@
 > npm run ver -- --lon "dựng trang tag"          # mở một build mới → V1.03 thành V2.00
 > ```
 >
+> **Đuôi bản vá chỉ chạy 00 → 09.** Không có `V1.10`. Chạm `V1.09` rồi thì bản
+> kế tự mở build mới thành `V2.00` — `npm run ver` lo việc đó, không phải nhớ gõ
+> `--lon`. Bộ kiểm định có một phép kiểm canh luật này.
+>
 > **Quy ước cột `#`** (giữ nguyên từ design system cũ): mỗi dòng là **MỘT BUILD
 > LỚN**, không phải một bản vá. Cột `#` là **số bản vá ghi lại được trong build
-> đó** — `V1.03` nghĩa là 04 bản. Không biết thì ghi `thiếu info` và **giữ nguyên
-> số build**.
+> đó** — `V1.03` nghĩa là 04 bản, và nó luôn bằng đúng hai chữ số sau dấu chấm.
+> Không biết thì ghi `thiếu info` và **giữ nguyên số build**.
 >
 > Cột **Sửa chính** chỉ ghi **loại việc**, không ghi tên biến, tên endpoint, hay
 > đường dẫn nội bộ — sổ này người đọc blog mở ra xem được.
@@ -23,6 +27,14 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.07 | 2026-09-15 | 07 | khối chữ lớn xén theo đường kẻ lưới · dựng lại bố cục khổ dọc |
+| V2.06 | 2026-09-15 | 06 | đo lượt xem không cookie · đoán trước trang kế |
+| V2.05 | 2026-09-15 | 05 | luật số phiên bản: đuôi chỉ chạy 00 đến 09 |
+| V2.04 | 2026-09-15 | 04 | khối chữ lớn ở màn đầu · cửa vào trang giới thiệu · trích dẫn chuyển ra trang chủ |
+| V2.03 | 2026-09-15 | 03 | soát lại toàn bộ tài liệu · viết mục hệ sinh thái Cloudflare · hướng dẫn nhập bài cũ |
+| V2.02 | 2026-09-15 | 02 | rà lại bộ kiểm định · gộp phép kiểm trùng · thêm phép kiểm cho JS và nhãn giao diện |
+| V2.01 | 2026-09-15 | 01 | phóng to nền thiên hà cho cân khung |
+| V2.00 | 2026-09-15 | 00 | nhập bài cũ từ bản xuất WordPress |
 | V1.09 | 2026-09-15 | 09 | trang chủ hai màn · nền động · quầng sáng theme tối · sửa tương phản chữ mờ |
 | V1.08 | 2026-09-15 | 08 | nhẹ đi 63% · nén ảnh · cắt chú thích CSS khi dựng · dọn nhãn và cấu hình chết |
 | V1.07 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
@@ -33,12 +45,135 @@
 | V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
 | V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
 | V1.00 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
-| V0.10 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
+| V0.00 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
 
 <!-- BANG-KET-THUC -->
 
 ---
 
+## V2.07 — 15-Sep-2026
+
+- **Chữ lớn bị đường kẻ của lưới xén, không phải bị mép cửa sổ xén.** Bản trước
+  phủ khối chữ lên cả màn nên chữ Z bị cắt ở mép cửa sổ — mà mép cửa sổ không
+  phải một đường nét của trang, nó chỉ là chỗ màn hình hết. Xén ở đó trông như
+  chữ tràn ra ngoài chứ không như chữ được đặt vào khuôn. Nay khối chữ chiếm
+  đúng một ô của lưới: chữ đầu chạm và bị xén ở đường kẻ trái, từ cuối chạy
+  khỏi đường kẻ phải.
+
+- **Khổ dọc dựng lại hẳn.** Trước là lưới ba cột bị bóp lại, và nó xấu thật:
+  nút cuộn-xuống nhảy lên đầu trang, còn tên blog nằm mờ phía sau đè lên chữ.
+  Nay là một bố cục riêng, đọc từ trên xuống: tên blog cỡ lớn đọc được, rồi ba
+  bài mới nhất, rồi trích dẫn và lối sang trang giới thiệu, rồi nút cuộn xuống.
+
+- **Bớt hai thứ ở màn đầu.** Ô đếm số bài đặc màu ở cột giữa bỏ hẳn, và cửa vào
+  trang giới thiệu rút còn một dòng. Màn đầu chỉ nên có MỘT thứ có khối lượng;
+  hai thứ thì chúng tranh nhau và không thứ nào thắng.
+
+## V2.06 — 15-Sep-2026
+
+- **Đo lượt xem, không đặt cookie.** Cloudflare Web Analytics, khai một dòng
+  trong file cấu hình, **mặc định tắt**. Không cookie nghĩa là không phải dựng
+  banner xin phép — mà banner ấy là thứ đầu tiên người đọc gặp, và nó nói rằng
+  trang này đang lấy gì đó của họ. Nó đo luôn tốc độ thật của người đọc chứ
+  không phải điểm giả lập trên máy mình.
+
+- **Đoán trước trang kế.** Trình duyệt tải sẵn trang mà người đọc rê chuột vào,
+  nên bấm xong hiện gần như tức thì. Chỉ TẢI trước chứ không CHẠY trước — chạy
+  trước thì mỗi link rê chuột qua đều bị tính một lượt xem và số liệu thành rác.
+
+## V2.05 — 15-Sep-2026
+
+- **Số phiên bản có luật, và có chỗ canh luật.** Đuôi bản vá chỉ chạy 00 tới 09
+  — không có V1.10. Bộ ghi sổ bản đầu không có cái chặn ấy nên cứ cộng dồn: sổ
+  đã đi tới V1.14 rồi mới có người nhận ra. Nay chạm 09 thì bản kế tự mở build
+  mới, và có một phép kiểm canh cả sổ chứ không riêng dòng mới. Năm dòng lỡ ghi
+  sai đã đánh số lại thành V2.00–V2.04.
+## V2.04 — 15-Sep-2026
+
+- **Tên blog thành khối đồ hoạ ở màn đầu.** Lúc nghỉ: chữ Z nhô lên góc trái và
+  bị viền trên cắt mất một phần, rồi "in" nhỏ đứng lệch, rồi "Borderland" tụt
+  xuống một tầng và chạy khỏi mép phải — đọc ra là một khối bị khung xén chứ
+  không phải một dòng tiêu đề. Rê chuột vào khung thì cả khối co lại, phần chữ
+  còn thiếu chạy vào, và tên hiện đủ trong khung; rời chuột thì về lại như cũ.
+  Màn cảm ứng lấy luôn trạng thái hiện đủ làm mặc định — không có chuột thì
+  không bao giờ rê được.
+
+- **Góc trái màn đầu là cửa vào trang giới thiệu.** Trước đó chỗ ấy chỉ có một
+  dòng mô tả lặp lại điều thẻ meta đã nói. Nay là tên người viết và một lối đi
+  sang trang giới thiệu — thứ người lạ muốn biết sau câu "trang này là gì".
+
+- **Trích dẫn mỗi ngày chuyển từ trang giới thiệu ra màn đầu.** Ở màn đầu nó là
+  thứ người đọc gặp đầu tiên mỗi ngày; ở trang giới thiệu nó chen vào giữa lúc
+  người ta đang đọc về chủ trang mà lại chêm lời của người khác. Ô giới thiệu
+  lấy luôn hai cột trống đó và nhận được nhiều đoạn văn, không chỉ một câu.
+## V2.03 — 15-Sep-2026
+
+- **Tài liệu thôi nói dối.** Mục "Trạng thái" trong README và mục "Việc còn
+  lại" trong sơ đồ trang vẫn viết rằng trang chủ là bản tạm và các trang
+  Posts · Tags · Search · Archive · About chưa dựng — cả năm trang ấy dựng xong
+  từ mấy bản trước. Bảng lệnh cũng thiếu ba công cụ mới. Viết lại theo hiện
+  trạng, và bỏ luôn số phiên bản khỏi README: sổ lịch sử là nguồn duy nhất,
+  nhắc lại ở chỗ thứ hai là sớm muộn cũng lệch.
+
+- **Có mục trả lời câu "nên dùng thêm gì của Cloudflare".** R2, D1, KV, Workers
+  — cái nào hợp, cái nào là lời khuyên viết cho trang động đem áp nhầm vào
+  trang tĩnh, và mốc nào thì nên đổi. Kèm chỗ dễ làm hỏng nhất: đặt cache một
+  năm cho tệp giao diện khi tên tệp chưa có vân tay nội dung — sửa giao diện
+  xong người đọc cũ vẫn thấy bản cũ suốt một năm.
+
+- **Hướng dẫn nhập bài cũ.** Cách chạy công cụ, bảng đổi trường, và ba việc
+  phải làm bằng tay sau khi nhập: tỉa tag, sinh ảnh bìa, khai tiêu đề ngắn cho
+  bài tiêu đề dài.
+## V2.02 — 15-Sep-2026
+
+- **Bỏ một phép kiểm không bao giờ chạy được.** Có hai phép kiểm canh bản
+  nháp: một soi thư mục xuất bản, một soi sitemap và RSS. Cái thứ hai vô
+  dụng — sitemap dựng ra từ chính danh sách trang trong thư mục xuất bản, nên
+  nháp chỉ lọt vào sitemap khi nó đã lọt vào bản dựng, mà lúc đó cái thứ nhất
+  đã báo đỏ rồi. Hai dòng xanh cho một việc là tự dối mình. Gộp làm một.
+
+- **Thêm hai phép kiểm cho hạng lỗi không bao giờ kêu.** Mọi file JavaScript
+  phải thật sự lên bản dựng và phải đọc được cú pháp — trước đây quên đăng ký
+  một file là tính năng đó lặng lẽ không chạy, y hệt lần vấp với bộ CSS. Và
+  mọi nhãn giao diện nhúng trong HTML phải là JSON hợp lệ — sai một dấu nháy
+  là cả khung bình luận trắng trơn mà không báo gì.
+
+- **Phép kiểm nền động soi cả bài viết.** Trước chỉ soi trang tĩnh, nên gõ
+  `nen: dong` vào một bài viết là nó im lặng không có tác dụng. Phép kiểm chỉ
+  soi đúng chỗ mình đã nghĩ tới thì nó canh cho chính mình, không canh cho
+  người dùng.
+
+- **Tiêu đề dài có đường thoát.** Bài nào khai tiêu đề ngắn thì thẻ tiêu đề
+  gửi cho Google dùng bản ngắn, còn tiêu đề in trên trang vẫn nguyên vẹn.
+  Bốn phép kiểm mới đều đã thử cắm lỗi vào để xem nó có bắt thật không.
+## V2.01 — 15-Sep-2026
+
+- **Thiên hà to bằng khung.** Đĩa ngân hà ở theme tối trước đây lấy cỡ theo
+  cạnh NGẮN của màn. Đĩa lại bị ép dẹt còn một phần ba chiều cao, nên cạnh
+  ngắn chưa bao giờ là thứ chạm mép trước — kết quả là trên màn ngang nó co
+  lại thành một cái huy hiệu nhỏ dán ở góc. Giờ cỡ đĩa đo theo chiều ngang và
+  đường kính hơi tràn mép, nên nhánh xoắn chạy ra khỏi khung; số sao cũng tăng
+  theo để nhánh không bị thủng lỗ chỗ. Quầng lõi chỉ nhỉnh lên một chút —
+  phần to ra phải là nhánh xoắn, không phải cục sáng giữa màn.
+
+## V2.00 — 15-Sep-2026
+
+- **Năm bài năm 2017.** Nhập từ bản xuất WordPress của blog cũ, vào bốn mục:
+  Musings, Books, Food, Tarot. Thân bài giữ nguyên văn, kể cả emoji và giọng
+  văn thời ấy — sửa lại là làm giả lịch sử. Mỗi bài mang thêm nhãn `published`
+  (đã từng đăng ở nơi khác) và ngày cập nhật là ngày đưa về đây, nên trang bài
+  in cả hai mốc: viết năm 2017, dựng lại hôm nay.
+
+- **Có công cụ nhập.** `npm run nhap` đổi front matter kiểu WordPress sang
+  khuôn của blog, tự xếp bài vào thư mục chuyên mục và tự lập tên hiển thị cho
+  chuyên mục mới. Sửa tay năm bài thì nhanh hơn viết công cụ, nhưng bản xuất
+  WordPress thường có hàng trăm bài, và công cụ làm sai thì sai đều — sửa một
+  chỗ là xong.
+
+- **Tag thì tỉa, chữ thì không.** Tag WordPress 2017 là kiểu rải từ khoá cho
+  máy tìm kiếm: một bài có tới bốn tag cho cùng một ý. Ở đây mỗi tag sinh một
+  trang, nên giữ nguyên là được mười bốn trang mỗi trang đúng một bài. Tag là
+  đường đi nên tỉa còn bốn–năm; thân bài là chữ của người viết nên không đụng.
 ## V1.09 — 15-Sep-2026
 
 - **Trang chủ hai màn.** Màn đầu cao trọn màn hình: tên trang cỡ lớn và 1–3 bài
@@ -216,7 +351,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Thêm hai công cụ.** `npm run ver` ghi sổ phiên bản; `npm run kiem` chạy bộ
   kiểm định trước khi đăng.
 
-## V0.10 — 14-Sep-2026
+## V0.00 — 14-Sep-2026
 
 - Dựng hạ tầng blog tĩnh, không framework và không dependency.
 - Design system kế thừa bảng màu Sakura và Galaxy; khung đọc bài có ba làn cho

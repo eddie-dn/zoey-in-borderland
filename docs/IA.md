@@ -186,25 +186,29 @@ Phiên bản **không** khai ở đây. Nguồn duy nhất là dòng đầu bả
 
 ## 6 · VIỆC CÒN LẠI
 
-Lượt này dựng **khung sườn**: design system, khung đọc bài, bộ dựng, bảng kiểm,
-tài liệu. Trang chủ hiện tại là **bản tạm** có chủ đích.
+Mục này từng là bảng kê mười việc của lượt dựng khung sườn. Gần hết đã làm —
+giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay bằng hiện trạng.
 
-Dữ liệu cho phần còn lại đã sinh sẵn rồi, nên mỗi việc dưới đây chỉ là viết thêm
-một template và một hàm trong `build.mjs`:
+### 6.0 · Đã dựng
 
-| Việc | Dựa vào cái đã có | Ước lượng |
+| Trang | Dựa vào |
+|---|---|
+| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra danh sách | `trangChu()` |
+| `/posts/` và `/posts/<mục>/` | `congKhai` + `_muc.json` |
+| `/tags/` và `/tags/<tag>/` | `tags.json` |
+| `/search/` — tìm ngay trên máy người đọc, không gọi máy chủ | `search-index.json` + trường `kd` |
+| `/archive/` gom theo năm | `congKhai` |
+| `/about/` khung bento | `content/pages/` |
+| Ảnh chia sẻ mặc định `og.png` | bài không có `cover` thì rơi về ảnh này |
+
+### 6.0b · Chưa làm
+
+| Việc | Vì sao chưa | Ước lượng |
 |---|---|---|
-| `/posts/` danh sách + phân trang | mảng `congKhai` trong `build.mjs` | nhỏ |
-| `/posts/<mục>/` trang chuyên mục | `_muc.json` + trường `muc` của mỗi bài | nhỏ |
-| `/tags/` và `/tags/<tag>/` | `tags.json` | nhỏ |
-| `/search/` | `search-index.json` + trường `kd` | vừa |
-| `/archive/` | gom `congKhai` theo năm | nhỏ |
-| `/about/` và `content/pages/` | dùng lại `docBai()`, bỏ phần chuyên mục | nhỏ |
-| Trang chủ thật | thay `trangChuTam()` | vừa |
-| Menu trượt cho màn hẹp | nav hiện đang ẩn dưới 640px | nhỏ |
-| `og.png` mặc định | ảnh tĩnh, hoặc sinh theo bài | vừa |
-| Trang 404 | template riêng | nhỏ |
-
+| **Trang 404** | Cloudflare Pages trả trang mặc định của nó; chưa xấu tới mức phải sửa | nhỏ |
+| **Menu trượt cho màn hẹp** | dưới 640px nav giấu chữ, chỉ còn brand + nút tìm + nút theme. Bốn mục thì tạm được; thêm mục thứ năm là phải làm | nhỏ |
+| **Tên miền thật** | `site.config.json` còn để `.pages.dev`; đổi trước khi công bố, không thì canonical, ảnh chia sẻ và sitemap đều trỏ sai | nhỏ |
+| **Vân tay nội dung cho tên file CSS/JS** | tên file chưa có vân tay nên không cache dài được; xem `docs/DUA-LEN-MANG.md` §8 | vừa |
 ### 6.1 · Bình luận — đã có (V1.01)
 
 Google Apps Script làm máy chủ, Google Sheet làm chỗ lưu. Không tốn tiền, không
@@ -221,7 +225,9 @@ ra khỏi Sheet** (hàm `doGet` không đọc cột email).
 
 ### 6.2 · Cố ý chưa làm
 
-- **Đo lượt xem.** Chưa gắn gì. Khi cần thì chọn loại không đặt cookie
-  (Plausible, GoatCounter) — một dòng `<script>` trong `shell.html` là xong.
-  Gắn rồi thì gợi ý "đọc tiếp" xếp hạng được theo lượt đọc: cộng thêm một số
+- **Đo lượt xem.** Đã có chỗ cắm: Cloudflare Web Analytics, khai ở
+  `site.config.json` → `phanTich`. **Mặc định TẮT** — bật hay không là quyết
+  định của chủ trang, không phải mặc định của bộ dựng. Nó không đặt cookie nên
+  không phải dựng banner xin phép. Cách bật: `docs/DUA-LEN-MANG.md` §9.
+  Bật rồi thì gợi ý "đọc tiếp" xếp hạng được theo lượt đọc: cộng thêm một số
   hạng vào hàm `goiY()` trong `build.mjs`, phần còn lại không phải sửa.

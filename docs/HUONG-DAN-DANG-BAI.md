@@ -364,7 +364,7 @@ thường.
 | Field | Hiện ở đâu trên trang |
 |---|---|
 | `title` | tiêu đề lớn trong ô giới thiệu |
-| `gioiThieu` | câu mở, ngay dưới tiêu đề |
+| `gioiThieu` | câu mở, ngay dưới tiêu đề. Viết một dòng, hoặc một danh sách gạch đầu dòng — mỗi gạch là một đoạn |
 | `anh` · `anhAlt` | ô ảnh chân dung bên trái |
 | `viTri` | ô số `BASED IN` |
 | `tuNam` | ô số `WRITING SINCE` |
@@ -405,9 +405,11 @@ anhAlt: Ảnh chân dung
 Bỏ ảnh vào `public/media/`, đường dẫn tính **từ `public/`** (nên bắt đầu bằng
 `/media/`).
 
-Có ảnh thì hàng đầu của lưới chia ba: ảnh 2 cột · giới thiệu 2 cột · trích dẫn
-2 cột. **Xoá hai dòng đó đi** thì lưới tự về khuôn cũ — giới thiệu 4 cột ·
-trích dẫn 2 cột. Cả hai đường đều kín lưới, không để lỗ hổng.
+Có ảnh thì hàng đầu chia hai: ảnh 2 cột · giới thiệu 4 cột. Không có ảnh thì
+ô giới thiệu chiếm trọn 6 cột. Cả hai đường đều kín lưới, không để lỗ hổng.
+
+(Ô trích dẫn mỗi ngày từng nằm ở hàng này, chiếm hai cột bên phải. Nó đã
+chuyển ra màn đầu trang chủ — xem `docs/DESIGN-SYSTEM.md` §16.3.)
 
 Ảnh dọc hay ngang đều được: nó phủ kín ô bằng `object-fit:cover`, không kéo
 giãn, không để băng trống. Ảnh chân dung thì căn ở 38% chiều cao chứ không phải
@@ -443,11 +445,68 @@ Nhớ thêm vào `nav` trong `site.config.json` nếu muốn nó lên thanh menu
 
 ---
 
-## 7 · TRA NHANH
+## 7 · NHẬP BÀI CŨ TỪ BLOG KHÁC
+
+Có bản xuất WordPress (hoặc bất kỳ `.md` nào có front matter khác)?
+
+```bash
+npm run nhap -- bai-1.md bai-2.md      # vài file
+npm run nhap -- ~/wordpress-export/    # cả thư mục
+```
+
+Nó đổi những thứ này:
+
+| Bản xuất WordPress | Thành |
+|---|---|
+| `date: "2017-04-04 12:43:26"` | `date: 2017-04-04` |
+| `categories: ["Review Sách"]` | thư mục `content/posts/review-sach/`, tự lập `_muc.json` |
+| `status: "publish"` | tag `published` |
+| (không có) | `updated:` = ngày đưa về đây |
+| `# Tiêu đề` trùng front matter | bỏ — bộ dựng đã in tiêu đề rồi, để lại là trang có hai thẻ `h1` |
+| `original_url`, `source`, `author` | bỏ |
+
+**Thân bài giữ nguyên văn**, kể cả lỗi chính tả và emoji. Bài cũ là bài cũ;
+sửa lại là làm giả lịch sử.
+
+### 7.1 · Ba việc phải làm bằng tay sau khi nhập
+
+**Tỉa tag.** Tag WordPress là kiểu rải từ khoá cho máy tìm kiếm — một bài có
+thể mang mười bốn tag, trong đó bốn cái cùng một ý. Ở đây **mỗi tag sinh một
+trang**, nên giữ nguyên là được mười bốn trang mỗi trang đúng một bài, và trang
+`/tags/` loãng hẳn. Tỉa còn bốn–năm cái thật sự gom được bài với nhau.
+
+**Sinh ảnh bìa.**
+
+```bash
+npm run bia -- --tat-ca      # mọi bài đang thiếu ảnh bìa
+npm run bia -- <slug>        # một bài
+```
+
+Ảnh sinh ra từ chính tiêu đề nên cùng một tiêu đề luôn ra cùng một ảnh. Công cụ
+in sẵn hai dòng `cover:` và `coverAlt:` để dán vào front matter — **phải dán
+vào**, nó không tự sửa file bài.
+
+**Tiêu đề quá dài.** Google cắt tiêu đề ở khoảng 60 ký tự, mà phần bị cắt là
+phần đuôi — tức tên blog. Bài nào tiêu đề dài thì khai thêm:
+
+```yaml
+titleNgan: Tarot for Dummies — 10 điều ai cũng nhầm
+```
+
+`titleNgan` dùng cho hai chỗ: dòng tiêu đề một hàng ở màn đầu trang chủ, và
+thẻ tiêu đề gửi cho Google khi tiêu đề đầy đủ quá dài. Tiêu đề in trên chính
+trang bài thì **luôn giữ nguyên bản đầy đủ**.
+
+---
+
+## 8 · TRA NHANH
 
 ```bash
 npm run new "Tên bài" <chuyên-mục>    # tạo bài mới
+npm run nhap -- <file.md ...>          # nhập bài cũ từ bản xuất WordPress
 npm run anh <slug-bài>                 # đưa ảnh từ _anh/ vào bài
+npm run bia -- --tat-ca                # sinh ảnh bìa cho mọi bài còn thiếu
+npm run nen                            # nén lại mọi PNG, không mất chất lượng
 npm run dev                            # xem thử, tự tải lại
 npm run check                          # kiểm file .md nguồn
 npm run kiem                           # KIỂM ĐỊNH dist/ trước khi đăng

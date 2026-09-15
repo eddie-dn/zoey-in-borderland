@@ -642,6 +642,33 @@ nen: tinh     # tắt (mặc định)
 
 **Trang chủ** luôn bật, không khai gì cả.
 
+`nen` **chỉ có tác dụng ở `content/pages/`**. Gõ vào một bài viết thì nó bị bỏ
+qua — bộ kiểm định bắt trường hợp này và báo cảnh báo.
+
+### 12.2 · Cỡ đĩa thiên hà
+
+Đĩa bị ép dẹt còn 0.34 chiều cao, nên **chiều dọc không bao giờ là cạnh chạm
+mép trước**. Lấy cỡ theo `min(W,H)` là trói đĩa vào chiều cao: trên màn ngang
+nó co lại thành một cái huy hiệu nhỏ nằm lọt thỏm giữa khung.
+
+Luật đang dùng:
+
+```js
+R = Math.min(W * 0.52, H * 0.92)   // bán kính đĩa
+Rl = R * 0.46                      // quầng lõi, bám theo R
+```
+
+- **0.52** cho đường kính ngang hơi tràn mép — thiên hà phải chạy **ra khỏi**
+  khung mới ra dáng thiên hà; nằm gọn trong khung thì thành cái huy hiệu.
+- **H \* 0.92** là cái *chặn* cho khung ngang-mà-thấp (1600×500): không có nó
+  thì cả màn chỉ còn thấy mỗi quầng lõi.
+- Quầng lõi bám theo `R` chứ không theo màn: đĩa to mà lõi giữ nguyên thì thành
+  cái đèn pin giữa đám bụi. Hệ số thấp để phần to ra là **nhánh xoắn**, không
+  phải cục sáng.
+- Số sao đếm theo diện tích **màn**, không theo diện tích đĩa — cái mắt người
+  thấy là bao nhiêu chấm trên mỗi vùng màn hình. Nhưng đĩa to ra thì trần phải
+  nới theo, không thì nhánh xoắn trông thủng lỗ chỗ.
+
 Mặc định là `tinh`. Bật ở mọi trang thì nó hết là điểm nhấn, và trang đọc bài
 cần yên để đọc.
 
@@ -721,16 +748,88 @@ Khuôn tạp chí / catalogue triển lãm, không phải khuôn "header blog". 
 làm nên nó — thiếu thứ nào là nó xẹp về một khối chữ căn giữa:
 
 1. **Lưới có đường kẻ nhìn thấy được.** Ba cột, hairline giữa các cột. Mắt đọc
-   ra ngay là trang này có cấu trúc.
-2. **Một chữ khổng lồ bị khung cắt.** Chữ đầu của tên trang, cỡ 46vw, mờ 4.5%,
-   nằm dưới mọi thứ. Đây là thứ cho trang chiều sâu mà không cần ảnh.
-3. **Bất đối xứng.** Cột trái neo đáy, cột giữa neo giữa, cột phải neo đỉnh.
-   Cả ba cùng canh giữa thì lại ra một hàng ngay ngắn và vô vị.
-4. **Một khối đậm neo góc** — ô chỉ số bài. Mảng đặc duy nhất giữa nhiều
-   khoảng trắng; mắt cần một chỗ đậu.
+   ra ngay là trang này có cấu trúc — và hai đường kẻ dọc ấy còn làm việc thứ
+   hai, xem điểm 2.
+2. **Tên trang thành khối chữ bị ĐƯỜNG KẺ LƯỚI xén.** Không phải một dòng tiêu
+   đề, và cũng không phải một lớp phủ bị mép cửa sổ cắt — xem §16.2.
+3. **Bất đối xứng.** Cột trái và cột giữa neo đáy, cột phải neo đỉnh. Cả ba
+   cùng canh giữa thì ra một hàng ngay ngắn và vô vị.
+4. **Khoảng trống là vật liệu.** Màn đầu cố ý để trống nhiều: khối chữ lớn là
+   thứ duy nhất có khối lượng, mọi thứ khác là nhãn nhỏ nép ở mép. Từng có một
+   ô đếm số bài đặc màu ở cột giữa — bỏ đi, vì hai thứ có khối lượng thì chúng
+   tranh nhau và không thứ nào thắng.
 5. **Nhãn 9px in hoa giãn rộng đặt ở mép panel**, không ở giữa.
 6. **Dấu + làm mốc căn**, như dấu chồng màu của nhà in.
 
+### 16.2 · Khối chữ lớn: hai trạng thái
+
+Tên trang tách làm ba mảnh — chữ đầu, từ giữa, từ cuối — mỗi mảnh là một ô đặt
+tuyệt đối, có cỡ chữ và toạ độ riêng cho từng trạng thái.
+
+**Khối chữ là MỘT Ô CỦA LƯỚI**, chiếm chung ô thứ hai với cột giữa. Đây là chỗ
+bản đầu làm sai: nó phủ `position:absolute; inset:0` lên cả khung hero, nên chữ
+bị xén ở *mép cửa sổ*. Mép cửa sổ không phải một đường nét của trang, nó chỉ là
+chỗ màn hình hết — xén ở đó trông như chữ tràn ra ngoài chứ không như chữ được
+đặt vào khuôn. Nay hai đường kẻ dọc của lưới thành hai lưỡi dao: chữ đầu chạm và
+bị xén ở đường kẻ **trái**, từ cuối chạy khỏi đường kẻ **phải**.
+
+Cỡ chữ vì thế dùng `cqw` (phần trăm bề ngang **của ô**), không dùng `vw`: ô này
+rộng khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo khổ màn.
+
+| | Lúc nghỉ | Lúc rê chuột |
+|---|---|---|
+| chữ đầu | nhô lên góc trái, viền trên xén mất một phần | co lại, nằm gọn trong khung |
+| phần còn lại của từ đầu | giấu bằng `letter-spacing` âm | chạy vào, hiện đủ |
+| từ giữa | nhỏ, đứng lệch | lớn theo, thẳng hàng |
+| từ cuối | tụt xuống một tầng, chạy khỏi mép phải | tụt xuống một tầng, nằm trong khung |
+| độ mờ | 16% (sáng) · 20% (tối) | 96% |
+
+**Ba chỗ quyết định cách viết:**
+
+- **Mỗi mảnh một ô tuyệt đối.** Xếp ba mảnh trên một dòng rồi để trình duyệt tự
+  dồn thì lúc hiện đủ, từ giữa phải nằm ngay sau từ đầu — mà bề rộng từ đầu thì
+  CSS không biết, nó đổi theo font và theo cỡ.
+- **Giấu chữ bằng `letter-spacing` âm, không bằng `width:0`.** Hai cái kia phải
+  biết trước bề rộng chữ; `overflow:hidden` thì xén mất phần vươn của chữ
+  nghiêng. `letter-spacing` âm co chỗ lại mà không cắt gì, và animate được.
+- **Màn cảm ứng lấy trạng thái hiện đủ làm mặc định.** Không có chuột thì không
+  bao giờ rê được — để nguyên thì người dùng điện thoại không đời nào thấy tên
+  blog hiện đủ.
+
+Bàn phím cũng mở được: `.hero:focus-within` dùng chung bộ số với `:hover`.
+
+### 16.3 · Cột trái
+
+Một dòng `PROFILE →` dẫn sang trang giới thiệu, và ô trích dẫn mỗi ngày. Cả hai
+đều nhẹ: ô trích dẫn **chỉ có viền, không có nền**, còn cửa vào chỉ là một nhãn
+9px như mọi nhãn khác. Màn đầu đã có khối chữ lớn làm trọng tâm — thêm một khối
+có khối lượng nữa là hai thứ tranh nhau.
+
+Màn cao dưới 720px thì ô trích dẫn ẩn đi; cửa vào trang giới thiệu thì không.
+
+### 16.4 · Khổ dọc là một bố cục khác, không phải lưới bị bóp
+
+Ép lưới ba cột xuống khổ dọc thì được đúng thứ xấu: nút cuộn-xuống nhảy lên đầu
+trang vì cột giữa xếp trước, còn khối chữ lớn nằm mờ phía sau và đè lên chữ.
+
+Khổ dọc đọc từ trên xuống:
+
+```
+tên blog — chữ lớn, ĐỌC ĐƯỢC, xuống thang ba bậc
+──────────────────────────
+INDEX — ba bài mới nhất
+──────────────────────────
+PROFILE →  ·  trích dẫn hôm nay
+──────────────────────────
+READ ON ⌄
+```
+
+Ở đây khối chữ **thôi làm hoa văn mờ** và trở lại làm tiêu đề thật: khổ dọc
+không có hai đường kẻ dọc để xén chữ, nên trò xén không còn nghĩa gì. Bậc thang
+làm bằng `margin-left` tính theo `em` nên nó co giãn cùng cỡ chữ.
+
+Lưới đổi sang flex dọc ở khổ này, để `order` làm đúng việc của nó mà không phải
+gỡ từng khai báo `grid-column`/`grid-row` của khổ ngang.
 ### 16.1 · Ảnh hero — tuỳ chọn
 
 ```json

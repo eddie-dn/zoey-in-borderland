@@ -4,6 +4,8 @@
 
    Chạy:
      npm run ver -- "chỉnh hệ chữ · nền kính"     thêm bản vá  V1.00 → V1.01
+                                                  (đuôi chỉ chạy 00..09; chạm 09
+                                                   thì bản kế tự mở build mới)
      npm run ver -- --lon "dựng trang tag"         mở build mới V1.03 → V2.00
      npm run ver                                   chỉ xem bản hiện tại
 
@@ -63,7 +65,8 @@ const kq = ghiSo(GOC, suaChinh, { lon });
 console.log(`
   ${mau.xanh('✓ Đã ghi sổ')}   ${mau.dam(kq.ten)}  ${mau.mo(temNgay(kq.ngay))}
     ${kq.suaChinh}
-  ${mau.mo(kq.lon ? 'build mới' : `bản vá thứ ${kq.va} của build ${kq.build}`)}
+  ${mau.mo(kq.tuCuon ? `build mới — bản vá của build ${kq.build - 1} đã chạm 09`
+           : kq.lon ? 'build mới' : `bản vá thứ ${kq.va} của build ${kq.build}`)}
 
   ${mau.mo('Đừng quên viết mấy dòng tóm tắt cho bản này ở phần dưới docs/LICH-SU.md')}
   ${mau.mo('— tối đa 3–4 gạch đầu dòng, ghi cái người đọc thấy khác, không phải tên file.')}

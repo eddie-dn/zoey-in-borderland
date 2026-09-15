@@ -137,6 +137,8 @@ const NHAN = {
   archive     : 'Archive',
   latest      : 'Latest',
   index       : 'Index',
+  profile     : 'Profile',
+  aboutMe     : 'About me',
   pinned      : 'Pinned',
   more        : 'More writing',
   noPosts     : 'Nothing here yet.',
@@ -353,6 +355,10 @@ function docBai(file) {
        ở dấu phẩy đầu tiên — tiêu đề tiếng Việt hay có dạng "Vế chính, vế phụ",
        nên vế trước dấu phẩy gần như luôn là phần cốt lõi. */
     titleNgan  : String(fm.titleNgan || String(fm.title).split(/\s*[,—–]\s*/)[0]),
+    /* `<title>` chỉ được phép đổi sang bản ngắn khi tác giả TỰ KHAI titleNgan.
+       Bản suy ra tự động (cắt ở dấu phẩy) không đủ tin để đem đi làm tiêu đề
+       trên Google: cắt máy móc có khi rụng đúng phần nói bài này về cái gì. */
+    titleNganKhai: !!fm.titleNgan,
     slug,
     date       : ngayISO(fm.date),
     updated    : fm.updated ? ngayISO(fm.updated) : null,
@@ -423,7 +429,13 @@ function docTrang(file) {
        Mặc định `tinh` — nền động ở MỌI trang thì nó hết là điểm nhấn, và
        trang đọc bài cần yên để đọc. Xem docs/DESIGN-SYSTEM.md §12. */
     nen        : String(fm.nen || 'tinh').trim().toLowerCase(),
-    gioiThieu  : String(fm.gioiThieu || ''),
+    /* `gioiThieu` nhận HAI dạng: một dòng như cũ, hoặc một danh sách gạch đầu
+       dòng — mỗi gạch là một đoạn. Từ lúc ô trích dẫn rời khỏi khung bento, ô
+       giới thiệu rộng trọn sáu cột, và một câu thì trông trống trải. */
+    gioiThieu  : String(Array.isArray(fm.gioiThieu)
+                   ? fm.gioiThieu.join(' ') : (fm.gioiThieu || '')),
+    gioiThieuDoan: (Array.isArray(fm.gioiThieu) ? fm.gioiThieu : [fm.gioiThieu])
+                   .map((x) => String(x || '').trim()).filter(Boolean),
     viTri      : String(fm.viTri || ''),
     tuNam      : String(fm.tuNam || ''),
     nghe       : String(fm.nghe || ''),
@@ -544,7 +556,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
       ].map(([h, t, co]) => co ? `<a href="${BASE}${h}">${t}</a>`
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
-    scripts,
+    scripts: scripts + doanTruocHTML() + beaconHTML(),
     headExtra,
     year      : new Date().getFullYear(),
     buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
@@ -553,6 +565,47 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
   }));
 }
 
+/* ── ĐO LƯỢT XEM ──
+   Cloudflare Web Analytics. Chọn nó thay vì Google Analytics vì ba lẽ:
+   không đặt cookie (nên không phải dựng banner xin phép), không theo dấu người
+   đọc sang trang khác, và nó đo luôn Core Web Vitals THẬT của người đọc chứ
+   không phải điểm giả lập trên máy mình.
+
+   Token nằm trong site.config.json chứ không phải biến môi trường, và đó là
+   ĐÚNG: nó hiện nguyên văn trong HTML mọi trang, giấu đi cũng vô nghĩa. Đây là
+   chỗ khác hẳn GEMINI_KEY — khoá ấy không bao giờ được rời khỏi Cloudflare.
+
+   Đây là script NGOÀI DUY NHẤT của cả trang, và nó tắt sẵn: bật hay không là
+   quyết định của chủ trang, không phải mặc định của bộ dựng. */
+function beaconHTML() {
+  const c = CAU.phanTich || {};
+  if (!c.bat || !String(c.token || '').trim()) return '';
+  return `\n<script defer src="https://static.cloudflareinsights.com/beacon.min.js"` +
+         ` data-cf-beacon='{"token":"${attr(String(c.token).trim())}"}'></script>`;
+}
+
+/* ── ĐOÁN TRƯỚC TRANG KẾ ──
+   Luật speculation rules: trình duyệt tải sẵn trang mà người đọc có vẻ sắp bấm.
+
+   `prefetch` CHỨ KHÔNG `prerender`. prerender dựng hẳn trang trong nền, tức là
+   CHẠY script của trang đó — kể cả beacon đếm lượt xem. Thành ra mỗi link người
+   đọc rê chuột qua đều bị tính một lượt xem, và số liệu thành rác. prefetch chỉ
+   tải file về nằm sẵn, không chạy gì.
+
+   `eagerness: moderate` = đoán khi người đọc rê chuột vào link, không phải đoán
+   mọi link trong tầm nhìn. Trên trang danh sách 12 bài thì `eager` nghĩa là tải
+   12 trang cho một lượt đọc — tốn 4G của người ta để tiết kiệm 200ms của mình.
+
+   Trình duyệt chưa hỗ trợ thì bỏ qua khối này, không lỗi gì. */
+function doanTruocHTML() {
+  if (CAU.doanTruoc === false) return '';
+  return `\n<script type="speculationrules">` +
+    JSON.stringify({ prefetch: [{ source: 'document',
+      where: { and: [{ href_matches: `${BASE}/*` },
+                     { not: { href_matches: `${BASE}/*.*` } }] },
+      eagerness: 'moderate' }] }).replace(/<\//g, '<\\/') +
+    `</script>`;
+}
 function tocHTML(headings) {
   /* Dưới 2 mục thì mục lục chỉ tổ chiếm chỗ — bài ngắn không cần bản đồ. */
   if (headings.length < 2) return '';
@@ -779,7 +832,13 @@ function trangBai(bai, congKhai) {
   });
 
   return trang({
-    title      : `${bai.title} · ${CAU.title}`,
+    /* Google cắt tiêu đề ở khoảng 60 ký tự, và phần bị cắt là phần ĐUÔI —
+       tức tên blog. Tiêu đề dài mà tác giả có khai bản ngắn thì dùng bản ngắn
+       cho thẻ <title>; <h1> trên trang vẫn giữ nguyên tiêu đề đầy đủ. */
+    title      : (bai.titleNganKhai &&
+                  `${bai.title} · ${CAU.title}`.length > 65)
+                   ? `${bai.titleNgan} · ${CAU.title}`
+                   : `${bai.title} · ${CAU.title}`,
     ogTitle    : bai.title,
     description: bai.summary,
     canonical  : `${CAU.url}${bai.url}`,
@@ -902,10 +961,14 @@ function khungBento(t, soBai, soTag) {
   o.push(`<div class="bo bo--intro card">
     <div class="eyebrow"><i></i></div>
     <h1>${noiChu(escapeHtml(t.title))}</h1>
-    ${t.gioiThieu ? `<p class="bo-lead">${escapeHtml(t.gioiThieu)}</p>` : ''}
+    ${t.gioiThieuDoan.map((d) => `<p class="bo-lead">${escapeHtml(d)}</p>`).join('')}
   </div>`);
 
-  o.push(oQuote('bo bo--quote'));
+  /* Ô trích dẫn từng nằm ở đây, chiếm hai cột bên phải hàng đầu. Chuyển ra màn
+     đầu trang chủ: ở đó nó là thứ người đọc gặp đầu tiên mỗi ngày, còn ở trang
+     giới thiệu nó chen giữa phần tự giới thiệu và mấy ô số — đúng chỗ người ta
+     đang đọc về CHỦ TRANG thì lại chêm lời của người khác. Ô giới thiệu lấy
+     luôn hai cột đó. */
 
   const soLieu = [
     t.viTri && { nhan: NHAN.based, chu: t.viTri },
@@ -1039,7 +1102,8 @@ function trangTinh(t, soBai, soTag) {
     lang       : t.lang,
     duong      : t.url.replace(BASE, ''),
     content    : dienMau(MAU_PAGE, { khung: t.khung, than }),
-    scripts    : `<script src="${BASE}/assets/reveal.js" defer></script>` +
+    scripts    : `<script src="${BASE}/assets/quote.js" defer></script>\n` +
+                 `<script src="${BASE}/assets/reveal.js" defer></script>` +
                  (t.nen === 'dong' ? `\n<script src="${BASE}/assets/nen.js" defer></script>` : '') +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
@@ -1250,25 +1314,32 @@ function trangChu(bai) {
        6. DẤU + LÀM MỐC CĂN, như dấu chồng màu của nhà in.
 
      Căn theo MÉP KHUNG, không căn giữa một cột chữ. */
+  /* KHỐI CHỮ LỚN TÁCH RA TỪ TIÊU ĐỀ, không gõ cứng "Zoey"/"in"/"Borderland":
+     đổi tên blog trong cấu hình thì khối này phải đổi theo, không thì trang chủ
+     mang một cái tên khác với mọi chỗ còn lại mà không ai báo. */
+  const tuDe   = CAU.title.trim().split(/\s+/);
+  const tuDau  = tuDe[0] || 'Z';
+  const tuCuoi = tuDe.length > 1 ? tuDe[tuDe.length - 1] : '';
+  const tuGiua = tuDe.slice(1, -1).join(' ');
+
   const hero = `
 <section class="hero" data-nen>
-  <span class="hero-chu-lon" aria-hidden="true">${escapeHtml(CAU.title.trim()[0] || 'Z')}</span>
   ${heroAnhHTML()}
 
   <div class="hero-luoi">
 
     <div class="hero-cot hero-cot--trai">
-      <p class="hero-nhan">${escapeHtml(CAU.tagline)}</p>
-      <div class="hero-khoi">
-        <span class="hero-dem">${bai.length}</span>
-        <span class="hero-dem-nhan">${NHAN.posts}</span>
-      </div>
-      <p class="hero-nho">${escapeHtml(tomTat(CAU.description, 62))}</p>
+      <a class="hero-hoso" href="${BASE}/about/">${escapeHtml(NHAN.profile)} →</a>
+      ${oQuote('hero-quote')}
     </div>
 
+    <h1 class="hero-danh" aria-label="${attr(CAU.title)}">
+      <span class="hd-hang hd-hang--1" aria-hidden="true"><span class="hd-dau">${escapeHtml(tuDau[0])}</span><span class="hd-con">${escapeHtml(tuDau.slice(1))}</span></span>
+      ${tuGiua ? `<span class="hd-hang hd-hang--2" aria-hidden="true">${escapeHtml(tuGiua)}</span>` : ''}
+      ${tuCuoi ? `<span class="hd-hang hd-hang--3" aria-hidden="true">${escapeHtml(tuCuoi)}</span>` : ''}
+    </h1>
+
     <div class="hero-cot hero-cot--giua">
-      <p class="hero-nhan hero-nhan--tren">${escapeHtml(NHAN.latest)}</p>
-      <h1 class="hero-ten">${escapeHtml(CAU.title)}</h1>
       <a class="hero-xuong" href="#doc-tiep">
         <span>${escapeHtml(NHAN.readOn)}</span>
         <i aria-hidden="true"></i>
@@ -1312,7 +1383,8 @@ function trangChu(bai) {
         { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` }
       ]
     })}</script>`,
-    scripts: `<script src="${BASE}/assets/nen.js" defer></script>` +
+    scripts: `<script src="${BASE}/assets/nen.js" defer></script>\n` +
+      `<script src="${BASE}/assets/quote.js" defer></script>` +
       ((CAU.baoVeChu || {}).bat === false ? ''
         : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
     content: hero + `
@@ -1655,7 +1727,8 @@ async function chay() {
     chep(THU_MUC.public, THU_MUC.dist);
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
-                     'copy-guard.js', 'reveal.js', 'so-tay.js', 'search.js', 'nen.js']) {
+                     'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
+                     'nen.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }

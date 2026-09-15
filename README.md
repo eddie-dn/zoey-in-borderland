@@ -4,7 +4,10 @@ Blog cá nhân. Static site, **không framework, không dependency** — chỉ c
 
 ```bash
 npm run new "Tên bài"   # tạo bài mới
+npm run nhap -- <file>  # nhập bài cũ từ bản xuất WordPress
 npm run anh <slug-bài>  # đưa ảnh từ _anh/ vào đúng thư mục của bài
+npm run bia -- <slug>   # sinh ảnh bìa từ tiêu đề (--tat-ca cho mọi bài thiếu)
+npm run nen             # nén lại mọi PNG, không mất chất lượng
 npm run dev             # xem thử ở http://localhost:4321, tự tải lại khi lưu
 npm run check           # kiểm file .md nguồn
 npm run kiem            # kiểm định dist/ — chạy trước khi đăng
@@ -106,28 +109,31 @@ dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 25 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
-link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt RSS, thẻ meta thiếu.
+**Bộ kiểm định 32 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt vào bản dựng, thẻ meta thiếu,
+file CSS/JS quên đăng ký, hàm dùng thứ Cloudflare Workers không có. Mỗi phép
+kiểm đều phải cắm lỗi vào thử xem nó có bắt thật không trước khi tính là xong.
 
 ---
 
 ## Trạng thái
 
-V1.01 thêm: xếp lại đầu bài, tag xuống chân bài, gợi ý đọc tiếp, khung bình
-luận, công cụ đưa ảnh vào bài, chữ giao diện tiếng Anh.
+Bản hiện tại: xem tem `Vxx.yy` ở chân mọi trang, hoặc dòng đầu bảng trong
+`docs/LICH-SU.md` — đó là nguồn duy nhất, mục này không nhắc lại số.
 
-V1.00: hệ chữ đo lại bằng số liệu thật, bộ liquid glass, sổ phiên bản, bộ kiểm
-định trước khi đăng.
+**Đã dựng xong:** trang chủ hai màn (màn đầu cao trọn màn hình, cuộn xuống ra
+danh sách), `/posts/` với thư mục con theo chuyên mục, `/tags/`, `/archive/`,
+`/search/` tìm ngay trên máy người đọc, `/about/` khung bento.
 
-Nền tảng (V0.10): design system, khung đọc bài, bộ dựng Markdown, bảng kiểm,
-tài liệu, hai bài mẫu.
+**Chạy trên máy chủ:** một hàm duy nhất, `/api/quote`, lấy câu trích dẫn mỗi
+ngày. Bình luận đi qua Google Apps Script. Ngoài hai thứ đó, trang là file
+tĩnh thuần.
 
-Trang chủ hiện tại là **bản tạm**. Các trang `/posts/`, `/tags/`, `/search/`,
-`/archive/`, `/about/` chưa dựng — dữ liệu cho chúng đã sinh sẵn
-(`search-index.json`, `tags.json`). Danh sách việc còn lại: `docs/IA.md` §6.
+**Còn treo:** `site.config.json` vẫn để địa chỉ `.pages.dev` — đổi sang tên
+miền thật trước khi công bố, không thì thẻ canonical, ảnh chia sẻ và sitemap
+đều trỏ sai. Danh sách việc còn lại: `docs/IA.md` §6.
 
 ---
-
 ## Đưa lên mạng
 
 `dist/` là thư mục tĩnh thuần, đâu nhận file tĩnh cũng chạy.
