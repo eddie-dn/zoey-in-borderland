@@ -100,8 +100,25 @@ content/posts/tam-ly/2026-09-14-vo-thuc.md
 ```
 
 Cùng lượt đó build còn sinh: `search-index.json`, `tags.json`, `feed.xml`,
-`sitemap.xml`, `robots.txt`, `version.json`, và gộp **6** file CSS thành một
-`assets/style.css`.
+`sitemap.xml`, `robots.txt`, `version.json`, `so-tay.json`, và gộp **8** file
+CSS thành một `assets/style.css`.
+
+**Trước khi ghi ra `dist/`, CSS và JS đều bị cắt hết chú thích.** Chú thích
+trong `src/` là chủ ý — chúng ghi lại vì sao từng chỗ viết như vậy — nhưng
+người đọc blog không cần chúng mà vẫn phải tải về. Đo trên bản thật: CSS
+91 → 57 KB, JS 135 → 77 KB (52 → 23 KB sau brotli). Bản trong `src/` không
+đổi một chữ.
+
+> Cắt chú thích của JS khó hơn của CSS: dấu `/` trong JS vừa là phép chia,
+> vừa mở chú thích, vừa mở một mẫu tìm kiếm. `boChuThichJS` phải đọc từng ký
+> tự, và bộ dựng còn thử **dịch lại** bản đã cắt trước khi ghi — hỏng thì gửi
+> nguyên bản gốc và kêu lên. `npm run kiem` soi lại lần nữa trên chính file
+> nằm trong `dist/`.
+
+**`so-tay.json` là sổ phiên bản, để RIÊNG chứ không nhúng vào trang.** Nó nặng
+77 KB; nhúng vào mọi trang thì một trang bài 9 KB phình thành 100 KB và cả bản
+dựng lặp lại 3,5 MB — tất cả để phục vụ một cửa hậu phải bấm năm nhịp mới mở.
+Nay `so-tay.js` xin về đúng lúc mở.
 
 > **Danh sách file CSS phải phủ hết `src/styles/`.** Thiếu một file thì không
 > có lỗi nào cả — trang vẫn dựng, chỉ là một mảng giao diện lặng lẽ biến mất.

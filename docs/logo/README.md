@@ -102,12 +102,45 @@ tâm khung làm gốc: hai cánh sao mandala xoay bằng thuộc tính `rotate(4
 tất cả thì mấy cánh ấy bị dời tâm hai lần, và hiện ra thành một vòng vô cực
 thừa nằm lệch hẳn ra ngoài bông hoa.
 
-Các bước:
+### Ba file làm việc đó
 
-1. `npm run build && npm run dev`
-2. Mở trang chủ, mở bảng điều khiển của trình duyệt
-3. Chạy bộ trích (nó dừng hoạt hình ở từng mốc rồi ghi ra từng file)
-4. Chạy bộ dựng file động (gộp markup với phần CSS của logo)
+| File | Chạy ở đâu | Làm gì |
+|---|---|---|
+| `trich-logo.js` | bảng điều khiển của **trình duyệt** | dừng hoạt hình ở từng mốc, đọc trạng thái thật, tải từng khung về máy |
+| `dung-logo-dong.mjs` | `node` | gộp markup trong `dist/index.html` với đúng phần CSS của logo → `logo-dong.svg` |
+| `dung-lat-cat.mjs` | `node` | xếp 25 khung đã trích thành một tấm lưới 5×5 → `lat-cat.svg` |
+
+### Các bước
+
+```bash
+npm run build && npm run dev
+```
+
+1. Mở trang chủ, mở bảng điều khiển của trình duyệt.
+2. Dán trọn `trich-logo.js` vào rồi Enter. Nó tải mười hai file `.svg` về thư
+   mục Tải về — lần đầu trình duyệt sẽ hỏi có cho tải nhiều file không, bấm
+   cho. Chép chúng đè lên `docs/logo/`.
+3. Dựng file động:
+   ```bash
+   node docs/logo/dung-logo-dong.mjs
+   ```
+4. **Tấm lát cắt** cần 25 khung chứ không phải 12. Trước khi dán bộ trích,
+   khai mốc riêng:
+   ```js
+   window.__KHUNG = Array.from({length: 25}, (_, i) =>
+     [i * 4, 'f' + String(i * 4).padStart(2, '0') + '.svg', 'mốc ' + (i * 4) + '%']);
+   ```
+   Chép 25 file ấy vào `docs/logo/_khung/` rồi:
+   ```bash
+   node docs/logo/dung-lat-cat.mjs
+   ```
+   `_khung/` là thư mục tạm, đã nằm trong `.gitignore`.
+
+> **Bộ trích KHÔNG ghi thẳng vào đĩa, và cố ý vậy.** Bản đầu POST từng khung về
+> một đường `/__luu` của máy chủ dev — mà máy chủ ấy không có đường đó, nên mỗi
+> khung lặng lẽ nhận 404, bảng kết quả vẫn in đủ mười hai dòng, còn trên đĩa
+> không có gì. Mở cho trang web ghi thẳng vào đĩa là mở một cửa không đáng mở,
+> chỉ để phục vụ một việc vài tháng làm một lần.
 
 Giữ nguyên mười hai mốc phần trăm ở bảng trên thì bộ ảnh mới so sánh được với
 bộ cũ.

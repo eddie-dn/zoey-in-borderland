@@ -2,6 +2,29 @@
    Chạy trong trình duyệt, trên một trang có <svg class="logo--dong">. */
 (async function () {
   const CK = 27;
+
+  /* ── LƯU BẰNG CHÍNH TRÌNH DUYỆT ──
+     Bản đầu POST từng khung về `/__luu` của máy chủ dev. Nhưng máy chủ ấy
+     (tools/dev.mjs) KHÔNG có đường đó — nó chỉ phục vụ file tĩnh. Nên mỗi khung
+     lặng lẽ nhận 404, hàm vẫn chạy tiếp, bảng kết quả vẫn in ra đủ mười hai
+     dòng, mà trên đĩa không có file nào. Sai kiểu tệ nhất: nhìn thì như xong.
+
+     Không thêm đường ghi file vào máy chủ dev để chữa: mở cho trang web ghi
+     thẳng vào đĩa là mở một cửa không đáng mở, chỉ để phục vụ một việc vài
+     tháng làm một lần. Trình duyệt tải file về là đủ — file rơi vào thư mục
+     Tải về, chép sang docs/logo/ là xong.
+
+     Lần chạy đầu trình duyệt sẽ hỏi có cho tải nhiều file không. Bấm cho. */
+  function luu(ten, noiDung) {
+    const b = new Blob([noiDung], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = ten;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
   const svg = document.querySelector('svg.logo--dong');
   svg.pauseAnimations();
 
@@ -147,9 +170,7 @@
       .replace(/><(?!\/)/g, '>\n  <')
       .replace(/rgb\((\d+), (\d+), (\d+)\)/g, (m, r, g, b) =>
         '#' + [r, g, b].map((x) => (+x).toString(16).padStart(2, '0')).join(''));
-    await fetch('/__luu', { method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ten, noiDung: chu, thuMuc: window.__thuMuc }) });
+    luu(ten, chu);
     return { ten, pct, byte: chu.length };
   }
 

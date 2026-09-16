@@ -462,12 +462,14 @@ tử tràn cũng không kéo cả trang trượt theo.
 | `layout.css` | header, chân trang, cột bài + mục lục | style của thân bài |
 | `components.css` | nút, chip, thẻ, huy hiệu, tooltip | khung đọc bài |
 | `glass.css` | vật liệu kính + hai nhịp chuyển động | màu (đọc từ tokens) · bố cục |
+| `list.css` | trang danh sách, màn đầu, thẻ bài, ghi chú, chia trang | khung đọc bài |
 | `prose.css` | **toàn bộ khung đọc bài** | mọi thứ ngoài `<article>` |
+| `about.css` | riêng trang About — khung bento | mọi trang khác |
 
 Build gộp thành `dist/assets/style.css` theo thứ tự:
 
 ```
-tokens → base → glass → layout → components → prose
+tokens → base → glass → layout → components → list → prose → about
 ```
 
 Thứ tự này không đổi được:

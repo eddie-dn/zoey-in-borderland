@@ -1,11 +1,16 @@
 /* Dựng một file SVG ĐỘNG đứng một mình từ chính logo đang chạy trên trang:
    lấy markup trong HTML đã dựng, gói kèm đúng mấy luật CSS của logo, rồi ghi
-   ra `_anh/logo/logo-dong.svg`. Mở bằng trình duyệt là nó tự kể lại vòng 27
+   ra `docs/logo/logo-dong.svg`. Mở bằng trình duyệt là nó tự kể lại vòng 27
    giây, không cần trang web nào. */
 import fs from 'node:fs';
 import path from 'node:path';
 
-const GOC = "/Users/zoey-nguyen/Desktop/HAN's/My Blog/zoey-in-borderland";
+import { fileURLToPath } from 'node:url';
+
+/* Gốc dự án suy ra từ chỗ chính file này đang nằm (docs/logo/ ⇒ lùi hai bậc).
+   Bản trước gõ cứng đường trên máy người viết — chạy ở máy khác, hay chỉ cần
+   đổi tên thư mục, là hỏng ngay. */
+const GOC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const html = fs.readFileSync(path.join(GOC, 'dist/index.html'), 'utf8');
 const css  = fs.readFileSync(path.join(GOC, 'dist/assets/style.css'), 'utf8');
 
@@ -62,7 +67,7 @@ const ra = `<?xml version="1.0" encoding="UTF-8"?>
      Mở file này bằng trình duyệt là nó tự chạy. Không cần trang web,
      không cần mạng, không cần phông chữ nào.
      Sinh ra từ chính hoạt hình đang chạy trên trang; muốn dựng lại thì xem
-     _anh/logo/README.md. -->
+     docs/logo/README.md. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="320" height="320"
      class="logo logo--dong" role="img"
      aria-label="Logo Zoey in Borderland đang kể lại quá trình dựng hình">
@@ -74,7 +79,7 @@ ${svg.trim()}
 </svg>
 `;
 
-const thuMuc = path.join(GOC, '_anh', 'logo');
+const thuMuc = path.join(GOC, 'docs', 'logo');
 fs.mkdirSync(thuMuc, { recursive: true });
 fs.writeFileSync(path.join(thuMuc, 'logo-dong.svg'), ra, 'utf8');
 console.log('logo-dong.svg  %d KB  ·  %d luật CSS',

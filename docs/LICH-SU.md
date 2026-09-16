@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.00 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
 | V7.09 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
 | V7.08 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
 | V7.07 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
@@ -98,6 +99,26 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V8.00 — 16-Sep-2026
+
+- **Một trang bài nặng 100 KB, nay còn 9 KB.** Sổ phiên bản — cái bảng mở ra khi
+  bấm năm nhịp vào dòng chữ nhỏ ở chân trang — được nhét sẵn vào MỌI trang, dù
+  chín mươi chín phần trăm người đọc không bao giờ mở nó. Nó nặng 77 KB, trong
+  khi bài dài nhất chỉ có 6 KB chữ. Nay nó nằm riêng một chỗ và chỉ được lấy về
+  đúng lúc có người mở. Cả bản dựng từ 5,6 MB xuống 2,1 MB.
+- **Ghi chú trong mã thôi đi theo người đọc.** Các file JavaScript của trang có
+  rất nhiều ghi chú, và đó là chủ ý — chúng kể lại vì sao từng chỗ viết như vậy.
+  Nhưng người đọc blog không cần chúng mà vẫn phải tải về: một nửa số byte. Nay
+  bản gửi đi được cắt sạch ghi chú, bản trong kho mã giữ nguyên từng chữ. Phần
+  JavaScript tải về giảm từ 52 KB xuống 23 KB.
+- **Bộ dựng bản lưu logo chạy được ở máy khác.** Ba file công cụ ghi cứng đường
+  dẫn trên máy người viết, nên ai tải kho mã về cũng không chạy nổi. Tệ hơn: bộ
+  trích khung gửi từng tấm về một địa chỉ không tồn tại, nhận lỗi rồi im lặng
+  bỏ qua — bảng kết quả vẫn in đủ mười hai dòng còn trên đĩa không có file nào.
+- **Hai phép kiểm mới canh đúng hai chỗ vừa sửa**, vì cả hai đều hỏng không
+  tiếng động: trang nặng trở lại thì nhìn vẫn y hệt, còn một file JavaScript bị
+  cắt hỏng thì trang vẫn hiện đủ, chỉ là bấm vào đâu cũng không có gì xảy ra.
 
 ## V7.09 — 16-Sep-2026
 

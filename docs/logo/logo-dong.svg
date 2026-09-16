@@ -3,7 +3,7 @@
      Mở file này bằng trình duyệt là nó tự chạy. Không cần trang web,
      không cần mạng, không cần phông chữ nào.
      Sinh ra từ chính hoạt hình đang chạy trên trang; muốn dựng lại thì xem
-     _anh/logo/README.md. -->
+     docs/logo/README.md. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="320" height="320"
      class="logo logo--dong" role="img"
      aria-label="Logo Zoey in Borderland đang kể lại quá trình dựng hình">

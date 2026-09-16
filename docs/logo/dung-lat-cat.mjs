@@ -4,7 +4,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const GOC = "/Users/zoey-nguyen/Desktop/HAN's/My Blog/zoey-in-borderland";
+import { fileURLToPath } from 'node:url';
+
+/* Gốc dự án suy ra từ chỗ chính file này đang nằm (docs/logo/ ⇒ lùi hai bậc).
+   Bản trước gõ cứng đường trên máy người viết — chạy ở máy khác, hay chỉ cần
+   đổi tên thư mục, là hỏng ngay. */
+const GOC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const NGUON = path.join(GOC, 'docs', 'logo', '_khung');
 
 /* Tên chặng cho mấy mốc đáng nhớ. Mốc nào không có tên thì để trống — ghi chữ
