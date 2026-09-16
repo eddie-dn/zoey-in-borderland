@@ -530,7 +530,94 @@ Quên khoá lúc chạy thì nó vẫn ghi vào file nhưng **không xoá đư�
 nó nói thẳng ra như vậy — bỏ qua dòng cảnh báo ấy thì lần dựng sau `/notes/` sẽ
 hiện ghi chú hai lần.
 
-## 7 · Bảng tra nhanh: cái gì hỏng thì mất gì
+## 7 · Đăng BÀI từ `/z-admin/` — tuỳ chọn
+
+Ghi chú ở §6 sống trong cơ sở dữ liệu và hiện ra ngay. **Bài thì khác**: nó
+được ghi thành một file `.md` trong kho mã trên GitHub, rồi Cloudflare tự dựng
+lại — khoảng một phút sau bài mới lên.
+
+Phải vòng như vậy vì một bài cần đường dẫn riêng, cần có mặt trong `feed.xml`,
+`sitemap.xml`, ô tìm kiếm và thẻ chia sẻ lên mạng xã hội. Tất cả những thứ đó
+do bộ dựng sinh ra. Bài chỉ nằm trong cơ sở dữ liệu là bài không có mặt ở chỗ
+nào trong số đó.
+
+> **Điều kiện tiên quyết:** Cloudflare phải đang dựng từ GitHub (§3, cách
+> **Connect to Git**). Nếu bạn deploy bằng `wrangler deploy` chạy tay ở máy thì
+> commit vẫn vào được GitHub nhưng **không có gì dựng lại cả**, và trang đứng
+> im không báo gì.
+
+### 7.1 · Tạo token GitHub
+
+1. GitHub → ảnh đại diện → **Settings** → cuộn xuống cuối → **Developer settings**
+2. **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
+3. Điền:
+
+| Ô | Điền gì |
+|---|---|
+| Token name | `zoey-blog-dang-bai` |
+| Expiration | chọn mốc bạn chịu được — hết hạn thì ô viết bài báo lỗi, tạo cái mới là xong |
+| Repository access | **Only select repositories** → chọn đúng kho mã của blog |
+| Permissions → Repository permissions → **Contents** | **Read and write** |
+
+**Chỉ cấp `Contents`.** Token này chỉ cần ghi file vào kho mã. Cấp thừa quyền là
+mở rộng thiệt hại cho cái ngày token lọt ra ngoài.
+
+4. **Generate token** → chép chuỗi `github_pat_…` ra ngay. GitHub chỉ cho xem
+   một lần.
+
+### 7.2 · Đặt token lên Cloudflare
+
+Cloudflare Dashboard → **Workers & Pages** → chọn dự án →
+**Settings** → **Runtime** → **Variables and Secrets** → **Add**.
+
+| Tên | Kiểu | Giá trị |
+|---|---|---|
+| `GH_TOKEN` | **Secret** | chuỗi `github_pat_…` vừa chép |
+
+> Đúng ô **Runtime**, không phải ô cùng tên trong mục **Builds**. Ô trong Builds
+> là biến lúc DỰNG, hàm chạy trên mạng không thấy nó — và triệu chứng y hệt lúc
+> chưa khai bao giờ.
+
+### 7.3 · Khai kho mã trong `wrangler.jsonc`
+
+Tên kho mã không phải bí mật, nên nó đi theo repo chứ không nằm ở dashboard —
+và vì `wrangler deploy` GỠ mọi biến không có trong file này:
+
+```jsonc
+"vars": {
+  "GH_REPO": "tai-khoan/ten-repo",
+  "GH_NHANH": "main"
+}
+```
+
+`GH_NHANH` phải là nhánh Cloudflare đang dựng. Ghi vào nhánh khác thì commit
+vào được nhưng không có gì dựng lại.
+
+### 7.4 · Dùng
+
+Mở `z-in-borderland.com/z-admin/`, gõ mã chủ và khoá ở ngăn **Note** một lần,
+rồi sang ngăn **Post**. Lưu thẳng `/z-admin/#post` vào màn hình chính điện thoại
+thì bấm một phát là vào đúng ô viết.
+
+Bấm **Đăng** xong màn hình nói ba thứ: bài sẽ nằm ở đâu, commit vừa tạo, và
+nhắc phải đợi. **Đừng bấm Đăng lần nữa** — lần hai sẽ báo trùng tên file.
+
+### 7.5 · Mấy chỗ cố ý
+
+| Chuyện | Vì sao |
+|---|---|
+| Không ghi đè bao giờ | Trùng tên file là từ chối thẳng. Đăng nhầm hai lần thì mất công đổi tiêu đề, còn hơn bài hôm qua bị đè không dấu vết. |
+| Chuyên mục phải có sẵn | Gõ nhầm `tam-li` thì tạo ra một chuyên mục mới với đúng một bài trong đó, và không ai nhận ra cho tới lúc mở trang Posts thấy hai mục na ná nhau. |
+| Tối đa 8 tag | Quá thì **báo lỗi** chứ không lặng lẽ cắt bớt. |
+| Nháy kép trong tiêu đề đổi thành nháy cong | Bộ đọc front matter không có cơ chế thoát; một dấu `"` lọt vào giữa là phần sau nó thành rác. |
+| Chưa có ảnh bìa | Bản này mới chỉ đăng được chữ. Ảnh vẫn phải qua `npm run anh` ở máy. |
+
+**Nếu file `.md` gửi lên mà hỏng front matter** thì bộ dựng dừng hẳn, Cloudflare
+giữ nguyên bản đang chạy — trang không chết, nhưng mọi bài đăng sau đó cũng
+không lên được. Hàm đã kiểm sẵn mọi thứ bộ dựng bắt buộc phải có, nên chuyện
+này không nên xảy ra; xảy ra thì xem log build trên Cloudflare.
+
+## 8 · Bảng tra nhanh: cái gì hỏng thì mất gì
 
 | Hỏng | Người đọc thấy gì |
 |---|---|
@@ -543,6 +630,10 @@ hiện ghi chú hai lần.
 | `ghiChu.online` = false, hoặc chưa gắn D1 | `/notes/` hiện đúng những ghi chú đã dựng sẵn. Không ai biết là có cửa `#viet`. |
 | Sai `GC_ID` / `GC_KEY` | Người đọc không thấy gì cả. Chủ trang mở `#viet` thì ô viết báo "Không gửi được". |
 | Tắt JavaScript | `/notes/` mất hàng nút lọc và mất những ghi chú chưa kéo về Markdown. Ghi chú dựng sẵn đọc đủ. |
+| `dangBai.bat` = false | Không có gì thay đổi với người đọc. `/z-admin/` mất ngăn Post. |
+| Chưa khai `GH_TOKEN` | Người đọc không thấy gì. Ngăn Post báo thiếu đúng tên biến. |
+| `GH_NHANH` sai nhánh | Bài vào được kho mã nhưng **không có gì dựng lại** — đăng xong đợi mãi không thấy bài. |
+| Token GitHub hết hạn | Ngăn Post báo GitHub từ chối. Bài vừa gõ vẫn còn nguyên trong ô. |
 | Mất mạng hoàn toàn | Cả trang vẫn đọc được, trừ bình luận. Ô trích dẫn vẫn chạy. |
 
 Đây là chủ ý xuyên suốt: **không dịch vụ bên ngoài nào được phép làm hỏng việc

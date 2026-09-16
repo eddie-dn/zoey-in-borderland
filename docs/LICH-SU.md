@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.01 | 2026-09-16 | 01 | trang quản lý gom thành ba ngăn; đăng bài thẳng từ đó; núm vặn gom về một chỗ |
 | V8.00 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
 | V7.09 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
 | V7.08 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
@@ -99,6 +100,28 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V8.01 — 16-Sep-2026
+
+- **Trang quản lý gom thành ba ngăn.** Trước đây ô viết ghi chú và hàng chờ
+  duyệt bình luận đổ chung xuống một cột dọc. Với hai khối thì còn chịu được;
+  thêm ô viết bài — vốn cao gấp mấy lần vì có cả khung soạn thảo — là thành một
+  trang cuộn mãi không hết, mà muốn duyệt một bình luận thì phải lướt qua trọn
+  một bài đang gõ dở. Nay là một cột chọn việc bên trái, nội dung bên phải, mỗi
+  lúc một ngăn. Trang cũng đổi tên thành **Admin**.
+- **Đăng bài thẳng từ trang quản lý, không cần mở máy.** Gõ tiêu đề, chọn
+  chuyên mục, viết, bấm Đăng. Bài đi vào kho mã rồi tự dựng lại — khoảng một
+  phút sau là lên sóng. Khác ghi chú ở chỗ đó, và màn hình nói thẳng ra như
+  vậy: bài cần đường dẫn riêng, cần có mặt trong RSS, trong sitemap, trong ô
+  tìm kiếm và trong thẻ chia sẻ — những thứ chỉ có được khi trang dựng lại.
+- **Mấy con số hay phải chỉnh nay nằm trong một file cấu hình**, không còn rải
+  rác trong mã: đọc tiếp mấy bài, thẻ bài hiện mấy tag, màn đầu mấy bài, RSS
+  giữ mấy bài, logo quay bao lâu và vỡ thành mấy hạt. Gõ sai thì bộ dựng kêu
+  lên rồi dùng số mặc định, không im lặng bỏ qua. Đổi được cả từng chữ trên
+  giao diện mà không mở tới mã.
+- **Thời lượng vòng kể của logo từ hai chỗ khai còn một.** Trước đây con số ấy
+  viết ở cả CSS lẫn mã dựng, và có một phép kiểm canh cho chúng khớp nhau —
+  canh được, nhưng vẫn là hai chỗ phải sửa.
 
 ## V8.00 — 16-Sep-2026
 

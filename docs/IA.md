@@ -219,6 +219,7 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 | `/search/` — tìm ngay trên máy người đọc, không gọi máy chủ | `search-index.json` + trường `kd` |
 | `/archive/` gom theo năm | `congKhai` |
 | `/about/` khung bento | `content/pages/` |
+| `/z-admin/` — bàn làm việc của chủ trang: ba ngăn **Note · Comment · Post**, mỗi lúc một ngăn | `admin.js` + `ghi-chu.js` · `duyet.js` · `viet-bai.js` |
 | Ảnh chia sẻ mặc định `og.png` | bài không có `cover` thì rơi về ảnh này |
 
 ### 6.0b · Chưa làm
@@ -227,7 +228,7 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 |---|---|---|
 | **Trang 404** | Cloudflare Pages trả trang mặc định của nó; chưa xấu tới mức phải sửa | nhỏ |
 | **Menu trượt cho màn hẹp** | dưới 640px nav giấu chữ, chỉ còn brand + nút tìm + nút theme. Bốn mục thì tạm được; thêm mục thứ năm là phải làm | nhỏ |
-| **Tên miền thật** | `site.config.json` còn để `.pages.dev`; đổi trước khi công bố, không thì canonical, ảnh chia sẻ và sitemap đều trỏ sai | nhỏ |
+| **Ảnh cho bài đăng từ `/z-admin/`** | ngăn Post mới đăng được chữ. Ảnh vẫn phải qua `npm run anh` ở máy, vì bộ dựng còn ĐO ảnh để khoá tỉ lệ khung — gửi ảnh qua mạng thì phải đo ở phía máy chủ | vừa |
 | **Vân tay nội dung cho tên file CSS/JS** | tên file chưa có vân tay nên không cache dài được; xem `docs/DUA-LEN-MANG.md` §8 | vừa |
 ### 6.1 · Bình luận — đã có (V1.01)
 
