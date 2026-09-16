@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V9.07 | 2026-09-16 | 07 | bảng bài đã đăng ở ngăn Post: sửa lại bài, ẩn và bỏ ẩn |
+| V9.06 | 2026-09-16 | 06 | logo: giữ hình nơ một nhịp rồi mới bo tròn |
+| V9.05 | 2026-09-16 | 05 | Đọc tiếp chuyển lên cột bên, dưới mục lục |
 | V9.04 | 2026-09-16 | 04 | tag thành một hàng chữ thường, bỏ viền và nền |
 | V9.03 | 2026-09-16 | 03 | nền cho sửa bài: trạng thái ẩn trong bộ dựng, và API đọc/ghi bài đã đăng |
 | V9.02 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
@@ -113,6 +116,45 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V9.07 — 16-Sep-2026
+
+- **Ngăn Post mở ra là một BẢNG BÀI, không phải ô viết trống.** Mỗi bài một
+  dòng: ngày · tiêu đề · trạng thái · Sửa / Ẩn. Hàng chip trên đầu lọc theo
+  trạng thái và in sẵn số, nên biết ngay có gì đang nằm trong Nháp hay Đã ẩn
+  mà không phải bấm thử.
+- **Sửa lại một bài đã đăng.** Bấm Sửa là bài cũ nạp thẳng vào khung soạn
+  thảo — chữ, tiêu đề, ngày, tag, tóm tắt. Sửa xong bấm Lưu. Ô chuyên mục
+  khoá lại: đổi chuyên mục là dời file, mà dời file thì mọi link đã chia sẻ
+  gãy hết.
+- **Ẩn và bỏ ẩn bằng một cú bấm**, ngay trên dòng. Không có nút Xoá, và đó là
+  chủ ý: "ẩn" làm được mọi điều người ta thật sự cần khi muốn xoá (bài biến
+  khỏi trang, không ai đọc được nữa) mà vẫn lấy lại được — còn xoá file thì
+  khôi phục là việc của dòng lệnh.
+- **Sửa cùng lúc ở hai máy thì máy sau bị từ chối**, không lặng lẽ đè mất bản
+  kia. Câu báo nói rõ phải mở lại để lấy bản mới.
+
+## V9.06 — 16-Sep-2026
+
+- **Cái nơ được là chính nó một nhịp trước khi bo tròn.** Nét nối tới ở 30%, và
+  tới đó thì chữ Z cộng nét nối đã khép thành một cái nơ bốn cạnh thẳng. Bản
+  trước không dừng ở đấy: vừa khép xong là phép biến hình kéo luôn sang vô
+  cực, nên mắt đọc ra một cú GIẬT từ hình chữ sang hình cong. Nay nó đứng im
+  một nhịp, rồi mới bo.
+- **Nét nối tan dần TRONG lúc bo**, không tắt phụt trước đó — nó hoà vào chỗ
+  giao nhau ở giữa thay vì biến mất khỏi hình.
+- **Riêng đoạn bo tròn đi theo một đường cong khác.** Sáu đoạn kia rời đi
+  nhanh rồi hạ xuống chậm; ở đường ấy mới đi được nửa thời gian thì hình đã
+  đổi xong tám phần mười, nên cái nơ vừa kịp khép là đã thành vô cực. Đoạn bo
+  nay dùng đường đối xứng: nửa thời gian thì nửa đường.
+
+## V9.05 — 16-Sep-2026
+
+- **"Đọc tiếp" rời chân bài, lên cột bên dưới mục lục.** Dưới chân bài nó đứng
+  sau hàng tag và khung bình luận — tức là sau hai thứ đã kết thúc bài rồi, và
+  người đọc tới đó là đã đóng bài trong đầu. Cột bên thì nằm ngang tầm thân
+  bài và đi theo suốt lúc cuộn, nên gợi ý có mặt đúng lúc người ta còn đang
+  đọc. Khổ hẹp không có cột bên thì nó rơi xuống sau chân bài, đúng chỗ cũ.
 
 ## V9.04 — 16-Sep-2026
 

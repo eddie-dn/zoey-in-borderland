@@ -79,7 +79,196 @@
       'Đăng nhập ở trên để mở ô này.')) + '</p>';
   }
 
-  function khungViet() {
+  /* ══════════════ BẢNG BÀI ĐÃ ĐĂNG ══════════════
+
+     Ngăn Post có hai mặt: VIẾT MỚI và SỬA BÀI CŨ. Trước bản này nó chỉ có mặt
+     đầu, nên một bài đăng nhầm ngày, sai chính tả trong tiêu đề, hay cần cất
+     đi đều phải mở máy, mở file, sửa tay, đẩy lên — tức là đúng cái quy trình
+     mà ô viết bài sinh ra để khỏi phải làm.
+
+     ── BA TRẠNG THÁI, MỘT HÀNG NÚT LỌC ──
+       hiện   bài công khai
+       nháp   `draft: true` — vẫn dựng ra trang để xem thử, nhưng không vào
+              danh sách, feed, sitemap, và mang noindex
+       ẩn     `hidden: true` — không dựng ra gì cả, đường dẫn cũ trả 404
+
+     ── VÌ SAO KHÔNG CÓ NÚT XOÁ ──
+     Xoá một file trong kho mã thì lịch sử Git vẫn giữ, nhưng khôi phục lại là
+     việc của dòng lệnh — tức là đúng thứ người dùng ô này không muốn động
+     tới. "Ẩn" làm được mọi điều người ta thật sự cần khi muốn xoá (bài biến
+     khỏi trang, không ai đọc được nữa) mà vẫn lấy lại được bằng một cú bấm. */
+
+  var bangDS = null;      /* danh sách bài đã tải về, giữ để lọc tại chỗ */
+  var dangSua = null;     /* {duong, sha, fm, khoaKhac} của bài đang mở */
+  var locTrang = '';      /* '' = tất cả */
+
+  var TEN_TRANG = { hien: 'Hiện', nhap: 'Nháp', an: 'Đã ẩn' };
+
+  function veBang() {
+    soan = null;
+    hop.innerHTML =
+      '<div class="vb-thanh">' +
+        '<button type="button" class="btn btn--chinh" data-moi>' +
+          tho(L('newPost', 'Viết bài mới')) + '</button>' +
+        '<div class="vb-loc" data-loc></div>' +
+      '</div>' +
+      '<div class="vb-bang" data-bang>' +
+        '<p class="vb-cho">' + tho(L('loading', 'Đang tải…')) + '</p>' +
+      '</div>' +
+      '<p class="vb-noi"></p>';
+
+    hop.querySelector('[data-moi]').addEventListener('click', function () { khungViet(); });
+    if (bangDS) veHang(); else taiBang();
+  }
+
+  function taiBang() {
+    fetch(api + '?ds=1', { cache: 'no-store', headers: K.dau() })
+      .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
+      .then(function (kq) {
+        if (!kq.d || !kq.d.ok) {
+          var o = hop.querySelector('[data-bang]');
+          if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+          return;
+        }
+        bangDS = kq.d.bai || [];
+        bangDS.cut = kq.d.cut; bangDS.tran = kq.d.tran; bangDS.tong = kq.d.tong;
+        veHang();
+      })
+      .catch(function () {
+        var o = hop.querySelector('[data-bang]');
+        if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+          tho(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.')) + '</p>';
+      });
+  }
+
+  function veHang() {
+    var oLoc = hop.querySelector('[data-loc]');
+    var oBang = hop.querySelector('[data-bang]');
+    if (!oBang) return;
+
+    /* Đếm theo trạng thái để in số lên chip. Chip có số thì biết ngay có gì
+       đang nằm trong đó mà không phải bấm thử. */
+    var dem = { hien: 0, nhap: 0, an: 0 };
+    bangDS.forEach(function (b) { if (dem[b.trang] != null) dem[b.trang]++; });
+
+    if (oLoc) {
+      var h = '<button type="button" class="chip' + (locTrang ? '' : ' chip--nay') +
+              '" data-t="">' + tho(L('all', 'Tất cả')) +
+              '<span class="chip-so">' + bangDS.length + '</span></button>';
+      ['hien', 'nhap', 'an'].forEach(function (t) {
+        if (!dem[t]) return;
+        h += '<button type="button" class="chip' + (locTrang === t ? ' chip--nay' : '') +
+             '" data-t="' + t + '">' + tho(TEN_TRANG[t]) +
+             '<span class="chip-so">' + dem[t] + '</span></button>';
+      });
+      oLoc.innerHTML = h;
+      [].slice.call(oLoc.querySelectorAll('button')).forEach(function (b) {
+        b.addEventListener('click', function () {
+          locTrang = b.getAttribute('data-t'); veHang();
+        });
+      });
+    }
+
+    var ds = bangDS.filter(function (b) { return !locTrang || b.trang === locTrang; });
+    if (!ds.length) {
+      oBang.innerHTML = '<p class="vb-cho">' + tho(L('empty', 'Không có bài nào ở đây.')) + '</p>';
+      return;
+    }
+
+    oBang.innerHTML = ds.map(function (b) {
+      return '<div class="vb-dong" data-d="' + tho(b.duong) + '">' +
+        '<span class="vb-dong-ngay">' + tho(b.date) + '</span>' +
+        '<span class="vb-dong-ten">' + tho(b.title) + '</span>' +
+        (b.trang !== 'hien'
+          ? '<span class="vb-cd vb-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
+          : '<span class="vb-cd"></span>') +
+        '<span class="vb-dong-nut">' +
+          '<button type="button" class="vb-nho" data-sua>' + tho(L('edit', 'Sửa')) + '</button>' +
+          '<button type="button" class="vb-nho" data-an>' +
+            tho(b.trang === 'an' ? L('unhide', 'Bỏ ẩn') : L('hide', 'Ẩn')) + '</button>' +
+        '</span>' +
+      '</div>';
+    }).join('') +
+    (bangDS.cut
+      ? '<p class="vb-cho">' + tho(
+          (L('capped', 'Đang xem {n} bài mới nhất trong tổng số {t}.'))
+            .replace('{n}', bangDS.tran).replace('{t}', bangDS.tong)) + '</p>'
+      : '');
+
+    [].slice.call(oBang.querySelectorAll('.vb-dong')).forEach(function (d) {
+      var duong = d.getAttribute('data-d');
+      d.querySelector('[data-sua]').addEventListener('click', function () { moSua(duong); });
+      d.querySelector('[data-an]').addEventListener('click', function (e) {
+        doiAn(duong, e.target);
+      });
+    });
+  }
+
+  /* ── ẨN / BỎ ẨN ──
+     Hai lượt gọi: đọc bài ra để lấy `sha` và mọi khoá front matter, rồi ghi
+     lại với đúng một cờ đổi. Không đi đường tắt "chỉ gửi cờ": máy chủ dựng
+     lại CẢ file, nên nó phải nhận đủ mọi thứ cần giữ — thiếu một khoá là mất
+     khoá ấy. */
+  function doiAn(duong, nut) {
+    var cu = nut.textContent;
+    nut.disabled = true;
+    nut.textContent = L('working', '…');
+    fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) throw new Error('doc');
+        var than = {
+          duong: d.duong, sha: d.sha, noiDung: d.noiDung, khoaKhac: d.khoaKhac,
+          title: d.fm.title, date: d.fm.date, summary: d.fm.summary,
+          tags: d.fm.tags, cover: d.fm.cover, coverAlt: d.fm.coverAlt,
+          draft: d.fm.draft, hidden: !d.fm.hidden
+        };
+        return fetch(api, {
+          method: 'PUT',
+          headers: K.dau({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(than)
+        }).then(function (r) { return r.json(); });
+      })
+      .then(function (d) {
+        nut.disabled = false;
+        if (!d || !d.ok) { nut.textContent = cu; noi(loiChu(d), 'hong'); return; }
+        /* Cập nhật ngay trong bảng đang mở, không tải lại cả danh sách: tải
+           lại là bốn chục lượt gọi ra GitHub cho một cú bấm. */
+        for (var i = 0; i < bangDS.length; i++) {
+          if (bangDS[i].duong === duong) { bangDS[i].trang = d.trang; bangDS[i].sha = d.sha; }
+        }
+        veHang();
+        noi(L('saved', 'Xong. Cloudflare đang dựng lại.'));
+      })
+      .catch(function () {
+        nut.disabled = false; nut.textContent = cu;
+        noi(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.'), 'hong');
+      });
+  }
+
+  /* ── MỞ MỘT BÀI RA SỬA ──
+     Dùng lại ĐÚNG khung viết bài, chỉ khác ba chỗ: ô đã điền sẵn, nút Đăng
+     thành nút Lưu, và có thêm nút Quay lại. Dựng một khung sửa riêng thì hai
+     khung phải giữ cho giống nhau mãi mãi — mà chúng vốn là một việc. */
+  function moSua(duong) {
+    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Đang tải…')) + '</p>';
+    fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
+      .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
+      .then(function (kq) {
+        if (!kq.d || !kq.d.ok) {
+          hop.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+          return;
+        }
+        dangSua = kq.d;
+        khungViet(kq.d);
+      })
+      .catch(function () {
+        hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+          tho(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.')) + '</p>';
+      });
+  }
+
+  function khungViet(cu) {
     var chon = (dsMuc || []).map(function (m) {
       return '<option value="' + tho(m) + '">' + tho(m) + '</option>';
     }).join('');
@@ -117,9 +306,37 @@
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Để nháp — dựng ra nhưng chưa công khai')) + '</label>' +
-        '<button type="button" class="btn" data-dang>' + tho(L('publish', 'Đăng')) + '</button>' +
+        (cu ? '<button type="button" class="vb-nho" data-ve>' +
+                tho(L('back', 'Quay lại')) + '</button>' : '') +
+        '<button type="button" class="btn" data-dang>' +
+          tho(cu ? L('save', 'Lưu') : L('publish', 'Đăng')) + '</button>' +
       '</div>' +
       '<p class="vb-noi"></p>';
+
+    /* ── SỬA THÌ ĐIỀN SẴN, VÀ CHUYÊN MỤC KHOÁ LẠI ──
+       Đổi chuyên mục là đổi đường dẫn bài, mà đường dẫn tính từ CHỖ ĐẶT FILE.
+       Muốn đổi thì phải dời file — hai lượt ghi, và giữa hai lượt ấy bài
+       không tồn tại, cộng thêm mọi link đã chia sẻ gãy hết. Nên ô chuyên mục
+       ở chế độ sửa chỉ để XEM. */
+    if (cu) {
+      hop.querySelector('[name=title]').value = cu.fm.title || '';
+      hop.querySelector('[name=date]').value = cu.fm.date || '';
+      hop.querySelector('[name=tags]').value = (cu.fm.tags || []).join(', ');
+      hop.querySelector('[name=summary]').value = cu.fm.summary || '';
+      hop.querySelector('[name=draft]').checked = cu.fm.draft === true;
+      var oMuc = hop.querySelector('[name=muc]');
+      var mucCu = cu.duong.split('/').slice(2, -1).join('/');
+      if (oMuc) {
+        if (mucCu && !oMuc.querySelector('option[value="' + mucCu + '"]')) {
+          oMuc.insertAdjacentHTML('beforeend',
+            '<option value="' + tho(mucCu) + '">' + tho(mucCu) + '</option>');
+        }
+        oMuc.value = mucCu;
+        oMuc.disabled = true;
+      }
+      var bVe = hop.querySelector('[data-ve]');
+      if (bVe) bVe.addEventListener('click', function () { dangSua = null; veBang(); });
+    }
 
     /* Cắm khung soạn thảo SAU khi innerHTML đã xong: đặt trước thì lượt gán
        innerHTML kế tiếp quét sạch nó đi cùng mọi trình nghe sự kiện của nó. */
@@ -129,12 +346,19 @@
       /* Bản nháp lần trước: đóng nhầm tab, mất mạng, bấm nhầm nút — bài gõ dở
          phải còn đó. Chỉ hỏi khi ô đang trống, để "Viết bài nữa" không lôi
          bài vừa đăng quay lại. */
-      var cu = soan.nhapCu();
-      if (cu && soan.rong()) {
-        if (window.confirm(L('draftAsk', 'Còn một bài gõ dở trên máy này. Mở lại?'))) {
-          soan.datHTML(cu);
-        } else {
-          soan.boNhap();
+      if (cu && window.ZIB.soan.tuMD) {
+        /* Đổ bài cũ vào khung. Bản nháp trên máy KHÔNG hỏi ở đây: nháp ấy là
+           của một bài đang viết dở, còn đây là một bài đã có thật — trộn hai
+           thứ vào nhau thì mất một trong hai. */
+        soan.datHTML(window.ZIB.soan.tuMD(cu.noiDung));
+      } else {
+        var nhap = soan.nhapCu();
+        if (nhap && soan.rong()) {
+          if (window.confirm(L('draftAsk', 'Còn một bài gõ dở trên máy này. Mở lại?'))) {
+            soan.datHTML(nhap);
+          } else {
+            soan.boNhap();
+          }
         }
       }
     } else if (oSoan) {
@@ -179,15 +403,37 @@
     nut.disabled = true;
     noi(L('sending', 'Đang gửi…'));
 
+    /* Sửa bài là PUT và mang theo `sha` + mọi khoá front matter đọc ra lúc
+       mở — máy chủ dựng lại CẢ file, nên thiếu một khoá là mất khoá ấy. */
+    if (dangSua) {
+      b.duong = dangSua.duong;
+      b.sha = dangSua.sha;
+      b.khoaKhac = dangSua.khoaKhac;
+      b.cover = dangSua.fm.cover;
+      b.coverAlt = dangSua.fm.coverAlt;
+      b.hidden = dangSua.fm.hidden === true;
+    }
+
     fetch(api, {
-      method: 'POST',
+      method: dangSua ? 'PUT' : 'POST',
       headers: K.dau({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(b)
     }).then(function (r) {
       return r.json().then(function (d) { return { ma: r.status, d: d }; });
     }).then(function (kq) {
       nut.disabled = false;
-      if (kq.d && kq.d.ok) { xong(kq.d, b); return; }
+      if (kq.d && kq.d.ok) {
+        if (dangSua) {
+          /* Lưu xong thì `sha` đổi — giữ bản mới để lưu tiếp lần nữa không bị
+             từ chối vì cầm mã băm cũ. */
+          dangSua.sha = kq.d.sha || dangSua.sha;
+          bangDS = null;
+          noi(L('saved', 'Xong. Cloudflare đang dựng lại.'));
+          return;
+        }
+        xong(kq.d, b);
+        return;
+      }
       noi(loiChu(kq.d), 'hong');
     }).catch(function () {
       nut.disabled = false;
@@ -208,6 +454,9 @@
            + ' — ' + L('seeDoc', 'xem docs/CAI-DAT.md');
     }
     if (d.loi === 'kiem') return (d.chiTiet || []).join(' · ');
+    if (d.loi === 'lechban') return L('clash',
+      'Bài này vừa đổi ở chỗ khác. Quay lại rồi mở lại để lấy bản mới.');
+    if (d.loi === 'duong' || d.loi === 'sha') return L('failed', 'Không lưu được.');
     if (d.loi === 'trung') return d.chiTiet || L('dup', 'Đã có bài trùng tên.');
     if (d.loi === 'muc') return d.chiTiet || L('badMuc', 'Chuyên mục không có.');
     return d.chiTiet || L('failed', 'Không đăng được.');
@@ -236,10 +485,17 @@
         '</ul>' +
         '<p class="vb-noi">' + tho(d.nhac || L('building',
           'Cloudflare đang dựng lại. Bài lên sau khoảng một phút.')) + '</p>' +
-        '<div class="vb-nut"><button type="button" class="btn" data-nua>' +
-          tho(L('another', 'Viết bài nữa')) + '</button></div>' +
+        '<div class="vb-nut">' +
+          '<button type="button" class="vb-nho" data-ve>' + tho(L('back', 'Quay lại')) + '</button>' +
+          '<button type="button" class="btn" data-nua>' +
+            tho(L('another', 'Viết bài nữa')) + '</button>' +
+        '</div>' +
       '</div>';
     hop.querySelector('[data-nua]').addEventListener('click', function () { khungViet(); });
+    /* Bảng phải tải lại: bài vừa đăng chưa có trong danh sách đang giữ. */
+    hop.querySelector('[data-ve]').addEventListener('click', function () {
+      bangDS = null; veBang();
+    });
   }
 
   /* ── LẤY DANH SÁCH CHUYÊN MỤC, VÀ THỬ KHOÁ LUÔN THỂ ──
@@ -252,7 +508,7 @@
     fetch(api, { headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
-        if (kq.d && kq.d.ok) { dsMuc = kq.d.muc || []; khungViet(); return; }
+        if (kq.d && kq.d.ok) { dsMuc = kq.d.muc || []; dangSua = null; veBang(); return; }
         hop.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
       })
       /* ── HAI LOẠI HỎNG, MỘT CÂU BÁO — VÀ ĐÓ TỪNG LÀ MỘT BUỔI ĐI SAI ĐƯỜNG ──

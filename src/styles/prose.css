@@ -420,6 +420,15 @@
 
 /* ── Gợi ý đọc tiếp ── */
 .read-next .label{margin:0 0 var(--s5)}
+/* Trong CỘT BÊN thì khối này hẹp hơn hẳn, nên ba cột (loại · tiêu đề · ngày)
+   không còn chỗ — xếp dọc lại thành hai dòng. Luật này đứng TRƯỚC luật chung
+   bên dưới nhưng chọn lọc hơn, nên nó thắng ở đúng chỗ cần. */
+.ben .read-next{margin-top:var(--s7)}
+.ben .read-next .eyebrow{display:none}
+.ben .rn-dong{grid-template-columns:minmax(0,1fr);gap:2px;padding:var(--s3) 0}
+.ben .rn-title{font-size:var(--fs-sm);line-height:1.35}
+.ben .rn-meta{font-size:var(--fs-3xs)}
+
 /* Xếp dọc, ngăn nhau bằng sợi kẻ — không còn lưới thẻ. Lý do ở chỗ dựng
    `read-next` trong tools/build.mjs. */
 .rn-grid{display:flex;flex-direction:column}

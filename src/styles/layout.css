@@ -251,7 +251,7 @@
   /* Đứng yên suốt chặng kể chuyện VÀ suốt nấc đanh lại (50→53%). Cú đanh lại
      phải rơi vào lúc bông hoa bất động — nhét nó vào giữa chuyển động thì nó
      trôi mất, mà nó là một nhịp riêng chứ không phải một hiệu ứng phụ. */
-  8.5%,53%   {opacity:1;transform:none;filter:blur(0)}
+  8.5%,54%   {opacity:1;transform:none;filter:blur(0)}
   58.4%      {opacity:1;transform:rotate(30deg)   scale(1.02);filter:blur(0)}
   65.5%      {opacity:1;transform:rotate(126deg)  scale(1.05)}
   72.7%      {opacity:1;transform:rotate(334deg)  scale(1.09)}
@@ -301,7 +301,7 @@
    Mốc 88% khép lại ở giữa — hai nhóm gần bằng nhau — để lúc vỡ không có nhóm
    nào đang nổi hơn nhóm nào. */
 @keyframes lg-nhay-goc{
-  0%,53%     {opacity:1}
+  0%,54%     {opacity:1}
   58%        {opacity:.55}
   63.5%      {opacity:1}
   69%        {opacity:.55}
@@ -314,7 +314,7 @@
      đậm cộng bốn cái bóng. Chỉ khi vào chặng kể chuyện chúng mới lùi về .5 để
      nhường chỗ cho hai vô cực đang được dựng. */
   0%,8%      {stroke-opacity:.8;stroke-width:2}
-  8.5%,53%   {stroke-opacity:.5;stroke-width:1.5}
+  8.5%,54%   {stroke-opacity:.5;stroke-width:1.5}
   58%        {stroke-opacity:1;stroke-width:2.6}
   63.5%      {stroke-opacity:.5;stroke-width:1.5}
   69%        {stroke-opacity:1;stroke-width:2.6}
@@ -364,8 +364,8 @@
    phải "có thêm bốn cánh" mà là "bốn cánh này vẫn ở đó từ đầu, giờ mới xoè". */
 @keyframes lg-canh-g{
   0%,8%      {transform:rotate(0deg)}
-  8.5%,46%   {transform:rotate(-45deg)}
-  50%,53%    {transform:rotate(0deg)}
+  8.5%,48%   {transform:rotate(-45deg)}
+  51%,54%    {transform:rotate(0deg)}
   61%        {transform:rotate(9deg)}
   68%        {transform:rotate(-11deg)}
   75.5%      {transform:rotate(15deg)}
@@ -377,7 +377,7 @@
    Mốc cuối giữ nguyên tới 100% rồi nhảy về 0 ở đầu vòng: cú nhảy ấy rơi đúng
    lúc mandala đã mờ hẳn nên không ai thấy. */
 @keyframes lg-vanh-n{
-  0%,53%     {transform:rotate(0deg)}
+  0%,54%     {transform:rotate(0deg)}
   66%        {transform:rotate(20deg)}
   76%        {transform:rotate(96deg)}
   83%,100%   {transform:rotate(260deg)}
@@ -385,13 +385,13 @@
 /* Vành giữa quay NGƯỢC chiều hai vành kia — đó là thứ làm ba lớp đọc ra là ba
    tầng chứ không phải một khối. */
 @keyframes lg-vanh-g{
-  0%,53%     {transform:rotate(0deg)}
+  0%,54%     {transform:rotate(0deg)}
   66%        {transform:rotate(-15deg)}
   76%        {transform:rotate(-74deg)}
   83%,100%   {transform:rotate(-210deg)}
 }
 @keyframes lg-vanh-t{
-  0%,53%     {transform:rotate(0deg)}
+  0%,54%     {transform:rotate(0deg)}
   66%        {transform:rotate(32deg)}
   76%        {transform:rotate(160deg)}
   83%,100%   {transform:rotate(430deg)}
@@ -420,14 +420,24 @@
      rồi nét nối mới tới và khép chúng lại (26→31%). Cú xoay thành động tác
      ĐẶT chữ vào đúng tư thế, và cú nối thành động tác cuối cùng — đúng thứ tự
      tay người làm. */
-  26%,31%    {opacity:1;transform:none;stroke-dashoffset:52;stroke-opacity:1}
-  36%        {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  /* ── GIỮ HÌNH NƠ MỘT NHỊP ──
+     Nét nối tới ở 30%, và tới đó thì chữ Z cộng nét nối đã khép thành một cái
+     NƠ có bốn cạnh thẳng. Bản trước không dừng ở đấy: vừa khép xong là phép
+     biến hình kéo luôn sang vô cực, nên mắt đọc ra một cú GIẬT từ hình chữ
+     sang hình cong, chứ không đọc ra "cái nơ được bo tròn lại".
+
+     Nay từ 30% tới 34% mọi thứ đứng im — cái nơ được là chính nó một nhịp.
+     Phép bo tròn mới bắt đầu sau đó (34→39%, xem `bien()` trong
+     tools/build.mjs), và nét nối tan dần TRONG lúc bo chứ không tắt phụt
+     trước đó: nó hoà vào chỗ giao nhau ở giữa thay vì biến mất khỏi hình. */
+  26%,34%    {opacity:1;transform:none;stroke-dashoffset:52;stroke-opacity:1}
+  39%        {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
   /* Lùi lại còn 30% suốt chặng chữ B: lúc ấy vô cực thứ nhất đã xong và nằm
      ĐÚNG giữa khung, còn chữ B thì cũng vẽ quanh đúng tâm ấy. Để hai nét cùng
      độ đậm chồng lên nhau thì ra một mớ rối, không đọc ra nét nào. Lùi một nét
      xuống là đủ tách lớp, mà vẫn thấy nó còn đó chờ nét thứ hai. */
-  37.8%,44.5%{opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
-  47.5%,100% {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  40.5%,46%  {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
+  49%,100%   {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
 }
 /* NÉT THỨ HAI — chữ B → vô cực đứng.
    Xoay 180° trong lúc <animate> vặn chữ B thành vô cực: đó là cú "bụng dưới
@@ -435,10 +445,10 @@
    nhờ vậy mốc cuối vòng nối lại đầu vòng mà không thấy cú nhảy nào. */
 @keyframes lg-n2{
   0%,8%      {opacity:1;transform:none;stroke-dashoffset:0}
-  8.5%,35.5% {opacity:0;transform:none;stroke-dashoffset:130}
-  36%        {opacity:1;transform:none;stroke-dashoffset:130}
-  39.5%,40%  {opacity:1;transform:none;stroke-dashoffset:52}
-  46%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
+  8.5%,38.5% {opacity:0;transform:none;stroke-dashoffset:130}
+  39%        {opacity:1;transform:none;stroke-dashoffset:130}
+  42.5%,43%  {opacity:1;transform:none;stroke-dashoffset:52}
+  48%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
 }
 /* Ba vạch dài ngắn khác nhau = một dòng chữ nhìn từ xa. Chúng bóp lại theo BỀ
    NGANG rồi tắt — đó là "thu gọn" trong ý tưởng gốc, và phải là bóp ngang chứ
@@ -468,9 +478,12 @@
    được cả ràng buộc ấy là một chỗ ít đi để hỏng. */
 @keyframes lg-noi{
   0%,26%     {opacity:0;transform:translate(16px,-16px) scale(.5)}
-  30%,31%    {opacity:.92;transform:translate(0,0) scale(1)}
-  32.5%      {opacity:0;transform:translate(0,0) scale(1)}
-  33%,100%   {opacity:0;transform:translate(16px,-16px) scale(.5)}
+  30%,34%    {opacity:.92;transform:translate(0,0) scale(1)}
+  /* Tan dần SUỐT quãng bo tròn, không tắt phụt ngay khi bo bắt đầu. Tắt phụt
+     thì cái nơ mất một cạnh trước khi kịp cong, và chỗ ấy hiện ra thành một
+     lỗ hổng. */
+  38%        {opacity:0;transform:translate(0,0) scale(1)}
+  38.5%,100% {opacity:0;transform:translate(16px,-16px) scale(.5)}
 }
 /* Bốn cánh nở thành tám. Hai cánh thêm và hai vành tròn hiện dần từ tâm ra —
    `scale` từ .6 lên 1 chứ không chỉ đổi độ mờ: chỉ mờ dần thì chúng "bật" ra
@@ -505,10 +518,10 @@
    một việc, một chỗ. */
 @keyframes lg-man{
   0%,8%      {opacity:1;transform:scale(1)}
-  8.5%,46%   {opacity:0;transform:scale(1)}
+  8.5%,48%   {opacity:0;transform:scale(1)}
   /* Mở xong ở 50%, rồi ĐỨNG YÊN ba phần trăm vòng — đó là chỗ nấc đanh lại
      diễn ra (xem `bien()` trong tools/build.mjs, hai mốc .50 và .53). */
-  50%,80%    {opacity:1;transform:scale(1)}
+  51%,80%    {opacity:1;transform:scale(1)}
   81.5%      {opacity:.35;transform:scale(1.06)}
   83%        {opacity:0;transform:scale(1.1)}
   83.5%      {opacity:0;transform:scale(1)}
@@ -823,8 +836,12 @@
 @media (max-width:1079px){
   .ben{display:contents}
   .prose    {order:1}
-  .quote-tab{order:2;margin:var(--s9) var(--gutter) 0}
   .post-foot{order:3}
+  /* Khối "đọc tiếp" sống trong cột bên ở khổ rộng. Khổ hẹp không có cột bên,
+     nên `display:contents` thả nó vào dòng chảy — và `order:4` đưa nó xuống
+     SAU chân bài, đúng chỗ nó vẫn đứng từ trước. Không có khổ nào mất nó, và
+     cũng không có khổ nào thấy nó chen lên giữa lúc đang đọc. */
+  .read-next{order:4;margin:0 var(--gutter)}
   .toc-box{
     margin:0 var(--gutter) var(--s7);
     border-radius:var(--r-md);

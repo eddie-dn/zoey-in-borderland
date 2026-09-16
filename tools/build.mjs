@@ -265,6 +265,22 @@ const NHAN = {
   vbCrash     : 'Ô viết bài dựng hỏng — mở bảng điều khiển của trình duyệt để xem lỗi.',
   vbDraftAsk  : 'Còn một bài gõ dở trên máy này. Mở lại?',
 
+  /* ── BẢNG BÀI ĐÃ ĐĂNG (ngăn Post) ── */
+  vbNewPost   : 'Viết bài mới',
+  vbAll       : 'Tất cả',
+  vbEdit      : 'Sửa',
+  vbHide      : 'Ẩn',
+  vbUnhide    : 'Bỏ ẩn',
+  vbBack      : 'Quay lại',
+  vbSave      : 'Lưu',
+  vbSaved     : 'Xong. Cloudflare đang dựng lại.',
+  vbWorking   : '…',
+  vbEmptyList : 'Không có bài nào ở đây.',
+  /* {n} bài đang xem, {t} tổng số. Trần này có thật — mỗi bài là một lượt gọi
+     ra GitHub, mà Workers giới hạn số lượt trong một request. */
+  vbCapped    : 'Đang xem {n} bài mới nhất trong tổng số {t}.',
+  vbClash     : 'Bài này vừa đổi ở chỗ khác. Quay lại rồi mở lại để lấy bản mới.',
+
   /* ── NHÃN CỦA KHUNG SOẠN THẢO (src/js/soan.js) ──
      Đi CHUNG bảng với ô viết bài chứ không tách bảng riêng: soan.js chỉ mọc
      bên trong ô ấy, và một bảng nhãn thứ tư trên cùng một trang là thêm một
@@ -871,6 +887,10 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         another: NHAN.vbAnother, failed: NHAN.vbFailed,
                         noConfig: NHAN.vbNoConfig, seeDoc: NHAN.vbSeeDoc,
                         loading: NHAN.vbLoading, badKey: NHAN.badKey, netErr: NHAN.netErr,
+                        newPost: NHAN.vbNewPost, all: NHAN.vbAll, edit: NHAN.vbEdit,
+                        hide: NHAN.vbHide, unhide: NHAN.vbUnhide, back: NHAN.vbBack,
+                        save: NHAN.vbSave, saved: NHAN.vbSaved, working: NHAN.vbWorking,
+                        empty: NHAN.vbEmptyList, capped: NHAN.vbCapped, clash: NHAN.vbClash,
                         locked: NHAN.khLocked, draftAsk: NHAN.vbDraftAsk,
                         crash: NHAN.vbCrash,
                         toolbar: NHAN.szToolbar, bold: NHAN.szBold,
@@ -1277,7 +1297,16 @@ const LG_CK = logoVongKe();
    `keySplines` phải có đúng số mốc trừ một — bảy dòng cho tám mốc. Thiếu một
    dòng thì Firefox bỏ qua cả thẻ <animate>, im lặng, và hình thôi biến. */
 function bien(tu, tron, nhon, t1, t2, s1, s2) {
-  const spl = new Array(7).fill('.4 0 .2 1').join(';');
+  /* ── ĐOẠN BO TRÒN ĐI THEO MỘT ĐƯỜNG CONG KHÁC ──
+     Sáu đoạn kia dùng `.4 0 .2 1` — rời đi nhanh, hạ xuống chậm. Đúng cho
+     mấy cú nháy hình, nhưng SAI cho cú bo tròn: ở đường ấy, mới đi được một
+     nửa thời gian thì hình đã đổi xong tám phần mười, nên cái nơ vừa kịp khép
+     là đã thành vô cực. Mắt không thấy nó ĐANG bo, chỉ thấy nó đã bo xong.
+
+     Đoạn thứ tư (chữ → tròn) đổi sang đường đối xứng: nửa thời gian thì nửa
+     đường. Cú bo trải đều ra, và đó chính là thứ đang muốn cho thấy. */
+  const spl = [0, 1, 2, 3, 4, 5, 6]
+    .map((i) => (i === 3 ? '.33 0 .67 1' : '.4 0 .2 1')).join(';');
   return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
       calcMode="spline" keySplines="${spl}"
       keyTimes="0;.085;.12;${t1};${t2};${s1};${s2};1"
@@ -1338,7 +1367,7 @@ function logoHTML(dong) {
      cái để quay. Bề rộng vạch khai ở layout.css. */
   const canhSao = (goc) =>
     `<path class="lg-canh" d="${P_NHON1}" transform="rotate(${goc} 24 24)">` +
-    (dong ? bienCanh(P_INF1, P_NHON1, '.50', '.53') : '') + `</path>`;
+    (dong ? bienCanh(P_INF1, P_NHON1, '.51', '.54') : '') + `</path>`;
 
   const mandala = `<g class="lg-man" fill="none" stroke="currentColor">
       <g class="lg-vanh-g lg-vanh-g--ngoai"><circle class="lg-vanh lg-vanh--ngoai" cx="24" cy="24" r="21.5"/></g>
@@ -1415,15 +1444,15 @@ function logoHTML(dong) {
            Trước đây nó vẽ P_INF1/P_INF2, nên hai trang có logo bày ra hai đoá
            hoa hơi khác nhau mà không ai nói vì sao. */
         net('lg-vc--1', P_NHON1,
-            dong ? bien(P_ZZ, P_INF1, P_NHON1, '.31', '.36', '.50', '.53') : '') +
+            dong ? bien(P_ZZ, P_INF1, P_NHON1, '.34', '.39', '.51', '.54') : '') +
         net('lg-vc--2', P_NHON2,
-            dong ? bien(P_B,  P_INF2, P_NHON2, '.40', '.46', '.50', '.53') : '') +
+            dong ? bien(P_B,  P_INF2, P_NHON2, '.43', '.48', '.51', '.54') : '') +
       `</g>` +
     `</g>` +
     (dong ? bui : '') +
     `</svg>`;
 }
-function tocHTML(headings) {
+function tocHTML(headings, docTiep) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
      cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không
      có mục lục vẫn bị giữ chỗ 210px cho một cột trống, và khung chữ nằm lệch
@@ -1450,6 +1479,18 @@ function tocHTML(headings) {
      là con trực tiếp của lưới; muốn thêm ô trích dẫn xuống dưới nó thì phải khai
      thêm một ô lưới nữa, và hai khối dính-khi-cuộn riêng lẻ sẽ chồng lên nhau
      lúc cuộn. Gói lại thì chỉ một khối dính, và thứ tự bên trong tự đúng. */
+  /* ── "ĐỌC TIẾP" LÊN CỘT BÊN, KHÔNG NẰM DƯỚI CHÂN BÀI ──
+     Dưới chân bài nó đứng sau hàng tag và khung bình luận, tức là sau hai thứ
+     đã kết thúc bài rồi — người đọc tới đó là đã đóng bài trong đầu, và một
+     danh sách gợi ý ở đấy chỉ còn là chữ thừa.
+
+     Cột bên thì khác: nó nằm ngang tầm thân bài và ĐI THEO suốt lúc cuộn, nên
+     gợi ý có mặt đúng lúc người ta còn đang đọc và bắt đầu nghĩ "đọc gì
+     tiếp". Cùng chừng ấy chữ, đặt vào chỗ nó có việc để làm.
+
+     Khổ hẹp không có cột bên (`.ben` thành `display:contents`), nên khối này
+     rơi vào dòng chảy — và `order` ở list.css đẩy nó xuống SAU chân bài, tức
+     là đúng chỗ cũ. Không có khổ nào mất nó. */
   return `<aside class="ben">
     ${headings.length ? `<details class="toc-box" open>
       <summary>${NHAN.contents}</summary>
@@ -1458,6 +1499,7 @@ function tocHTML(headings) {
         <ol>${li}</ol>
       </nav>
     </details>` : ''}
+    ${docTiep || ''}
   </aside>`;
 }
 
@@ -1693,9 +1735,13 @@ function trangBai(bai, congKhai) {
     cover       : coverHTML(bai),
     body        : bai.html,
     tagBlock    : tagBlockHTML(bai),
-    readNext    : readNextHTML(bai, congKhai),
+    /* Khối đọc tiếp nay nằm trong cột bên (xem `tocHTML`), nên chỗ cũ ở chân
+       bài để rỗng. Giữ lại ô `{{readNext}}` trong mẫu chứ không xoá: mẫu và
+       bảng điền phải khớp nhau từng ô, và một ô thừa trong mẫu thì `dienMau`
+       để nguyên chuỗi `{{readNext}}` chạy thẳng ra HTML. */
+    readNext    : '',
     binhLuan    : binhLuanHTML(bai),
-    toc         : tocHTML(bai.headings),
+    toc         : tocHTML(bai.headings, readNextHTML(bai, congKhai)),
     bangAnh     : bangAnhHTML(bai)
   });
 
