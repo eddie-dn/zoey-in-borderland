@@ -162,7 +162,30 @@ export async function onRequest(context) {
     if (kq.status === 404 || kq.status === 403) {
       kq = await goi(env.GEMINI_MODEL || 'gemini-flash-latest');
     }
-    if (!kq.ok) throw new Error('gemini ' + kq.status);
+    /* ── KỂ LẠI LỖI THẬT, ĐỪNG NUỐT MẤT ──
+       Bản trước ném ra đúng ba chữ: "gemini 400". Con số ấy không sai, nhưng vô
+       dụng — 400 có thể là khoá không hợp lệ, là khoá bị gửi hai lần, là project
+       chưa bật Generative Language API, hay là thân yêu cầu hỏng. Bốn thứ ấy sửa
+       ở bốn chỗ khác hẳn nhau, mà Google thì đã nói rõ là cái nào ngay trong
+       `error.message`. Nuốt nó đi là tự bịt mắt mình.
+
+       Câu báo của Google KHÔNG bao giờ chứa khoá, nên đưa ra ngoài là an toàn.
+       Vẫn cắt 200 ký tự, phòng lúc cổng vào trả về nguyên một trang HTML.
+
+       Đọc THÂN MỘT LẦN rồi mới thử parse: `Response` chỉ đọc được một lượt, gọi
+       .json() hỏng rồi gọi tiếp .text() là nhận lỗi "body already used" đè lên
+       đúng cái lỗi mình đang muốn xem. */
+    if (!kq.ok) {
+      let vi = '';
+      try {
+        const tho = await kq.text();
+        let du = null;
+        try { du = JSON.parse(tho); } catch (e) {}
+        const loi = (du && du.error) || {};
+        vi = ([loi.status, loi.message].filter(Boolean).join(' — ') || tho).slice(0, 200);
+      } catch (e) {}
+      throw new Error('gemini ' + kq.status + (vi ? ' · ' + vi : ''));
+    }
 
     const j = await kq.json();
     const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
