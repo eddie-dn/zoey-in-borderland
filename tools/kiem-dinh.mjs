@@ -891,6 +891,23 @@ const KIEM = [
       if (!/data-bai-api="[^"]+"/.test(ql.html)) {
         ra.push('/z-admin/ không in data-bai-api — ô viết bài sẽ không mọc ra');
       }
+      /* ── CHỖ TRỐNG MẪU PHẢI ĐƯỢC ĐIỀN ──
+         `wrangler.jsonc` xuất xưởng với "tai-khoan/ten-repo". Để nguyên thì
+         mọi thứ vẫn dựng, vẫn deploy, ngăn Post vẫn mở ra — chỉ đến lúc bấm
+         Đăng mới nhận một câu 404 của GitHub, mà 404 ở đó đọc ra như "token
+         hỏng" chứ không như "bạn quên điền tên kho mã". */
+      const fW = path.join(goc, 'wrangler.jsonc');
+      if (fs.existsSync(fW)) {
+        const w = fs.readFileSync(fW, 'utf8');
+        const m = w.match(/"GH_REPO"\s*:\s*"([^"]*)"/);
+        if (!m) {
+          ra.push('wrangler.jsonc chưa khai GH_REPO — ngăn Post sẽ không biết ghi vào kho mã nào');
+        } else if (!/^[\w.-]+\/[\w.-]+$/.test(m[1]) || m[1] === 'tai-khoan/ten-repo') {
+          ra.push(`wrangler.jsonc còn để GH_REPO = "${m[1]}" — thay bằng kho mã thật, `
+                + `dạng "tên-tài-khoản/tên-repo" đọc trên thanh địa chỉ GitHub`);
+        }
+      }
+
       for (const j of ['admin.js', 'viet-bai.js']) {
         if (!ql.html.includes(`/assets/${j}`)) ra.push(`/z-admin/ không nạp ${j}`);
         if (!fs.existsSync(path.join(goc, 'dist', 'assets', j))) {

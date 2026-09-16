@@ -1,0 +1,38 @@
+{
+  "posts/doi-thuong/ha-noi/2026-08-02-quan-ca-phe-goc-pho.md": {
+    "bam": "75a8f82c72f7e9d4",
+    "moc": "2026-08-02"
+  },
+  "posts/review-sach/2017-04-04-siddhartha-loi-tham-thi-tu-dong-song.md": {
+    "bam": "4ab24c575b32fb07",
+    "moc": "2017-04-04"
+  },
+  "posts/tam-ly/2026-09-14-vo-thuc-tap-the.md": {
+    "bam": "2fe69a314ab86174",
+    "moc": "2026-09-14"
+  },
+  "posts/tan-man/2017-04-04-muon-yeu-cung-can-sach.md": {
+    "bam": "bba70e79265102e7",
+    "moc": "2017-04-04"
+  },
+  "posts/tan-man/2017-04-08-ngo-nhung-bai-hoc-ngu-ngon-nho-doi.md": {
+    "bam": "53b3c7ca21fa0265",
+    "moc": "2017-04-08"
+  },
+  "posts/tan-man/2021-12-20-chiec-guong.md": {
+    "bam": "c83c30b946de6344",
+    "moc": "2021-12-20"
+  },
+  "posts/tan-man/2026-09-15-thu-bay-khong-co-gi.md": {
+    "bam": "146903dc932fc3f2",
+    "moc": "2026-09-15"
+  },
+  "posts/tarot/2017-04-07-tarot-dummies-cau-chuyen-tu-nhung-la-bai.md": {
+    "bam": "19788453e66fb79d",
+    "moc": "2017-04-07"
+  },
+  "posts/thuc-duong/2017-04-05-phan-biet-chay-va-thuc-duong.md": {
+    "bam": "340fbb3ec8ed48b7",
+    "moc": "2017-04-05"
+  }
+}

@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.02 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
 | V8.01 | 2026-09-16 | 01 | trang quản lý gom thành ba ngăn; đăng bài thẳng từ đó; núm vặn gom về một chỗ |
 | V8.00 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
 | V7.09 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
@@ -100,6 +101,15 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V8.02 — 16-Sep-2026
+
+- **Điền kho mã thật vào cấu hình Worker**, thay chỗ trống mẫu. Không có nó thì
+  ngăn Post không biết ghi bài vào đâu.
+- **Thêm một phép kiểm canh đúng chỗ trống ấy.** Để nguyên mẫu thì mọi thứ vẫn
+  dựng, vẫn đưa lên được, ngăn Post vẫn mở ra bình thường — chỉ tới lúc bấm
+  Đăng mới nhận một câu báo lỗi của GitHub, mà câu ấy đọc ra như "khoá hỏng"
+  chứ không như "bạn quên điền tên kho mã".
 
 ## V8.01 — 16-Sep-2026
 
