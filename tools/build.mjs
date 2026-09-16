@@ -318,7 +318,7 @@ function tenMuc(duongDanTuongDoi) {
 }
 
 /* ══════════════ 1b. ĐỌC KHO TRÍCH DẪN ══════════════
-   content/quotes.md — mỗi gạch đầu dòng một câu, dạng "Nội dung — Người nói".
+   content/quote-nguon.md — mỗi gạch đầu dòng một câu, dạng "Nội dung — Người nói".
 
    Tách ở dấu — (em dash) CUỐI CÙNG chứ không phải dấu đầu tiên: nội dung câu
    hoàn toàn có thể chứa em dash giữa chừng ("Ta là thứ ta làm — lặp đi lặp

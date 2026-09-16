@@ -30,6 +30,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
 | **Cài Cloudflare · D1 · Gemini — từng bước** | [`docs/CAI-DAT.md`](docs/CAI-DAT.md) |
 | Khung bình luận chạy thế nào, cách trả lời | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
+| Bản lưu từng trạng thái của logo | [`docs/logo/README.md`](docs/logo/README.md) |
 | Ô trích dẫn mỗi ngày | [`docs/QUOTE.md`](docs/QUOTE.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
@@ -45,10 +46,16 @@ public/media/<năm>/<slug>/                          ảnh, video của từng b
 public/_headers                                     luật cache cho Cloudflare
 _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
 src/styles/     tokens · base · glass · layout · components · prose
-src/js/         theme · nen · toc · media · comments · copy-guard · reveal
-                so-tay · quote · search · trang-so · moc · bang-anh · xem · ghi-chu
+src/styles/     …· list (chưa kể ở dòng trên)
+src/js/         theme · nen · toc · media · comments · duyet · copy-guard
+                reveal · so-tay · quote · search · trang-so · moc · bang-anh
+                xem · ghi-chu
 src/templates/  shell.html · post.html · page.html
-tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh · lib/
+tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh
+                ghi-chu-keo · lib/
+worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/*
+wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1
+docs/logo/      bản lưu 12 trạng thái của logo + một file chạy trọn vòng
 functions/api/  binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
                 ghi-chu.js — đăng ghi chú thẳng lên /notes/, không phải dựng lại
                 xem.js — đếm lượt xem thật
@@ -120,8 +127,9 @@ mới (`docs/QUOTE.md`).
 
 **Khung bình luận chạy trên Cloudflare D1**, cùng nhà với trang — người đọc
 không phải đợi một dịch vụ bên thứ ba nào. Không bình luận nào tự lên trang:
-mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web bằng cách thêm
-`#duyet` vào địa chỉ một bài — làm được từ điện thoại, không cần mở máy.
+mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web — mở `/z-admin/`
+là có cả ô viết ghi chú lẫn hàng chờ duyệt. Làm được từ điện thoại, không cần
+mở máy, không cần dựng lại trang.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
