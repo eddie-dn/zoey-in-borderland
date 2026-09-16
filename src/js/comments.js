@@ -1,8 +1,8 @@
 /* ============================================================
    BÌNH LUẬN — phía trình duyệt. Có trả lời lồng bên trong.
 
-   Gửi lên và lấy về từ một Google Apps Script (xem tools/apps-script/Code.gs).
-   Địa chỉ script khai ở site.config.json → binhLuan.url.
+   Gửi lên và lấy về từ /api/binh-luan — một hàm Cloudflare Pages chạy trên
+   D1, cùng tên miền với trang. Đường dẫn khai ở site.config.json → binhLuan.api.
 
    Bốn điều quan trọng trong file này:
 
@@ -11,11 +11,11 @@
       <script> trong ô bình luận chạy được trên trang của mình. textContent
       biến mọi thứ thành chữ thuần.
 
-   2. POST GỬI KIỂU text/plain, KHÔNG PHẢI application/json.
-      Đặt header Content-Type: application/json là trình duyệt bắn một request
-      OPTIONS hỏi trước; Apps Script không trả lời OPTIONS nên hỏng CORS. Không
-      đặt header nào cả thì trình duyệt dùng text/plain và gửi thẳng. Nội dung
-      vẫn là chuỗi JSON, chỉ khác cái nhãn.
+   2. GỌI THẲNG /api/binh-luan, CÙNG TÊN MIỀN.
+      Bản trước gọi sang Google Apps Script và phải gửi kiểu text/plain: đặt
+      Content-Type: application/json là trình duyệt bắn một request OPTIONS hỏi
+      trước, mà Apps Script không trả lời OPTIONS. Nay hàm nằm cùng tên miền
+      nên không có chuyện hỏi trước, và JSON là JSON.
 
    3. KHÔNG CHẶN VIỆC ĐỌC BÀI.
       Bình luận tải sau, tải hỏng cũng không sao — bài vẫn nguyên vẹn. Nên mọi
@@ -56,6 +56,23 @@
   var nhaCuaForm = form.parentNode;
   var traLoiCho = '';
 
+  /* ── KHOÁ CHỦ TRANG ──
+     Dùng CHUNG với ô viết ghi chú (src/js/ghi-chu.js): cùng hai biến trong
+     localStorage, cùng hai biến bí mật ở phía máy chủ. Nhập khoá ở một chỗ là
+     mở được cả hai quyền — một cặp khoá để nhớ, không phải hai.
+
+     Có khoá thì bình luận của chủ trang vào thẳng, có huy hiệu, khỏi chờ duyệt;
+     và mở /#duyet là ra bàn duyệt. Không có khoá thì mọi thứ ở đây chạy đúng
+     như với một người ghé ngang. */
+  var K_ID = 'zib-gc-id', K_KEY = 'zib-gc-key';
+  function docKhoa(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+  function coKhoa() { return !!(docKhoa(K_ID) && docKhoa(K_KEY)); }
+  function dauKhoa(them) {
+    var h = them || {};
+    if (coKhoa()) { h['x-gc-id'] = docKhoa(K_ID); h['x-gc-key'] = docKhoa(K_KEY); }
+    return h;
+  }
+
   function noi(t, loai) {
     bao.textContent = t || '';
     bao.className = 'bl-bao' + (loai ? ' bl-bao--' + loai : '');
@@ -82,7 +99,8 @@
 
   /* ══════════ 1. LẤY BÌNH LUẬN ĐÃ DUYỆT ══════════ */
   function tai() {
-    fetch(API + '?url=' + encodeURIComponent(TRANG), { cache: 'no-store' })
+    fetch(API + '?url=' + encodeURIComponent(TRANG),
+          { cache: 'no-store', headers: dauKhoa() })
       .then(function (r) { return r.json(); })
       .then(function (kq) { if (kq.ok && kq.ds) ve(kq.ds); })
       .catch(function () {
@@ -102,7 +120,7 @@
 
      Máy chủ trả về một danh sách phẳng, mỗi dòng có `ma` của chính nó và `cha`
      là mã của bình luận nó trả lời. Dựng thành cây ở đây chứ không ở máy chủ:
-     Apps Script tính tiền theo thời gian chạy, mà việc này trình duyệt làm
+     máy chủ chỉ nên làm việc của máy chủ, còn dựng cây là việc trình duyệt làm
      trong một phần nghìn giây.
 
      CHỈ HAI TẦNG. Trả lời của trả lời cũng gắn vào bình luận GỐC của nhánh đó,
@@ -262,7 +280,7 @@
 
     fetch(API, {
       method: 'POST',
-      /* KHÔNG đặt Content-Type — xem ghi chú §2 ở đầu file */
+      headers: dauKhoa({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         url: TRANG,
         ten: form.ten.value,
@@ -278,7 +296,10 @@
         if (!kq.ok) { noi(kq.loi || L('failed'), 'loi'); return; }
         form.reset();
         veNha();
-        noi(L('sent'), 'ok');
+        /* Bình luận của chủ trang lên thẳng, nên báo khác: nói "chờ duyệt" với
+           người vừa tự duyệt mình là một câu vô nghĩa. */
+        noi(kq.duyet ? L('sentOwner') : L('sent'), 'ok');
+        if (kq.duyet) tai();
       })
       .catch(function () {
         noi(L('netErr'), 'loi');
@@ -299,6 +320,162 @@
       con.textContent = du < MAX / 2 ? L('charsLeft', du) : '';
     });
   }
+
+  /* ══════════ 5. BÀN DUYỆT (/#duyet) ══════════
+
+     ── VÌ SAO KHÔNG PHẢI MỘT CÁI NÚT ──
+     Cùng lý do với ô viết ghi chú: một cái nút "Duyệt bình luận" bày giữa
+     trang thì mọi người đọc đều thấy một thứ họ bấm vào cũng chẳng để làm gì.
+     `#duyet` thì lưu được vào màn hình chính điện thoại, còn người đọc thường
+     không bao giờ gặp. Đây KHÔNG phải lớp bảo mật — lớp bảo mật là hai vế khoá
+     ở phía máy chủ; ai gõ đúng #duyet cũng chỉ thấy một cái ô xin khoá.
+
+     ── VÌ SAO HÀNG CHỜ LÀ TOÀN TRANG, KHÔNG RIÊNG BÀI ĐANG MỞ ──
+     Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì đang chờ thì
+     không ai duyệt nữa. Mở #duyet ở BẤT KỲ bài nào cũng ra hàng chờ của cả
+     blog, mỗi dòng có đường dẫn bài của nó. */
+  var banDuyet = null;
+
+  function moBanDuyet() {
+    if (banDuyet) return;
+    banDuyet = document.createElement('div');
+    banDuyet.className = 'bl-duyet';
+    than.insertBefore(banDuyet, than.firstChild);
+    veBanDuyet();
+  }
+
+  function veBanDuyet() {
+    if (!coKhoa()) { veOKhoa(); return; }
+    banDuyet.innerHTML = '<p class="bl-duyet-de">' + L('queue') + '</p>' +
+                         '<p class="bl-duyet-bao">' + L('loading') + '</p>';
+    fetch(API + '?cho=1', { cache: 'no-store', headers: dauKhoa() })
+      .then(function (r) { return r.json(); })
+      .then(function (kq) {
+        if (!kq.ok) { veOKhoa(kq.loi || L('badKey')); return; }
+        veHang(kq.ds || []);
+      })
+      .catch(function () {
+        banDuyet.querySelector('.bl-duyet-bao').textContent = L('netErr');
+      });
+  }
+
+  function veOKhoa(loi) {
+    banDuyet.innerHTML = '';
+    var de = document.createElement('p');
+    de.className = 'bl-duyet-de';
+    de.textContent = L('queue');
+    banDuyet.appendChild(de);
+
+    var hang = document.createElement('div');
+    hang.className = 'bl-duyet-hang';
+    var oId = document.createElement('input');
+    oId.type = 'text'; oId.placeholder = L('keyId');
+    oId.autocapitalize = 'off'; oId.spellcheck = false;
+    var oKey = document.createElement('input');
+    oKey.type = 'password'; oKey.placeholder = L('keySecret');
+    var nut = document.createElement('button');
+    nut.type = 'button'; nut.className = 'btn'; nut.textContent = L('keySave');
+    nut.addEventListener('click', function () {
+      if (!oId.value.trim() || !oKey.value.trim()) return;
+      try {
+        localStorage.setItem(K_ID, oId.value.trim());
+        localStorage.setItem(K_KEY, oKey.value.trim());
+      } catch (e) {}
+      veBanDuyet();
+      tai();
+    });
+    hang.appendChild(oId); hang.appendChild(oKey); hang.appendChild(nut);
+    banDuyet.appendChild(hang);
+
+    var bao = document.createElement('p');
+    bao.className = 'bl-duyet-bao';
+    bao.textContent = loi || '';
+    banDuyet.appendChild(bao);
+  }
+
+  function veHang(ds) {
+    banDuyet.innerHTML = '';
+    var de = document.createElement('p');
+    de.className = 'bl-duyet-de';
+    var cho = ds.filter(function (c) { return !c.duyet; }).length;
+    de.textContent = L('queue') + (cho ? ' (' + cho + ')' : '');
+    banDuyet.appendChild(de);
+
+    if (!ds.length) {
+      var trong = document.createElement('p');
+      trong.className = 'bl-duyet-bao';
+      trong.textContent = L('queueEmpty');
+      banDuyet.appendChild(trong);
+    }
+
+    ds.forEach(function (c) { banDuyet.appendChild(veDongDuyet(c)); });
+
+    var quen = document.createElement('button');
+    quen.type = 'button'; quen.className = 'bl-duyet-quen';
+    quen.textContent = L('keyForget');
+    quen.addEventListener('click', function () {
+      try { localStorage.removeItem(K_ID); localStorage.removeItem(K_KEY); } catch (e) {}
+      veBanDuyet();
+      tai();
+    });
+    banDuyet.appendChild(quen);
+  }
+
+  function veDongDuyet(c) {
+    var d = document.createElement('div');
+    d.className = 'bl-dong' + (c.duyet ? ' bl-dong--roi' : '');
+
+    var dau = document.createElement('div');
+    dau.className = 'bl-dong-dau';
+    var ai = document.createElement('span');
+    ai.className = 'bl-ten';
+    ai.textContent = c.ten || L('anon');
+    var o = document.createElement('a');
+    o.className = 'bl-dong-trang';
+    o.href = c.trang; o.textContent = c.trang;
+    dau.appendChild(ai); dau.appendChild(o);
+
+    var nd = document.createElement('p');
+    nd.className = 'bl-nd';
+    nd.textContent = c.chu;                         /* ← textContent, không innerHTML */
+
+    var nut = document.createElement('div');
+    nut.className = 'bl-dong-nut';
+
+    function lam(than_, xong) {
+      fetch(API, { method: 'PATCH',
+        headers: dauKhoa({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(Object.assign({ ma: c.ma }, than_))
+      }).then(function (r) { return r.json(); })
+        .then(function (kq) { if (kq.ok) xong(); })
+        .catch(function () {});
+    }
+
+    var bDuyet = document.createElement('button');
+    bDuyet.type = 'button'; bDuyet.className = 'btn';
+    bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
+    bDuyet.addEventListener('click', function () {
+      bDuyet.disabled = true;
+      lam({ duyet: c.duyet ? 0 : 1 }, function () { veBanDuyet(); tai(); });
+    });
+
+    var bAn = document.createElement('button');
+    bAn.type = 'button'; bAn.className = 'bl-dong-an';
+    bAn.textContent = L('hide');
+    bAn.addEventListener('click', function () {
+      bAn.disabled = true;
+      lam({ an: 1 }, function () { d.remove(); tai(); });
+    });
+
+    nut.appendChild(bDuyet); nut.appendChild(bAn);
+    d.appendChild(dau); d.appendChild(nd); d.appendChild(nut);
+    return d;
+  }
+
+  if (location.hash === '#duyet') moBanDuyet();
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#duyet') moBanDuyet();
+  });
 
   tai();
 })();

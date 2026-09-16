@@ -5,117 +5,100 @@
 > tính năng, và cái nào chưa cài thì phần đó lặng lẽ không xuất hiện, không bao
 > giờ hiện lỗi cho người đọc thấy.
 >
-> | # | Dịch vụ | Thêm được gì | Chưa cài thì sao | Mất bao lâu |
+> | # | Cần gì | Thêm được gì | Chưa cài thì sao | Mất bao lâu |
 > |---|---|---|---|---|
-> | 1 | Google Apps Script + Sheet | khung bình luận, trả lời | form ẩn đi, bài vẫn đọc bình thường | ~15 phút |
-> | 2 | Gemini API | mỗi ngày một câu trích dẫn viết mới | dùng kho câu trong `content/quote-nguon.md` | ~10 phút |
 > | 3 | Cloudflare Pages | trang lên mạng thật | chỉ xem được ở máy mình | ~10 phút |
+> | 5 | Cloudflare D1 + hai biến khoá | **bình luận · đếm lượt xem · ghi chú đăng thẳng** | ba phần đó lặng lẽ không xuất hiện | ~10 phút |
+> | 2 | Gemini API | mỗi ngày một câu trích dẫn viết mới | dùng kho câu trong `content/quote-nguon.md` | ~10 phút |
 >
-> Làm theo thứ tự 3 → 1 → 2 thì gọn nhất: có địa chỉ trang rồi mới đi khai
-> mấy thứ kia.
+> **Ba tính năng dùng CHUNG một cơ sở dữ liệu D1 và CHUNG một cặp khoá.** Làm
+> mục 5 một lần là xong cả ba: bình luận (§1), đếm lượt xem (§5) và ghi chú
+> đăng thẳng (§6). Không phải cài ba lần, không phải nhớ ba cặp khoá.
+>
+> Thứ tự gọn nhất: **3 → 5 → 2**. Có địa chỉ trang rồi mới gắn cơ sở dữ liệu.
 
 ---
 
 ## 0 · Trước khi bắt đầu
 
-Cần sẵn: một tài khoản **Google** (cho bình luận và Gemini) và một tài khoản
-**Cloudflare** (miễn phí, đăng ký bằng email). Không cần thẻ tín dụng cho bất
-kỳ bước nào ở đây.
+Cần sẵn: một tài khoản **Cloudflare** (miễn phí, đăng ký bằng email) và — chỉ
+nếu muốn trích dẫn viết mới mỗi ngày — một tài khoản **Google**. Không cần thẻ
+tín dụng cho bất kỳ bước nào ở đây.
 
-Cả ba dịch vụ đều có mức miễn phí rộng hơn nhiều so với nhu cầu của một blog
-cá nhân. Đừng lo chuyện hết hạn mức.
+Mức miễn phí của cả hai rộng hơn nhiều so với nhu cầu của một blog cá nhân.
+Đừng lo chuyện hết hạn mức.
 
 ---
 
-## 1 · Bình luận — Google Apps Script + Google Sheet
+## 1 · Bình luận — Cloudflare D1
 
-Bình luận được cất trong một **Google Sheet của riêng bạn**. Không có dịch vụ
-thứ ba nào giữ dữ liệu, không có tài khoản nào phải tạo, và người đọc không
-phải đăng nhập gì cả.
+Không cần dịch vụ nào ngoài Cloudflare. Bình luận đi vào cùng cơ sở dữ liệu D1
+với lượt xem và ghi chú, và **bạn duyệt ngay trên chính trang web** — không có
+bảng tính nào ở giữa.
 
-### 1.1 · Lập bảng tính
+> **Bản trước dùng Google Apps Script + Google Sheet.** Cái sai không nằm ở
+> Apps Script mà ở chỗ nó ĐỨNG TRÊN ĐƯỜNG ĐỌC: mỗi người mở một bài đều phải
+> đợi một lượt gọi sang Google (khởi động nguội 1–3 giây, không cache được ở
+> biên) chỉ để lấy về mấy dòng bình luận. Đổi lại được đúng một thứ — bạn tick
+> một ô trong bảng tính. Nay việc tick ấy chuyển lên trang web, và người đọc
+> không phải trả giá cho nó nữa.
 
-1. Mở **sheets.new** → một bảng tính trống hiện ra.
-2. Đặt tên gì cũng được, ví dụ `Zoey — Bình luận`.
-3. **Không cần tự tạo cột.** Script tự lập hàng tiêu đề ở lần chạy đầu, và tự
-   thêm cột còn thiếu nếu sau này có bản mới.
+### 1.1 · Gắn D1 và đặt khoá
 
-### 1.2 · Dán script
+Làm **§5.1**, **§5.2** và **§6.2** — tạo cơ sở dữ liệu, gắn vào dự án với tên
+biến `DB`, đặt hai biến bí mật `GC_ID` và `GC_KEY`. Cả ba tính năng dùng chung
+đúng bấy nhiêu.
 
-1. Trong bảng tính: **Extensions** → **Apps Script**.
-2. Xoá hết đoạn `function myFunction() {}` có sẵn.
-3. Mở `tools/apps-script/Code.gs` trong repo, copy **toàn bộ**, dán vào.
-4. Bấm biểu tượng đĩa mềm để lưu.
+Bảng `binh_luan` **không phải tạo tay**: bình luận đầu tiên tự tạo.
 
-### 1.3 · Xuất bản
-
-1. Góc trên bên phải: **Deploy** → **New deployment**.
-2. Bấm bánh răng cạnh chữ "Select type" → chọn **Web app**.
-3. Điền:
-
-   | Ô | Chọn |
-   |---|---|
-   | Description | gì cũng được, ví dụ `v1` |
-   | Execute as | **Me** |
-   | Who has access | **Anyone** |
-
-4. **Deploy**. Google hỏi quyền lần đầu: **Authorize access** → chọn tài khoản →
-   màn hình "Google hasn't verified this app" thì bấm **Advanced** → **Go to …
-   (unsafe)** → **Allow**.
-
-   :::note Chữ "unsafe" ở đây là bình thường
-   Google hiện cảnh báo đó cho MỌI script chưa qua kiểm duyệt của họ, kể cả
-   script do chính bạn vừa viết. Bạn đang cấp quyền cho chính mình.
-   :::
-
-5. Copy dòng **Web app URL**. Nó có dạng
-   `https://script.google.com/macros/s/AKfy…/exec`.
-
-### 1.4 · Khai vào blog
-
-Mở `site.config.json`, dán vào:
+### 1.2 · Bật trong cấu hình
 
 ```json
-"binhLuan": {
-  "bat": true,
-  "url": "https://script.google.com/macros/s/AKfy…/exec",
-  "loiMoi": "Ghé ngang thì để lại một dòng cũng được — không cần đăng ký gì cả."
-}
+"binhLuan": { "bat": true, "api": "/api/binh-luan" }
 ```
 
-Chạy `npm run build`, đẩy lên. Xong.
+Đã là mặc định. `bat: false` thì tắt hẳn khung bình luận trên mọi bài.
 
-### 1.5 · Duyệt bình luận
+### 1.3 · Duyệt — mở `#duyet` ở bất kỳ bài nào
 
-**Không bình luận nào tự lên trang.** Mọi dòng vào Sheet đều chờ bạn duyệt —
-đây mới là lớp chặn spam thật sự, mấy lớp kiểm trong script chỉ lọc bớt cho đỡ
-rác Sheet.
+Thêm `#duyet` vào địa chỉ một bài bất kỳ:
 
-Mở Sheet, cột **Duyet**, gõ `x` vào dòng nào muốn cho lên. Chấp nhận cả
-`x` · `v` · `1` · `yes` · `ok` · ô checkbox đã tick.
+```
+tên-miền-của-bạn/posts/tan-man/chiec-guong/#duyet
+```
 
-### 1.6 · Tự trả lời bình luận
+Lần đầu nó hỏi mã chủ và khoá — **cùng một cặp với ô viết ghi chú**, nhập ở đâu
+cũng mở được cả hai. Trình duyệt nhớ trên máy đó.
 
-Thêm một dòng mới trong Sheet, điền tay:
+Hàng chờ là của **CẢ BLOG**, không riêng bài đang mở: mỗi dòng ghi rõ nó thuộc
+bài nào. Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì đang chờ thì
+không ai duyệt nữa.
 
-| Cột | Điền |
+| Nút | Làm gì |
 |---|---|
-| `Thoi gian` | để trống cũng được, hoặc gõ ngày |
-| `Trang` | copy y hệt ô `Trang` của bình luận đang trả lời |
-| `Ten` | tên bạn |
-| `Noi dung` | nội dung trả lời |
-| `Duyet` | `x` |
-| `Ma` | gõ gì cũng được, miễn không trùng — ví dụ `tl1` |
-| `Tra loi cho` | copy ô `Ma` của bình luận đang trả lời |
-| `Chu trang` | `x` ← cái này làm nó hiện huy hiệu **AUTHOR** |
+| **Duyệt** | bình luận hiện ra với mọi người |
+| **Bỏ duyệt** | rút xuống, không xoá |
+| **Ẩn** | xoá mềm — biến khỏi trang và khỏi hàng chờ, dòng vẫn còn trong D1 |
 
-### 1.7 · Email thì sao
+Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, có huy hiệu
+`AUTHOR`, không phải chờ duyệt. Chủ nhà không phải tự duyệt lời của mình.
 
-Cột `Email` **không bao giờ ra khỏi Sheet**. Hàm `doGet` đọc đúng năm cột và
-cột email không nằm trong đó, nên không có cách nào moi nó qua mạng. Nó chỉ để
-bạn liên hệ lại riêng nếu muốn.
+### 1.4 · Những gì nó tự lo
 
----
+- **Không bình luận nào tự lên trang.** Mọi dòng vào bảng đều chờ duyệt. Đây là
+  lớp chặn spam thật sự; mấy phép kiểm dưới đây chỉ lọc bớt cho đỡ rác.
+- **Bẫy bot:** một ô ẩn mà người không thấy nhưng bot điền vào, và mốc "mở form
+  chưa tới 3 giây đã gửi xong". Dính bẫy thì máy chủ trả về *thành công* — nói
+  thẳng "mày là bot" là chỉ cho người viết bot biết cần sửa gì.
+- **Email không bao giờ ra khỏi cơ sở dữ liệu.** Không câu lệnh nào đọc cột
+  email, kể cả lượt gọi của bạn. Muốn xem thì mở Console của D1.
+- **Trả lời chỉ hai tầng**, y như Facebook. Trả lời của trả lời gắn vào bình
+  luận gốc của nhánh đó.
+
+### 1.5 · Đổi khoá, và khi mất khoá
+
+Đổi `GC_KEY` trên Cloudflare rồi bấm **Quên khoá** ở cuối bàn duyệt để nhập
+lại. Mọi máy đã nhớ khoá cũ sẽ mất quyền — đó là cách thu hồi.
 
 ## 2 · Trích dẫn Gemini — tuỳ chọn, mặc định TẮT
 
@@ -446,8 +429,8 @@ hiện ghi chú hai lần.
 |---|---|
 | `luotXem.bat` = false, hoặc chưa gắn D1 | Hàng meta thiếu mục lượt xem. Không có gì khác đổi. |
 | `phanTich.bat` = false | Không có gì thay đổi với người đọc — chỉ là chủ trang không biết bài nào có người xem. |
-| Chưa khai `binhLuan.url` | Form bình luận ẩn, có một dòng nhắc nhỏ. Bài đọc bình thường. |
-| Apps Script hết hạn quyền | Bình luận cũ không tải được, form vẫn gửi được. Không có thông báo lỗi to. |
+| `binhLuan.bat` = false, hoặc chưa gắn D1 | Khung bình luận ẩn (hoặc rỗng). Bài đọc bình thường. |
+| Sai `GC_ID` / `GC_KEY` | Người đọc gửi bình luận bình thường. Chỉ bàn duyệt `#duyet` báo sai khoá. |
 | Chưa khai `GEMINI_KEY` | Ô trích dẫn dùng kho câu sẵn. Không phân biệt được. |
 | Gemini chậm quá 3 giây | Giữ nguyên câu từ kho sẵn. Không chớp, không nhảy. |
 | `ghiChu.online` = false, hoặc chưa gắn D1 | `/notes/` hiện đúng những ghi chú đã dựng sẵn. Không ai biết là có cửa `#viet`. |

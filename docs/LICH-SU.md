@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.00 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
 | V6.05 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
 | V6.04 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
 | V6.03 | 2026-09-16 | 03 | logo lấy lại đoá mandala làm hình nghỉ; vòng kể ngắn lại, chặng xoay rõ hơn; tên blog ở khổ dọc cân hai dòng |
@@ -88,6 +89,26 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.00 — 16-Sep-2026
+
+- **Bình luận rời khỏi Google, về chạy trên Cloudflare.** Bản cũ để Google Apps
+  Script lo hết, nghĩa là mỗi người mở một bài đều phải đợi một lượt gọi sang
+  Google — khởi động nguội một tới ba giây, và không cache được — chỉ để lấy về
+  mấy dòng bình luận. Đổi lại được đúng một thứ: chủ trang tick một ô trong
+  bảng tính. Người ghé đọc bài không nên trả giá cho sự tiện tay của chủ nhà.
+- **Duyệt ngay trên trang, làm được từ điện thoại.** Thêm `#duyet` vào địa chỉ
+  bất kỳ bài nào là ra hàng chờ của CẢ blog, mỗi dòng ghi rõ nó thuộc bài nào —
+  không phải mở từng bài xem bài nào có gì đang chờ. Duyệt, bỏ duyệt, ẩn, tất
+  cả tại chỗ. Không còn bảng tính nào ở giữa.
+- **Lời của chủ trang lên thẳng, có huy hiệu.** Chủ nhà không phải tự duyệt lời
+  của chính mình. Huy hiệu ấy chỉ gắn được từ phía máy chủ sau khi khoá đã
+  khớp — gõ đúng tên chủ trang vào ô tên thì không có.
+- **Một cặp khoá cho mọi quyền của chủ trang.** Viết ghi chú và duyệt bình luận
+  dùng chung hai biến bí mật; nhập ở một chỗ là mở được cả hai. Ba tính năng —
+  bình luận, lượt xem, ghi chú — nay cùng một cơ sở dữ liệu, cài một lần.
+- **Email vẫn không bao giờ ra khỏi cơ sở dữ liệu.** Không câu lệnh nào đọc tới
+  cột ấy, kể cả lượt gọi của chủ trang.
 
 ## V6.05 — 16-Sep-2026
 

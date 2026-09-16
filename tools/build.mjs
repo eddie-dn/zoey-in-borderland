@@ -208,6 +208,23 @@ const NHAN = {
   quoteToday  : 'Quote of the day',
   quoteMore   : 'Another one',
 
+  /* ── bình luận: bàn duyệt của chủ trang ──
+     Tiếng Việt, khác lệ tiếng Anh của phần khung: chỉ chủ trang đọc mấy dòng
+     này, mà chủ trang thì đọc tiếng Việt nhanh hơn. Cùng lý do với ô viết ghi
+     chú. */
+  queue       : 'Hàng chờ duyệt',
+  queueEmpty  : 'Không có gì đang chờ.',
+  loading     : 'Đang tải…',
+  approve     : 'Duyệt',
+  unapprove   : 'Bỏ duyệt',
+  hide        : 'Ẩn',
+  keyId       : 'Mã chủ',
+  keySecret   : 'Khoá',
+  keySave     : 'Nhớ khoá',
+  keyForget   : 'Quên khoá trên máy này',
+  badKey      : 'Sai khoá.',
+  sentOwner   : 'Đã đăng — lời của chủ trang không phải chờ duyệt.',
+
   /* ── bình luận: khung ── */
   comments    : 'Leave a note',
   yourName    : 'Name',
@@ -234,7 +251,7 @@ const NHAN = {
   sent        : 'Got it, thank you ✦ I read everything before it goes up.',
   failed      : 'Could not send. Try again in a bit.',
   netErr      : 'Network hiccup. Try again in a moment.',
-  notLinked   : 'Comments are not connected to a server yet — see docs/BINH-LUAN.md.',
+  notLinked   : 'Comments are not connected to a database yet — see docs/BINH-LUAN.md.',
   charsLeft   : '{n} characters left',
 
   /* ── sổ lịch sử phiên bản ── */
@@ -1184,7 +1201,7 @@ function goiY(bai, congKhai, soLuong = 2) {
 
 /* ── KHUNG BÌNH LUẬN ──
    Chỉ là HTML tĩnh; mọi việc gửi/nhận do src/js/comments.js lo, nói chuyện với
-   một Google Apps Script (tools/apps-script/Code.gs).
+   /api/binh-luan (functions/api/binh-luan.js).
 
    Ba chỗ cố ý:
      · Ô `hp` là BẪY BOT — ẩn bằng CSS chứ không phải type="hidden", vì bot đọc
@@ -1210,10 +1227,17 @@ function binhLuanHTML(bai) {
     moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
     sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
     failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
-    charsLeft: NHAN.charsLeft
+    charsLeft: NHAN.charsLeft,
+    queue: NHAN.queue, queueEmpty: NHAN.queueEmpty, loading: NHAN.loading,
+    approve: NHAN.approve, unapprove: NHAN.unapprove, hide: NHAN.hide,
+    keyId: NHAN.keyId, keySecret: NHAN.keySecret, keySave: NHAN.keySave,
+    keyForget: NHAN.keyForget, badKey: NHAN.badKey, sentOwner: NHAN.sentOwner
   }));
 
-  return `<section class="binh-luan" data-binh-luan="${attr(c.url || '')}"
+  /* `c.api` chứ không còn `c.url`. Địa chỉ nay là một đường dẫn NỘI BỘ
+     (/api/binh-luan), không phải địa chỉ Google Apps Script — xem đầu file
+     functions/api/binh-luan.js về lý do bỏ Apps Script. */
+  return `<section class="binh-luan" data-binh-luan="${attr(BASE + (c.api || '/api/binh-luan'))}"
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     <div class="eyebrow"><i></i></div>
     <button class="bl-mo" type="button" aria-expanded="true" aria-controls="bl-than">

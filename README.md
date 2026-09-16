@@ -28,7 +28,7 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | Sửa giao diện, thêm component | [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) |
 | **Đưa lên mạng · xem trên điện thoại** | [`docs/DUA-LEN-MANG.md`](docs/DUA-LEN-MANG.md) |
 | Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
-| **Cài Apps Script · Gemini · Cloudflare — từng bước** | [`docs/CAI-DAT.md`](docs/CAI-DAT.md) |
+| **Cài Cloudflare · D1 · Gemini — từng bước** | [`docs/CAI-DAT.md`](docs/CAI-DAT.md) |
 | Khung bình luận chạy thế nào, cách trả lời | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
 | Ô trích dẫn mỗi ngày | [`docs/QUOTE.md`](docs/QUOTE.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
@@ -49,8 +49,10 @@ src/js/         theme · nen · toc · media · comments · copy-guard · reveal
                 so-tay · quote · search · trang-so · moc · bang-anh · xem · ghi-chu
 src/templates/  shell.html · post.html · page.html
 tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh · lib/
-tools/apps-script/  Code.gs — máy chủ bình luận, dán vào script.google.com
-functions/api/  quote.js — hàm Cloudflare xin câu trích dẫn từ Gemini (tuỳ chọn)
+functions/api/  binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
+                ghi-chu.js — đăng ghi chú thẳng lên /notes/, không phải dựng lại
+                xem.js — đếm lượt xem thật
+                quote.js — xin câu trích dẫn từ Gemini (tuỳ chọn)
                 _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay
 docs/           chín file tài liệu ở bảng trên
 site.config.json
@@ -116,9 +118,10 @@ chia bài nên mỗi câu xuất hiện đúng một lần trong mỗi vòng, kh
 hai ngày liền. Không cần mạng. Bật thêm lớp Gemini thì mỗi ngày có một câu viết
 mới (`docs/QUOTE.md`).
 
-**Khung bình luận không cần máy chủ.** Google Apps Script + Google Sheet, miễn
-phí, dữ liệu nằm trong Drive của bạn. Không bình luận nào tự lên trang — mọi
-dòng chờ bạn duyệt bằng một chữ `x` trong Sheet.
+**Khung bình luận chạy trên Cloudflare D1**, cùng nhà với trang — người đọc
+không phải đợi một dịch vụ bên thứ ba nào. Không bình luận nào tự lên trang:
+mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web bằng cách thêm
+`#duyet` vào địa chỉ một bài — làm được từ điện thoại, không cần mở máy.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
@@ -139,9 +142,9 @@ Bản hiện tại: xem tem `Vxx.yy` ở chân mọi trang, hoặc dòng đầu 
 danh sách), `/posts/` với thư mục con theo chuyên mục, `/tags/`, `/archive/`,
 `/search/` tìm ngay trên máy người đọc, `/about/` khung bento.
 
-**Chạy trên máy chủ:** một hàm duy nhất, `/api/quote`, lấy câu trích dẫn mỗi
-ngày. Bình luận đi qua Google Apps Script. Ngoài hai thứ đó, trang là file
-tĩnh thuần.
+**Chạy trên máy chủ:** bốn hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
+`/api/xem` và `/api/quote`. Ba cái đầu dùng chung một cơ sở dữ liệu D1 và chung
+một cặp khoá chủ trang. Ngoài chúng ra, trang là file tĩnh thuần.
 
 **Còn treo:** `site.config.json` vẫn để địa chỉ `.pages.dev` — đổi sang tên
 miền thật trước khi công bố, không thì thẻ canonical, ảnh chia sẻ và sitemap

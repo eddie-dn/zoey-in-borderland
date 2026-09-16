@@ -802,6 +802,40 @@ const KIEM = [
     }
   },
   {
+    /* ── BẬT BÌNH LUẬN THÌ PHẢI CÓ ĐỦ BỘ ──
+       Ba mẩu đi cùng nhau: hàm ở functions/, địa chỉ in ra mỗi trang bài, và
+       file JS đọc địa chỉ ấy. Thiếu mẩu nào thì khung bình luận vẫn hiện
+       nguyên — chỉ là gửi không đi đâu cả. Người đọc gõ xong bấm Gửi và nhận
+       một câu báo lỗi; chủ trang thì không bao giờ biết, vì trang nhìn vẫn
+       bình thường. */
+    ten: 'Bật bình luận thì phải có đủ hàm, địa chỉ và script',
+    muc: 'loi',
+    chay: ({ cau, goc, trang }) => {
+      if ((cau.binhLuan || {}).bat === false) return [];
+      const ra = [];
+      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'binh-luan.js'))) {
+        ra.push('site.config.json bật binhLuan nhưng thiếu functions/api/binh-luan.js');
+      }
+      /* Khoá cũ `url` là địa chỉ Google Apps Script. Còn sót lại thì cấu hình
+         đọc ra là vẫn đang dùng Apps Script, mà build thì đã thôi đọc nó. */
+      if ((cau.binhLuan || {}).url !== undefined) {
+        ra.push('site.config.json còn khoá binhLuan.url (địa chỉ Apps Script cũ) — ' +
+                'bỏ đi, nay dùng binhLuan.api trỏ vào hàm nội bộ');
+      }
+      const api = (cau.binhLuan || {}).api || '/api/binh-luan';
+      if (api !== '/api/binh-luan') {
+        ra.push(`binhLuan.api = "${api}" nhưng hàm nằm ở /api/binh-luan ` +
+                '(Cloudflare lấy đường dẫn theo tên file trong functions/)');
+      }
+      const bai = trang.filter((t) => /class="post-layout/.test(t.html));
+      const thieu = bai.filter((t) => !t.html.includes('data-binh-luan='));
+      if (bai.length && thieu.length) {
+        ra.push(`${thieu.length} trang bài không có khối bình luận, ví dụ ${thieu[0].url}`);
+      }
+      return ra;
+    }
+  },
+  {
     /* ── BẬT GHI CHÚ ĐĂNG THẲNG THÌ PHẢI CÓ ĐỦ BỘ ──
        Ba mẩu phải đi cùng nhau: hàm ở functions/, địa chỉ API in ra /notes/,
        và file JS đọc địa chỉ ấy. Thiếu mẩu nào thì /notes/ vẫn đọc được bình

@@ -454,6 +454,67 @@ a.rn-card:hover{color:var(--text)}
 .bl-dem{color:var(--text-faint);font-weight:400}
 .bl-moi{font-size:var(--fs-sm);color:var(--text-muted);margin:0 0 var(--s5)}
 
+/* ── BÀN DUYỆT (/#duyet) ──
+   Chỉ chủ trang mở tới, nên nó KHÔNG cố hoà vào trang: nền chìm, viền đứt,
+   đọc ra ngay là "chỗ làm việc" chứ không phải nội dung. Cùng khuôn với ô viết
+   ghi chú ở /notes/#viet — hai chỗ làm cùng một loại việc thì nên trông giống
+   nhau, để nhận ra ngay mình đang ở chế độ chủ trang. */
+.bl-duyet{
+  margin-bottom:var(--s7);
+  padding:var(--s5);
+  border-radius:var(--r-md);
+  border:1px dashed var(--line-strong);
+  background:var(--surface-sunken);
+}
+.bl-duyet-de{
+  margin:0 0 var(--s4);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.bl-duyet-bao{margin:0;font-size:var(--fs-2xs);color:var(--text-muted)}
+/* `auto-fit` để hai ô khoá tự xuống dòng ở màn hẹp, không cần thêm @media. */
+.bl-duyet-hang{
+  display:grid;gap:var(--s3);
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+}
+.bl-duyet-hang input{
+  font:inherit;font-size:var(--fs-sm);color:var(--text);
+  padding:var(--s2) var(--s3);
+  border:1px solid var(--line-strong);border-radius:var(--r-xs);
+  background:var(--surface-solid);width:100%;box-sizing:border-box;
+}
+.bl-duyet-hang input:focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);
+}
+
+/* Một dòng chờ duyệt. Dòng ĐÃ duyệt vẫn ở lại danh sách nhưng mờ đi — để còn
+   bỏ duyệt lại được nếu lỡ tay, mà không tranh chỗ với những dòng đang chờ. */
+.bl-dong{
+  padding:var(--s4) 0;
+  border-top:1px solid var(--line);
+  display:flex;flex-direction:column;gap:var(--s2);
+}
+.bl-dong--roi{opacity:.5}
+.bl-dong-dau{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:baseline}
+.bl-dong-trang{
+  font-family:var(--font-mono);font-size:var(--fs-2xs);
+  color:var(--text-faint);text-decoration:none;
+}
+.bl-dong-trang:hover{color:var(--accent-ink);text-decoration:underline}
+.bl-dong-nut{display:flex;gap:var(--s3);align-items:center}
+.bl-dong-an{
+  font:inherit;font-size:var(--fs-2xs);cursor:pointer;
+  background:none;border:none;padding:0;color:var(--text-faint);
+  text-decoration:underline;text-underline-offset:3px;
+}
+.bl-dong-an:hover{color:var(--bad)}
+.bl-duyet-quen{
+  margin-top:var(--s4);
+  font:inherit;font-size:var(--fs-2xs);cursor:pointer;
+  background:none;border:none;padding:0;color:var(--text-faint);
+  text-decoration:underline;text-underline-offset:3px;
+}
+
 .bl-form{display:flex;flex-direction:column;gap:var(--s4)}
 /* Hai ô tên + email nằm cạnh nhau ở màn rộng, tự xuống hàng ở màn hẹp —
    auto-fit lo việc đó, không cần media query. */
