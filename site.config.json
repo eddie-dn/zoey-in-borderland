@@ -58,7 +58,7 @@
     "loiNhac": "Đọc bản đầy đủ tại"
   },
   "quoteAI": {
-    "bat": false,
+    "bat": true,
     "api": "/api/quote"
   },
   "phanTich": {

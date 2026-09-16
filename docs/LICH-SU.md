@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.04 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
 | V7.03 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
 | V7.02 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
 | V7.01 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
@@ -92,6 +93,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.04 — 16-Sep-2026
+
+- **Bật lớp trích dẫn viết mới mỗi ngày.** Ô trích dẫn vẫn chạy được không cần
+  gì cả — nó xoay vòng kho câu sẵn trong `content/quote-nguon.md`. Nay có thêm
+  lớp trên: mỗi ngày một câu viết mới, theo tám chủ đề và ba mươi tám tác giả
+  khai sẵn trong chính file ấy. Hỏng hay chậm quá ba giây thì lặng lẽ giữ câu
+  từ kho — người đọc không phân biệt được, và đó là chủ ý.
 
 ## V7.03 — 16-Sep-2026
 
