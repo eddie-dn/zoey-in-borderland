@@ -185,7 +185,54 @@ nằm gọn trong mức miễn phí của Gemini.
 
 ---
 
-## 3 · Cloudflare Pages
+## 3 · Đưa lên Cloudflare — **Worker** hay **Pages**?
+
+Cloudflare có hai kiểu dự án, và **chọn nhầm thì mấy hàm trong `functions/`
+lặng lẽ không chạy**. Nhìn tên miền là biết mình đang ở kiểu nào:
+
+| Tên miền | Kiểu | `functions/` | Cần gì thêm |
+|---|---|---|---|
+| `…pages.dev` | **Pages** | Cloudflare tự đọc | không |
+| `…workers.dev` | **Worker** | **KHÔNG tự đọc** | `worker.js` + `wrangler.jsonc` (repo có sẵn) |
+
+> **Triệu chứng khi chạy dưới Worker mà thiếu định tuyến:** trang tĩnh mở bình
+> thường, bài đọc được, giao diện đủ cả — nhưng `/api/...` trả 404 hết. Không
+> có lỗi nào trong log, vì với Worker thì mấy đường ấy chưa từng tồn tại. Bình
+> luận không gửi được, lượt xem không đếm, ô viết ghi chú báo lỗi mạng.
+>
+> Thử nhanh: mở `tên-miền/api/xem?u=/` trên trình duyệt. Ra JSON là xong; ra
+> 404 là đang dính đúng chuyện này.
+
+### 3.1 · Nếu là Worker (…workers.dev)
+
+Repo đã có sẵn `worker.js` và `wrangler.jsonc` — `worker.js` định tuyến bốn
+đường `/api/...` về đúng mấy hàm trong `functions/`, còn lại giao cho trang
+tĩnh. Không chép lại logic, nên sửa hàm chỉ sửa một chỗ.
+
+Trên dashboard, dự án → **Settings** → **Build**:
+
+| Ô | Điền |
+|---|---|
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+
+Rồi mở `wrangler.jsonc`, sửa `"name"` cho trùng tên dự án.
+
+> **Mỗi lần thêm một hàm vào `functions/api/` là phải thêm một dòng vào bảng
+> `CUA` trong `worker.js`.** `npm run kiem` có phép kiểm canh việc này — thiếu
+> một đường là báo đỏ, vì thiếu thì nó 404 mà không ai báo.
+
+### 3.2 · Nếu là Pages (…pages.dev)
+
+Không phải làm gì. Cloudflare đọc `functions/` và tự dựng đường đi. `worker.js`
+với `wrangler.jsonc` nằm im, không ảnh hưởng.
+
+Tạo dự án: **Workers & Pages** → **Create** → **Pages** → nối vào repo GitHub,
+build command `npm run build`, output directory `dist`.
+
+---
+
+## 3b · Cloudflare Pages — các bước gốc
 
 Xem `docs/DUA-LEN-MANG.md` §3 — có đủ ba ô phải điền và mấy cái bẫy hay gặp.
 
@@ -283,15 +330,39 @@ CREATE TABLE IF NOT EXISTS xem (
 
 ### 5.2 · Gắn vào dự án
 
-Pages project → **Settings** → **Bindings** → **Add** → **D1 database**:
+**Nếu là Pages** (`…pages.dev`): project → **Settings** → **Bindings** →
+**Add** → **D1 database**.
+
+**Nếu là Worker** (`…workers.dev`): tab **Bindings** ở đầu trang dự án →
+**Add a binding** → **D1 database**.
 
 | Ô | Điền |
 |---|---|
-| Variable name | **`DB`** — đúng ba chữ này, hàm tìm đúng tên đó |
+| Variable name | **`DB`** — đúng hai chữ này, hàm tìm đúng tên đó |
 | D1 database | chọn cơ sở dữ liệu vừa tạo |
 
 Nhớ thêm cho **cả hai** môi trường (Production và Preview), không thì bản xem
 thử im lặng không đếm.
+
+> ⚠️ **Worker deploy bằng wrangler thì DASHBOARD KHÔNG PHẢI NGUỒN ĐÚNG.**
+> `npx wrangler deploy` lấy `wrangler.jsonc` làm nguồn và **gỡ mọi binding
+> không có trong đó**. Gắn D1 bằng tay trên dashboard rồi đẩy một commit mới
+> là nó biến mất — lặng lẽ, và triệu chứng y hệt lúc chưa gắn bao giờ.
+>
+> Nên với Worker thì khai luôn trong `wrangler.jsonc` (cuối file có sẵn khối
+> chú thích, bỏ dấu chú thích rồi dán `database_id` vào):
+>
+> ```jsonc
+> "d1_databases": [
+>   { "binding": "DB", "database_name": "zoey-blog", "database_id": "…" }
+> ]
+> ```
+>
+> `database_id` lấy ở trang cơ sở dữ liệu D1, mục **Database ID**.
+>
+> Hai khoá `GC_ID`/`GC_KEY` thì **ngược lại**: chúng là Secret, đặt trên
+> dashboard và sống sót qua mọi lượt deploy. Đừng đưa vào `wrangler.jsonc` —
+> file ấy đi theo repo.
 
 ### 5.3 · Bật trong cấu hình
 

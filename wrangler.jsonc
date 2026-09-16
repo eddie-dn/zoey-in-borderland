@@ -1,0 +1,63 @@
+{
+  // ══════════════════════════════════════════════════════════════════════
+  // Cấu hình Cloudflare Worker.
+  //
+  // Chỉ cần file này khi trang chạy dưới dạng WORKER (tên miền …workers.dev).
+  // Chạy dưới dạng PAGES (…pages.dev) thì Cloudflare tự đọc thư mục
+  // `functions/` và file này nằm im, không ảnh hưởng gì.
+  //
+  // Vì sao cần: Worker chỉ có MỘT cửa vào và phải tự định tuyến — lý do đầy
+  // đủ ở đầu `worker.js`.
+  // ══════════════════════════════════════════════════════════════════════
+
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Phải TRÙNG tên dự án trên Cloudflare, không thì lượt deploy tạo ra một
+  // Worker thứ hai thay vì cập nhật cái đang chạy.
+  "name": "zoey-in-borderland",
+
+  "main": "worker.js",
+
+  // Ngày tương thích: khoá hành vi của runtime lại một mốc, để Cloudflare nâng
+  // cấp không đổi cách mã này chạy. Mã ở đây chỉ dùng fetch, URL, Response và
+  // crypto.randomUUID — có từ rất lâu — nên mốc nào cũng được; đặt mốc cũ hơn
+  // là cách an toàn nhất.
+  "compatibility_date": "2025-04-01",
+
+  // Trang tĩnh. `dist/` là thư mục `npm run build` sinh ra.
+  "assets": {
+    "directory": "./dist",
+    // Tên binding này phải khớp `env.ASSETS` trong worker.js.
+    "binding": "ASSETS",
+    // Trang dựng ra ở dạng `/posts/ten-bai/index.html`, nên người đọc gõ
+    // `/posts/ten-bai` (không dấu gạch cuối) vẫn phải ra đúng bài.
+    "html_handling": "auto-trailing-slash",
+    // Không có `dist/404.html`, nên để `none`: đường không tồn tại trả 404
+    // trần. Khai "404-page" mà không có file ấy thì Cloudflare vẫn trả 404
+    // nhưng thêm một bước tìm file vô ích cho mọi lượt trượt.
+    "not_found_handling": "none"
+  },
+
+  "observability": { "enabled": true }
+
+  // ── CƠ SỞ DỮ LIỆU D1 ────────────────────────────────────────────────
+  // Bỏ dấu chú thích khối dưới đây SAU KHI tạo D1, và dán `database_id` lấy
+  // từ trang cơ sở dữ liệu trên Cloudflare vào.
+  //
+  // VÌ SAO KHAI Ở ĐÂY CHỨ KHÔNG CHỈ BẤM TRONG DASHBOARD: lượt deploy bằng
+  // wrangler lấy file này làm nguồn đúng và GỠ mọi binding không có trong đó.
+  // Gắn D1 bằng tay trên dashboard rồi đẩy một commit mới là nó biến mất —
+  // lặng lẽ, và triệu chứng y hệt lúc chưa gắn bao giờ.
+  //
+  // Hai khoá GC_ID và GC_KEY thì NGƯỢC LẠI: chúng là Secret, đặt trên
+  // dashboard và sống sót qua mọi lượt deploy. Đừng đưa chúng vào file này —
+  // file này đi theo repo.
+  //
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "zoey-blog",
+  //     "database_id": "dán-id-vào-đây"
+  //   }
+  // ]
+}

@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.01 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
 | V7.00 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
 | V6.05 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
 | V6.04 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
@@ -89,6 +90,22 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.01 — 16-Sep-2026
+
+- **Trang chạy được cả dưới dạng Worker, không riêng Pages.** Thư mục
+  `functions/` là quy ước của RIÊNG Cloudflare Pages; dự án kiểu Worker
+  (`…workers.dev`) không đọc nó. Hậu quả im lặng tới mức nguy hiểm: trang tĩnh
+  mở bình thường, bài đọc được, giao diện đủ cả — nhưng mọi đường `/api/...`
+  trả 404, và log không có gì để báo, vì với Worker thì mấy đường ấy chưa từng
+  tồn tại. Bình luận không gửi được, lượt xem không đếm.
+- **Một bộ hàm cho cả hai kiểu.** `worker.js` chỉ ĐỊNH TUYẾN, rồi gọi đúng mấy
+  hàm trong `functions/`. Chép logic sang chỗ thứ hai là sớm muộn hai bản trôi
+  lệch nhau, mà lệch ở lớp máy chủ thì không ai thấy cho tới lúc có người thật
+  gửi bình luận.
+- **Và một phép kiểm canh chỗ ấy.** Thêm một hàm vào `functions/api/` mà quên
+  thêm dòng tương ứng vào `worker.js` là `npm run kiem` báo đỏ — vì nếu không
+  báo thì đường mới 404 lặng lẽ, đúng cái bẫy vừa sập một lần.
 
 ## V7.00 — 16-Sep-2026
 

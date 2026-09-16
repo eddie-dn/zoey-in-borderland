@@ -802,6 +802,37 @@ const KIEM = [
     }
   },
   {
+    /* ── WORKER.JS PHẢI BIẾT MỌI CỬA TRONG functions/api/ ──
+       Đây là lỗi đã vấp thật, và nó im lặng tới mức nguy hiểm.
+
+       `functions/` là quy ước của RIÊNG Cloudflare Pages. Chạy dưới dạng
+       Worker (tên miền …workers.dev) thì Cloudflare không đọc thư mục ấy —
+       phải có `worker.js` tự định tuyến. Thiếu một đường trong bảng tra của
+       nó thì đường ấy trả 404, mà 404 ở đây KHÔNG giống lỗi: trang tĩnh vẫn
+       mở bình thường, log không có gì, chỉ là bình luận không gửi được và
+       lượt xem không đếm. Phát hiện ra lúc có người thật gửi bình luận thì đã
+       muộn.
+
+       Nên mỗi lần thêm một hàm vào functions/api/ là phải thêm một dòng vào
+       bảng CUA trong worker.js. Phép kiểm này canh đúng việc đó. */
+    ten: 'worker.js định tuyến đủ mọi hàm trong functions/api/',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const thuMuc = path.join(goc, 'functions', 'api');
+      const fWorker = path.join(goc, 'worker.js');
+      if (!fs.existsSync(thuMuc) || !fs.existsSync(fWorker)) return [];
+      const js = fs.readFileSync(fWorker, 'utf8');
+      return fs.readdirSync(thuMuc)
+        /* `_nguon.js` bắt đầu bằng gạch dưới: Pages coi đó là file dùng chung,
+           không phải một đường dẫn. Worker cũng không cần định tuyến nó. */
+        .filter((f) => f.endsWith('.js') && !f.startsWith('_'))
+        .map((f) => '/api/' + f.replace(/\.js$/, ''))
+        .filter((duong) => !js.includes(`'${duong}'`) && !js.includes(`"${duong}"`))
+        .map((duong) => `worker.js không có đường ${duong} trong bảng tra — ` +
+                        `chạy dưới dạng Worker thì đường này trả 404 và không ai báo`);
+    }
+  },
+  {
     /* ── BẬT BÌNH LUẬN THÌ PHẢI CÓ ĐỦ BỘ ──
        Ba mẩu đi cùng nhau: hàm ở functions/, địa chỉ in ra mỗi trang bài, và
        file JS đọc địa chỉ ấy. Thiếu mẩu nào thì khung bình luận vẫn hiện
