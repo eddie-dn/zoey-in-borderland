@@ -28,6 +28,16 @@ xem được, không cần cài gì.
 | `11-vo.svg` | 90% | **Vỡ** — mười tám hạt bụi toả ra theo phương bán kính |
 | `12-tu-lai.svg` | 97% | Bụi tan, mandala tụ lại. Vòng khép kín, sắp kể lại từ đầu |
 
+`lat-cat.svg` — **cả vòng kể trên MỘT tấm.** Lưới 5×5, 25 mốc cách nhau 4%,
+mỗi ô ghi phần trăm và tên chặng. Xem hết câu chuyện mà không phải mở 25 file
+hay ngồi chờ hoạt hình chạy tới đoạn mình cần. Đây là tấm để in ra dán tường,
+hoặc gửi cho ai muốn hiểu logo này từ đâu ra.
+
+> Mỗi ô là một `<svg>` LỒNG chứ không phải một nhóm: ở mấy mốc đang phóng to
+> rồi vỡ, hình vượt hẳn khỏi khung 48×48 — bông hoa căng 1,34 lần và mười tám
+> hạt bụi bay ra tới rìa. `<svg>` lồng nhau tự cắt theo khung của nó, đúng cách
+> trình duyệt cắt logo thật trên trang.
+
 `logo-dong.svg` — **trọn vòng, tự chạy.** Mở bằng trình duyệt là nó kể lại từ
 đầu tới cuối rồi lặp. Không cần trang web, không cần mạng, không cần phông chữ.
 File này gói sẵn cả markup lẫn đúng phần CSS của logo, nên nó đứng một mình
@@ -76,6 +86,21 @@ Cách dựng lại nằm ngoài quy trình `npm run` vì nó cần một trình 
 bộ trích đọc `getComputedStyle().d` để lấy đường đang biến hình giữa chừng —
 `getAttribute('d')` chỉ trả về hình gốc, và không công cụ dòng lệnh nào ở đây
 tính được phép biến hình của thẻ `<animate>`.
+
+### Hai cái bẫy đã vấp, ghi lại để khỏi vấp lần nữa
+
+**Đừng dừng hoạt hình bằng `animation-delay` âm.** Cách ấy đúng cho MỘT khung,
+nhưng hoạt hình đã tạm dừng rồi thì trình duyệt không tính lại mốc khi
+`animation-delay` đổi — mọi khung sau đều kẹt ở thời điểm của lần dừng đầu
+tiên. Trên tấm lát cắt nó hiện ra thành cả lưới bị xê đi vài ô, mà xê ĐỀU nhau
+nên nhìn thoáng qua vẫn tưởng đúng. Dùng `getAnimations()` rồi đặt thẳng
+`currentTime`.
+
+**Gốc phép xoay phải đọc từ chính phần tử.** Không phải phần tử nào cũng lấy
+tâm khung làm gốc: hai cánh sao mandala xoay bằng thuộc tính `rotate(45 24 24)`
+đã gói sẵn tâm, còn hạt bụi thì lấy tâm của chính nó. Gõ cứng một con số cho
+tất cả thì mấy cánh ấy bị dời tâm hai lần, và hiện ra thành một vòng vô cực
+thừa nằm lệch hẳn ra ngoài bông hoa.
 
 Các bước:
 

@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.09 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
 | V7.08 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
 | V7.07 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
 | V7.06 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
@@ -97,6 +98,23 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.09 — 16-Sep-2026
+
+- **Dọn ba thứ đã chết mà vẫn nằm trong kho mã.** Máy chủ bình luận đời cũ chạy
+  trên Google; một bản sao thừa của hàm trích dẫn nằm sai chỗ, không ai gọi tới
+  mà lại còn ghi tên một model Google đã ngừng chạy; và một file kho câu cũ mà
+  bộ dựng không đọc bao giờ. Cả ba đều vô hại cho tới lúc có người mở nhầm ra
+  sửa — rồi sửa vào chỗ không chạy, hoặc chép lại một cái tên đã chết.
+- **File khai báo bỏ qua đã mất khỏi kho mã, nay trả lại.** Thiếu nó thì thư
+  mục bản dựng và thư viện tải về sẽ theo nhau vào kho — vài nghìn file rác mỗi
+  lần đẩy lên.
+- **Bản lưu trạng thái logo dựng lại cho đúng.** Bộ trích cũ dời tâm phép xoay
+  hai lần ở hai cánh hoa văn, nên mười hai khung đều mang một vòng thừa nằm
+  lệch ra ngoài. Thêm một tấm gộp cả vòng kể vào một chỗ.
+- **Tài liệu khớp lại với mã.** Ba chỗ gọi sai tên file kho câu, một chỗ chỉ sai
+  nơi đặt khoá bí mật, số mục nhảy cóc, và bản mô tả cây thư mục còn thiếu mấy
+  file mới.
 
 ## V7.08 — 16-Sep-2026
 

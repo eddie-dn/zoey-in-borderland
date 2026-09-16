@@ -5,17 +5,27 @@
   const svg = document.querySelector('svg.logo--dong');
   svg.pauseAnimations();
 
-  /* Bắt CSS dừng đúng mốc: mỗi phần tử nhận animation-delay âm + paused. */
+  /* ── DỪNG ĐÚNG MỐC, BẰNG WEB ANIMATIONS API ──
+     Bản đầu chỉnh `animation-delay` âm cộng `animation-play-state:paused`.
+     Cách ấy đúng cho MỘT khung, nhưng sai từ khung thứ hai trở đi: hoạt hình
+     đã tạm dừng rồi thì Chrome không tính lại mốc khi `animation-delay` đổi,
+     nên mọi khung sau đều kẹt lại ở thời điểm của lần dừng ĐẦU TIÊN. Trên tấm
+     lát cắt nó hiện ra thành cả lưới bị xê đi vài ô — và xê đều nhau nên nhìn
+     thoáng qua vẫn tưởng là đúng.
+
+     `getAnimations()` cho cầm thẳng từng hoạt hình: đặt `currentTime` là nhảy
+     tới đúng mốc ấy, đặt bao nhiêu lần cũng được. Không phải mẹo, mà là đường
+     chính thức để làm việc này. */
   function dungTai(pct) {
     const t = (pct / 100) * CK;
+    const ms = t * 1000;
     svg.querySelectorAll('*').forEach((el) => {
-      el.style.setProperty('animation-delay', (-t) + 's', 'important');
-      el.style.setProperty('animation-play-state', 'paused', 'important');
+      if (!el.getAnimations) return;
+      el.getAnimations().forEach((a) => { a.pause(); a.currentTime = ms; });
     });
     svg.setCurrentTime(t);
     /* setTimeout chứ KHÔNG requestAnimationFrame: rAF không chạy khi thẻ đang
-       ẩn hoặc nằm dưới, nên vòng trích treo vô hạn. Ở đây chỉ cần đợi trình
-       duyệt tính lại kiểu dáng, mà việc ấy xong trước lượt hẹn giờ kế tiếp. */
+       ẩn hoặc nằm dưới, nên vòng trích treo vô hạn. */
     return new Promise((r) => setTimeout(r, 40));
   }
 
@@ -24,17 +34,39 @@
     return Number.isFinite(n) ? Math.round(n * 1000) / 1000 : v;
   };
 
-  /* getComputedStyle().transform là ma trận CHƯA tính transform-origin. Các
-     phần tử ở đây đều lấy gốc là tâm view-box (24,24), nên phải kẹp phép dời
-     vào hai đầu thì hình mới đúng chỗ. */
-  function bienHinh(cs) {
+  /* ── GỐC PHÉP BIẾN HÌNH PHẢI ĐỌC TỪ CHÍNH PHẦN TỬ ──
+     getComputedStyle().transform là ma trận CHƯA tính transform-origin, nên
+     muốn bake ra thuộc tính `transform` thì phải kẹp phép dời vào hai đầu.
+
+     Bản đầu gõ cứng (24,24) cho MỌI phần tử — sai, và sai im lặng:
+
+       · `.lg-hoa`, `.lg-man`… có luật `transform-origin:50% 50%` với
+         `transform-box:view-box` ⇒ gốc đúng là (24,24). Không sao.
+       · Hai cánh sao mandala KHÔNG có luật ấy. Phép xoay của chúng là thuộc
+         tính `rotate(45 24 24)` viết thẳng trên thẻ, mà thuộc tính ấy đã gói
+         sẵn tâm quay vào trong rồi. Kẹp thêm (24,24) nữa là dời tâm HAI LẦN —
+         và trên tấm lát cắt nó hiện ra thành một vòng vô cực thừa nằm lệch hẳn
+         ra ngoài bông hoa.
+       · Hạt bụi dùng `transform-box:fill-box` ⇒ gốc là tâm của CHÍNH hạt, phải
+         cộng thêm gốc hộp bao mới ra toạ độ người dùng.
+
+     Nên đọc thẳng `transformOrigin` của từng phần tử thay vì đoán. */
+  function bienHinh(el, cs) {
     const m = cs.transform;
     if (!m || m === 'none') return null;
     const s = m.match(/matrix\(([^)]+)\)/);
     if (!s) return null;
     const v = s[1].split(',').map((x) => SO(x.trim()));
     if (v[0] === 1 && v[1] === 0 && v[2] === 0 && v[3] === 1 && v[4] === 0 && v[5] === 0) return null;
-    return `translate(24 24) matrix(${v.join(' ')}) translate(-24 -24)`;
+
+    const g = (cs.transformOrigin || '0px 0px').split(' ').map(parseFloat);
+    let ox = g[0] || 0, oy = g[1] || 0;
+    if (cs.transformBox === 'fill-box' && el.getBBox) {
+      try { const b = el.getBBox(); ox += b.x; oy += b.y; } catch (e) {}
+    }
+    const mt = `matrix(${v.join(' ')})`;
+    if (!ox && !oy) return mt;
+    return `translate(${SO(ox)} ${SO(oy)}) ${mt} translate(${SO(-ox)} ${SO(-oy)})`;
   }
 
   /* Thẻ hoạt hình của SVG (<animate>) không có chỗ trong một khung TĨNH — hình
@@ -79,7 +111,7 @@
       if (off) el.setAttribute('stroke-dashoffset', SO(off));
     }
     if (parseFloat(cs.opacity) < 0.999) el.setAttribute('opacity', SO(cs.opacity));
-    const bh = bienHinh(cs);
+    const bh = bienHinh(goc, cs);
     if (bh) el.setAttribute('transform', bh);
     else if (goc.hasAttribute('transform')) el.setAttribute('transform', goc.getAttribute('transform'));
 
@@ -117,11 +149,13 @@
         '#' + [r, g, b].map((x) => (+x).toString(16).padStart(2, '0')).join(''));
     await fetch('/__luu', { method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ten, noiDung: chu }) });
+      body: JSON.stringify({ ten, noiDung: chu, thuMuc: window.__thuMuc }) });
     return { ten, pct, byte: chu.length };
   }
 
-  const KHUNG = [
+  /* Danh sách mốc: window.__KHUNG nếu bên gọi khai sẵn, không thì mười hai
+     chặng có tên. */
+  const KHUNG = window.__KHUNG || [
     [0,  '01-nghi.svg',        'trạng thái nghỉ — đoá mandala tám cánh'],
     [10, '02-ba-vach.svg',     'ba vạch — tên blog nhìn từ rất xa'],
     [22, '03-chu-z.svg',       'nét chữ Z vẽ dần ra'],
@@ -135,6 +169,7 @@
     [90, '11-vo.svg',          'vỡ ra thành bụi'],
     [97, '12-tu-lai.svg',      'bụi tan, mandala tụ lại']
   ];
+
 
   const kq = [];
   for (const [p, t, ta] of KHUNG) kq.push(await motKhung(p, t, ta));

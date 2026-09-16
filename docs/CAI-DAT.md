@@ -75,7 +75,7 @@ Cửa sau: ở trang giới thiệu, **bấm 5 nhịp vào tiêu đề** cũng t
 > hướng. Nhưng ai gõ đúng đường dẫn vẫn mở được, và chỉ thấy một ô xin khoá.
 > Chỗ giấu đường dẫn **không phải** lớp bảo mật — hai vế khoá ở máy chủ mới là.
 
-### 1.3b · Hoặc mở `#duyet` ở bất kỳ bài nào
+### 1.4 · Hoặc mở `#duyet` ở bất kỳ bài nào
 
 Thêm `#duyet` vào địa chỉ một bài bất kỳ:
 
@@ -99,7 +99,7 @@ không ai duyệt nữa.
 Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, có huy hiệu
 `AUTHOR`, không phải chờ duyệt. Chủ nhà không phải tự duyệt lời của mình.
 
-### 1.4 · Những gì nó tự lo
+### 1.5 · Những gì nó tự lo
 
 - **Không bình luận nào tự lên trang.** Mọi dòng vào bảng đều chờ duyệt. Đây là
   lớp chặn spam thật sự; mấy phép kiểm dưới đây chỉ lọc bớt cho đỡ rác.
@@ -111,7 +111,7 @@ Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, c�
 - **Trả lời chỉ hai tầng**, y như Facebook. Trả lời của trả lời gắn vào bình
   luận gốc của nhánh đó.
 
-### 1.5 · Đổi khoá, và khi mất khoá
+### 1.6 · Đổi khoá, và khi mất khoá
 
 Đổi `GC_KEY` trên Cloudflare rồi bấm **Quên khoá** ở cuối bàn duyệt để nhập
 lại. Mọi máy đã nhớ khoá cũ sẽ mất quyền — đó là cách thu hồi.
@@ -258,7 +258,7 @@ build command `npm run build`, output directory `dist`.
 
 ---
 
-## 3b · Cloudflare Pages — các bước gốc
+### 3.3 · Các bước tạo dự án, từng ô một
 
 Xem `docs/DUA-LEN-MANG.md` §3 — có đủ ba ô phải điền và mấy cái bẫy hay gặp.
 

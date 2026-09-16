@@ -143,5 +143,5 @@ chứ không phải câu của ngày.
 
 ## 4 · Tắt hẳn
 
-Xoá hết câu trong `content/quotes.md` và đặt `"quoteAI": { "bat": false }` — ô
+Xoá hết câu trong `content/quote-nguon.md` và đặt `"quoteAI": { "bat": false }` — ô
 trích dẫn biến mất khỏi cả hai khung.
