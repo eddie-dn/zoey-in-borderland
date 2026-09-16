@@ -20,14 +20,31 @@
        duyệt tự chặn bằng sessionStorage), nhưng mở tab mới thì tính lại;
      · không biết ai là ai, và cố ý không biết: không cookie, không dấu vết.
 
-   ── BẢNG CẦN TẠO ───────────────────────────────────────────────────────
+   ── BẢNG TỰ TẠO, KHÔNG PHẢI CHẠY SQL TAY ──────────────────────────────
      CREATE TABLE IF NOT EXISTS xem (
        u   TEXT PRIMARY KEY,
        so  INTEGER NOT NULL DEFAULT 0,
        sua TEXT
      );
+
+   Bản trước bắt chủ trang tự chạy câu ấy trong Console của D1. Quên một bước
+   trong tài liệu thì hàm này NỔ 500 ở mọi lượt mở bài — và nổ lặng lẽ, vì phía
+   trình duyệt nuốt mọi lỗi để không làm đỏ console của người đọc. Trang nhìn
+   vẫn bình thường, chỉ thiếu con số, còn log Worker thì đầy 500.
+
+   Nay lượt GHI đầu tiên tự tạo bảng, và mọi lượt ĐỌC bọc trong try/catch —
+   bảng chưa có nghĩa là chưa ai xem, tức là 0, không phải lỗi. Giống hệt cách
+   /api/ghi-chu và /api/binh-luan làm; để riêng hàm này đòi một bước tay là
+   chỗ sớm muộn có người vấp.
+
    Các bước gắn D1 vào dự án: docs/CAI-DAT.md §5.
    ============================================================ */
+
+const TAO = `CREATE TABLE IF NOT EXISTS xem (
+  u   TEXT PRIMARY KEY,
+  so  INTEGER NOT NULL DEFAULT 0,
+  sua TEXT
+)`;
 
 const CORS = { 'Access-Control-Allow-Origin': '*' };
 
@@ -65,8 +82,14 @@ export async function onRequest(context) {
     const khoa = ds.split(',').map(sach).filter(Boolean).slice(0, 60);
     if (!khoa.length) return traLoi({ so: {} });
     const hoi = khoa.map(() => '?').join(',');
-    const kq = await env.DB.prepare(
-      `SELECT u, so FROM xem WHERE u IN (${hoi})`).bind(...khoa).all();
+    let kq;
+    try {
+      kq = await env.DB.prepare(
+        `SELECT u, so FROM xem WHERE u IN (${hoi})`).bind(...khoa).all();
+    } catch (e) {
+      /* Bảng chưa có = chưa ai xem bài nào. Trả rỗng, thẻ không hiện số. */
+      return traLoi({ so: {} }, 200, 'public, max-age=60');
+    }
     const so = {};
     for (const r of (kq.results || [])) so[r.u] = r.so;
     /* Cache 60 giây ở biên: lượt xem không cần chính xác tới từng giây, mà một
@@ -80,12 +103,20 @@ export async function onRequest(context) {
   /* `ghi=1` mới cộng. Mặc định chỉ đọc — nhờ vậy một lần rê chuột hay một lần
      lấy trước trang (prefetch) không tự nhiên thành một lượt xem. */
   if (url.searchParams.get('ghi') === '1') {
-    await env.DB.prepare(
-      `INSERT INTO xem (u, so, sua) VALUES (?, 1, ?)
-       ON CONFLICT(u) DO UPDATE SET so = so + 1, sua = excluded.sua`
-    ).bind(u, new Date().toISOString()).run();
+    /* CREATE đi CÙNG LÔ với INSERT, không phải một lượt gọi riêng: một lô là
+       một vòng tới cơ sở dữ liệu, mà lượt ghi này chạy ở mọi lượt mở bài. */
+    await env.DB.batch([
+      env.DB.prepare(TAO),
+      env.DB.prepare(
+        `INSERT INTO xem (u, so, sua) VALUES (?, 1, ?)
+         ON CONFLICT(u) DO UPDATE SET so = so + 1, sua = excluded.sua`
+      ).bind(u, new Date().toISOString())
+    ]);
   }
 
-  const r = await env.DB.prepare('SELECT so FROM xem WHERE u = ?').bind(u).first();
+  let r = null;
+  try {
+    r = await env.DB.prepare('SELECT so FROM xem WHERE u = ?').bind(u).first();
+  } catch (e) { /* bảng chưa có ⇒ chưa ai xem ⇒ 0 */ }
   return traLoi({ u, so: r ? r.so : 0 });
 }

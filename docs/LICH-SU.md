@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.02 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
 | V7.01 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
 | V7.00 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
 | V6.05 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
@@ -90,6 +91,18 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.02 — 16-Sep-2026
+
+- **Bảng đếm lượt xem tự tạo.** Trước đó tài liệu bắt chủ trang tự chạy một câu
+  `CREATE TABLE` trong Console của cơ sở dữ liệu. Quên bước ấy thì `/api/xem`
+  trả lỗi máy chủ ở **mọi lượt mở bài** — mà lỗi ấy im lặng, vì phía trình
+  duyệt cố ý nuốt mọi lỗi để không làm phiền người đang đọc. Trang nhìn vẫn
+  bình thường, chỉ thiếu con số lượt xem.
+- **Một bước tay trong tài liệu là một bước sẽ có người quên.** Hai phần thêm
+  sau đó — ghi chú và bình luận — đã tự tạo bảng từ đầu; riêng phần lượt xem là
+  phần cũ nhất nên còn sót lại kiểu làm cũ. Nay cả ba giống nhau: cắm cơ sở dữ
+  liệu vào là chạy, không có bước nào phải nhớ.
 
 ## V7.01 — 16-Sep-2026
 

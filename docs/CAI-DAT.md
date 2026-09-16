@@ -315,10 +315,14 @@ bài viết được. Muốn con số hiện trong hàng meta thì phải tự g
 
 ### 5.1 · Tạo cơ sở dữ liệu
 
-Cloudflare Dashboard → **Workers & Pages** → **D1** → **Create database**.
-Đặt tên gì cũng được, ví dụ `zoey-xem`.
+Thanh trái → **Storage & databases** → **D1 SQL Database** → **Create**.
+Đặt tên gì cũng được, ví dụ `zoey-blog`.
 
-Mở tab **Console** của nó và chạy:
+> D1 **không** nằm trong mục Workers & Pages nữa — tài liệu cũ hay chỉ sai chỗ
+> này.
+
+**Không phải tạo bảng nào.** Cả ba bảng — `xem`, `ghi_chu`, `binh_luan` — tự
+tạo ở lượt dùng đầu tiên. Chép ra đây để đọc code là biết trong đó có gì:
 
 ```sql
 CREATE TABLE IF NOT EXISTS xem (
@@ -327,6 +331,12 @@ CREATE TABLE IF NOT EXISTS xem (
   sua TEXT
 );
 ```
+
+> Bản trước bắt chạy câu ấy bằng tay, và quên bước đó thì `/api/xem` nổ **500**
+> ở mọi lượt mở bài — nổ lặng lẽ, vì phía trình duyệt nuốt mọi lỗi để không làm
+> đỏ console của người đọc. Trang nhìn vẫn bình thường, chỉ thiếu con số, còn
+> log Worker thì đầy 500. Một bước tay trong tài liệu là một bước sẽ có người
+> quên.
 
 ### 5.2 · Gắn vào dự án
 
