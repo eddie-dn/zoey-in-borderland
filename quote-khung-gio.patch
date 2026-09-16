@@ -1,0 +1,959 @@
+From 196bdb104e4074361ec9aca13f81658fa373e1e6 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 16 Sep 2026 18:27:51 +0000
+Subject: [PATCH] =?UTF-8?q?=C3=94=20tr=C3=ADch=20d=E1=BA=ABn:=20ba=20c?=
+ =?UTF-8?q?=C3=A2u=20m=E1=BB=9Bi=20m=E1=BB=97i=20ng=C3=A0y,=20v=C3=A0=20b?=
+ =?UTF-8?q?=E1=BA=ADt=20l=E1=BA=A1i=20l=E1=BB=9Bp=20Gemini=20=C4=91ang=20t?=
+ =?UTF-8?q?=E1=BA=AFt=20l=E1=BA=B7ng?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Gemini chưa từng viết được một câu nào lên trang. Nguyên nhân không nằm ở
+khoá hay ở hàm: commit 7c7342b xoá khối `quoteAI` khỏi site.config.json, mà
+build đọc đúng khoá đó để quyết định có in thẻ `data-api` ra hay không. Không
+có thẻ ấy thì trang không bao giờ gọi /api/quote — và không có gì báo, vì ô
+trích dẫn vẫn có câu từ kho viết sẵn.
+
+Sửa lỗi
+- Trả khối `quoteAI` về site.config.json.
+- Thêm hai phép kiểm vào `npm run kiem`: cảnh báo khi trang có ô trích dẫn mà
+  quoteAI không bật, và báo lỗi khi bật rồi mà HTML dựng ra thiếu data-api
+  hoặc data-khung. Cả hai đã thử cắm lỗi vào để chắc chúng bắt được thật.
+- Tắt phần "nghĩ" của model bằng thinkingConfig và nới trần token lên 512.
+  Trần 220 cũ đủ cho câu nhưng không đủ chỗ cho phần nghĩ của model đời mới:
+  parts trả về rỗng, và lỗi hiện ra là "câu không dùng được (0 ký tự)". Model
+  nào không nhận thinkingConfig thì hàm tự gọi lại một lượt không kèm.
+- Lỗi câu rỗng nay kèm finishReason, phân biệt được SAFETY với MAX_TOKENS.
+
+Ba câu mỗi ngày thay vì một
+- Ngày chia làm khung giờ, mặc định ba (sáng 5h · chiều 12h · tối 18h), khai
+  ở quoteAI.khung, nhận 1–4. Khoá cache và khoá localStorage đổi từ `ngày`
+  thành cặp `ngày + khung`.
+- Quãng 0h–5h tính là khung cuối của hôm trước, để đọc khuya không bị nhảy
+  câu lúc nửa đêm rồi nhảy tiếp lúc 5h sáng.
+- Bảng mốc giờ đặt ở src/js/quote.js — hàm chạy ở điểm biên nào thì mang giờ
+  chỗ đó, nên cặp ngày+khung phải do trang gửi lên. Hàm kẹp lại cả hai tham
+  số vì chúng nằm trong địa chỉ.
+- Chủ đề chuyển sang chia bài theo ngày thay vì bốc rời từng khung. Bốc rời
+  thì khoảng 30% số ngày có hai khung trùng chủ đề — đo ra thật, ngày 17/09
+  khung 1 và khung 2 cùng ra "Cái đẹp của thứ bình thường". Quét 365 ngày sau
+  khi sửa: 0/365 ngày trùng, phân bố 125–151 quanh mức đều 136,9.
+- Câu xin được bằng nút "xem câu khác" nay được cất lại, không mất sau khi
+  tải lại trang.
+
+Không đụng tới trang bài: ô trích dẫn vẫn chỉ ở trang chủ.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_014pqxoi3b1s8jNVyXHX9RaK
+---
+ content/quote-nguon.md |  26 ++++--
+ docs/LICH-SU.md        |  23 +++++
+ docs/QUOTE.md          | 161 +++++++++++++++++++++++++++++-----
+ functions/api/quote.js | 195 ++++++++++++++++++++++++++++++++---------
+ site.config.json       |   7 +-
+ src/js/quote.js        | 112 +++++++++++++++++------
+ tools/build.mjs        |  26 +++++-
+ tools/kiem-dinh.mjs    |  63 +++++++++++++
+ 8 files changed, 511 insertions(+), 102 deletions(-)
+
+diff --git a/content/quote-nguon.md b/content/quote-nguon.md
+index cf31905..0fe378d 100644
+--- a/content/quote-nguon.md
++++ b/content/quote-nguon.md
+@@ -6,12 +6,12 @@
+ > | Đường | Ai đọc | Lúc nào | Lấy mục nào |
+ > |---|---|---|---|
+ > | Ngoại tuyến | `tools/build.mjs` | lúc dựng trang | `### Câu sẵn` |
+-> | Có Gemini | `api/quote.js` | mỗi ngày một lần | `### Chủ đề` · `### Nguồn` · `### Lời dặn` |
++> | Có Gemini | `api/quote.js` | mỗi khung giờ một lần | `### Chủ đề` · `### Nguồn` · `### Lời dặn` |
+ >
+ > Đường ngoại tuyến LUÔN CHẠY, không cần mạng, không cần khoá. Đường Gemini chỉ
+-> là lớp thêm nếm: bật nó thì mỗi ngày có một câu viết mới thay vì xoay vòng
+-> trong kho. Tắt, hỏng, hay chưa deploy thì ô vẫn có câu — người đọc không bao
+-> giờ thấy lỗi cấu hình.
++> là lớp thêm nếm: bật nó thì mỗi khung giờ có một câu viết mới thay vì xoay
++> vòng trong kho — mặc định ba khung một ngày (sáng · chiều · tối). Tắt, hỏng,
++> hay chưa deploy thì ô vẫn có câu — người đọc không bao giờ thấy lỗi cấu hình.
+ >
+ > **Sửa thế nào:** gõ như gõ văn bản thường, lưu, rồi chạy `npm run build`.
+ > Bước build là bắt buộc nếu bật Gemini: hàm chạy trên Cloudflare Workers không
+@@ -37,10 +37,18 @@
+ 
+ ### Chủ đề
+ 
+-> Mỗi ngày bốc NGẪU NHIÊN một chủ đề trong danh sách này rồi mới hỏi Gemini.
+-> Đây là điểm khác quan trọng nhất so với bản gốc: bản kia nhét cả bốn chủ đề
+-> vào một lời dặn, và Gemini gần như lúc nào cũng rơi vào chủ đề đầu tiên. Bốc
+-> một chủ đề rồi mới hỏi thì cả danh sách mới thật sự được dùng tới.
++> Mỗi khung giờ lấy MỘT chủ đề trong danh sách này rồi mới hỏi Gemini. Đây là
++> điểm khác quan trọng nhất so với bản gốc: bản kia nhét cả bốn chủ đề vào một
++> lời dặn, và Gemini gần như lúc nào cũng rơi vào chủ đề đầu tiên. Lấy một chủ
++> đề rồi mới hỏi thì cả danh sách mới thật sự được dùng tới.
++>
++> Cách lấy là CHIA BÀI, không phải bốc rời từng khung: mỗi ngày xáo cả danh
++> sách một lần rồi mỗi khung rút một lá theo thứ tự. Bốc rời thì hai khung
++> trong cùng một ngày trùng chủ đề khoảng 30% số ngày — đo ra thật, và người
++> đọc quay lại buổi tối gặp lại chủ đề ban chiều thì cả cơ chế thành công cốc.
++>
++> Nên danh sách này phải có ÍT NHẤT bằng số khung (`quoteAI.khung`). Ít hơn thì
++> đành có khung trùng nhau.
+ >
+ > Thêm bớt thoải mái. Mỗi dòng một chủ đề, dạng  Tên · mô tả.
+ 
+@@ -55,7 +63,7 @@
+ 
+ ### Nguồn
+ 
+-> Danh sách tác giả được phép trích. Mỗi ngày bốc NGẪU NHIÊN một nhóm nhỏ
++> Danh sách tác giả được phép trích. Mỗi khung giờ bốc NGẪU NHIÊN một nhóm nhỏ
+ > (khoảng 12 người) chứ không gửi cả danh sách: gửi hết thì Gemini bám vào mấy
+ > cái tên quen nhất — Jung, Seneca, Lão Tử — và tháng nào cũng ra mấy câu đó.
+ >
+diff --git a/docs/LICH-SU.md b/docs/LICH-SU.md
+index 79e0076..bd7e39b 100644
+--- a/docs/LICH-SU.md
++++ b/docs/LICH-SU.md
+@@ -27,6 +27,7 @@
+ 
+ | Bản | Ngày | # | Sửa chính |
+ |---|---|---|---|
++| V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
+ | V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
+ | V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
+ | V12.04 | 2026-09-17 | 04 | điện thoại: có menu ☰; tên blog thôi kẹt nửa vời ở lần mở thứ hai |
+@@ -146,6 +147,28 @@
+ 
+ ---
+ 
++## V12.07 — 16-Sep-2026
++
++- **Ô trích dẫn đổi câu ba lần một ngày.** Trước là một câu duy nhất từ 0h tới
++  24h — đúng với cái tên "câu của hôm nay", nhưng người đọc quay lại buổi chiều
++  gặp đúng câu ban sáng, và ô ấy thành một mảng trang trí chết. Nay ngày chia
++  làm ba khung: sáng · chiều · tối, mỗi khung một câu viết mới. Quãng nửa đêm
++  tới 5h sáng vẫn tính là buổi tối hôm trước, để đọc khuya không bị nhảy câu
++  giữa chừng.
++- **Lớp AI của ô trích dẫn từng chết lặng, nay bật lại và có chuông báo.** Một
++  lượt sửa cấu hình trước đây xoá mất công tắc của lớp này. Không có gì báo:
++  trang vẫn chạy, ô vẫn có câu — vì kho câu viết sẵn vẫn hoạt động — nên nhìn
++  ngoài không ai thấy khác, mà thật ra chưa một câu nào do AI viết từng lên
++  trang. Nay bộ kiểm định có hai phép kiểm riêng cho đúng khoảng cách ấy: giữa
++  "đã chuẩn bị đủ" và "có thật sự nối dây không".
++- **Mỗi buổi một chủ đề khác hẳn, không phải đổi cho có.** Bốc chủ đề rời cho
++  từng khung thì khoảng 30% số ngày có hai khung trùng chủ đề — quay lại buổi
++  tối để gặp lại chuyện ban chiều thì đổi câu cũng bằng thừa. Nay xáo cả danh
++  sách một lần mỗi ngày rồi mỗi khung rút một chủ đề theo thứ tự: quét 365 ngày
++  không ngày nào trùng.
++- **Bấm "xem câu khác" thì câu ấy được giữ lại.** Trước bấm ra câu ưng ý, tải
++  lại trang một cái là mất. Nay nó ở lại tới hết khung giờ.
++
+ ## V12.06 — 17-Sep-2026
+ 
+ - **Trang Posts thành lưới bento.** Sáu chuyên mục xếp dọc là một trang phải
+diff --git a/docs/QUOTE.md b/docs/QUOTE.md
+index 54dfc34..21a1783 100644
+--- a/docs/QUOTE.md
++++ b/docs/QUOTE.md
+@@ -1,7 +1,8 @@
+ # Ô TRÍCH DẪN MỖI NGÀY
+ 
+ > Hai lớp chồng nhau. Lớp dưới **luôn chạy**, không cần mạng, không cần khoá.
+-> Lớp trên là tuỳ chọn, bật lên thì mỗi ngày có thêm một câu do Gemini viết mới.
++> Lớp trên là tuỳ chọn, bật lên thì mỗi **khung giờ** có thêm một câu do Gemini
++> viết mới — mặc định ba khung một ngày.
+ 
+ ---
+ 
+@@ -12,9 +13,9 @@ hai bên đọc hai phần khác nhau:
+ 
+ | Mục | Ai đọc | Lúc nào | Để làm gì |
+ |---|---|---|---|
+-| `### Chủ đề` | hàm `/api/quote` | mỗi ngày | bốc ngẫu nhiên MỘT chủ đề |
+-| `### Nguồn` | hàm `/api/quote` | mỗi ngày | bốc ngẫu nhiên ~12 tác giả |
+-| `### Lời dặn` | hàm `/api/quote` | mỗi ngày | khuôn câu hỏi gửi Gemini |
++| `### Chủ đề` | hàm `/api/quote` | mỗi khung giờ | chia bài, rút MỘT chủ đề |
++| `### Nguồn` | hàm `/api/quote` | mỗi khung giờ | bốc ngẫu nhiên ~12 tác giả |
++| `### Lời dặn` | hàm `/api/quote` | mỗi khung giờ | khuôn câu hỏi gửi Gemini |
+ | `### Câu sẵn` | `npm run build` | lúc dựng trang | kho nhúng thẳng vào HTML |
+ 
+ Sửa cái gì cũng chỉ mở đúng file đó, gõ như gõ văn bản thường.
+@@ -26,19 +27,37 @@ Kết quả đo được: Gemini bám vào mấy cái tên quen nhất — Jung,
+ và gần như lúc nào cũng rơi vào chủ đề đứng đầu danh sách. Danh sách dài ra
+ cũng không làm câu đa dạng hơn.
+ 
+-Ở đây mỗi ngày bốc **một** chủ đề và **mười hai** tác giả rồi mới hỏi. Đo trên
+-20 ngày liên tiếp: cả 8 chủ đề đều được dùng tới, cả 38 tác giả đều được nhắc
+-tên ít nhất một lần.
++Ở đây mỗi khung giờ lấy **một** chủ đề và **mười hai** tác giả rồi mới hỏi. Đo
++trên 20 ngày liên tiếp: cả 8 chủ đề đều được dùng tới, cả 38 tác giả đều được
++nhắc tên ít nhất một lần.
+ 
+ Số 12 là chỗ vừa: ít quá thì mấy hôm liền trùng người, nhiều quá thì lại quay
+ về đúng cái bệnh cũ — Gemini bám vào cái tên quen nhất trong nhóm.
+ 
+-### 1.2 · Cùng một ngày thì luôn ra cùng một chủ đề
++### 1.2 · Cùng một khung giờ thì luôn ra cùng một chủ đề
+ 
+-Hạt giống của bộ bốc là **chuỗi ngày**, không phải `Math.random()`. Nên gọi
+-`/api/quote?ngay=2026-09-15` bao nhiêu lần cũng ra cùng chủ đề và cùng nhóm
+-tác giả. Bắt buộc phải vậy: Cloudflare cache câu trả lời tới nửa đêm, mà cache
+-chỉ khớp khi cùng đầu vào cho cùng đầu ra.
++Hạt giống của bộ bốc là **chuỗi ngày + số khung**, không phải `Math.random()`.
++Nên gọi `/api/quote?ngay=2026-09-15&khung=1&sokhung=3` bao nhiêu lần cũng ra
++cùng chủ đề và cùng nhóm tác giả. Bắt buộc phải vậy: Cloudflare cache câu trả
++lời tới hết khung, mà cache chỉ khớp khi cùng đầu vào cho cùng đầu ra.
++
++**Chủ đề thì chia bài, không bốc rời.** Bản đầu bốc chủ đề bằng chính hạt
++giống ngày+khung ấy, mỗi khung bốc độc lập. Đo ra hỏng ngay: ngày 17/09 khung
++1 và khung 2 cùng rơi vào "Cái đẹp của thứ bình thường". Không phải xui — 8
++chủ đề, 3 khung thì xác suất có hai khung trùng nhau trong một ngày khoảng
++30%, mà người đọc quay lại buổi tối gặp lại chủ đề ban chiều thì cả cơ chế
++khung giờ thành công cốc.
++
++Chữa bằng đúng cách kho câu sẵn đã dùng (§1.3): **xáo cả danh sách chủ đề một
++lần theo ngày, rồi mỗi khung rút một lá theo thứ tự.** Quét 365 ngày × 3 khung:
++**0/365 ngày** có hai khung trùng chủ đề, phân bố 125–151 lần quanh mức đều
++136,9.
++
++Hai ngày liền vẫn có thể chạm lại một chủ đề ở chỗ nối giữa hai cỗ bài (đo
++được 42/364 lần, sát mức ngẫu nhiên 12,5%). Chỗ nối ấy bên kho câu sẵn phải
++chữa vì nó lặp lại nguyên một **câu**; ở đây chỉ lặp **chủ đề**, mà chủ đề lặp
++thì Gemini vẫn viết ra câu khác với nhóm tác giả khác. Không đáng thêm một lớp
++cơ chế nữa.
+ 
+ ### 1.3 · Kho `### Câu sẵn` — lớp nền luôn chạy
+ 
+@@ -80,14 +99,47 @@ Cách bật, cách lấy khoá, cách khai biến môi trường: xem **`docs/CA
+ 
+ ### 2.1 · Ba luật của lớp này
+ 
+-1. **Mỗi ngày gọi đúng một lần.** Cloudflare cache tới nửa đêm; trình duyệt còn
+-   cất thêm một bản trong `localStorage` theo ngày. Tải lại trang không gọi
+-   mạng lần nữa.
++1. **Mỗi khung giờ gọi đúng một lần.** Cloudflare cache tới hết khung; trình
++   duyệt còn cất thêm một bản trong `localStorage` theo cặp ngày+khung. Tải lại
++   trang không gọi mạng lần nữa.
+ 2. **Hỏng thì im.** Không mạng, chưa deploy, chưa khai khoá, Gemini chậm — câu
+    từ kho sẵn vẫn đang nằm đó, người đọc không thấy gì khác thường.
+ 3. **Bỏ cuộc sau 3 giây.** Lâu hơn thì thà giữ câu sẵn: không ai đứng chờ một ô
+    trích dẫn.
+ 
++### 2.1b · Khung giờ — mỗi ngày mấy câu
++
++Đặt ở `site.config.json`, khoá `quoteAI.khung`:
++
++| `khung` | Mốc giờ | Người đọc gặp mấy câu mới mỗi ngày |
++|---|---|---|
++| `1` | — | 1 (nếp cũ, cả ngày một câu) |
++| `2` | 5h · 17h | 2 — sáng · tối |
++| `3` | 5h · 12h · 18h | **3 — sáng · chiều · tối (mặc định)** |
++| `4` | 5h · 11h · 15h · 20h | 4 — thêm khung trưa |
++
++**Quãng 0h tới trước mốc đầu tính là khung CUỐI của hôm trước.** Người đọc lúc
++1h sáng vẫn đang ở "buổi tối" theo cảm nhận, nhưng `getDate()` thì đã sang ngày
++mới. Tính thẳng thì họ nhảy sang câu khác lúc nửa đêm rồi 5h sáng lại nhảy tiếp
++— hai câu trong năm tiếng, đúng cái nhấp nháy mà cơ chế này sinh ra để tránh.
++
++Bảng mốc giờ nằm ở **`src/js/quote.js`**, chỗ duy nhất biết đang mấy giờ ở nhà
++người đọc. Hàm trên Cloudflare không tự tính được: nó chạy ở điểm biên nào thì
++mang giờ chỗ đó, nên cặp `ngay` + `khung` phải do **trang gửi lên**.
++
++Con số này đi xuống cả ba nơi — thẻ `data-khung` trong HTML, `src/js/quote.js`
++và `functions/api/quote.js` — vì khoá cache của hàm là cặp ngày+khung. Hai bên
++hiểu khác số khung thì trang xin một khoá mà hàm trả về theo khoá khác, và câu
++đổi lung tung giữa buổi. `npm run kiem` có phép kiểm riêng cho chuyện đó.
++
++:::warn Danh sách `### Chủ đề` phải dài ít nhất bằng số khung
++Chia bài mà cỗ ít lá hơn số lần rút thì đành có khung trùng nhau. Tám chủ đề
++hiện tại thừa sức cho tối đa bốn khung.
++:::
++
++Trần là 4. Dày hơn thì ô "câu của hôm nay" lại thành cái máy xổ số — đúng thứ
++cơ chế này sinh ra để tránh. Build kêu lên và tạm dùng 4 nếu khai quá.
++
+ ### 2.2 · Sàn và trần độ dài
+ 
+ Câu nhận được phải dài **40 đến 150 ký tự**, ngoài khoảng đó thì vứt.
+@@ -110,9 +162,33 @@ File `_nguon.js` **được commit**, không gitignore — thiếu nó là hàm
+ 
+ ### 2.4 · Một chỗ cố ý khác bản gốc
+ 
+-Bản gốc là "lời chào", mỗi lần tải là một câu mới. Ô này là "câu **của hôm
+-nay**" nên cả ngày phải một câu. Đổi mỗi lần bấm F5 thì nó không còn là câu của
+-ngày nữa, chỉ là một cái máy xổ số.
++Bản gốc là "lời chào", mỗi lần tải là một câu mới. Ô này là "câu **của buổi
++này**" nên trong một khung giờ phải một câu. Đổi mỗi lần bấm F5 thì nó không
++còn là câu của buổi nữa, chỉ là một cái máy xổ số.
++
++Bản đầu đóng theo **ngày**, một câu duy nhất từ 0h tới 24h. Đúng chữ "câu của
++hôm nay" nhưng hỏng việc: người đọc quay lại buổi chiều gặp đúng câu ban sáng,
++và ô trích dẫn thành một mảng trang trí chết. Khung giờ là chỗ ở giữa hai cái
++dở ấy.
++
++### 2.5 · Tắt phần "nghĩ" của model
++
++`generationConfig` gửi kèm `thinkingConfig: { thinkingBudget: 0 }`.
++
++Bản đầu để `maxOutputTokens: 220` và không khai gì về phần nghĩ. Đủ chỗ cho
++câu, nhưng **không** đủ chỗ cho phần suy nghĩ của mấy model đời mới: token nghĩ
++ăn hết hạn mức rồi `parts` trả về rỗng, và lỗi hiện ra là `câu không dùng được
++(0 ký tự)` — nghe như Gemini viết câu dở, chứ không ai đoán ra là thiếu chỗ.
++
++Nay tắt hẳn phần nghĩ, **và** nới trần lên 512 làm lưới đỡ phòng khi cái đứng
++sau bí danh `-latest` lại không nhận `thinkingConfig`. Model nào không biết
++khoá ấy thì trả 400 kèm chữ "thinking", và hàm tự gọi lại một lượt không kèm —
++không đoán theo số hiệu model, vì Google hoán cái đứng sau bí danh lúc nào
++không báo.
++
++Lỗi "câu không dùng được" giờ kèm luôn `finishReason`: rỗng vì bị chặn nội dung
++(`SAFETY`), vì hết token (`MAX_TOKENS`) hay vì lý do khác là ba chuyện sửa ở ba
++chỗ khác hẳn nhau, mà nhìn "0 ký tự" thì không phân biệt nổi.
+ 
+ ---
+ 
+@@ -139,9 +215,54 @@ Chữ đang đọc dở mà tự đổi là thứ khó chịu hơn cả phải c
+ Nhãn ô đổi thành `QUOTE OF THE DAY · thêm` để người đọc biết mình đang xem thêm
+ chứ không phải câu của ngày.
+ 
++**Câu xin được có cất lại.** Bấm nút xong, câu ấy được ghi vào `localStorage`
++đè lên câu của khung giờ đang chạy. Bản đầu không cất: bấm xin được câu ưng ý,
++F5 một cái là mất, và lần tải sau còn gọi mạng thêm một lượt nữa cho đúng cái
++khung vừa xin xong. Người bấm nút là người đang muốn câu **đó** — giữ lấy nó
++mới phải.
++
+ ---
+ 
+ ## 4 · Tắt hẳn
+ 
+-Xoá hết câu trong `content/quote-nguon.md` và đặt `"quoteAI": { "bat": false }` — ô
+-trích dẫn biến mất khỏi cả hai khung.
++Đặt `"quoteAI": { "bat": false }`, hoặc **xoá hẳn khối `quoteAI`** — cả hai đều
++tắt lớp Gemini, ô trích dẫn quay về xoay vòng trong kho sẵn. Muốn ô biến mất
++khỏi cả hai khung thì xoá hết câu trong `### Câu sẵn`.
++
++:::warn Xoá khối `quoteAI` là cách lớp này đã chết lặng một lần
++Khối ấy từng bị xoá khỏi `site.config.json` trong một lượt sửa cấu hình, và
++**không có gì báo**. Build vẫn xanh. `_nguon.js` vẫn nướng ra đủ bốn mục. Hàm
++`/api/quote` vẫn nằm đó, khoá Gemini vẫn khai đúng. Chỉ có thẻ `data-api` là
++không được in ra nữa — nên trang không bao giờ gọi tới hàm, và Gemini chưa từng
++viết được một câu nào.
++
++Nhìn ngoài không thấy gì khác, vì ô trích dẫn vẫn có câu: kho sẵn vẫn chạy.
++Đúng cái tính "hỏng thì im" đã giữ cho trang không bao giờ sập, cũng là cái
++giấu luôn chuyện nó tắt.
++
++`npm run kiem` nay có hai phép kiểm cho đúng khoảng cách ấy — giữa "đã chuẩn bị
++đủ" và "có thật sự nối dây không":
++
++- **cảnh báo** khi trang có ô trích dẫn mà `quoteAI` không bật
++- **lỗi** khi bật rồi mà HTML dựng ra thiếu `data-api` hoặc `data-khung`
++:::
++
++---
++
++## 5 · Xem lớp Gemini có sống không
++
++Gọi thẳng hàm, không qua trang:
++
++```
++curl -s 'https://z-in-borderland.com/api/quote?ngay=2026-09-17&khung=0&sokhung=3&moi=1'
++```
++
++| Trả về | Nghĩa là |
++|---|---|
++| `{"ok":true,…}` | sống — hàm, khoá và model đều ổn |
++| `{"ok":false,"ly_do":"chua-khai-khoa"}` | thiếu `GEMINI_KEY` ở Cloudflare (xem `docs/CAI-DAT.md` §2) |
++| `{"ok":false,"ly_do":"thieu-loi-dan"}` | `### Lời dặn` đọc không ra — chạy `npm run kiem` |
++| `{"ok":false,"ly_do":"gemini 400 · …"}` | lời báo thật của Google, đọc thẳng được |
++
++Hàm **luôn trả 200**, kể cả lúc hỏng: người đọc không bao giờ được thấy lỗi cấu
++hình. Nên chỗ để nhìn là `ly_do`, không phải mã HTTP.
+diff --git a/functions/api/quote.js b/functions/api/quote.js
+index 913c997..e32f9db 100644
+--- a/functions/api/quote.js
++++ b/functions/api/quote.js
+@@ -26,17 +26,27 @@
+  *
+  * ═══ HAI CHỖ CỐ Ý KHÁC BẢN GỐC ═══
+  *
+- * 1. CÂU ĐÓNG THEO NGÀY. Bản gốc là "lời chào", mỗi lần tải một câu mới. Ô này
+- *    là "câu CỦA HÔM NAY" nên cả ngày phải MỘT câu — đổi mỗi lần F5 thì không
+- *    còn là câu của ngày, chỉ là một cái máy xổ số.
++ * 1. CÂU ĐÓNG THEO KHUNG GIỜ. Bản gốc là "lời chào", mỗi lần tải một câu mới.
++ *    Ô này là "câu CỦA BUỔI NÀY" nên trong một khung giờ phải MỘT câu — đổi
++ *    mỗi lần F5 thì không còn là câu của buổi, chỉ là một cái máy xổ số.
++ *
++ *    Bản trước đóng theo NGÀY, một câu duy nhất từ 0h tới 24h. Đúng chữ nhưng
++ *    hỏng việc: người đọc quay lại buổi chiều gặp đúng câu ban sáng, và ô
++ *    trích dẫn thành một mảng trang trí chết. Nay TRANG gửi lên cặp
++ *    `ngay` + `khung`, mỗi cặp một câu — mặc định ba khung một ngày.
++ *
++ *    Vì sao trang gửi chứ hàm không tự tính: hàm chạy ở điểm biên nào thì
++ *    mang giờ chỗ đó. Bảng mốc giờ nằm ở `src/js/quote.js`, chỗ duy nhất
++ *    biết đang mấy giờ ở nhà người đọc.
+  *
+  * 2. BỐC NGẪU NHIÊN CHỦ ĐỀ VÀ NHÓM TÁC GIẢ. Bản gốc nhét cả bốn chủ đề và 46
+  *    cái tên vào một lời dặn, và Gemini gần như lúc nào cũng rơi vào mấy cái
+  *    tên quen nhất. Ở đây mỗi ngày bốc MỘT chủ đề và 12 tác giả rồi mới hỏi.
+  *
+- * Gọi:  GET /api/quote?ngay=YYYY-MM-DD        câu của ngày (có cache)
+- *       GET /api/quote?ngay=YYYY-MM-DD&moi=1  xin câu khác (không cache)
+- * Trả:  { ok, q, tacGia, chuDe, src }  ·  ok:false ⇒ trang dùng kho sẵn.
++ * Gọi:  GET /api/quote?ngay=YYYY-MM-DD&khung=N&sokhung=M   câu của khung (cache)
++ *       thêm &moi=1                                        xin câu khác (không cache)
++ *       thiếu khung/sokhung ⇒ coi như cả ngày một câu, y như bản trước.
++ * Trả:  { ok, q, tacGia, chuDe, khung, src }  ·  ok:false ⇒ trang dùng kho sẵn.
+  *
+  * KHÔNG CẦN file này thì blog vẫn chạy: ô trích dẫn luôn có câu lấy từ
+  * `### Câu sẵn` đã nhúng vào HTML lúc build.
+@@ -57,6 +67,28 @@ const MODEL_MAC_DINH = 'gemini-flash-lite-latest';
+ const TRAN = 150;
+ const SAN  = 40;
+ 
++/* Trần token cho câu trả lời. Một câu 150 ký tự tiếng Việt chưa tới 80 token,
++   nên 512 là thừa thãi — cố ý thừa. Bản trước để 220, đủ cho câu nhưng KHÔNG
++   đủ chỗ cho phần "suy nghĩ" của mấy model đời mới: token nghĩ ăn hết hạn mức
++   rồi `parts` trả về RỖNG, và lỗi hiện ra là "câu không dùng được (0 ký tự)" —
++   nghe như Gemini viết câu dở, chứ không ai đoán ra là thiếu chỗ. Nay tắt hẳn
++   phần nghĩ bằng `thinkingConfig`, và để trần rộng làm lưới đỡ phòng khi cái
++   đứng sau bí danh `-latest` lại không nhận `thinkingConfig`. */
++const TRAN_TOKEN = 512;
++
++/* Bản cache phải sống HẾT khung giờ. Hết sớm thì `stale-while-revalidate` đi
++   lấy bản mới ngay giữa buổi, và người vào sau thấy một câu khác người vào
++   trước — đúng cái nhấp nháy mà cơ chế khung giờ sinh ra để tránh.
++
++   Mỗi số dưới đây dài hơn khung DÀI NHẤT của cấu hình tương ứng (bảng mốc ở
++   `src/js/quote.js`), chừa dư vài tiếng:
++     2 khung  khung dài nhất 12h  →  20h
++     3 khung  khung dài nhất 11h  →  13h
++     4 khung  khung dài nhất  9h  →  10h
++   Cache dài quá không hại gì: KHOÁ đã có sẵn `ngay` và `khung` trong địa chỉ,
++   nên sang khung mới là sang một khoá mới, không đụng bản cũ. */
++const HAN_CACHE = { 2: 72000, 3: 46800, 4: 36000 };
++
+ /* Bốc bao nhiêu tác giả mỗi lần hỏi. 12 là chỗ vừa: ít quá thì mấy hôm liền
+    trùng người, nhiều quá thì Gemini lại bám vào cái tên quen nhất trong nhóm. */
+ const SO_TAC_GIA = 12;
+@@ -105,12 +137,59 @@ export async function onRequest(context) {
+     ? p.get('ngay')
+     : new Date().toISOString().slice(0, 10);
+ 
++  /* Khung giờ trong ngày, do trang gửi lên. `sokhung` là TỔNG số khung — cần
++     nó để tính hạn cache: khung càng ít thì mỗi khung càng dài, mà bản cache
++     phải sống hết khung chứ hết sớm thì câu đổi giữa buổi.
++
++     Kẹp cả hai vào khoảng hợp lệ thay vì tin thẳng: hai tham số này nằm trong
++     địa chỉ, ai gõ gì vào cũng được. `sokhung=99999` mà lọt thì hạn cache
++     thành 1 giây và mỗi lượt tải là một lượt gọi Gemini. */
++  const soKhung = Math.min(4, Math.max(1, parseInt(p.get('sokhung'), 10) || 1));
++  const khung   = Math.min(soKhung - 1, Math.max(0, parseInt(p.get('khung'), 10) || 0));
++
+   /* `moi=1` là nút "xem câu khác" trên trang bấm sang. Lần đó bốc thật ngẫu
+      nhiên và KHÔNG cache — bấm nút mà ra lại câu cũ thì người bấm tưởng hỏng. */
+   const xinMoi = p.get('moi') === '1';
+-  const r = sinh(xinMoi ? (Math.random() * 0xFFFFFFFF) >>> 0 : hatTuChuoi(ngay));
+ 
+-  const chuDe  = NGUON.chuDe[Math.floor(r() * NGUON.chuDe.length)] || { ten: '', ta: '' };
++  /* Hạt giống là NGÀY + KHUNG, không phải ngày trơn. Cùng một khung thì mọi
++     lượt gọi ra cùng chủ đề và cùng nhóm tác giả — có vậy bản cache mới khớp
++     câu đã trả lần đầu. Mà hai khung khác nhau trong cùng một ngày thì bốc ra
++     hai chủ đề khác nhau, nên câu buổi chiều không phải là một biến thể của
++     câu ban sáng. */
++  const r = sinh(xinMoi ? (Math.random() * 0xFFFFFFFF) >>> 0
++                        : hatTuChuoi(ngay + '#' + khung));
++
++  /* ── CHỦ ĐỀ: CHIA BÀI THEO NGÀY, KHÔNG BỐC RỜI TỪNG KHUNG ──
++
++     Bản đầu bốc chủ đề bằng chính hạt giống ngày+khung ở trên, mỗi khung bốc
++     độc lập. Đo ra hỏng ngay: ngày 17/09 thì khung 1 và khung 2 cùng rơi vào
++     "Cái đẹp của thứ bình thường". Không phải xui — 8 chủ đề, 3 khung, thì
++     xác suất có hai khung trùng nhau trong cùng một ngày khoảng 30%. Mà người
++     đọc quay lại buổi tối để gặp lại đúng chủ đề ban chiều thì cả cơ chế khung
++     giờ thành công cốc.
++
++     Chữa bằng đúng cái cách kho câu sẵn đã dùng (xem `laBai` trong
++     src/js/quote.js): xáo cả cỗ MỘT LẦN theo ngày, rồi mỗi khung rút một lá
++     theo thứ tự. Trong một ngày không khung nào trùng khung nào — chắc chắn,
++     không phải xác suất.
++
++     Hai ngày liền nhau vẫn có thể chạm lại một chủ đề ở chỗ nối giữa hai cỗ.
++     Chỗ nối ấy bên kho câu sẵn phải chữa vì nó lặp lại nguyên một CÂU; ở đây
++     chỉ là lặp chủ đề, mà chủ đề lặp thì Gemini vẫn viết ra câu khác với nhóm
++     tác giả khác. Không đáng thêm một lớp cơ chế nữa.
++
++     Nút "xem câu khác" thì vẫn bốc rời, thật ngẫu nhiên — bấm nút là muốn đi
++     chệch khỏi lịch, không phải đi tiếp theo lịch. */
++  const chuDe = xinMoi
++    ? (NGUON.chuDe[Math.floor(r() * NGUON.chuDe.length)] || { ten: '', ta: '' })
++    /* Chia dư phòng lúc `### Chủ đề` bị rút ngắn còn ít hơn số khung: lúc ấy
++       hai khung đành chạm nhau, nhưng chạm nhau vẫn hơn là rút phải lá rỗng
++       rồi gửi cho Gemini một lời dặn không có chủ đề nào. */
++    : (bocRa(NGUON.chuDe, NGUON.chuDe.length, sinh(hatTuChuoi(ngay)))
++       [khung % Math.max(1, NGUON.chuDe.length)] || { ten: '', ta: '' });
++
++  /* Nhóm tác giả thì bốc theo ngày+khung như cũ. Hai khung có chạm lại vài cái
++     tên cũng không sao: chủ đề đã khác thì câu đã khác. */
+   const nhomTG = bocRa(NGUON.nguon, SO_TAC_GIA, r);
+ 
+   /* Biến môi trường lấy từ `env`, KHÔNG phải `process.env` — Workers không có
+@@ -126,7 +205,7 @@ export async function onRequest(context) {
+     .replace(/\{\{chuDe\}\}/g, chuDe.ta ? `${chuDe.ten} — ${chuDe.ta}` : chuDe.ten)
+     .replace(/\{\{nguon\}\}/g, nhomTG.join(' · '));
+ 
+-  const goi = (model) => fetch(
++  const goi = (model, tatNghi) => fetch(
+     'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
+     {
+       method: 'POST',
+@@ -136,13 +215,34 @@ export async function onRequest(context) {
+       headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+       body: JSON.stringify({
+         contents: [{ parts: [{ text: nhac }] }],
+-        generationConfig: { temperature: 1, maxOutputTokens: 220 }
++        generationConfig: tatNghi
++          ? { temperature: 1, maxOutputTokens: TRAN_TOKEN, thinkingConfig: { thinkingBudget: 0 } }
++          : { temperature: 1, maxOutputTokens: TRAN_TOKEN }
+       })
+     }
+   );
+ 
++  /* Gọi một model, và nếu model ấy không biết `thinkingConfig` thì gọi lại
++     không kèm. Trả về `{ kq, vi }` — `vi` là lời báo lỗi ĐÃ ĐỌC SẴN, vì thân
++     Response chỉ đọc được một lượt.
++
++     Không đoán model nào biết `thinkingConfig` theo số hiệu: cả hai tên ở đây
++     đều là bí danh `-latest`, mà Google hoán cái đứng sau bí danh lúc nào
++     không báo. Cứ hỏi, đúng lỗi ấy thì hỏi lại. */
++  async function thu(model) {
++    let kq = await goi(model, true);
++    if (kq.ok) return { kq, vi: '' };
++    let vi = await doiLoi(kq);
++    if (kq.status === 400 && /thinking/i.test(vi)) {
++      kq = await goi(model, false);
++      if (kq.ok) return { kq, vi: '' };
++      vi = await doiLoi(kq);
++    }
++    return { kq, vi };
++  }
++
+   try {
+-    let kq = await goi(env.GEMINI_MODEL_QUOTE || MODEL_MAC_DINH);
++    let { kq, vi } = await thu(env.GEMINI_MODEL_QUOTE || MODEL_MAC_DINH);
+     /* ── LÙI MỘT LẦN, VÀ LÙI VỀ MỘT BÍ DANH KHÁC ──
+        Tên model sai hoặc chưa được cấp → 404/403.
+ 
+@@ -160,42 +260,24 @@ export async function onRequest(context) {
+        thời cả hai thì mới hết đường, và lúc ấy thì ghim số hiệu cũng chẳng cứu
+        được gì. */
+     if (kq.status === 404 || kq.status === 403) {
+-      kq = await goi(env.GEMINI_MODEL || 'gemini-flash-latest');
+-    }
+-    /* ── KỂ LẠI LỖI THẬT, ĐỪNG NUỐT MẤT ──
+-       Bản trước ném ra đúng ba chữ: "gemini 400". Con số ấy không sai, nhưng vô
+-       dụng — 400 có thể là khoá không hợp lệ, là khoá bị gửi hai lần, là project
+-       chưa bật Generative Language API, hay là thân yêu cầu hỏng. Bốn thứ ấy sửa
+-       ở bốn chỗ khác hẳn nhau, mà Google thì đã nói rõ là cái nào ngay trong
+-       `error.message`. Nuốt nó đi là tự bịt mắt mình.
+-
+-       Câu báo của Google KHÔNG bao giờ chứa khoá, nên đưa ra ngoài là an toàn.
+-       Vẫn cắt 200 ký tự, phòng lúc cổng vào trả về nguyên một trang HTML.
+-
+-       Đọc THÂN MỘT LẦN rồi mới thử parse: `Response` chỉ đọc được một lượt, gọi
+-       .json() hỏng rồi gọi tiếp .text() là nhận lỗi "body already used" đè lên
+-       đúng cái lỗi mình đang muốn xem. */
+-    if (!kq.ok) {
+-      let vi = '';
+-      try {
+-        const tho = await kq.text();
+-        let du = null;
+-        try { du = JSON.parse(tho); } catch (e) {}
+-        const loi = (du && du.error) || {};
+-        vi = ([loi.status, loi.message].filter(Boolean).join(' — ') || tho).slice(0, 200);
+-      } catch (e) {}
+-      throw new Error('gemini ' + kq.status + (vi ? ' · ' + vi : ''));
++      ({ kq, vi } = await thu(env.GEMINI_MODEL || 'gemini-flash-latest'));
+     }
++    if (!kq.ok) throw new Error('gemini ' + kq.status + (vi ? ' · ' + vi : ''));
+ 
+     const j = await kq.json();
+-    const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
++    const ungVien = (j.candidates || [])[0] || {};
++    const parts = (ungVien.content || {}).parts || [];
+     let cau = parts.map((x) => x.text || '').join('')
+       .trim()
+       .replace(/^["'“”]+|["'“”]+$/g, '')
+       .replace(/\s+/g, ' ');
+ 
+     if (!cau || cau.length > TRAN || cau.length < SAN) {
+-      throw new Error('câu không dùng được (' + cau.length + ' ký tự)');
++      /* Kèm `finishReason`: câu rỗng vì bị chặn nội dung (SAFETY), vì hết token
++         (MAX_TOKENS) hay vì model nghĩ hết sạch phần được nói là ba chuyện sửa
++         ở ba chỗ khác hẳn nhau — mà nhìn "0 ký tự" thì không phân biệt nổi. */
++      throw new Error('câu không dùng được (' + cau.length + ' ký tự'
++        + (ungVien.finishReason ? ', ' + ungVien.finishReason : '') + ')');
+     }
+ 
+     /* Tách tên tác giả ở dấu — CUỐI CÙNG. Tách ở dấu đầu tiên thì câu có em
+@@ -204,18 +286,45 @@ export async function onRequest(context) {
+     const i = cau.lastIndexOf('—');
+     if (i > 0) { tacGia = cau.slice(i + 1).trim(); cau = cau.slice(0, i).trim(); }
+ 
+-    /* Giữ nguyên câu trả lời tới hết ngày, rồi cho dùng bản cũ thêm một ngày
+-       trong lúc lấy bản mới — nhờ vậy người mở trang lúc 0h01 không phải chờ. */
++    /* Giữ nguyên câu trả lời tới hết khung giờ, rồi cho dùng bản cũ thêm một
++       ngày trong lúc lấy bản mới — nhờ vậy người mở trang đúng lúc sang khung
++       không phải chờ. */
+     const cache = xinMoi ? 'no-store'
+-      : 'public, s-maxage=' + conLaiTrongNgay() + ', stale-while-revalidate=86400';
++      : 'public, s-maxage=' + (HAN_CACHE[soKhung] || conLaiTrongNgay())
++        + ', stale-while-revalidate=86400';
+ 
+-    return traLoi({ ok: true, q: cau, tacGia, chuDe: chuDe.ten, src: 'gemini' }, cache);
++    return traLoi({ ok: true, q: cau, tacGia, chuDe: chuDe.ten, khung, src: 'gemini' }, cache);
+   } catch (e) {
+     return traLoi({ ok: false, ly_do: String((e && e.message) || e) }, 'no-store');
+   }
+ }
+ 
+-/* Số giây còn lại tới nửa đêm UTC. Xấp xỉ thôi — múi giờ người đọc lệch thì
++/* ── KỂ LẠI LỖI THẬT, ĐỪNG NUỐT MẤT ──
++   Bản đầu ném ra đúng ba chữ: "gemini 400". Con số ấy không sai, nhưng vô dụng
++   — 400 có thể là khoá không hợp lệ, là khoá bị gửi hai lần, là project chưa
++   bật Generative Language API, là model không nhận `thinkingConfig`, hay là
++   thân yêu cầu hỏng. Năm thứ ấy sửa ở năm chỗ khác hẳn nhau, mà Google thì đã
++   nói rõ là cái nào ngay trong `error.message`. Nuốt nó đi là tự bịt mắt mình.
++
++   Câu báo của Google KHÔNG bao giờ chứa khoá, nên đưa ra ngoài là an toàn. Vẫn
++   cắt 200 ký tự, phòng lúc cổng vào trả về nguyên một trang HTML.
++
++   Đọc THÂN MỘT LẦN rồi mới thử parse: `Response` chỉ đọc được một lượt, gọi
++   .json() hỏng rồi gọi tiếp .text() là nhận lỗi "body already used" đè lên
++   đúng cái lỗi mình đang muốn xem. */
++async function doiLoi(kq) {
++  try {
++    const tho = await kq.text();
++    let du = null;
++    try { du = JSON.parse(tho); } catch (e) {}
++    const loi = (du && du.error) || {};
++    return ([loi.status, loi.message].filter(Boolean).join(' — ') || tho).slice(0, 200);
++  } catch (e) { return ''; }
++}
++
++/* Số giây còn lại tới nửa đêm UTC. Chỉ còn dùng khi trang chạy nếp cũ một câu
++   một ngày (`quoteAI.khung = 1`, hoặc HTML dựng từ bản trước chưa có
++   `data-khung`). Xấp xỉ thôi — múi giờ người đọc lệch thì
+    câu đổi sớm hoặc muộn vài tiếng, và đó là chuyện chấp nhận được với một ô
+    trích dẫn. Muốn chuẩn từng múi giờ thì phải cache theo từng ngày+múi giờ,
+    tức là nhân số lần gọi Gemini lên vài chục — không đáng. */
+diff --git a/site.config.json b/site.config.json
+index 503172a..2cc03f1 100644
+--- a/site.config.json
++++ b/site.config.json
+@@ -43,7 +43,7 @@
+     "luotXem": "Đếm lượt xem THẬT bằng Cloudflare D1. Khác hẳn phanTich: Web Analytics đếm rất tốt nhưng KHÔNG có API đọc ngược — số liệu chỉ xem được trên bảng điều khiển, không lấy ra in lên bài được. Cần tạo một cơ sở dữ liệu D1 và gắn vào dự án với tên biến DB; từng bước ở docs/CAI-DAT.md §5. Chưa gắn thì hàm trả về trạng thái tắt và trang lặng lẽ bỏ qua, hàng meta chỉ ngắn đi một mục. Đây là con số GẦN ĐÚNG: bot biết chạy JavaScript vẫn lọt, và mở tab mới thì tính lại.",
+     "phanTich": "Cloudflare Web Analytics — đếm lượt xem và đo tốc độ thật của người đọc. KHÔNG đặt cookie, không theo dấu người đọc sang trang web khác, nên không cần banner xin phép. Lấy token ở Cloudflare Dashboard → Web Analytics → Add a site. Token này CÔNG KHAI (nó nằm ngay trong HTML mọi trang) nên để ở đây là đúng chỗ — khác hẳn GEMINI_KEY. bat:false thì không chèn script nào cả. Xem docs/DUA-LEN-MANG.md §9.",
+     "doanTruoc": "Đoán trước trang kế: trình duyệt tải sẵn trang mà người đọc sắp bấm, nên bấm xong hiện gần như tức thì. Chỉ TẢI trước chứ không CHẠY trước (prefetch, không phải prerender) — chạy trước thì script của trang đó chạy khi chưa ai xem, và số liệu lượt xem sai theo. Chỉ áp cho link trong cùng trang web. Đặt false để tắt.",
+-    "quoteAI": "Lớp làm phong phú ô trích dẫn bằng Gemini. bat:false thì trang chỉ dùng kho câu trong content/quote-nguon.md — vẫn chạy đầy đủ, không cần mạng, không cần khoá. Bật lên thì trang xin thêm một câu viết mới cho mỗi ngày qua /api/quote; hỏng kiểu gì cũng lặng lẽ quay về kho sẵn. Cần khai GEMINI_KEY dạng Secret ở Cloudflare → Settings → Runtime → Variables and Secrets (KHÔNG phải ô cùng tên trong mục Builds — ô đó là biến lúc dựng, hàm không thấy). KHÔNG bao giờ để khoá trong repo. Xem docs/QUOTE.md.",
++    "quoteAI": "Lớp làm phong phú ô trích dẫn bằng Gemini. bat:false — HOẶC XOÁ HẲN KHỐI NÀY — thì trang chỉ dùng kho câu trong content/quote-nguon.md; vẫn chạy đầy đủ, không cần mạng, không cần khoá. Bật lên thì trang xin thêm câu viết mới qua /api/quote; hỏng kiểu gì cũng lặng lẽ quay về kho sẵn. khung = chia ngày ra mấy KHUNG GIỜ, mỗi khung một câu mới: 1 = cả ngày một câu (nếp cũ), 2 = sáng/tối (mốc 5h, 17h), 3 = sáng/chiều/tối (5h, 12h, 18h — mặc định), 4 = thêm khung trưa (5h, 11h, 15h, 20h). Từ 0h tới trước mốc đầu tính là khung CUỐI của hôm trước, nên người đọc lúc nửa đêm vẫn thấy câu của buổi tối chứ không bị nhảy câu. Cần khai GEMINI_KEY dạng Secret ở Cloudflare → Settings → Runtime → Variables and Secrets (KHÔNG phải ô cùng tên trong mục Builds — ô đó là biến lúc dựng, hàm không thấy). KHÔNG bao giờ để khoá trong repo. Xem docs/QUOTE.md.",
+     "soLuong": "Mấy con số nhỏ của giao diện, gom về một chỗ để khỏi phải mở tools/build.mjs. docTiep = khối \"Read next\" cuối bài hiện mấy bài (0 = tắt hẳn khối đó). tagMoiThe = mỗi thẻ bài trong lưới hiện tối đa mấy tag — thẻ không phải chỗ liệt kê, ba tag trở lên là hàng tag dài hơn cả tiêu đề. heroTrangChu = màn đầu trang chủ xếp mấy bài; bốn dòng trở lên là màn ấy hết thoáng, mà thoáng mới là điểm của nó. rss = feed.xml giữ mấy bài gần nhất. Thiếu khoá nào thì dùng mặc định (2 · 2 · 3 · 30). Gõ sai kiểu (chữ, số âm, số lẻ) thì build kêu lên và dùng mặc định, không im lặng bỏ qua.",
+     "logo": "vongKe = trọn một vòng kể của logo chạy trong bao lâu. Nhỏ lại thì nhanh hơn. PHẢI có đơn vị (\"27s\", \"800ms\") — viết trần \"27\" thì CSS bỏ qua còn SVG hiểu là 27 giây, hai nửa hoạt hình chạy lệch nhau mà không ai báo. Đây là nguồn DUY NHẤT: build đưa số này vào cả thẻ <animate> lẫn biến --lg-ck. soHat = lúc logo vỡ ra thì có bao nhiêu hạt bụi bay. 18 chọn vì nó nguyên tố cùng nhau với ba nhịp 5·7·3 dùng để rải bán kính, cỡ hạt và quãng bay — đổi số khác thì mấy hạt bắt đầu trùng nhau, hết cảm giác ngẫu nhiên.",
+     "dangBai": "Ô viết BÀI ở /z-admin/ (ngăn Post). Khác ghi chú: bài không sống trong cơ sở dữ liệu mà được ghi thành một file .md trong kho mã trên GitHub, rồi Cloudflare tự dựng lại — khoảng một phút sau bài mới lên. Phải vậy vì một bài cần đường dẫn riêng, cần có mặt trong feed.xml, sitemap.xml, ô tìm kiếm và thẻ chia sẻ; tất cả những thứ đó do bộ dựng sinh ra. Cần ba biến ở Cloudflare: GH_TOKEN (Secret — token GitHub quyền Contents: Read and write), GH_REPO và GH_NHANH (Var). Dùng chung cặp khoá chủ trang GC_ID + GC_KEY. Từng bước: docs/CAI-DAT.md. Đặt bat:false để tắt hẳn ngăn Post."
+@@ -60,6 +60,11 @@
+     "gioiHan": 0,
+     "loiNhac": "Đọc bản đầy đủ tại"
+   },
++  "quoteAI": {
++    "bat": true,
++    "api": "/api/quote",
++    "khung": 3
++  },
+   "phanTich": {
+     "bat": false,
+     "token": ""
+diff --git a/src/js/quote.js b/src/js/quote.js
+index 0fd9631..291e16b 100644
+--- a/src/js/quote.js
++++ b/src/js/quote.js
+@@ -128,11 +128,11 @@
+       /* ── LỚP GEMINI (tuỳ chọn) ──
+          Kho câu nhúng sẵn ở trên LUÔN chạy, không cần mạng, không cần khoá.
+          Nếu trang có /api/quote và đã khai khoá Gemini thì xin thêm một câu
+-         viết mới cho hôm nay, đè lên câu vừa vẽ.
++         viết mới cho khung giờ đang tới lượt, đè lên câu vừa vẽ.
+ 
+          Ba luật của lớp này:
+-           1. MỖI NGÀY GỌI ĐÚNG MỘT LẦN. Cất vào localStorage theo ngày, tải
+-              lại trang là lấy từ đó — không gọi mạng lần nữa.
++           1. MỖI KHUNG GIỜ GỌI ĐÚNG MỘT LẦN. Cất vào localStorage theo cặp
++              ngày+khung, tải lại trang là lấy từ đó — không gọi mạng lần nữa.
+            2. HỎNG THÌ IM. Không có mạng, chưa deploy, chưa khai khoá, Gemini
+               chậm — câu từ kho sẵn vẫn đang nằm đó, người đọc không thấy gì
+               khác thường.
+@@ -140,46 +140,95 @@
+               một ô trích dẫn. */
+       if (hop.dataset.api) xinGemini(hop.dataset.api);
+ 
+-      /* Ngày theo GIỜ MÁY người đọc, dạng YYYY-MM-DD. Không dùng
+-         toISOString(): hàm đó trả giờ UTC, nên từ 0h tới 7h sáng giờ Việt Nam
+-         nó còn báo ngày hôm qua. */
+-      function nayLa() {
+-        var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+-        var d = new Date();
++      /* ══════════ MỐC GIỜ CHIA KHUNG ══════════
++
++         Bản đầu là MỘT câu cho cả ngày. Đúng với cái tên "câu của hôm nay",
++         nhưng người đọc quay lại buổi chiều thì gặp đúng câu ban sáng — ô
++         trích dẫn thành một mảng trang trí chết. Nay chia ngày ra mấy khung,
++         mỗi khung một câu mới: quay lại là có cái để đọc, mà vẫn không phải
++         cái máy xổ số đổi câu mỗi lần F5.
++
++         Đây là chỗ DUY NHẤT biết giờ giấc của người đọc. Hàm trên Cloudflare
++         không tự tính được: nó chạy ở điểm biên nào thì mang giờ chỗ đó, nên
++         cặp ngày+khung phải do TRANG gửi lên.
++
++           1  cả ngày một câu — nếp cũ
++           2  sáng · tối
++           3  sáng · chiều · tối        ← mặc định
++           4  sáng · trưa · chiều · tối
++
++         Số này do build in ra `data-khung` từ `quoteAI.khung`. Thiếu thẻ ấy
++         (chưa bật lớp Gemini, hoặc HTML dựng từ bản cũ) thì rơi về 1 — tức là
++         y hệt nếp cũ, không phải hỏng. */
++      var MOC_KHUNG = { 1: [0], 2: [5, 17], 3: [5, 12, 18], 4: [5, 11, 15, 20] };
++
++      function p2(n) { return (n < 10 ? '0' : '') + n; }
++
++      /* Dạng YYYY-MM-DD theo GIỜ MÁY người đọc. Không dùng toISOString(): hàm
++         đó trả giờ UTC, nên từ 0h tới 7h sáng giờ Việt Nam nó còn báo ngày
++         hôm qua. */
++      function ymd(d) {
+         return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+       }
+ 
++      /* KHOÁ của câu đang tới lượt: { ngay, khung, so }.
++
++         CHỖ DỄ SAI NHẤT — quãng 0h tới trước mốc đầu tiên. Người đọc lúc 1h
++         sáng vẫn đang ở "buổi tối" theo cảm nhận, nhưng `getDate()` thì đã
++         sang ngày mới. Tính thẳng thì họ nhảy sang một câu khác lúc nửa đêm,
++         rồi 5h sáng lại nhảy tiếp — hai câu trong năm tiếng, đúng cái nhấp
++         nháy mà cơ chế này sinh ra để tránh. Nên quãng ấy trả về khung CUỐI
++         của HÔM QUA: câu giữ nguyên từ tối hôm trước tới sáng hôm sau.
++
++         Với số khung = 1 thì mốc là [0], `gio >= 0` luôn đúng, không bao giờ
++         lùi ngày — nếp cũ giữ nguyên từng chi tiết. */
++      function moc() {
++        var so = parseInt(hop.getAttribute('data-khung'), 10) || 1;
++        var mo = MOC_KHUNG[so] || MOC_KHUNG[3];
++        var d = new Date();
++        var gio = d.getHours();
++        var i = -1;
++        for (var k = 0; k < mo.length; k++) if (gio >= mo[k]) i = k;
++        if (i < 0) { d.setDate(d.getDate() - 1); i = mo.length - 1; }
++        return { ngay: ymd(d), khung: i, so: mo.length };
++      }
++
++      /* Cả hai đường (tự xin lúc tải trang, và bấm nút) đều cất qua đây, nên
++         chỉ có MỘT chỗ biết hình dạng của bản lưu. */
++      function luu(x) {
++        try { localStorage.setItem('zib-quote', JSON.stringify(x)); } catch (e) {}
++        return x;
++      }
++
++      function dat(x) {
++        /* Chèn vào ĐẦU danh sách và trỏ "hôm nay" vào nó, để nút đổi câu
++           vẫn đi vòng qua cả kho sẵn như thường. */
++        ds.unshift({ chu: x.q, ai: x.ai });
++        homNay = 0; dangO = 0;
++        ve(0, true);
++      }
++
+       function xinGemini(api) {
+-        var nay = nayLa();
+-        var KHOA = 'zib-quote';
++        var m = moc();
+ 
+-        /* Đã có câu của đúng hôm nay thì dùng luôn, khỏi gọi mạng */
++        /* Đã có câu của đúng khung giờ này thì dùng luôn, khỏi gọi mạng */
+         try {
+-          var cu = JSON.parse(localStorage.getItem(KHOA) || 'null');
+-          if (cu && cu.ngay === nay && cu.q) { dat(cu); return; }
++          var cu = JSON.parse(localStorage.getItem('zib-quote') || 'null');
++          if (cu && cu.ngay === m.ngay && cu.khung === m.khung && cu.q) { dat(cu); return; }
+         } catch (e) {}
+ 
+         var ac = new AbortController();
+         var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
+ 
+-        fetch(api + '?ngay=' + nay, { signal: ac.signal, cache: 'no-store' })
++        fetch(api + '?ngay=' + m.ngay + '&khung=' + m.khung + '&sokhung=' + m.so,
++              { signal: ac.signal, cache: 'no-store' })
+           .then(function (r) { return r.json(); })
+           .then(function (kq) {
+             if (!kq || !kq.ok || !kq.q) return;
+-            var x = { ngay: nay, q: kq.q, ai: kq.tacGia || '' };
+-            try { localStorage.setItem(KHOA, JSON.stringify(x)); } catch (e) {}
+-            dat(x);
++            dat(luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' }));
+           })
+           .catch(function () { /* im lặng — câu từ kho sẵn vẫn đang hiện */ })
+           .finally(function () { clearTimeout(boCuoc); });
+-
+-        function dat(x) {
+-          /* Chèn vào ĐẦU danh sách và trỏ "hôm nay" vào nó, để nút đổi câu
+-             vẫn đi vòng qua cả kho sẵn như thường. */
+-          ds.unshift({ chu: x.q, ai: x.ai });
+-          homNay = 0; dangO = 0;
+-          ve(0, true);
+-        }
+       }
+ 
+       if (nut) {
+@@ -210,11 +259,18 @@
+           var ac = new AbortController();
+           var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
+ 
+-          fetch(hop.dataset.api + '?moi=1&ngay=' + nayLa(),
+-                { signal: ac.signal, cache: 'no-store' })
++          var m = moc();
++          fetch(hop.dataset.api + '?moi=1&ngay=' + m.ngay + '&khung=' + m.khung +
++                '&sokhung=' + m.so, { signal: ac.signal, cache: 'no-store' })
+             .then(function (r) { return r.json(); })
+             .then(function (kq) {
+               if (!kq || !kq.ok || !kq.q) return;
++              /* Cất luôn vào localStorage đè lên câu của khung giờ này. Bản
++                 trước không cất: bấm nút xin được câu mới, F5 một cái là mất,
++                 và lần tải sau còn gọi mạng thêm một lượt nữa cho đúng cái
++                 khung vừa xin xong. Người bấm nút là người đang muốn câu ĐÓ —
++                 giữ lấy nó mới phải. */
++              luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' });
+               ds.push({ chu: kq.q, ai: kq.tacGia || '' });
+               if (!xong) { xong = true; clearTimeout(henLat); dangO = ds.length - 1; ve(dangO, true); }
+             })
+diff --git a/tools/build.mjs b/tools/build.mjs
+index cdb32d1..059ead1 100644
+--- a/tools/build.mjs
++++ b/tools/build.mjs
+@@ -83,6 +83,27 @@ const SL = {
+   logoSoHat    : so('logo', 'soHat', 18, 0)
+ };
+ 
++/* Ngày chia làm mấy KHUNG GIỜ, mỗi khung xin Gemini một câu mới.
++   1 = nếp cũ, cả ngày một câu. Mặc định 3 (sáng · chiều · tối).
++
++   Con số này phải đi XUỐNG TỚI CẢ BA NƠI — thẻ `data-khung` trong HTML,
++   `src/js/quote.js` và `functions/api/quote.js` — vì khoá cache của hàm là
++   cặp `ngày + khung`. Hai bên hiểu khác số khung thì trang xin một khoá mà
++   hàm trả về theo một khoá khác, và câu đổi lung tung giữa buổi.
++
++   Trần 4: mỗi khung là một lượt gọi Gemini cho cả trang, mà dày hơn bốn thì ô
++   "câu của hôm nay" lại thành cái máy xổ số — đúng thứ cơ chế này sinh ra để
++   tránh. Bảng mốc giờ đặt ở src/js/quote.js, chỗ duy nhất cần biết giờ giấc
++   của người đọc. */
++const QUOTE_KHUNG = (() => {
++  const n = so('quoteAI', 'khung', 3, 1);
++  if (n > 4) {
++    CANH_BAO.push(`site.config.json — quoteAI.khung = ${n} quá dày (tối đa 4); tạm dùng 4`);
++    return 4;
++  }
++  return n;
++})();
++
+ /* Thời lượng vòng kể của logo. Phải là một quãng thời gian CSS hợp lệ, vì nó
+    vừa đi vào thuộc tính `dur` của thẻ <animate> vừa đi vào biến `--lg-ck`.
+    Viết "27" thiếu chữ s thì CSS bỏ qua cả luật, còn SVG thì hiểu là 27 GIÂY —
+@@ -2021,12 +2042,15 @@ function oQuote(nhan, { nhip = 0 } = {}) {
+      một vòng mạng mà chẳng tiết kiệm được byte nào đáng kể. */
+   if (!KHO_QUOTE.length) return '';
+   const api = (CAU.quoteAI || {}).bat ? (CAU.quoteAI.api || '/api/quote') : '';
++  /* `data-khung` chỉ có nghĩa khi có `data-api` — không bật lớp Gemini thì
++     chia ngày ra mấy khúc cũng chẳng có câu mới nào để mà đổi. */
++  const khung = api ? ` data-khung="${QUOTE_KHUNG}"` : '';
+   /* `nhip` = cứ bấy nhiêu trang người đọc đi qua thì đổi câu một lần. Bỏ trống
+      thì giữ nếp cũ: mỗi ngày một câu. Ô ở lề bài dùng nhịp 2 — đọc hết một bài
+      rồi sang bài kế mà câu vẫn y nguyên thì nó thành một mảng trang trí chết;
+      đổi mỗi lần tải trang thì lại thành nhấp nháy, và người đang đọc dở quay
+      lại tab cũ sẽ thấy câu khác. Hai trang là chỗ ở giữa. */
+-  return `<div class="bo-quote card ${nhan}"${nhip ? ` data-nhip="${nhip}"` : ''}${api ? ` data-api="${attr(BASE + api)}"` : ''}
++  return `<div class="bo-quote card ${nhan}"${nhip ? ` data-nhip="${nhip}"` : ''}${api ? ` data-api="${attr(BASE + api)}"` : ''}${khung}
+     data-quote='${JSON.stringify(KHO_QUOTE)
+       .replace(/'/g, '&#39;').replace(/</g, '\\u003c')}'>
+     <p class="label label--muted">${NHAN.quoteToday}</p>
+diff --git a/tools/kiem-dinh.mjs b/tools/kiem-dinh.mjs
+index c9e7d1d..40a99f0 100644
+--- a/tools/kiem-dinh.mjs
++++ b/tools/kiem-dinh.mjs
+@@ -638,6 +638,69 @@ const KIEM = [
+     }
+   },
+ 
++  {
++    /* ── PHÉP KIỂM NÀY SINH RA TỪ MỘT LẦN HỎNG THẬT ──
++       Khối `quoteAI` bị xoá khỏi site.config.json trong một lượt sửa cấu hình,
++       và KHÔNG CÓ GÌ BÁO. Build vẫn xanh. `_nguon.js` vẫn nướng ra đủ bốn mục.
++       Hàm `/api/quote` vẫn nằm đó, khoá Gemini vẫn khai đúng. Chỉ có thẻ
++       `data-api` là không được in ra nữa — nên trang KHÔNG BAO GIỜ gọi tới hàm.
++
++       Lớp Gemini chết lặng, mà nhìn ngoài thì không thấy gì khác: ô trích dẫn
++       vẫn có câu, vì kho sẵn vẫn chạy. Đúng cái tính "hỏng thì im" đã giữ cho
++       trang không bao giờ sập, cũng là cái giấu luôn chuyện nó tắt.
++
++       Mọi phép kiểm quote khác ở trên đều hỏi "đã chuẩn bị đủ chưa". Phép kiểm
++       này hỏi câu còn lại: "có thật sự nối dây không". */
++    ten: 'Lớp Gemini của ô trích dẫn có được nối vào trang không',
++    muc: 'canh',
++    chay: ({ cau, trang }) => {
++      const coO = trang.filter((t) => t.html.includes('class="bo-quote'));
++      if (!coO.length || (cau.quoteAI || {}).bat) return [];
++      return ['site.config.json không bật quoteAI — ô trích dẫn chỉ xoay vòng trong ' +
++              'kho sẵn, hàm /api/quote không bao giờ được gọi tới. Muốn bật thì thêm ' +
++              'lại khối "quoteAI": { "bat": true, "api": "/api/quote", "khung": 3 }'];
++    }
++  },
++
++  {
++    /* Bật rồi thì phải nối được tới cả hai đầu dây. Thiếu `data-khung` không
++       làm hỏng gì — trang rơi về nếp cũ một câu một ngày — nhưng đó là lặng lẽ
++       mất đúng cái vừa bật lên, nên vẫn phải báo. */
++    ten: 'Bật quoteAI thì ô trích dẫn phải có data-api và data-khung',
++    muc: 'loi',
++    chay: ({ cau, trang, goc }) => {
++      if (!(cau.quoteAI || {}).bat) return [];
++      const ra = [];
++
++      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'quote.js'))) {
++        ra.push('site.config.json bật quoteAI nhưng thiếu functions/api/quote.js');
++      }
++
++      const coO = trang.filter((t) => t.html.includes('class="bo-quote'));
++      if (!coO.length) {
++        ra.push('bật quoteAI nhưng không trang nào có ô trích dẫn — ' +
++                'kho `### Câu sẵn` trong content/quote-nguon.md rỗng?');
++        return ra;
++      }
++
++      const thieuApi = coO.filter((t) => !t.html.includes('data-api='));
++      if (thieuApi.length) {
++        ra.push(`${thieuApi.length} ô trích dẫn thiếu data-api, ví dụ ${thieuApi[0].url} — ` +
++                'trang sẽ không gọi /api/quote lần nào');
++      }
++
++      /* Chỉ nhận 1–4: bảng mốc giờ ở src/js/quote.js đúng bấy nhiêu khoá, số
++         ngoài bảng thì client lặng lẽ rơi về bảng 3 khung, còn hàm lại tính
++         hạn cache theo số khác — hai bên lệch nhau là câu đổi giữa buổi. */
++      const thieuKhung = coO.filter((t) => !/data-khung="[1-4]"/.test(t.html));
++      if (thieuKhung.length) {
++        ra.push(`${thieuKhung.length} ô trích dẫn thiếu data-khung hợp lệ (1–4), ` +
++                `ví dụ ${thieuKhung[0].url} — trang rơi về nếp cũ một câu một ngày`);
++      }
++      return ra;
++    }
++  },
++
+   {
+     /* Workers KHÔNG phải Node. Bốn thứ dưới đây chạy ngon ở máy mình nhưng
+        chết ngay khi deploy, và lỗi chỉ hiện trong log Cloudflare chứ trang
+-- 
+2.43.0
+

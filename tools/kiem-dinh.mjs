@@ -639,6 +639,69 @@ const KIEM = [
   },
 
   {
+    /* ── PHÉP KIỂM NÀY SINH RA TỪ MỘT LẦN HỎNG THẬT ──
+       Khối `quoteAI` bị xoá khỏi site.config.json trong một lượt sửa cấu hình,
+       và KHÔNG CÓ GÌ BÁO. Build vẫn xanh. `_nguon.js` vẫn nướng ra đủ bốn mục.
+       Hàm `/api/quote` vẫn nằm đó, khoá Gemini vẫn khai đúng. Chỉ có thẻ
+       `data-api` là không được in ra nữa — nên trang KHÔNG BAO GIỜ gọi tới hàm.
+
+       Lớp Gemini chết lặng, mà nhìn ngoài thì không thấy gì khác: ô trích dẫn
+       vẫn có câu, vì kho sẵn vẫn chạy. Đúng cái tính "hỏng thì im" đã giữ cho
+       trang không bao giờ sập, cũng là cái giấu luôn chuyện nó tắt.
+
+       Mọi phép kiểm quote khác ở trên đều hỏi "đã chuẩn bị đủ chưa". Phép kiểm
+       này hỏi câu còn lại: "có thật sự nối dây không". */
+    ten: 'Lớp Gemini của ô trích dẫn có được nối vào trang không',
+    muc: 'canh',
+    chay: ({ cau, trang }) => {
+      const coO = trang.filter((t) => t.html.includes('class="bo-quote'));
+      if (!coO.length || (cau.quoteAI || {}).bat) return [];
+      return ['site.config.json không bật quoteAI — ô trích dẫn chỉ xoay vòng trong ' +
+              'kho sẵn, hàm /api/quote không bao giờ được gọi tới. Muốn bật thì thêm ' +
+              'lại khối "quoteAI": { "bat": true, "api": "/api/quote", "khung": 3 }'];
+    }
+  },
+
+  {
+    /* Bật rồi thì phải nối được tới cả hai đầu dây. Thiếu `data-khung` không
+       làm hỏng gì — trang rơi về nếp cũ một câu một ngày — nhưng đó là lặng lẽ
+       mất đúng cái vừa bật lên, nên vẫn phải báo. */
+    ten: 'Bật quoteAI thì ô trích dẫn phải có data-api và data-khung',
+    muc: 'loi',
+    chay: ({ cau, trang, goc }) => {
+      if (!(cau.quoteAI || {}).bat) return [];
+      const ra = [];
+
+      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'quote.js'))) {
+        ra.push('site.config.json bật quoteAI nhưng thiếu functions/api/quote.js');
+      }
+
+      const coO = trang.filter((t) => t.html.includes('class="bo-quote'));
+      if (!coO.length) {
+        ra.push('bật quoteAI nhưng không trang nào có ô trích dẫn — ' +
+                'kho `### Câu sẵn` trong content/quote-nguon.md rỗng?');
+        return ra;
+      }
+
+      const thieuApi = coO.filter((t) => !t.html.includes('data-api='));
+      if (thieuApi.length) {
+        ra.push(`${thieuApi.length} ô trích dẫn thiếu data-api, ví dụ ${thieuApi[0].url} — ` +
+                'trang sẽ không gọi /api/quote lần nào');
+      }
+
+      /* Chỉ nhận 1–4: bảng mốc giờ ở src/js/quote.js đúng bấy nhiêu khoá, số
+         ngoài bảng thì client lặng lẽ rơi về bảng 3 khung, còn hàm lại tính
+         hạn cache theo số khác — hai bên lệch nhau là câu đổi giữa buổi. */
+      const thieuKhung = coO.filter((t) => !/data-khung="[1-4]"/.test(t.html));
+      if (thieuKhung.length) {
+        ra.push(`${thieuKhung.length} ô trích dẫn thiếu data-khung hợp lệ (1–4), ` +
+                `ví dụ ${thieuKhung[0].url} — trang rơi về nếp cũ một câu một ngày`);
+      }
+      return ra;
+    }
+  },
+
+  {
     /* Workers KHÔNG phải Node. Bốn thứ dưới đây chạy ngon ở máy mình nhưng
        chết ngay khi deploy, và lỗi chỉ hiện trong log Cloudflare chứ trang
        thì cứ im lặng trả về hỏng. Bắt sớm ở đây rẻ hơn nhiều. */

@@ -83,6 +83,27 @@ const SL = {
   logoSoHat    : so('logo', 'soHat', 18, 0)
 };
 
+/* Ngày chia làm mấy KHUNG GIỜ, mỗi khung xin Gemini một câu mới.
+   1 = nếp cũ, cả ngày một câu. Mặc định 3 (sáng · chiều · tối).
+
+   Con số này phải đi XUỐNG TỚI CẢ BA NƠI — thẻ `data-khung` trong HTML,
+   `src/js/quote.js` và `functions/api/quote.js` — vì khoá cache của hàm là
+   cặp `ngày + khung`. Hai bên hiểu khác số khung thì trang xin một khoá mà
+   hàm trả về theo một khoá khác, và câu đổi lung tung giữa buổi.
+
+   Trần 4: mỗi khung là một lượt gọi Gemini cho cả trang, mà dày hơn bốn thì ô
+   "câu của hôm nay" lại thành cái máy xổ số — đúng thứ cơ chế này sinh ra để
+   tránh. Bảng mốc giờ đặt ở src/js/quote.js, chỗ duy nhất cần biết giờ giấc
+   của người đọc. */
+const QUOTE_KHUNG = (() => {
+  const n = so('quoteAI', 'khung', 3, 1);
+  if (n > 4) {
+    CANH_BAO.push(`site.config.json — quoteAI.khung = ${n} quá dày (tối đa 4); tạm dùng 4`);
+    return 4;
+  }
+  return n;
+})();
+
 /* Thời lượng vòng kể của logo. Phải là một quãng thời gian CSS hợp lệ, vì nó
    vừa đi vào thuộc tính `dur` của thẻ <animate> vừa đi vào biến `--lg-ck`.
    Viết "27" thiếu chữ s thì CSS bỏ qua cả luật, còn SVG thì hiểu là 27 GIÂY —
@@ -2021,12 +2042,15 @@ function oQuote(nhan, { nhip = 0 } = {}) {
      một vòng mạng mà chẳng tiết kiệm được byte nào đáng kể. */
   if (!KHO_QUOTE.length) return '';
   const api = (CAU.quoteAI || {}).bat ? (CAU.quoteAI.api || '/api/quote') : '';
+  /* `data-khung` chỉ có nghĩa khi có `data-api` — không bật lớp Gemini thì
+     chia ngày ra mấy khúc cũng chẳng có câu mới nào để mà đổi. */
+  const khung = api ? ` data-khung="${QUOTE_KHUNG}"` : '';
   /* `nhip` = cứ bấy nhiêu trang người đọc đi qua thì đổi câu một lần. Bỏ trống
      thì giữ nếp cũ: mỗi ngày một câu. Ô ở lề bài dùng nhịp 2 — đọc hết một bài
      rồi sang bài kế mà câu vẫn y nguyên thì nó thành một mảng trang trí chết;
      đổi mỗi lần tải trang thì lại thành nhấp nháy, và người đang đọc dở quay
      lại tab cũ sẽ thấy câu khác. Hai trang là chỗ ở giữa. */
-  return `<div class="bo-quote card ${nhan}"${nhip ? ` data-nhip="${nhip}"` : ''}${api ? ` data-api="${attr(BASE + api)}"` : ''}
+  return `<div class="bo-quote card ${nhan}"${nhip ? ` data-nhip="${nhip}"` : ''}${api ? ` data-api="${attr(BASE + api)}"` : ''}${khung}
     data-quote='${JSON.stringify(KHO_QUOTE)
       .replace(/'/g, '&#39;').replace(/</g, '\\u003c')}'>
     <p class="label label--muted">${NHAN.quoteToday}</p>

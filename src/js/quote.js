@@ -128,11 +128,11 @@
       /* ── LỚP GEMINI (tuỳ chọn) ──
          Kho câu nhúng sẵn ở trên LUÔN chạy, không cần mạng, không cần khoá.
          Nếu trang có /api/quote và đã khai khoá Gemini thì xin thêm một câu
-         viết mới cho hôm nay, đè lên câu vừa vẽ.
+         viết mới cho khung giờ đang tới lượt, đè lên câu vừa vẽ.
 
          Ba luật của lớp này:
-           1. MỖI NGÀY GỌI ĐÚNG MỘT LẦN. Cất vào localStorage theo ngày, tải
-              lại trang là lấy từ đó — không gọi mạng lần nữa.
+           1. MỖI KHUNG GIỜ GỌI ĐÚNG MỘT LẦN. Cất vào localStorage theo cặp
+              ngày+khung, tải lại trang là lấy từ đó — không gọi mạng lần nữa.
            2. HỎNG THÌ IM. Không có mạng, chưa deploy, chưa khai khoá, Gemini
               chậm — câu từ kho sẵn vẫn đang nằm đó, người đọc không thấy gì
               khác thường.
@@ -140,46 +140,95 @@
               một ô trích dẫn. */
       if (hop.dataset.api) xinGemini(hop.dataset.api);
 
-      /* Ngày theo GIỜ MÁY người đọc, dạng YYYY-MM-DD. Không dùng
-         toISOString(): hàm đó trả giờ UTC, nên từ 0h tới 7h sáng giờ Việt Nam
-         nó còn báo ngày hôm qua. */
-      function nayLa() {
-        var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
-        var d = new Date();
+      /* ══════════ MỐC GIỜ CHIA KHUNG ══════════
+
+         Bản đầu là MỘT câu cho cả ngày. Đúng với cái tên "câu của hôm nay",
+         nhưng người đọc quay lại buổi chiều thì gặp đúng câu ban sáng — ô
+         trích dẫn thành một mảng trang trí chết. Nay chia ngày ra mấy khung,
+         mỗi khung một câu mới: quay lại là có cái để đọc, mà vẫn không phải
+         cái máy xổ số đổi câu mỗi lần F5.
+
+         Đây là chỗ DUY NHẤT biết giờ giấc của người đọc. Hàm trên Cloudflare
+         không tự tính được: nó chạy ở điểm biên nào thì mang giờ chỗ đó, nên
+         cặp ngày+khung phải do TRANG gửi lên.
+
+           1  cả ngày một câu — nếp cũ
+           2  sáng · tối
+           3  sáng · chiều · tối        ← mặc định
+           4  sáng · trưa · chiều · tối
+
+         Số này do build in ra `data-khung` từ `quoteAI.khung`. Thiếu thẻ ấy
+         (chưa bật lớp Gemini, hoặc HTML dựng từ bản cũ) thì rơi về 1 — tức là
+         y hệt nếp cũ, không phải hỏng. */
+      var MOC_KHUNG = { 1: [0], 2: [5, 17], 3: [5, 12, 18], 4: [5, 11, 15, 20] };
+
+      function p2(n) { return (n < 10 ? '0' : '') + n; }
+
+      /* Dạng YYYY-MM-DD theo GIỜ MÁY người đọc. Không dùng toISOString(): hàm
+         đó trả giờ UTC, nên từ 0h tới 7h sáng giờ Việt Nam nó còn báo ngày
+         hôm qua. */
+      function ymd(d) {
         return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
       }
 
-      function xinGemini(api) {
-        var nay = nayLa();
-        var KHOA = 'zib-quote';
+      /* KHOÁ của câu đang tới lượt: { ngay, khung, so }.
 
-        /* Đã có câu của đúng hôm nay thì dùng luôn, khỏi gọi mạng */
+         CHỖ DỄ SAI NHẤT — quãng 0h tới trước mốc đầu tiên. Người đọc lúc 1h
+         sáng vẫn đang ở "buổi tối" theo cảm nhận, nhưng `getDate()` thì đã
+         sang ngày mới. Tính thẳng thì họ nhảy sang một câu khác lúc nửa đêm,
+         rồi 5h sáng lại nhảy tiếp — hai câu trong năm tiếng, đúng cái nhấp
+         nháy mà cơ chế này sinh ra để tránh. Nên quãng ấy trả về khung CUỐI
+         của HÔM QUA: câu giữ nguyên từ tối hôm trước tới sáng hôm sau.
+
+         Với số khung = 1 thì mốc là [0], `gio >= 0` luôn đúng, không bao giờ
+         lùi ngày — nếp cũ giữ nguyên từng chi tiết. */
+      function moc() {
+        var so = parseInt(hop.getAttribute('data-khung'), 10) || 1;
+        var mo = MOC_KHUNG[so] || MOC_KHUNG[3];
+        var d = new Date();
+        var gio = d.getHours();
+        var i = -1;
+        for (var k = 0; k < mo.length; k++) if (gio >= mo[k]) i = k;
+        if (i < 0) { d.setDate(d.getDate() - 1); i = mo.length - 1; }
+        return { ngay: ymd(d), khung: i, so: mo.length };
+      }
+
+      /* Cả hai đường (tự xin lúc tải trang, và bấm nút) đều cất qua đây, nên
+         chỉ có MỘT chỗ biết hình dạng của bản lưu. */
+      function luu(x) {
+        try { localStorage.setItem('zib-quote', JSON.stringify(x)); } catch (e) {}
+        return x;
+      }
+
+      function dat(x) {
+        /* Chèn vào ĐẦU danh sách và trỏ "hôm nay" vào nó, để nút đổi câu
+           vẫn đi vòng qua cả kho sẵn như thường. */
+        ds.unshift({ chu: x.q, ai: x.ai });
+        homNay = 0; dangO = 0;
+        ve(0, true);
+      }
+
+      function xinGemini(api) {
+        var m = moc();
+
+        /* Đã có câu của đúng khung giờ này thì dùng luôn, khỏi gọi mạng */
         try {
-          var cu = JSON.parse(localStorage.getItem(KHOA) || 'null');
-          if (cu && cu.ngay === nay && cu.q) { dat(cu); return; }
+          var cu = JSON.parse(localStorage.getItem('zib-quote') || 'null');
+          if (cu && cu.ngay === m.ngay && cu.khung === m.khung && cu.q) { dat(cu); return; }
         } catch (e) {}
 
         var ac = new AbortController();
         var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
 
-        fetch(api + '?ngay=' + nay, { signal: ac.signal, cache: 'no-store' })
+        fetch(api + '?ngay=' + m.ngay + '&khung=' + m.khung + '&sokhung=' + m.so,
+              { signal: ac.signal, cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (kq) {
             if (!kq || !kq.ok || !kq.q) return;
-            var x = { ngay: nay, q: kq.q, ai: kq.tacGia || '' };
-            try { localStorage.setItem(KHOA, JSON.stringify(x)); } catch (e) {}
-            dat(x);
+            dat(luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' }));
           })
           .catch(function () { /* im lặng — câu từ kho sẵn vẫn đang hiện */ })
           .finally(function () { clearTimeout(boCuoc); });
-
-        function dat(x) {
-          /* Chèn vào ĐẦU danh sách và trỏ "hôm nay" vào nó, để nút đổi câu
-             vẫn đi vòng qua cả kho sẵn như thường. */
-          ds.unshift({ chu: x.q, ai: x.ai });
-          homNay = 0; dangO = 0;
-          ve(0, true);
-        }
       }
 
       if (nut) {
@@ -210,11 +259,18 @@
           var ac = new AbortController();
           var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
 
-          fetch(hop.dataset.api + '?moi=1&ngay=' + nayLa(),
-                { signal: ac.signal, cache: 'no-store' })
+          var m = moc();
+          fetch(hop.dataset.api + '?moi=1&ngay=' + m.ngay + '&khung=' + m.khung +
+                '&sokhung=' + m.so, { signal: ac.signal, cache: 'no-store' })
             .then(function (r) { return r.json(); })
             .then(function (kq) {
               if (!kq || !kq.ok || !kq.q) return;
+              /* Cất luôn vào localStorage đè lên câu của khung giờ này. Bản
+                 trước không cất: bấm nút xin được câu mới, F5 một cái là mất,
+                 và lần tải sau còn gọi mạng thêm một lượt nữa cho đúng cái
+                 khung vừa xin xong. Người bấm nút là người đang muốn câu ĐÓ —
+                 giữ lấy nó mới phải. */
+              luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' });
               ds.push({ chu: kq.q, ai: kq.tacGia || '' });
               if (!xong) { xong = true; clearTimeout(henLat); dangO = ds.length - 1; ve(dangO, true); }
             })

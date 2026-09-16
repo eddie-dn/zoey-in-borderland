@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
 | V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
 | V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
 | V12.04 | 2026-09-17 | 04 | điện thoại: có menu ☰; tên blog thôi kẹt nửa vời ở lần mở thứ hai |
@@ -145,6 +146,28 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V12.07 — 16-Sep-2026
+
+- **Ô trích dẫn đổi câu ba lần một ngày.** Trước là một câu duy nhất từ 0h tới
+  24h — đúng với cái tên "câu của hôm nay", nhưng người đọc quay lại buổi chiều
+  gặp đúng câu ban sáng, và ô ấy thành một mảng trang trí chết. Nay ngày chia
+  làm ba khung: sáng · chiều · tối, mỗi khung một câu viết mới. Quãng nửa đêm
+  tới 5h sáng vẫn tính là buổi tối hôm trước, để đọc khuya không bị nhảy câu
+  giữa chừng.
+- **Lớp AI của ô trích dẫn từng chết lặng, nay bật lại và có chuông báo.** Một
+  lượt sửa cấu hình trước đây xoá mất công tắc của lớp này. Không có gì báo:
+  trang vẫn chạy, ô vẫn có câu — vì kho câu viết sẵn vẫn hoạt động — nên nhìn
+  ngoài không ai thấy khác, mà thật ra chưa một câu nào do AI viết từng lên
+  trang. Nay bộ kiểm định có hai phép kiểm riêng cho đúng khoảng cách ấy: giữa
+  "đã chuẩn bị đủ" và "có thật sự nối dây không".
+- **Mỗi buổi một chủ đề khác hẳn, không phải đổi cho có.** Bốc chủ đề rời cho
+  từng khung thì khoảng 30% số ngày có hai khung trùng chủ đề — quay lại buổi
+  tối để gặp lại chuyện ban chiều thì đổi câu cũng bằng thừa. Nay xáo cả danh
+  sách một lần mỗi ngày rồi mỗi khung rút một chủ đề theo thứ tự: quét 365 ngày
+  không ngày nào trùng.
+- **Bấm "xem câu khác" thì câu ấy được giữ lại.** Trước bấm ra câu ưng ý, tải
+  lại trang một cái là mất. Nay nó ở lại tới hết khung giờ.
 
 ## V12.06 — 17-Sep-2026
 

@@ -6,12 +6,12 @@
 > | Đường | Ai đọc | Lúc nào | Lấy mục nào |
 > |---|---|---|---|
 > | Ngoại tuyến | `tools/build.mjs` | lúc dựng trang | `### Câu sẵn` |
-> | Có Gemini | `api/quote.js` | mỗi ngày một lần | `### Chủ đề` · `### Nguồn` · `### Lời dặn` |
+> | Có Gemini | `api/quote.js` | mỗi khung giờ một lần | `### Chủ đề` · `### Nguồn` · `### Lời dặn` |
 >
 > Đường ngoại tuyến LUÔN CHẠY, không cần mạng, không cần khoá. Đường Gemini chỉ
-> là lớp thêm nếm: bật nó thì mỗi ngày có một câu viết mới thay vì xoay vòng
-> trong kho. Tắt, hỏng, hay chưa deploy thì ô vẫn có câu — người đọc không bao
-> giờ thấy lỗi cấu hình.
+> là lớp thêm nếm: bật nó thì mỗi khung giờ có một câu viết mới thay vì xoay
+> vòng trong kho — mặc định ba khung một ngày (sáng · chiều · tối). Tắt, hỏng,
+> hay chưa deploy thì ô vẫn có câu — người đọc không bao giờ thấy lỗi cấu hình.
 >
 > **Sửa thế nào:** gõ như gõ văn bản thường, lưu, rồi chạy `npm run build`.
 > Bước build là bắt buộc nếu bật Gemini: hàm chạy trên Cloudflare Workers không
@@ -37,10 +37,18 @@
 
 ### Chủ đề
 
-> Mỗi ngày bốc NGẪU NHIÊN một chủ đề trong danh sách này rồi mới hỏi Gemini.
-> Đây là điểm khác quan trọng nhất so với bản gốc: bản kia nhét cả bốn chủ đề
-> vào một lời dặn, và Gemini gần như lúc nào cũng rơi vào chủ đề đầu tiên. Bốc
-> một chủ đề rồi mới hỏi thì cả danh sách mới thật sự được dùng tới.
+> Mỗi khung giờ lấy MỘT chủ đề trong danh sách này rồi mới hỏi Gemini. Đây là
+> điểm khác quan trọng nhất so với bản gốc: bản kia nhét cả bốn chủ đề vào một
+> lời dặn, và Gemini gần như lúc nào cũng rơi vào chủ đề đầu tiên. Lấy một chủ
+> đề rồi mới hỏi thì cả danh sách mới thật sự được dùng tới.
+>
+> Cách lấy là CHIA BÀI, không phải bốc rời từng khung: mỗi ngày xáo cả danh
+> sách một lần rồi mỗi khung rút một lá theo thứ tự. Bốc rời thì hai khung
+> trong cùng một ngày trùng chủ đề khoảng 30% số ngày — đo ra thật, và người
+> đọc quay lại buổi tối gặp lại chủ đề ban chiều thì cả cơ chế thành công cốc.
+>
+> Nên danh sách này phải có ÍT NHẤT bằng số khung (`quoteAI.khung`). Ít hơn thì
+> đành có khung trùng nhau.
 >
 > Thêm bớt thoải mái. Mỗi dòng một chủ đề, dạng  Tên · mô tả.
 
@@ -55,7 +63,7 @@
 
 ### Nguồn
 
-> Danh sách tác giả được phép trích. Mỗi ngày bốc NGẪU NHIÊN một nhóm nhỏ
+> Danh sách tác giả được phép trích. Mỗi khung giờ bốc NGẪU NHIÊN một nhóm nhỏ
 > (khoảng 12 người) chứ không gửi cả danh sách: gửi hết thì Gemini bám vào mấy
 > cái tên quen nhất — Jung, Seneca, Lão Tử — và tháng nào cũng ra mấy câu đó.
 >
