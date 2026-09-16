@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://z-in-borderland.com/sitemap.xml
