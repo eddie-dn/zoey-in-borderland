@@ -631,26 +631,13 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 .bl-nd{margin:0;white-space:pre-line;font-size:calc(var(--fs-base) * .96);
   line-height:1.7;color:var(--text-muted);overflow-wrap:break-word}
 
-/* ── ĐẦU KHỐI: NÚT ĐÓNG MỞ ── */
-.bl-mo{
-  display:flex;align-items:center;gap:var(--s3);
-  width:100%;padding:0;margin:0 0 var(--s2);
-  background:none;border:none;cursor:pointer;text-align:left;
-  color:inherit;font:inherit;
-}
-.bl-mo .label{margin:0}
-.bl-mo:hover .label,.bl-mo:focus-visible .label{color:var(--accent-ink)}
-.bl-mo:focus-visible{outline:2px solid var(--accent-ink);outline-offset:4px;border-radius:var(--r-sm)}
-.bl-mui{
-  width:7px;height:7px;flex:none;
-  border-right:1.5px solid var(--line-strong);border-bottom:1.5px solid var(--line-strong);
-  rotate:45deg;translate:0 -2px;
-  transition:rotate var(--dur) var(--ease-glass),border-color var(--dur-fast);
-}
-/* Mũi chỉ XUỐNG khi đang mở, chỉ SANG PHẢI khi đã gấp — hướng mũi phải nói
-   trạng thái hiện tại, không phải nói việc sẽ xảy ra khi bấm. */
-.bl-mo[aria-expanded="false"] .bl-mui{rotate:-45deg;translate:0 0}
-.bl-mo:hover .bl-mui{border-color:var(--accent-ink)}
+/* ── ĐẦU KHỐI ──
+   Nút đóng mở nay là một trong hai cái nút tròn ở `.bl-dau`, nên nó thôi
+   `width:100%` (bề rộng ấy là của đời trước, hồi nó là một dòng tiêu đề chiếm
+   trọn bề ngang và có mũi tên gập ở cuối). Mũi tên `.bl-mui` cũng bỏ theo —
+   nay chính cái icon bong bóng nói ra đây là chỗ bình luận, và trạng thái mở
+   thì thấy bằng chính khung đang hiện ra. */
+.bl-mo:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 
 .bl-trong{
   font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
@@ -756,3 +743,38 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 .prose .c-luc {color:var(--c-luc)}
 .prose .c-lam {color:var(--c-lam)}
 .prose .c-xam {color:var(--c-xam)}
+
+/* ══════════ HAI NÚT CUỐI BÀI: TIM · BÌNH LUẬN ══════════
+   Thay cho cả một khung bình luận bày sẵn. Lý do ở chỗ dựng `binhLuanHTML`
+   trong tools/build.mjs. */
+.bl-dau{display:flex;gap:var(--s3);align-items:center}
+.bl-nut{
+  appearance:none;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px var(--s4);border-radius:var(--r-pill);
+  background:none;box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text-muted);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;font-variant-numeric:tabular-nums;
+  transition:color var(--dur-fast),box-shadow var(--dur-fast),
+             background var(--dur-fast);
+}
+.bl-nut svg{
+  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;
+  transition:fill var(--dur-fast),stroke var(--dur-fast),transform .28s var(--spring);
+}
+.bl-nut:hover{color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.bl-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bl-nut:active svg{transform:scale(.88)}
+/* Con số chỉ chiếm chỗ khi CÓ số — nút rỗng thì nó là một nút tròn gọn, không
+   phải một viên thuốc dài có khoảng trống bên trong. */
+.bl-so:empty,.bl-dem:empty{display:none}
+/* Đã bấm: tim TÔ ĐẶC. Chỉ đổi màu viền thì ở cỡ 17px mắt không bắt ra, mà đây
+   đúng là chỗ phải trả lời ngay "mình bấm rồi hay chưa". */
+.bl-tim--bam{color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.bl-tim--bam svg{fill:var(--bad);stroke:var(--bad)}
+.bl-tim--bam:hover{color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+/* Khung đang mở: nút bình luận sáng lên để biết cái đang mở là do nó. */
+.bl-mo[aria-expanded="true"]{color:var(--accent-ink);background:var(--accent-wash)}
+.bl-than{margin-top:var(--s6)}

@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V10.03 | 2026-09-16 | 03 | chữa header dính ở trang chủ; chân trang liền mạch; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
+| V10.02 | 2026-09-16 | 02 | bình luận thành nút tim + icon; đếm tim đặt cạnh lượt xem ở đầu bài |
+| V10.01 | 2026-09-16 | 01 | logo: nét nối đứng thẳng rồi mới ngả vào nối; xuất lại bộ khung 14 chặng |
 | V10.00 | 2026-09-16 | 00 | cỡ chữ thân bài nhỏ một bậc; khối tag bỏ khung bao |
 | V9.09 | 2026-09-16 | 09 | điện thoại: danh sách bài chờ bấm Read on; tên blog nhỏ một bậc và có hiệu ứng mở màn |
 | V9.08 | 2026-09-16 | 08 | trang chủ: nền phủ trọn trang kể cả chân trang, bỏ tem phiên bản lặp |
@@ -119,6 +122,53 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V10.03 — 16-Sep-2026
+
+- **Thanh đầu trang dính lại ở trang chủ.** Luật đưa nền động phủ trọn trang
+  (V9.08) đè `position:sticky` của thanh đầu thành `relative` — hỏng lặng lẽ,
+  và chỉ ở đúng một trang. Nó vốn đã có `z-index` riêng nên chẳng cần nâng.
+- **Chân trang trang chủ dính liền màn hero**, bỏ 56px trống ở giữa. Ở mọi
+  trang khác quãng ấy là chỗ thở; ở trang chủ, hero đã cao đúng một màn và kết
+  thúc bằng một mép ngang, nên thêm một dải trống dưới mép ấy là dựng ra đúng
+  cái "hai cục" vừa chữa xong ở nửa trên.
+- **Cột chữ ôm lấy làn chữ.** Cột trái vốn để `1fr` — nhận hết phần còn lại,
+  thành 780px ở màn 1440 trong khi làn chữ chỉ 594px. Hơn 160px trống nằm ngay
+  trong cột, và làn chữ trôi giữa khoảng ấy. Nới làn chữ để lấp thì sai hướng
+  (780px là chừng 90 ký tự mỗi dòng). Nay cột rộng đúng bằng làn chữ cộng một
+  quãng thở, chỗ thừa chuyển hết ra hai bên trang: lề 223px mỗi bên thay vì 130.
+- **"Đọc tiếp" về đúng chỗ theo từng khung bài.** Khung A có cột bên thật nên
+  nó ở đó; khung B và C không có, và nhét vào `.ben` làm nó nằm CHỒNG LÊN băng
+  ảnh. Ở hai khung ấy nó về lại dòng chảy, đứng sau khối bình luận.
+
+## V10.02 — 16-Sep-2026
+
+- **Cuối bài chỉ còn hai cái nút.** Trước đây là cả một khung bình luận bày
+  sẵn: nhãn, danh sách, rồi một form ba ô to bằng nửa màn hình — mà chín phần
+  mười người đọc không định gõ gì. Nay là một trái tim và một icon bình luận;
+  bấm icon mới xổ khung ra.
+- **Trái tim cho nhóm ở giữa.** Bình luận đòi người đọc nghĩ ra một câu; phần
+  lớn người thích một bài thì không có câu nào để nói. Bắt họ hoặc viết một
+  đoạn hoặc im lặng là bỏ sót đúng nhóm đông nhất.
+- **Số đếm đặt cạnh lượt xem ở đầu bài**, mỗi con số một ký hiệu — con mắt và
+  trái tim. Nút là chỗ BẤM, hàng meta là chỗ ĐỌC; tách hai việc thì không chỗ
+  nào phải vừa đủ to để bấm vừa đủ nhỏ để không tranh chỗ.
+- Con số này GẦN ĐÚNG, đúng như lượt xem: chỗ nhớ "máy này đã bấm chưa" nằm ở
+  trình duyệt. Chặn chặt hơn thì phải theo dấu người đọc, mà một con số đếm
+  tim không đáng cái giá ấy.
+
+## V10.01 — 16-Sep-2026
+
+- **Nét nối đứng thẳng giữa khung trước, rồi mới ngả vào nối.** Đây là chữ "i"
+  của *in* — một nét thẳng. Bản trước nó trượt vào từ góc và ĐÃ nằm sẵn ở
+  phương chéo, nên mắt chỉ thấy "có một gạch bay tới", không thấy nó là một
+  con chữ. Cú ngả xuống là động tác NỐI, và nó chỉ đọc được là nối khi trước
+  đó nét đã đứng ở một tư thế khác.
+- **Xuất lại bộ khung lưu: mười bốn chặng** thay cho mười hai. Vòng kể đã đổi
+  hẳn — bốn nấc mới (xoay trước rồi nối · giữ hình nơ · mở tám cánh ra từ bốn ·
+  đanh nét) là bốn khoảnh khắc riêng, gộp vào mốc cũ thì mất đúng chỗ vừa thêm.
+  `logo-dong.svg` dựng lại theo. `lat-cat.svg` xoá hẳn: nó dựng từ 25 khung của
+  vòng kể cũ, và một bản lưu sai còn tệ hơn không có bản lưu nào.
 
 ## V10.00 — 16-Sep-2026
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="240" height="240" role="img" aria-label="bốn cánh nở thành tám — mandala hiện đủ" color="#2E2340">
+  <!-- Zoey in Borderland — logo, bốn cánh nở thành tám — mandala hiện đủ (66% vòng kể) -->
+  <g transform="translate(24 24) matrix(0.419 0.942 -0.942 0.419 0 0) translate(-24 -24)">
+  <g fill="none" stroke="#7a52b8">
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(0.983 0.185 -0.185 0.983 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="21.5" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="3, 6"/></g>
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(0.99 -0.139 0.139 0.99 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="13.5" fill="none" stroke="#7a52b8" stroke-width="0.7" stroke-opacity="0.28" stroke-linecap="round" stroke-dasharray="2, 5"/></g>
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(0.956 0.293 -0.293 0.956 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="6" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="1.4, 3.2"/></g>
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(0.99 0.139 -0.139 0.99 0 0) translate(-24 -24)">
+  <path d="M 24 24 C 32 16 41 18 41 24 C 41 30 32 32 24 24 C 16 16 7 18 7 24 C 7 30 16 32 24 24" fill="none" stroke="#7a52b8" stroke-width="2.538" stroke-opacity="0.972" stroke-linecap="round" stroke-linejoin="round" transform="matrix(0.707 0.707 -0.707 0.707 24 -9.941)"/>
+  <path d="M 24 24 C 32 16 41 18 41 24 C 41 30 32 32 24 24 C 16 16 7 18 7 24 C 7 30 16 32 24 24" fill="none" stroke="#7a52b8" stroke-width="2.538" stroke-opacity="0.972" stroke-linecap="round" stroke-linejoin="round" transform="matrix(-0.707 0.707 -0.707 -0.707 57.941 24)"/></g></g>
+  <g opacity="0.575">
+  <path d="M 24 24 C 32 16 41 18 41 24 C 41 30 32 32 24 24 C 16 16 7 18 7 24 C 7 30 16 32 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130"/>
+  <path d="M 24 24 C 16 32 18 41 24 41 C 30 41 32 32 24 24 C 32 16 30 7 24 7 C 18 7 16 16 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130" transform="translate(24 24) matrix(-1 0 0 -1 0 0) translate(-24 -24)"/></g></g></svg>

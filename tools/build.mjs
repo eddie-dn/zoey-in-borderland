@@ -389,6 +389,7 @@ const NHAN = {
 
   /* ── bình luận: khung ── */
   comments    : 'Leave a note',
+  blLike      : 'Thích bài này',
   yourName    : 'Name',
   yourNote    : 'Your note',
   optional    : 'optional',
@@ -1448,7 +1449,7 @@ function logoHTML(dong) {
            Trước đây nó vẽ P_INF1/P_INF2, nên hai trang có logo bày ra hai đoá
            hoa hơi khác nhau mà không ai nói vì sao. */
         net('lg-vc--1', P_NHON1,
-            dong ? bien(P_ZZ, P_INF1, P_NHON1, '.34', '.39', '.51', '.54') : '') +
+            dong ? bien(P_ZZ, P_INF1, P_NHON1, '.35', '.39', '.51', '.54') : '') +
         net('lg-vc--2', P_NHON2,
             dong ? bien(P_B,  P_INF2, P_NHON2, '.43', '.48', '.51', '.54') : '') +
       `</g>` +
@@ -1635,12 +1636,32 @@ function binhLuanHTML(bai) {
   return `<section class="binh-luan" data-binh-luan="${attr(BASE + (c.api || '/api/binh-luan'))}"
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     <div class="eyebrow"><i></i></div>
-    <button class="bl-mo" type="button" aria-expanded="true" aria-controls="bl-than">
-      <span class="label">${NHAN.comments} <span class="bl-dem"></span></span>
-      <i class="bl-mui" aria-hidden="true"></i>
-    </button>
 
-    <div class="bl-than" id="bl-than">
+    ${/* ── HAI CÁI NÚT, KHÔNG PHẢI MỘT KHUNG BÀY SẴN ──
+          Đời trước khối bình luận mở sẵn: nhãn, danh sách, rồi nguyên một cái
+          form ba ô. Cuối mỗi bài là một mảng ô nhập to bằng nửa màn hình — mà
+          chín phần mười người đọc không định gõ gì.
+
+          Nay cuối bài chỉ còn hai cái nút nhỏ. Trái tim cho người muốn nói
+          "tôi có đọc" mà không có câu nào để nói — vốn là nhóm đông nhất, và
+          là nhóm mà một cái form ô nhập bỏ sót hoàn toàn. Icon bình luận thì
+          mở khung ra cho ai thật sự muốn viết.
+
+          `aria-expanded` bắt đầu ở "false" vì khung nay ĐÓNG mặc định. */''}
+    <div class="bl-dau">
+      <button class="bl-nut bl-tim" type="button"
+              data-thich="${attr(BASE + '/api/thich')}"
+              aria-pressed="false" aria-label="${attr(NHAN.blLike)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
+      </button>
+      <button class="bl-nut bl-mo" type="button" aria-expanded="false" aria-controls="bl-than"
+              aria-label="${attr(NHAN.comments)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
+        <span class="bl-dem"></span>
+      </button>
+    </div>
+
+    <div class="bl-than" id="bl-than" hidden>
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
           định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
           xong vẫn thấy một dòng khác hiện lên, và không có cách nào tắt. */''}
@@ -1680,6 +1701,13 @@ function binhLuanHTML(bai) {
     <p class="bl-bao" role="status" aria-live="polite"></p>
     </div>
   </section>`;
+}
+
+/* Cột bên chỉ GIỮ được khối đọc tiếp khi nó thật sự là một cột: khung A, và
+   bài có ít nhất một tiêu đề mục (không có mục thì `.ben` rỗng và lưới bỏ cột
+   ấy đi). Mọi trường hợp khác trả về false và khối rơi xuống chân bài. */
+function benGiuDocTiep(bai) {
+  return bai.khung === 'a' && bai.headings.length > 0;
 }
 
 function readNextHTML(bai, congKhai) {
@@ -1739,13 +1767,19 @@ function trangBai(bai, congKhai) {
     cover       : coverHTML(bai),
     body        : bai.html,
     tagBlock    : tagBlockHTML(bai),
-    /* Khối đọc tiếp nay nằm trong cột bên (xem `tocHTML`), nên chỗ cũ ở chân
-       bài để rỗng. Giữ lại ô `{{readNext}}` trong mẫu chứ không xoá: mẫu và
-       bảng điền phải khớp nhau từng ô, và một ô thừa trong mẫu thì `dienMau`
-       để nguyên chuỗi `{{readNext}}` chạy thẳng ra HTML. */
-    readNext    : '',
+    readNext    : benGiuDocTiep(bai) ? '' : readNextHTML(bai, congKhai),
     binhLuan    : binhLuanHTML(bai),
-    toc         : tocHTML(bai.headings, readNextHTML(bai, congKhai)),
+    /* ── "ĐỌC TIẾP" NẰM Ở ĐÂU: TUỲ KHUNG BÀI ──
+       Khung A có cột bên thật (mục lục dính khi cuộn ≥1080px), nên khối đọc
+       tiếp vào đó: nó đi theo suốt lúc đọc, có mặt đúng lúc người ta bắt đầu
+       nghĩ "đọc gì tiếp".
+
+       Khung B và C KHÔNG có cột bên — B là bìa tràn màn, C là băng ảnh dính
+       bên trái. Nhét vào `.ben` ở hai khung ấy thì nó nằm chồng lên băng ảnh,
+       đúng nghĩa đen. Nên ở đó nó về lại dòng chảy, ĐỨNG SAU khối bình luận:
+       bấm mở khung bình luận là nó bị đẩy xuống, chứ không phải nó che mất
+       chỗ vừa mở ra. */
+    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 
@@ -2294,9 +2328,23 @@ function mocHTML(b) {
    sẵn một con số vào HTML tĩnh thì nó đứng yên từ lúc dựng — mà lượt xem là thứ
    duy nhất trên trang này phải luôn mới. Chưa bật hoặc gọi hỏng thì ô ở nguyên
    trạng thái ẩn, hàng meta chỉ ngắn đi một mục. */
+/* ── HAI CON SỐ CỦA MỘT BÀI, CẠNH NHAU, MỖI CÁI MỘT KÝ HIỆU ──
+   Lượt xem là "bao nhiêu người đi qua"; lượt thích là "bao nhiêu người dừng
+   lại". Chúng trả lời hai câu khác nhau nên đứng cạnh nhau thì đọc được cả
+   hai, mà tách hai đầu trang thì không ai so được.
+
+   Ký hiệu chứ không phải chữ: hàng meta này đã có ngày đăng và mốc cập nhật:
+   thêm hai cụm "3 views · 12 likes" nữa là một dòng bốn mẩu chữ. Con mắt và
+   trái tim nói đúng chừng ấy nghĩa trong một phần tư chỗ.
+
+   Ô thích để RỖNG và `hidden` lúc dựng: con số do src/js/comments.js đổ vào
+   sau khi hỏi máy chủ, cùng lượt hỏi mà nút tim cuối bài vẫn phải gọi. Chưa
+   gắn D1 thì nó ở nguyên trạng thái ẩn, và hàng meta chỉ ngắn đi một mục. */
 function xemHTML(b) {
-  if (!(CAU.luotXem || {}).bat) return '';
-  return `<span class="xem" data-xem="${attr(b.url)}" hidden></span>`;
+  const mat = `<svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>`;
+  const tim = `<span class="thich" data-thich-so hidden><svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg><span class="thich-so"></span></span>`;
+  if (!(CAU.luotXem || {}).bat) return tim;
+  return `<span class="xem" data-xem="${attr(b.url)}" hidden>${mat}</span>${tim}`;
 }
 function theBai(b, { hienMuc = true } = {}) {
   /* HAI tag trên thẻ, không phải ba. Ba cái thì ở bề ngang một cột lưới thường

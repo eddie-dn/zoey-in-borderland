@@ -507,3 +507,19 @@ body.so-khoa{overflow:hidden}
   color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
 }
 .ba-nut button:disabled{opacity:.3;cursor:default}
+
+/* ── HAI CON SỐ Ở HÀNG META: LƯỢT XEM · LƯỢT THÍCH ──
+   Ký hiệu nhỏ đứng trước số, cùng cỡ với chữ quanh nó. `--fs-sm` là cỡ của cả
+   hàng meta, nên icon lấy `1em` để nó tự co theo và không bao giờ lệch hàng
+   chân chữ. */
+.i-nho{
+  width:1em;height:1em;flex:none;
+  fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;
+  transform:translateY(.02em);
+}
+.meta-row .thich{color:var(--text-muted);font-variant-numeric:tabular-nums}
+/* Máy này đã bấm thích: tim tô đặc, đúng như nút cuối bài. Hai chỗ nói cùng
+   một trạng thái thì phải nói giống nhau. */
+.meta-row .thich--bam{color:var(--bad)}
+.meta-row .thich--bam .i-nho{fill:currentColor}

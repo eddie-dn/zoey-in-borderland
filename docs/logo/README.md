@@ -11,32 +11,33 @@ xem được, không cần cài gì.
 
 ---
 
-## Vòng kể, và mười hai chặng
+## Vòng kể, và mười bốn chặng
 
 | File | Mốc | Đang xảy ra chuyện gì |
 |---|---|---|
-| `01-nghi.svg` | 0% | **Trạng thái nghỉ.** Đoá mandala tám cánh với ba vành đồng tâm — đây là logo thật, hình mà người đọc thấy chín phần mười thời gian |
-| `02-ba-vach.svg` | 10% | Ba vạch dài ngắn khác nhau: tên blog nhìn từ rất xa, trước khi nó bóp lại còn một điểm |
-| `03-chu-z.svg` | 22% | Nét gấp khúc hình chữ **Z** vẽ dần ra, đứng thẳng |
-| `04-da-giac.svg` | 30% | Nét nối (chữ **i**) quét vào, chạm đúng hai đầu tự do của chữ Z → khép thành vô cực dạng đa giác |
-| `05-xoay-ngang.svg` | 36% | Cả cụm xoay ngang |
-| `06-vo-cuc-1.svg` | 44% | Đa giác bo góc dần thành **vô cực thứ nhất** |
-| `07-chu-b.svg` | 50% | Chữ **B** vẽ ra bên trên; vô cực thứ nhất lùi lại còn ba phần mười độ đậm để hai nét không lẫn vào nhau |
-| `08-hai-vo-cuc.svg` | 58% | Bụng dưới chữ B vòng ra thành **vô cực thứ hai** — bốn cánh |
-| `09-mandala-no.svg` | 66% | Bốn cánh nở thành **tám**, ba vành hiện ra: mandala đủ hình |
-| `10-xoay.svg` | 80% | Đang xoay. Hai tầng cánh chạy lệch nhau, ba vành quay ba tốc độ khác dấu |
-| `11-vo.svg` | 90% | **Vỡ** — mười tám hạt bụi toả ra theo phương bán kính |
-| `12-tu-lai.svg` | 97% | Bụi tan, mandala tụ lại. Vòng khép kín, sắp kể lại từ đầu |
+| `01-nghi.svg` | 2% | **Trạng thái nghỉ.** Đoá mandala tám cánh ĐẦU NHỌN với ba vành đồng tâm — đây là logo thật, hình mà người đọc thấy chín phần mười thời gian |
+| `02-ba-vach.svg` | 11% | Ba vạch dài ngắn khác nhau: tên blog nhìn từ rất xa, trước khi nó bóp lại còn một điểm |
+| `03-chu-z.svg` | 19% | Nét gấp khúc hình chữ **Z** vẽ dần ra, còn đứng |
+| `04-xoay-ngang.svg` | 24% | Chữ Z tự xoay ngang — một mình, trước khi có gì nối vào |
+| `05-net-noi.svg` | 29% | Nét nối (chữ **i**) hiện ra, **đứng thẳng giữa khung** |
+| `06-chiec-no.svg` | 33,5% | Nét nối ngả xuống, khép hai đầu tự do của chữ Z thành **chiếc nơ** bốn cạnh thẳng |
+| `07-bo-tron.svg` | 37% | Chiếc nơ **đang bo tròn**; nét nối tan dần vào chỗ giao ở giữa |
+| `08-chu-b.svg` | 41% | Chữ **B** vẽ ra bên trên; vô cực thứ nhất lùi lại còn ba phần mười độ đậm |
+| `09-hai-vo-cuc.svg` | 46% | Bụng dưới chữ B vòng ra thành **vô cực thứ hai** — bốn cánh |
+| `10-mandala-no.svg` | 49,5% | Bốn cánh **mở ra** thành tám: cụm cánh sao xoay tách khỏi hai vô cực gốc |
+| `11-danh-net.svg` | 53% | **Đanh nét** — tám đầu cánh nhọn lên cùng một lúc, rồi mới xoay |
+| `12-xoay.svg` | 70% | Đang xoay. Hai tầng cánh chạy lệch nhau, ba vành quay ba tốc độ khác dấu |
+| `13-vo.svg` | 81,5% | **Vỡ** — xoáy nhoè rồi mười tám hạt bụi toả ra theo phương bán kính |
+| `14-tu-lai.svg` | 84% | Bụi tan, mandala tụ lại. Vòng khép kín, rồi đứng yên 6,2 giây trước khi kể lại |
 
-`lat-cat.svg` — **cả vòng kể trên MỘT tấm.** Lưới 5×5, 25 mốc cách nhau 4%,
-mỗi ô ghi phần trăm và tên chặng. Xem hết câu chuyện mà không phải mở 25 file
-hay ngồi chờ hoạt hình chạy tới đoạn mình cần. Đây là tấm để in ra dán tường,
-hoặc gửi cho ai muốn hiểu logo này từ đâu ra.
+> Mười hai mốc của đời trước không còn dùng được: vòng kể đã đổi hẳn từ bản
+> V9.00–V10.01 (xoay trước rồi mới nối · giữ hình nơ · mở tám cánh ra từ bốn ·
+> đanh nét · xoáy nhoè rồi nổ). Bốn nấc mới ấy là bốn khoảnh khắc riêng, gộp
+> vào mười hai mốc cũ thì mất đúng những chỗ vừa thêm vào.
 
-> Mỗi ô là một `<svg>` LỒNG chứ không phải một nhóm: ở mấy mốc đang phóng to
-> rồi vỡ, hình vượt hẳn khỏi khung 48×48 — bông hoa căng 1,34 lần và mười tám
-> hạt bụi bay ra tới rìa. `<svg>` lồng nhau tự cắt theo khung của nó, đúng cách
-> trình duyệt cắt logo thật trên trang.
+`lat-cat.svg` — **đã xoá.** Tấm lưới 5×5 ấy dựng từ 25 khung của vòng kể CŨ,
+nên nó kể một chuyện khác hẳn thứ đang chạy trên trang. Giữ một bản lưu sai
+còn tệ hơn không có bản lưu nào. Dựng lại: xem mục *Dựng lại* ở cuối.
 
 `logo-dong.svg` — **trọn vòng, tự chạy.** Mở bằng trình duyệt là nó kể lại từ
 đầu tới cuối rồi lặp. Không cần trang web, không cần mạng, không cần phông chữ.

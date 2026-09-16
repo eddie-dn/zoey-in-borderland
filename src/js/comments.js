@@ -85,6 +85,78 @@
     bao.className = 'bl-bao' + (loai ? ' bl-bao--' + loai : '');
   }
 
+  /* ══════════ TRÁI TIM ══════════
+
+     Một công tắc, và chỗ nhớ "máy này đã bấm chưa" nằm ở localStorage — máy
+     chủ không giữ gì để nhận ra người đọc. Lý do đầy đủ ở đầu
+     functions/api/thich.js: chặn chặt hơn thì phải theo dấu người đọc, mà
+     một con số đếm tim không đáng cái giá ấy.
+
+     Con số hiện lên TRƯỚC khi máy chủ trả lời — bấm xong thấy ngay, không
+     chờ một vòng mạng. Máy chủ từ chối thì trả lại trạng thái cũ. */
+  var tim = khoi.querySelector('.bl-tim');
+  if (tim) (function () {
+    var api = tim.getAttribute('data-thich');
+    /* Con số hiện ở HÀNG META đầu bài, cạnh lượt xem — không hiện trên chính
+       cái nút. Nút là chỗ BẤM, hàng meta là chỗ ĐỌC, và tách hai việc ra thì
+       không có chỗ nào phải vừa đủ to để bấm vừa đủ nhỏ để không tranh chỗ.
+       Ô ấy nằm ngoài khối bình luận nên tìm từ `document`. */
+    var soEl = document.querySelector('[data-thich-so]');
+    var soChu = soEl ? soEl.querySelector('.thich-so') : null;
+    var KHO = 'zib-thich:' + TRANG;
+    var daBam = false;
+    try { daBam = localStorage.getItem(KHO) === '1'; } catch (e) {}
+    var so = 0, dangGui = false;
+
+    function ve() {
+      tim.setAttribute('aria-pressed', daBam ? 'true' : 'false');
+      tim.classList.toggle('bl-tim--bam', daBam);
+      if (soEl) {
+        /* Ẩn hẳn khi chưa ai thích: một trái tim kèm số 0 ở đầu bài đọc ra là
+           "chưa ai thích bài này", mà đó là câu không cần nói ra. */
+        soEl.hidden = so <= 0;
+        soEl.classList.toggle('thich--bam', daBam);
+        if (soChu) soChu.textContent = so > 0 ? String(so) : '';
+      }
+    }
+
+    /* Ẩn hẳn nút khi máy chủ báo chưa gắn D1: một trái tim bấm vào không đếm
+       được gì thì thà đừng bày. */
+    fetch(api + '?u=' + encodeURIComponent(TRANG), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || d.tat) { tim.remove(); return; }
+        so = d.so || 0; ve();
+      })
+      .catch(function () { tim.remove(); });
+
+    tim.addEventListener('click', function () {
+      if (dangGui) return;
+      dangGui = true;
+      var truoc = daBam, truocSo = so;
+      daBam = !daBam;
+      so = Math.max(0, so + (daBam ? 1 : -1));
+      ve();
+      try { if (daBam) localStorage.setItem(KHO, '1'); else localStorage.removeItem(KHO); } catch (e) {}
+
+      fetch(api + '?u=' + encodeURIComponent(TRANG) + (daBam ? '' : '&bo=1'),
+            { method: 'POST', cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          dangGui = false;
+          if (d && typeof d.so === 'number') { so = d.so; ve(); }
+        })
+        .catch(function () {
+          /* Mạng hỏng: trả lại đúng trạng thái trước cú bấm, cả trên màn hình
+             lẫn trong localStorage. Để lệch thì lần sau mở bài lên con số nói
+             một đằng còn trái tim tô một nẻo. */
+          dangGui = false;
+          daBam = truoc; so = truocSo; ve();
+          try { if (daBam) localStorage.setItem(KHO, '1'); else localStorage.removeItem(KHO); } catch (e) {}
+        });
+    });
+  })();
+
   /* ══════════ ĐÓNG MỞ CẢ KHỐI ══════════ */
   if (nutMo && than) {
     nutMo.addEventListener('click', function () {

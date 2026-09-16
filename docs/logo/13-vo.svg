@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="240" height="240" role="img" aria-label="xoáy nhoè rồi vỡ thành bụi" color="#2E2340">
+  <!-- Zoey in Borderland — logo, xoáy nhoè rồi vỡ thành bụi (81.5% vòng kể) -->
+  <g opacity="0.36" transform="translate(24 24) matrix(0.65 1.126 -1.126 0.65 0 0) translate(-24 -24)">
+  <g fill="none" stroke="#7a52b8" opacity="0.35" transform="translate(24 24) matrix(1.06 0 0 1.06 0 0) translate(-24 -24)">
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(-0.709 -0.705 0.705 -0.709 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="21.5" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="3, 6"/></g>
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(-1 0.015 -0.015 -1 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="13.5" fill="none" stroke="#7a52b8" stroke-width="0.7" stroke-opacity="0.28" stroke-linecap="round" stroke-dasharray="2, 5"/></g>
+  <g fill="none" stroke="#7a52b8" transform="translate(24 24) matrix(0.978 0.21 -0.21 0.978 0 0) translate(-24 -24)">
+  <circle cx="24" cy="24" r="6" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="1.4, 3.2"/></g>
+  <g fill="none" stroke="#7a52b8">
+  <path d="M 24 24 C 32 15 38 17 41 24 C 38 31 32 33 24 24 C 16 15 10 17 7 24 C 10 31 16 33 24 24" fill="none" stroke="#7a52b8" stroke-width="2.1" stroke-opacity="0.8" stroke-linecap="round" transform="matrix(0.707 0.707 -0.707 0.707 24 -9.941)"/>
+  <path d="M 24 24 C 32 15 38 17 41 24 C 38 31 32 33 24 24 C 16 15 10 17 7 24 C 10 31 16 33 24 24" fill="none" stroke="#7a52b8" stroke-width="2.1" stroke-opacity="0.8" stroke-linecap="round" transform="matrix(-0.707 0.707 -0.707 -0.707 57.941 24)"/></g></g>
+  <g opacity="0.85">
+  <path d="M 24 24 C 32 15 38 17 41 24 C 38 31 32 33 24 24 C 16 15 10 17 7 24 C 10 31 16 33 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130"/>
+  <path d="M 24 24 C 15 32 17 38 24 41 C 31 38 33 32 24 24 C 33 16 31 10 24 7 C 17 10 15 16 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130" transform="translate(24 24) matrix(-1 0 0 -1 0 0) translate(-24 -24)"/></g></g>
+  <g fill="#7a52b8">
+  <circle cx="32.0" cy="24.0" r="0.70" fill="#7a52b8" opacity="0.789" transform="translate(32 24) matrix(0.66 0 0 0.66 5.749 -2.613) translate(-32 -24)"/>
+  <circle cx="36.2" cy="28.4" r="1.34" fill="#7a52b8" opacity="0.892" transform="translate(36.2 28.4) matrix(0.898 0 0 0.898 2.067 -0.313) translate(-36.2 -28.4)"/>
+  <circle cx="37.8" cy="35.6" r="1.98" fill="#7a52b8" opacity="0.932"/>
+  <circle cx="30.0" cy="34.4" r="1.02" fill="#7a52b8" opacity="0.82" transform="translate(30 34.4) matrix(0.743 0 0 0.743 2.57 2.491) translate(-30 -34.4)"/>
+  <circle cx="27.0" cy="40.7" r="1.66" fill="#7a52b8" opacity="0.949"/>
+  <circle cx="22.1" cy="34.8" r="0.70" fill="#7a52b8" opacity="0.898"/>
+  <circle cx="16.0" cy="37.9" r="1.34" fill="#7a52b8" opacity="0.869" transform="translate(16 37.9) matrix(0.853 0 0 0.853 -1.694 1.807) translate(-16 -37.9)"/>
+  <circle cx="16.3" cy="30.4" r="1.98" fill="#7a52b8" opacity="0.939"/>
+  <circle cx="9.9" cy="29.1" r="1.02" fill="#7a52b8" opacity="0.808" transform="translate(9.9 29.1) matrix(0.713 0 0 0.713 -5.837 -1.68) translate(-9.9 -29.1)"/>
+  <circle cx="15.0" cy="24.0" r="1.66" fill="#7a52b8" opacity="0.95"/>
+  <circle cx="10.8" cy="19.2" r="0.70" fill="#7a52b8" opacity="0.912"/>
+  <circle cx="17.9" cy="18.9" r="1.34" fill="#7a52b8" opacity="0.85" transform="translate(17.9 18.9) matrix(0.813 0 0 0.813 -3.539 -5.438) translate(-17.9 -18.9)"/>
+  <circle cx="17.5" cy="12.7" r="1.98" fill="#7a52b8" opacity="0.944"/>
+  <circle cx="20.9" cy="6.3" r="1.02" fill="#7a52b8" opacity="0.798" transform="translate(20.9 6.3) matrix(0.685 0 0 0.685 -1.258 -10.453) translate(-20.9 -6.3)"/>
+  <circle cx="26.1" cy="12.2" r="1.66" fill="#7a52b8" opacity="0.919" transform="translate(26.1 12.2) matrix(0.947 0 0 0.947 0.156 -1.593) translate(-26.1 -12.2)"/>
+  <circle cx="32.5" cy="9.3" r="0.70" fill="#7a52b8" opacity="0.923"/>
+  <circle cx="32.4" cy="16.9" r="1.34" fill="#7a52b8" opacity="0.834" transform="translate(32.4 16.9) matrix(0.776 0 0 0.776 4.482 -6.102) translate(-32.4 -16.9)"/>
+  <circle cx="39.0" cy="18.5" r="1.98" fill="#7a52b8" opacity="0.947"/></g></svg>

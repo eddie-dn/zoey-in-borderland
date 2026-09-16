@@ -16,6 +16,14 @@
 
      Lần chạy đầu trình duyệt sẽ hỏi có cho tải nhiều file không. Bấm cho. */
   function luu(ten, noiDung) {
+    /* Giữ lại trong `window.__SVG` trước khi tải: bên gọi có thể muốn đọc
+       thẳng chuỗi ra thay vì đi nhặt file trong thư mục Tải về. Đặt
+       `window.__KHONG_TAI = true` thì bỏ hẳn bước tải — dùng khi chạy tự động,
+       lúc ấy mười bốn hộp thoại tải file là mười bốn lần phải bấm. */
+    window.__SVG = window.__SVG || {};
+    window.__SVG[ten] = noiDung;
+    if (window.__KHONG_TAI) return;
+
     const b = new Blob([noiDung], { type: 'image/svg+xml' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(b);
@@ -176,23 +184,35 @@
 
   /* Danh sách mốc: window.__KHUNG nếu bên gọi khai sẵn, không thì mười hai
      chặng có tên. */
+  /* ── MƯỜI BỐN MỐC, KHÔNG CÒN MƯỜI HAI ──
+     Vòng kể đổi hẳn từ bản V9.00–V10.00: thêm nấc xoay-trước-rồi-nối, nấc giữ
+     hình nơ, nấc mở tám cánh ra từ bốn, và nấc đanh nét. Bốn nấc ấy là bốn
+     khoảnh khắc riêng — gộp vào mười hai mốc cũ thì mất đúng những chỗ vừa
+     thêm vào, mà chúng lại là phần đáng xem nhất.
+     Mốc cũ giữ lại được thì giữ nguyên số phần trăm; chỗ nào lệch là vì chặng
+     ấy đã dời trên trục thời gian. */
   const KHUNG = window.__KHUNG || [
-    [0,  '01-nghi.svg',        'trạng thái nghỉ — đoá mandala tám cánh'],
-    [10, '02-ba-vach.svg',     'ba vạch — tên blog nhìn từ rất xa'],
-    [22, '03-chu-z.svg',       'nét chữ Z vẽ dần ra'],
-    [30, '04-da-giac.svg',     'nét nối khép chữ Z thành vô cực đa giác'],
-    [36, '05-xoay-ngang.svg',  'cả cụm xoay ngang'],
-    [44, '06-vo-cuc-1.svg',    'đa giác bo thành vô cực thứ nhất'],
-    [50, '07-chu-b.svg',       'chữ B vẽ ra bên trên vô cực thứ nhất'],
-    [58, '08-hai-vo-cuc.svg',  'bụng chữ B vòng ra thành vô cực thứ hai'],
-    [66, '09-mandala-no.svg',  'bốn cánh nở thành tám — mandala hiện đủ'],
-    [80, '10-xoay.svg',        'mandala xoay, hai tầng cánh chạy lệch nhau'],
-    [90, '11-vo.svg',          'vỡ ra thành bụi'],
-    [97, '12-tu-lai.svg',      'bụi tan, mandala tụ lại']
+    [2,    '01-nghi.svg',        'trạng thái nghỉ — mandala tám cánh đầu nhọn'],
+    [11,   '02-ba-vach.svg',     'ba vạch — tên blog nhìn từ rất xa'],
+    [19,   '03-chu-z.svg',       'nét chữ Z vẽ dần ra, còn đứng'],
+    [24,   '04-xoay-ngang.svg',  'chữ Z xoay ngang'],
+    [29,   '05-net-noi.svg',     'nét nối hiện ra, đứng thẳng giữa khung'],
+    [33.5, '06-chiec-no.svg',    'nét nối khép hai đầu chữ Z thành chiếc nơ'],
+    [37,   '07-bo-tron.svg',     'chiếc nơ đang bo tròn'],
+    [41,   '08-chu-b.svg',       'chữ B vẽ ra bên trên vô cực thứ nhất'],
+    [46,   '09-hai-vo-cuc.svg',  'bụng chữ B vòng ra thành vô cực thứ hai'],
+    [49.5, '10-mandala-no.svg',  'bốn cánh mở ra thành tám'],
+    [53,   '11-danh-net.svg',    'đầu cánh đanh lại thành mũi nhọn'],
+    [70,   '12-xoay.svg',        'mandala xoay, hai tầng cánh chạy lệch nhau'],
+    [81.5, '13-vo.svg',          'xoáy nhoè rồi vỡ thành bụi'],
+    [84,   '14-tu-lai.svg',      'bụi tan, mandala tụ lại']
   ];
 
 
   const kq = [];
   for (const [p, t, ta] of KHUNG) kq.push(await motKhung(p, t, ta));
+  /* Gắn lên window luôn: thẻ <script> nuốt mất giá trị trả về của IIFE, mà
+     chạy bộ này bằng thẻ script là cách duy nhất khi gọi tự động. */
+  window.__KQ = kq;
   return kq;
 })();

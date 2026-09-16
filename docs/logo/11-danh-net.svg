@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="240" height="240" role="img" aria-label="đầu cánh đanh lại thành mũi nhọn" color="#2E2340">
+  <!-- Zoey in Borderland — logo, đầu cánh đanh lại thành mũi nhọn (53% vòng kể) -->
+  <g>
+  <g fill="none" stroke="#7a52b8">
+  <g fill="none" stroke="#7a52b8">
+  <circle cx="24" cy="24" r="21.5" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="3, 6"/></g>
+  <g fill="none" stroke="#7a52b8">
+  <circle cx="24" cy="24" r="13.5" fill="none" stroke="#7a52b8" stroke-width="0.7" stroke-opacity="0.28" stroke-linecap="round" stroke-dasharray="2, 5"/></g>
+  <g fill="none" stroke="#7a52b8">
+  <circle cx="24" cy="24" r="6" fill="none" stroke="#7a52b8" stroke-width="0.9" stroke-opacity="0.42" stroke-linecap="round" stroke-dasharray="1.4, 3.2"/></g>
+  <g fill="none" stroke="#7a52b8">
+  <path d="M 24 24 C 32 15.0792 38.2377 17.0792 41 24 C 38.2377 30.9208 32 32.9208 24 24 C 16 15.0792 9.76233 17.0792 7 24 C 9.76233 30.9208 16 32.9208 24 24" fill="none" stroke="#7a52b8" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round" transform="matrix(0.707 0.707 -0.707 0.707 24 -9.941)"/>
+  <path d="M 24 24 C 32 15.0792 38.2377 17.0792 41 24 C 38.2377 30.9208 32 32.9208 24 24 C 16 15.0792 9.76233 17.0792 7 24 C 9.76233 30.9208 16 32.9208 24 24" fill="none" stroke="#7a52b8" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round" transform="matrix(-0.707 0.707 -0.707 -0.707 57.941 24)"/></g></g>
+  <g>
+  <path d="M 24 24 C 32 15.0792 38.2377 17.0792 41 24 C 38.2377 30.9208 32 32.9208 24 24 C 16 15.0792 9.76233 17.0792 7 24 C 9.76233 30.9208 16 32.9208 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130"/>
+  <path d="M 24 24 C 15.0792 32 17.0792 38.2377 24 41 C 30.9208 38.2377 32.9208 32 24 24 C 32.9208 16 30.9208 9.76233 24 7 C 17.0792 9.76233 15.0792 16 24 24" fill="none" stroke="#7a52b8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="130" transform="translate(24 24) matrix(-1 0 0 -1 0 0) translate(-24 -24)"/></g></g></svg>
