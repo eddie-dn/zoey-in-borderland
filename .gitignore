@@ -1,11 +1,42 @@
+# ══════════════════════════════════════════════════════════════════════
+#  Thứ KHÔNG đưa lên kho mã.
+# ══════════════════════════════════════════════════════════════════════
+
+# Bản dựng — sinh ra từ mã nguồn, nên không phải mã nguồn
 /dist/
+
+# Thư viện tải về
 node_modules/
 npm-debug.log*
+
+# ── KHOÁ BÍ MẬT — dòng quan trọng nhất trong file này ──
+# wrangler đọc `.dev.vars` khi chạy thử ở máy, và trong đó GC_ID với GC_KEY
+# nằm dưới dạng CHỮ TRẦN. Kho mã này công khai, nên lỡ commit một lần là lộ
+# khoá quản trị — lúc ấy phải đổi khoá trên Cloudflare mới thu hồi được.
+.dev.vars
+.dev.vars.*
+.env
+
+# Wrangler để tạm trạng thái và cache ở đây
+.wrangler/
+
+# Hệ điều hành
 .DS_Store
 Thumbs.db
+
+# Trình soạn thảo
 *.swp
 .vscode/
 .idea/
+
+# Bản nháp cục bộ — bài draft vẫn commit được, đây là chỗ nháp riêng
 /content/_scratch/
+
+# Chỗ quăng ảnh tạm trước khi `npm run anh` xếp chúng vào bài.
+# Giữ lại README để người clone về vẫn thấy thư mục và biết nó để làm gì.
 /_anh/*
 !/_anh/README.md
+
+# Khung tạm sinh ra lúc dựng lại bản lưu trạng thái logo.
+# Xem docs/logo/README.md — chúng là bước trung gian, không phải kết quả.
+/docs/logo/_khung/
