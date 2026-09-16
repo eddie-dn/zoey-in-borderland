@@ -10,20 +10,17 @@
 /* Đầu trang danh sách: s8 (40px) là khoảng của một trang BÀI, nơi tiêu đề
    phải tách hẳn khỏi thân bài. Trang danh sách thì tiêu đề và danh sách là
    một khối việc — 24px là đủ, còn 40px làm danh sách bị đẩy xuống dưới nếp
-   gấp trên laptop 13".
-   Trang bài (.chu-dau) giữ nguyên s8. */
+   gấp trên laptop 13". Trang BÀI thì ngược lại, và nó có luật riêng ở
+   prose.css (.post-head) — không dùng chung khối này. */
 .ds-dau{margin-bottom:var(--s6)}
-.chu-dau{margin-bottom:var(--s8)}
-.ds-dau h1,.chu-dau h1{
+.ds-dau h1{
   font-size:var(--fs-h1);font-style:italic;
   line-height:var(--lh-tight);text-wrap:balance;margin:0;
 }
-.chu-dau h1{font-size:var(--fs-display)}
-.ds-dan,.chu-dan{
+.ds-dan{
   margin:var(--s3) 0 0;max-width:var(--measure);
   font-size:var(--fs-sm);color:var(--text-faint);
 }
-.chu-dan{font-size:var(--fs-md);color:var(--text-muted);line-height:1.6;margin-top:var(--s4)}
 
 .ds-trong{
   margin:var(--s8) 0;font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
@@ -488,8 +485,6 @@
   font-family:var(--font-label);font-size:9px;font-weight:600;
   letter-spacing:.24em;text-transform:uppercase;color:var(--text-faint);
 }
-.hero-nhan--tren{margin-bottom:var(--s2)}
-
 @media (max-height:680px){
   .hero-cot{padding-block:var(--s5)}
 }

@@ -29,7 +29,18 @@
   var NHIP  = 5;      /* bấm bao nhiêu nhịp thì mở */
   var NGUNG = 900;    /* ngưng bấy nhiêu ms là đếm lại từ đầu */
 
-  var nodeData = document.getElementById('so-tay-data');
+  /* ── DỮ LIỆU XIN VỀ LÚC MỞ, KHÔNG NHÚNG SẴN TRONG TRANG ──
+     Bản trước nhúng trọn sổ phiên bản dạng JSON vào MỌI trang. Đo ra: 77 KB
+     mỗi trang, trong khi thân bài dài nhất chỉ 6 KB — tức là bốn phần năm sức
+     nặng của một trang bài là thứ chỉ hiện ra khi người ta bấm năm nhịp vào
+     dòng chữ nhỏ ở chân trang. Nhân 47 trang thành 3,5 MB lặp lại, chiếm hơn
+     nửa cả bản dựng.
+
+     Nay nó là một file riêng, xin về đúng lúc mở hộp. Người đọc bình thường
+     không bao giờ tải nó; ai mở thì chờ thêm một vòng mạng — mà họ vừa bấm
+     năm nhịp nên chờ một nhịp là chuyện thường. Xin xong thì nhớ lại, mở lần
+     hai không gọi nữa. */
+  var API_SO = document.documentElement.getAttribute('data-so-tay-api');
   /* ── CỬA THỨ HAI: BẤM 5 NHỊP VÀO TIÊU ĐỀ TRANG GIỚI THIỆU ──
      Đưa tới bàn làm việc của chủ trang (/z-admin/). Cùng cơ chế 5 nhịp với
      sổ phiên bản, và cùng lý do: một cái nút "Quản lý" bày giữa trang thì mọi
@@ -55,16 +66,33 @@
   })();
 
   var cua = document.querySelector('[data-so-tay]');
-  if (!nodeData || !cua) return;
+  if (!API_SO || !cua) return;
 
-  var DU;
-  try { DU = JSON.parse(nodeData.textContent) || {}; } catch (e) { return; }
-  if (!DU.build || !DU.build.length) return;
+  var DU = null;
+  var dangXin = null;
 
   /* Chữ lấy từ bảng NHAN trong tools/build.mjs, gửi kèm trong chính khối JSON
      này — cùng lý do như bên comments.js: một bảng nhãn, một chỗ để sửa. */
-  var N = DU.nhan || {};
+  var N = {};
   function L(k, n) { return String(N[k] || '').replace('{n}', n); }
+
+  function xinDuLieu() {
+    if (DU) return Promise.resolve(DU);
+    if (dangXin) return dangXin;
+    /* KHÔNG 'no-store'. File này đổi theo mỗi lần đăng, mà Cloudflare gửi kèm
+       ETag và `must-revalidate`: lần mở sau trình duyệt hỏi một câu rất nhẹ,
+       chưa đổi thì nhận 304 và dùng lại bản cũ — không tải lại 77 KB. Đặt
+       'no-store' là tự tay tắt mất chuyện đó. */
+    dangXin = fetch(API_SO)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.build || !d.build.length) throw new Error('sổ rỗng');
+        DU = d; N = d.nhan || {};
+        return DU;
+      })
+      .catch(function (e) { dangXin = null; throw e; });
+    return dangXin;
+  }
 
   /* ══════════ ĐẾM NHỊP ══════════ */
   var dem = 0, hen = null;
@@ -87,6 +115,14 @@
   var nen = null, hop = null, traVe = null;
 
   function mo() {
+    if (nen) return;
+    /* Xin dữ liệu TRƯỚC khi dựng hộp: dựng hộp rỗng rồi mới đổ chữ vào thì
+       người mở thấy một tấm kính trống nhấp nháy. Hỏng thì không mở gì cả —
+       đúng như bản cũ khi JSON hỏng. */
+    xinDuLieu().then(moThat, function () {});
+  }
+
+  function moThat() {
     if (nen) return;
     traVe = document.activeElement;
 

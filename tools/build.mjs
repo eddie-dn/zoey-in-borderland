@@ -59,9 +59,18 @@ if (CAU.version) {
   CANH_BAO.push('site.config.json còn khoá `version` — bỏ đi, phiên bản nay lấy từ docs/LICH-SU.md');
 }
 
-/* SỔ TAY — cả bảng phiên bản kèm chi tiết, nhúng vào mọi trang cho cửa hậu ở
-   chân trang đọc (xem src/js/so-tay.js). Cùng một gốc với tem Vx.yy in ra
-   ngay cạnh đó, nên hai thứ không bao giờ lệch nhau.
+/* SỔ TAY — cả bảng phiên bản kèm chi tiết, ghi ra dist/so-tay.json cho cửa
+   hậu ở chân trang xin về khi mở (xem src/js/so-tay.js). Cùng một gốc với tem
+   Vx.yy in ra ngay cạnh đó, nên hai thứ không bao giờ lệch nhau.
+
+   ── VÌ SAO KHÔNG NHÚNG THẲNG VÀO TRANG NỮA ──
+   Bản trước nhúng trọn sổ này vào MỌI trang dưới dạng <script type="applica\
+   tion/json">. Đo lại thì thấy nó nặng 77 KB một trang, trong khi thân bài dài
+   nhất chỉ 6 KB — bốn phần năm sức nặng của một trang bài là thứ chỉ hiện khi
+   người ta bấm năm nhịp vào dòng chữ nhỏ ở chân trang. Nhân 47 trang thành 3,5
+   MB lặp lại, hơn nửa cả bản dựng.
+
+   Nay là một file riêng. Người đọc bình thường không bao giờ tải nó.
 
    Là HÀM chứ không phải hằng: nó đọc NHAN, mà NHAN khai bên dưới. Hằng thì
    chạy ngay lúc nạp file và NHAN lúc đó còn chưa tồn tại. */
@@ -95,10 +104,7 @@ const SO_TAY = () => JSON.stringify({
     history: NHAN.history, builds: NHAN.builds, patches: NHAN.patches,
     noInfo: NHAN.noInfo, close: NHAN.close, back: NHAN.back
   }
-/* `</` phải chẻ đôi: chuỗi `</script>` nằm trong nội dung một thẻ <script> thì
-   trình duyệt đóng thẻ NGAY TẠI ĐÓ, phần còn lại của JSON đổ thẳng ra trang
-   thành chữ. Sổ này có ghi tên thẻ HTML nên chuyện đó xảy ra thật. */
-}).replace(/<\//g, '<\\/');
+}, null, 0);
 
 /* ══════════ BẢNG NHÃN GIAO DIỆN ══════════
    Mọi chữ KHÔNG phải nội dung bài đều lấy từ đây — tiếng Anh, để phần khung
@@ -614,6 +620,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                     không đặt trên từng mốc: một trang danh sách có tới vài chục
                     mốc, lặp cùng một bảng chữ vài chục lần là thừa vài KB. */
                  `data-thoi="${attr(JSON.stringify(NHAN.thoi))}"`,
+                 /* Địa chỉ sổ phiên bản. Chỉ là một đường dẫn ~20 byte thay cho
+                    77 KB nhúng sẵn — xem chú thích ở SO_TAY bên trên. */
+                 `data-so-tay-api="${attr(BASE + '/so-tay.json')}"`,
                  /* Địa chỉ hàm đếm lượt xem và chữ hiển thị, đặt trên <html> để
                     mọi trang dùng chung một chỗ khai. Tắt thì không in gì cả và
                     xem.js tự thoát ngay dòng đầu. */
@@ -734,7 +743,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     year      : new Date().getFullYear(),
     buildDate : BAN.ngay ? temNgay(BAN.ngay) : ngayTem(),
     version   : BAN.ten,
-    soTay     : SO_TAY(),
+
   }));
 }
 
@@ -1734,6 +1743,123 @@ function boChuThichCSS(css) {
     .replace(/[ \t]+$/gm, '');
 }
 
+/* ── CẮT CHÚ THÍCH JS KHI GỬI RA ──
+   Cùng lý do với boChuThichCSS ở trên, nhưng JS khó hơn CSS một bậc: dấu `/`
+   trong JS vừa là phép chia, vừa mở chú thích, vừa mở một mẫu tìm kiếm. Cắt
+   bằng một phép thay chuỗi là hỏng — trong src/js/ có sẵn ba thứ dính bẫy:
+
+       s.replace(/[.?!]\s+/g, '\n')   mẫu regex có dấu chấm hỏi, dấu sao
+       'http://…'                          hai gạch chéo nằm trong chuỗi
+       `dấu nháy ngược nằm trong chú thích`
+
+   Nên phải đọc từng ký tự và biết mình đang đứng trong chuỗi, trong regex hay
+   trong chú thích. Đoạn dưới đúng là một bộ đọc token thu nhỏ, chỉ đủ để phân
+   biệt bốn thứ ấy — không phải một bộ phân tích cú pháp.
+
+   Phân biệt regex với phép chia bằng KÝ TỰ CÓ NGHĨA ĐỨNG NGAY TRƯỚC, đúng luật
+   của chính JavaScript: sau một giá trị (tên biến, số, `)`, `]`) thì `/` là
+   phép chia; sau một toán tử hay một từ khoá thì `/` mở regex.
+
+   Sai một chỗ là cả file hỏng, nên bên gọi còn thử dịch lại bản đã cắt trước
+   khi ghi ra — hỏng thì giữ nguyên bản gốc và kêu lên. */
+const TU_KHOA_TRUOC_REGEX = new Set([
+  'return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void',
+  'case', 'do', 'else', 'yield', 'await', 'throw'
+]);
+
+function boChuThichJS(ma) {
+  let ra = '';
+  let i = 0;
+  const n = ma.length;
+  /* `truoc` giữ ký tự có nghĩa gần nhất, `tu` giữ chữ cuối nếu đó là một chữ. */
+  let truoc = '';
+  let tu = '';
+
+  const laChu = (c) => /[A-Za-z0-9_$]/.test(c);
+
+  function moRegex() {
+    if (truoc === '') return true;                       /* đầu file */
+    if (laChu(truoc)) return TU_KHOA_TRUOC_REGEX.has(tu); /* tên biến ⇒ chia */
+    return !(truoc === ')' || truoc === ']' || truoc === '}');
+  }
+
+  while (i < n) {
+    const c = ma[i];
+
+    /* ── chú thích một dòng ── */
+    if (c === '/' && ma[i + 1] === '/') {
+      while (i < n && ma[i] !== '\n') i++;
+      continue;                       /* để nguyên '\n' cho vòng sau chép */
+    }
+
+    /* ── chú thích nhiều dòng ── */
+    if (c === '/' && ma[i + 1] === '*') {
+      const het = ma.indexOf('*/', i + 2);
+      const den = het < 0 ? n : het + 2;
+      /* Chú thích trải nhiều dòng thì để lại một dòng trống, giữ cho số dòng
+         không co rút quá đà — soi bằng DevTools còn lần được. */
+      if (ma.slice(i, den).includes('\n')) ra += '\n';
+      i = den;
+      continue;
+    }
+
+    /* ── chuỗi ── */
+    if (c === '"' || c === "'" || c === '`') {
+      const dong = c;
+      ra += c; i++;
+      while (i < n) {
+        const d = ma[i];
+        if (d === '\\') { ra += ma.slice(i, i + 2); i += 2; continue; }
+        ra += d; i++;
+        if (d === dong) break;
+        /* `${…}` trong chuỗi nháy ngược: chép nguyên tới ngoặc đóng khớp cặp,
+           không cắt gì bên trong. Dự án này chưa có chú thích nằm trong `${}`,
+           mà có thì cắt đi cũng chẳng lợi được mấy byte. */
+        if (dong === '`' && d === '$' && ma[i] === '{') {
+          let muc = 0;
+          while (i < n) {
+            const e = ma[i];
+            if (e === '{') muc++;
+            else if (e === '}') { muc--; ra += e; i++; if (!muc) break; continue; }
+            ra += e; i++;
+          }
+        }
+      }
+      truoc = dong; tu = '';
+      continue;
+    }
+
+    /* ── regex ── */
+    if (c === '/' && moRegex()) {
+      ra += c; i++;
+      let trongNgoac = false;
+      while (i < n) {
+        const d = ma[i];
+        if (d === '\\') { ra += ma.slice(i, i + 2); i += 2; continue; }
+        if (d === '[') trongNgoac = true;
+        else if (d === ']') trongNgoac = false;
+        else if (d === '/' && !trongNgoac) { ra += d; i++; break; }
+        else if (d === '\n') break;     /* không phải regex thật — thoát cho lành */
+        ra += d; i++;
+      }
+      while (i < n && /[gimsuyd]/.test(ma[i])) { ra += ma[i]; i++; }
+      truoc = '/'; tu = '';
+      continue;
+    }
+
+    ra += c; i++;
+    if (!/\s/.test(c)) {
+      truoc = c;
+      tu = laChu(c) ? tu + c : '';
+    }
+  }
+
+  return ra
+    .replace(/[ \t]+$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/^\n+/, '');
+}
+
 /* ══════════════ 5. TRANG DANH SÁCH ══════════════
 
    Sáu trang dùng chung một khuôn: trang chủ · /posts/ · /posts/<mục>/ ·
@@ -2532,9 +2658,21 @@ async function chay() {
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js',
                      'bang-anh.js', 'xem.js', 'ghi-chu.js', 'duyet.js']) {
-      ghi(path.join(THU_MUC.dist, 'assets', j),
-          fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
+      const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
+      /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng
+         đúng bộ phân tích cú pháp của V8, nên nó bắt được mọi chỗ bộ đọc token
+         ở trên đọc nhầm — mà đọc nhầm dấu `/` thì gần như luôn ra cú pháp sai.
+         Hỏng thì gửi nguyên bản gốc: trang nặng thêm vài KB còn hơn trang chết. */
+      let ra = boChuThichJS(goc);
+      try { new Function(ra); }
+      catch (e) {
+        CANH_BAO.push(`cắt chú thích ${j} ra cú pháp hỏng (${e.message})`
+                      + ' — gửi nguyên bản');
+        ra = goc;
+      }
+      ghi(path.join(THU_MUC.dist, 'assets', j), ra);
     }
+    ghi(path.join(THU_MUC.dist, 'so-tay.json'), SO_TAY());
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
     nuongNguonQuote();
 

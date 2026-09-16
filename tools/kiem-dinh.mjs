@@ -808,6 +808,65 @@ const KIEM = [
     }
   },
   {
+    /* ── SỔ PHIÊN BẢN PHẢI Ở NGOÀI TRANG, VÀ PHẢI VỚI TỚI ĐƯỢC ──
+       Sổ này từng nằm nhúng trong MỌI trang: 77 KB một trang, 3,5 MB cho cả
+       bản dựng, chỉ để phục vụ một cửa hậu bấm năm nhịp mới mở. Nay nó là
+       dist/so-tay.json.
+
+       Hai đường hỏng, và cả hai đều hỏng LẶNG LẼ:
+         · nhúng lại vào trang — trang nặng trở lại mà nhìn bên ngoài y hệt;
+         · địa chỉ trỏ vào chỗ không có file — bấm năm nhịp thì chẳng có gì mở
+           ra, mà cũng không lỗi nào hiện lên vì chỗ bắt lỗi nuốt im.
+       Phép kiểm canh cả hai. */
+    ten: 'Sổ phiên bản nằm ngoài trang và địa chỉ trỏ đúng file',
+    muc: 'loi',
+    chay: ({ trang, dist }) => {
+      const ra = [];
+      const nhung = trang.filter((t) => t.html.includes('id="so-tay-data"'));
+      if (nhung.length) {
+        ra.push(`${nhung.length} trang còn nhúng sổ phiên bản vào HTML ` +
+                `(${nhung[0].url}…) — đáng lẽ chỉ còn data-so-tay-api`);
+      }
+      const thieu = trang.filter((t) => !/data-so-tay-api="[^"]+"/.test(t.html));
+      if (thieu.length) {
+        ra.push(`${thieu.length} trang không có data-so-tay-api (${thieu[0].url}…) — ` +
+                `bấm năm nhịp ở chân trang sẽ không mở được gì`);
+      }
+      const f = path.join(dist, 'so-tay.json');
+      if (!fs.existsSync(f)) {
+        ra.push('thiếu dist/so-tay.json — mọi trang trỏ vào một file không có');
+      } else {
+        try {
+          const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+          if (!d.build || !d.build.length) ra.push('dist/so-tay.json không có mục build nào');
+          if (!d.nhan || !d.nhan.history) ra.push('dist/so-tay.json thiếu bảng nhãn');
+        } catch (e) { ra.push(`dist/so-tay.json không đọc được: ${e.message}`); }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── JS GỬI RA PHẢI DỊCH ĐƯỢC ──
+       Bộ dựng cắt chú thích khỏi JS trước khi ghi vào dist/ (xem boChuThichJS
+       trong tools/build.mjs). Cắt chú thích của JS khó hơn của CSS vì dấu `/`
+       vừa là phép chia vừa mở regex; cắt nhầm một chỗ là cả file chết, và chết
+       theo kiểu tệ nhất — trang vẫn hiện đủ, chỉ là không bấm được gì nữa.
+
+       build.mjs đã tự thử dịch rồi mới ghi, nhưng phép kiểm này soi BẢN ĐANG
+       NẰM TRONG dist: đúng thứ người đọc tải về, kể cả khi ai đó sửa tay vào
+       đó hay bước cắt kia bị bỏ qua. */
+    ten: 'Mọi file JS trong dist/assets đều dịch được',
+    muc: 'loi',
+    chay: ({ dist }) => {
+      const thuMuc = path.join(dist, 'assets');
+      if (!fs.existsSync(thuMuc)) return [];
+      return fs.readdirSync(thuMuc).filter((f) => f.endsWith('.js')).flatMap((f) => {
+        try { new Function(fs.readFileSync(path.join(thuMuc, f), 'utf8')); return []; }
+        catch (e) { return [`dist/assets/${f} không dịch được: ${e.message}`]; }
+      });
+    }
+  },
+  {
     /* ── WORKER.JS PHẢI BIẾT MỌI CỬA TRONG functions/api/ ──
        Đây là lỗi đã vấp thật, và nó im lặng tới mức nguy hiểm.
 
