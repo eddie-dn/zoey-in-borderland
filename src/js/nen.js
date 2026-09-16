@@ -231,7 +231,7 @@
     /* Sáu màu lấy thẳng từ bảng Tĩnh lặng trong tokens.css — trắng và suong
        cho phần bọt sáng, suoi/reu/troi cho thân nước. */
     var MAU = ['#FFFFFF', '#DAE8F5', '#9FD3EA', '#A8DED6', '#BAD9F4', '#7FB6D8'];
-    var vet = [], giot = [], gon = [], suong = [];
+    var vet = [], giot = [], gon = [], suong = [], toe = [];
     var mn = 0;          /* y của mặt nước */
 
     function moiVet(batDau) {
@@ -246,16 +246,16 @@
         y: batDau ? Math.random() * mn : -40 - Math.random() * 160,
         /* Vệt càng gần càng DÀI: cùng một khoảng thời gian phơi sáng, vật đi
            nhanh hơn thì để lại vệt dài hơn. Đây là chỗ làm nước có tốc độ. */
-        /* Chậm lại một phần tư so với bản đầu (vy 3,4+9,5 → 2,6+7,1). Thác
-           chảy xiết đọc ra là thác lũ, mà theme này tên là Tĩnh lặng.
-           Vệt NGẮN lại theo, không giữ nguyên: vệt dài là dấu của vật đi
-           nhanh — giảm tốc mà để nguyên vệt thì nước trông như bị kéo giãn. */
-        /* Chậm thêm một nhịp nữa (2,6+7,1 → 1,9+5,2, tức còn khoảng 55% tốc độ
-           bản đầu). Vệt ngắn lại theo cùng tỉ lệ — vệt dài là dấu của vật đi
-           nhanh, giảm tốc mà giữ nguyên vệt thì nước trông như bị kéo giãn. */
-        dai: 17 + lop * 56,
+        /* Đã chậm dần ba nhịp so với bản đầu: 3,4+9,5 → 2,6+7,1 → 1,9+5,2 →
+           1,35+3,6, còn chừng 40% tốc độ ban đầu. Thác chảy xiết đọc ra là thác
+           lũ, mà theme này tên là Tĩnh lặng.
+
+           Mỗi lần giảm tốc thì `dai` giảm theo ĐÚNG tỉ lệ ấy, không giữ nguyên:
+           vệt dài là dấu của vật đi nhanh, nên chậm mà vệt vẫn dài thì nước
+           trông như bị kéo giãn chứ không phải chảy chậm. */
+        dai: 12 + lop * 39,
         rong: 0.7 + lop * 1.9,
-        vy: 1.9 + lop * 5.2,
+        vy: 1.35 + lop * 3.6,
         /* Dạt ngang rất nhẹ và LUÔN cùng một chiều: thác có hướng gió của nó.
            Cho mỗi vệt một chiều riêng thì màn nước loạn như tuyết rơi. */
         vx: 0.06 + lop * 0.16,
@@ -276,7 +276,9 @@
         x: 20 + Math.random() * Math.max(1, W - 40),
         y: batDau ? Math.random() * mn : -20 - Math.random() * 420,
         r: 1.6 + lop * 2.6,
-        vy: 1.25 + lop * 2.35,
+        /* Giọt phải chậm theo màn nước, nếu không nó vượt lên trước và đọc
+           ra là hai thứ rơi trong hai trọng trường khác nhau. */
+        vy: 0.95 + lop * 1.8,
         mo: 0.3 + lop * 0.5
       };
     }
@@ -289,6 +291,37 @@
        chỗ xa nằm cao trên màn, chỗ gần nằm thấp. Dồn hết gợn vào một đường thì
        cả vũng bẹp lại thành một sợi chỉ. Càng xuống thấp (càng gần người xem)
        vòng sóng càng to, nên bán kính đích nhân thêm theo độ sâu. */
+    /* ── NƯỚC HẮT LÊN ──
+       Vòng sóng nói "có thứ gì vừa chạm xuống". Nó KHÔNG nói được "thứ ấy
+       nặng bao nhiêu" — sóng loang ra là chuyện của mặt nước, không phải của
+       cú va. Mấy hạt bắn ngược lên rồi rơi lại mới là dấu của cú va, và thiếu
+       nó thì giọt nước chạm mặt nước êm như chạm vào bông.
+
+       ── CHỖ CÓ CHỖ KHÔNG ──
+       Chỉ chừng ba phần năm số giọt bắn toé, và số hạt mỗi lần cũng khác nhau.
+       Giọt nào cũng toé đều thì mắt bắt ra ngay cái đều ấy, và cả mặt nước đọc
+       thành một cỗ máy đang chạy đúng nhịp. Ngẫu nhiên ở đây không phải để cho
+       "tự nhiên" một cách chung chung — nó để PHÁ cái nhịp.
+
+       Hạt bay theo parabol thật: vận tốc dọc âm lúc bật lên, cộng dần trọng
+       lực mỗi khung. Cho nó đi thẳng rồi tắt thì ra pháo hoa, không ra nước. */
+    function moiToe(x, y, lop) {
+      if (Math.random() > 0.62) return;
+      var n = 2 + ((Math.random() * 4) | 0);
+      for (var k = 0; k < n; k++) {
+        toe.push({
+          x: x, y: y,
+          vx: (Math.random() - 0.5) * (1.1 + lop * 1.3),
+          vy: -(0.9 + Math.random() * (1.1 + lop * 1.2)),
+          r: 0.7 + Math.random() * (0.6 + lop * 0.9),
+          mo: 0.45 + Math.random() * 0.35,
+          /* Mốc rơi lại: chính chỗ nó bật lên. Hạt rơi quá mốc ấy là hạt chui
+             xuống dưới mặt nước — mà nước thì không trong suốt tới thế. */
+          day: y
+        });
+      }
+    }
+
     function moiGon(x, lop) {
       var s = Math.random();                 /* 0 = mép xa, 1 = sát chân màn */
       gon.push({ x: x, y: mn + s * (H - mn) * 0.92,
@@ -398,20 +431,35 @@
                nước đứng yên tuyệt đối đọc ra là sàn nhà, không phải nước. */
         var day = H - mn;
         g = ctx.createLinearGradient(0, mn, 0, H);
-        g.addColorStop(0, 'rgba(155,211,218,0)');
-        g.addColorStop(0.35, 'rgba(155,211,218,.13)');
-        g.addColorStop(1, 'rgba(105,178,194,.26)');
+        /* Đậm hơn hẳn bản trước (.13/.26 → .2/.42). Ở độ đậm cũ, dải nước
+           chìm gần hết vào nền và cả nửa dưới màn đọc ra là một khoảng trống
+           hơi xanh — không ra mặt nước. Mặt nước phải là một MẶT nhìn thấy
+           được thì mấy vòng sóng trên nó mới có chỗ để nằm. */
+        g.addColorStop(0, 'rgba(155,211,218,.05)');
+        g.addColorStop(0.35, 'rgba(155,211,218,.2)');
+        g.addColorStop(1, 'rgba(105,178,194,.42)');
         ctx.globalAlpha = 1; ctx.fillStyle = g;
         ctx.fillRect(0, mn, W, day);
 
-        ctx.globalAlpha = 0.5;
-        ctx.strokeStyle = MAU[1]; ctx.lineWidth = 1.1;
+        /* ── MÀU ĐƯỜNG NƯỚC: ĐẬM, KHÔNG SÁNG ──
+           Trước đây kẻ bằng MAU[1] (#DAE8F5) — một màu SÁNG, và nền theme Tĩnh
+           lặng vốn đã sáng gần trắng. Trắng trên trắng thì tăng độ đục hay dày
+           nét đều vô ích: không có tương phản thì không có đường nào cả. Đổi
+           sang màu nước sâu nhất trong bảng, cùng màu với vòng sóng — chúng là
+           cùng một mặt nước, kẻ hai màu thì đọc ra hai thứ. */
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = MAU[5]; ctx.lineWidth = 1.5;
         ctx.beginPath();
         /* Đường nước KHÔNG thẳng: nhấp nhô rất nhẹ theo một sóng sin chạy
            ngang. Kẻ thẳng thì đọc ra là mép một khối hộp. Bước 14px đủ mịn ở
            mọi khổ màn mà không phải vẽ hàng nghìn đoạn. */
         for (var gx = 0; gx <= W; gx += 14) {
-          var gy = mn + Math.sin(gx * 0.022 + t * 0.018) * 1.9;
+          /* Biên độ 1,9 → 3,2 và cộng thêm một sóng thứ hai tần số khác: một
+             sóng sin đơn đọc ra là một đường lượn đều, mà mặt nước thật thì
+             không bao giờ đều. Hai sóng chồng nhau, chu kỳ không chia hết cho
+             nhau, cho ra cái nhấp nhô "chỗ có chỗ không". */
+          var gy = mn + Math.sin(gx * 0.022 + t * 0.018) * 3.2
+                      + Math.sin(gx * 0.061 - t * 0.011) * 1.4;
           gx ? ctx.lineTo(gx, gy) : ctx.moveTo(gx, gy);
         }
         ctx.stroke();
@@ -421,7 +469,7 @@
              quét qua mắt nhanh hơn chỗ xa. Đó là toàn bộ chiều sâu của lớp này. */
           var ly = mn + day * (0.17 + i * 0.19);
           var lech = itMotion ? 0 : Math.sin(t * (0.006 + i * 0.004) + i * 1.7) * (10 + i * 16);
-          ctx.globalAlpha = 0.1 - i * 0.012;
+          ctx.globalAlpha = 0.16 - i * 0.018;
           ctx.beginPath();
           ctx.ellipse(W * 0.5 + lech, ly, W * (0.34 + i * 0.1), 1.6 + i * 0.7, 0, 0, 6.2832);
           ctx.stroke();
@@ -431,7 +479,11 @@
         for (i = 0; i < giot.length; i++) {
           o = giot[i];
           if (!itMotion) o.y += o.vy;
-          if (o.y >= o.cham) { moiGon(o.x, o.lop); giot[i] = moiGiot(false); continue; }
+          if (o.y >= o.cham) {
+            moiGon(o.x, o.lop);
+            if (!itMotion) moiToe(o.x, o.cham, o.lop);
+            giot[i] = moiGiot(false); continue;
+          }
           ctx.globalAlpha = o.mo;
           ctx.fillStyle = MAU[0];
           /* Hình giọt: ép dọc theo tốc độ. Một hình tròn rơi thẳng đọc ra là
@@ -466,6 +518,25 @@
             ctx.ellipse(o.x, o.y, o.r * 0.58, o.r * 0.58 * 0.3, 0, 0, 6.2832);
             ctx.stroke();
           }
+        }
+
+        /* ── 3b. HẠT NƯỚC HẮT LÊN ── vẽ SAU vòng sóng: chúng bay bên trên mặt
+           nước, còn vòng sóng thì nằm trên mặt. */
+        for (i = toe.length - 1; i >= 0; i--) {
+          o = toe[i];
+          if (!itMotion) { o.x += o.vx; o.y += o.vy; o.vy += 0.062; }
+          if (o.y >= o.day) { toe.splice(i, 1); continue; }
+          /* Mờ dần theo ĐỘ CAO còn lại: hạt lên cao nhất là lúc mờ nhất, rồi
+             rõ lại khi rơi xuống. Giảm đều theo thời gian thì hạt tắt giữa
+             không trung và cú toé trông như bốc hơi. */
+          ctx.globalAlpha = o.mo * Math.max(0.15, 1 - (o.day - o.y) / 34);
+          /* Cùng lý do với đường nước: hạt TRẮNG trên nền gần trắng là hạt vô
+             hình. Dùng đúng màu vòng sóng — hạt bắn lên và vòng sóng loang ra
+             là hai nửa của cùng một cú chạm. */
+          ctx.fillStyle = MAU[5];
+          ctx.beginPath();
+          ctx.arc(o.x, o.y, o.r, 0, 6.2832);
+          ctx.fill();
         }
 
         ctx.globalAlpha = 1;
@@ -510,7 +581,15 @@
 
     return {
       dung: function () {
-        R = Math.min(W * 0.8, H * 1.3);
+        /* ── ĐĨA PHẢI PHỦ HẾT KHUNG ──
+           `Math.min` là chỗ sai: ở khổ dọc, W nhỏ nên nó lấy W×0.8 — đĩa co
+           lại còn một dải ngang nằm giữa màn, trên và dưới trống hoác. Mà đĩa
+           còn bị ép dẹt (DET 0.42) và nghiêng, nên nửa bề cao thật của nó chỉ
+           chừng 0.75R: muốn phủ hết chiều cao từ tâm ở 0.6H thì cần R ≥ 0.8H.
+
+           `Math.max` với H×1.05 lo đúng chuyện đó, và ở khổ ngang thì W×0.8
+           vẫn thắng nên màn rộng không đổi gì. */
+        R = Math.max(W * 0.8, H * 1.05);
         nen = []; sao = []; bui = []; cuc = [];
 
         /* ── 1. NỀN SAO ── toạ độ theo KHUNG, không theo đĩa, và không quay. */
@@ -526,7 +605,12 @@
         }
 
         /* ── 2. SAO TRONG NHÁNH ── */
-        var nSao = Math.max(420, Math.min(2600, Math.round(W * H / 620)));
+        /* Số sao phải theo ĐĨA, không chỉ theo khung: đĩa to gấp đôi mà giữ
+           nguyên số sao thì mật độ nhìn thấy giảm một nửa, và nhánh xoắn nhạt
+           đi đúng lúc nó vừa được nới rộng ra. Hệ số dưới đây là tỉ lệ giữa
+           bán kính đĩa và cạnh ngắn của khung. */
+        var day = Math.max(1, R / (Math.min(W, H) * 1.15));
+        var nSao = Math.max(420, Math.min(3200, Math.round(W * H / 620 * day)));
         var t, k, goc;
         for (i = 0; i < nSao; i++) {
           /* t = bán kính chuẩn hoá. Mũ 0.62 dồn sao về phía trong, đúng như đĩa
@@ -635,7 +719,10 @@
 
         /* Quầng lõi — nhỏ hơn hẳn bản trước. Lõi to thì cả màn thành một quầng
            sáng và nhánh xoắn biến mất sau nó. */
-        var Rl = R * 0.26;
+        /* Quầng lõi kẹp theo KHUNG, không chỉ theo đĩa: đĩa nới rộng ở khổ
+           dọc kéo lõi to theo, và một quầng sáng chiếm nửa màn thì nhánh xoắn
+           biến mất sau nó. */
+        var Rl = Math.min(R * 0.26, Math.min(W, H) * 0.3);
         g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rl);
         g.addColorStop(0, 'rgba(255,250,254,.8)');
         g.addColorStop(0.14, 'rgba(253,236,246,.46)');

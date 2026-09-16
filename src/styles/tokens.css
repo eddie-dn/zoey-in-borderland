@@ -482,20 +482,43 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --raw-suoi:#9FD3EA;   --raw-reu:#A8DED6;   --raw-troi:#BAD9F4;
   --raw-suong:#DAE8F5;  --raw-da:#15303E;    --raw-tham:#0B5A78;
 
-  --bg:#E9F1FA;
+  /* ── NỀN HẠ MỘT BẬC: #E9F1FA → #D8E7F2 ──
+     Chữ ở theme này chưa bao giờ là vấn đề — đo ra 12,09:1, hơn cả Sakura.
+     Thứ hỏng là lớp CẤU TRÚC: mặt thẻ chỉ nổi 1,12:1 so với nền, nền lõm nổi
+     1,09:1, đường kẻ 1,51:1. Nghĩa là thẻ, khối code và bảng đều KHÔNG có mép
+     — cả trang đọc ra một mảng xanh nhạt liền, và chữ thì nổi trôi trên đó.
+
+     Không sửa được bằng cách làm mặt thẻ trắng hơn: nó đã .86 trắng, tức gần
+     chạm trần. Cái nới ra được là nền. Hạ một bậc thì mọi chênh lệch trên đều
+     tăng cùng lúc mà chữ vẫn còn 10,91:1 — dư xa ngưỡng AAA.
+
+     Vì sao Sakura sống được với 1,05:1 mà theme này thì không: Sakura có ba
+     TRỤC màu (mực tím · orchid · coral), nên mắt phân lớp bằng sắc độ. Tĩnh
+     lặng nằm gọn trên một trục lam, và trên một trục thì chỉ còn độ sáng để
+     phân lớp — nên độ sáng phải gánh nhiều hơn hẳn. */
+  --bg:#D8E7F2;
   /* Ba quầng, đọc từ trên xuống đúng như một cái thác: sương ở đỉnh, khoảng
      trời hở bên phải, rồi vũng nước lắng ở chân màn. Cùng số lớp và cùng kiểu
-     dựng với --bg-tint bên Sakura — chỉ thay trục màu. */
+     dựng với --bg-tint bên Sakura — chỉ thay trục màu.
+
+     Hạ theo nền, và BIÊN ĐỘ HẸP LẠI. Bản trước đỉnh quầng sáng gần trắng
+     (#F4FAFF) trong khi chân màn xanh lục (#D3E9E6): nền dưới một tấm thẻ vì
+     thế đổi hẳn theo chỗ thẻ đang nằm, nên chênh lệch thẻ/nền tính ra một
+     đằng mà mắt thấy một nẻo. Quầng nay dao động quanh nền chứ không kéo nó
+     đi. */
   --bg-tint:
-    radial-gradient(120% 70% at 10% -4%, #F4FAFF 0%, rgba(244,250,255,0) 52%),
-    radial-gradient(90% 55% at 94% 2%, #CFE4F8 0%, rgba(207,228,248,0) 58%),
-    radial-gradient(120% 60% at 50% 104%, #D3E9E6 0%, rgba(211,233,230,0) 60%);
-  /* .70 → .86. Trên nền gần trắng của bản cũ, mặt thẻ chỉ nổi 1.06:1 so với
-     nền — mép thẻ biến mất và cả lưới bento trôi thành một mảng. Đục hơn thì
-     thẻ ra thẻ, và chữ bên trong được thêm một nhịp tương phản miễn phí. */
-  --surface:rgba(255,255,255,.86);
+    radial-gradient(120% 70% at 10% -4%, #E6F1FB 0%, rgba(230,241,251,0) 52%),
+    radial-gradient(90% 55% at 94% 2%, #C4DCF1 0%, rgba(196,220,241,0) 58%),
+    radial-gradient(120% 60% at 50% 104%, #C6E0DA 0%, rgba(198,224,218,0) 60%);
+  /* .70 → .86 → .90. Mỗi nấc là một lần đuổi theo cùng một vấn đề bằng cái
+     đòn bẩy sai; nấc này đi cùng lượt hạ nền ở trên, và đó mới là chỗ ăn thua.
+     Kết quả: thẻ/nền 1,23:1 — hơn Sakura (1,05) chứ không còn thua. */
+  --surface:rgba(255,255,255,.90);
   --surface-solid:#FFFFFF;
-  --surface-sunken:#DAE8F5;
+  /* Nền lõm phải nằm ở phía BÊN KIA của nền so với mặt thẻ, không thì khối
+     code và mặt thẻ chỉ là hai sắc trắng cạnh nhau. #DAE8F5 cũ nổi 1,02:1 so
+     với nền — tức là không tồn tại. */
+  --surface-sunken:#C7DBEB;
 
   --text:#15303E;                     /* mực đá ướt — cố ý KHÔNG dùng đen */
   --text-muted:#365665;
@@ -506,19 +529,28 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      Mực đá đạt 7.22:1 trên đoạn tối nhất và 8.38:1 trên đoạn sáng nhất. */
   --btn-ink:#15303E;
 
-  --accent:#9FD3EA;                   /* trang trí: viền, chấm, gradient */
-  --accent-ink:#0B5A78;               /* chữ link, nhãn — 6.71:1 trên --bg */
+  /* Màu trang trí đậm thêm một bậc (#9FD3EA → #63B2D6). Ở màu cũ nó chỉ nổi
+     1,32:1 trên nền — nhạt hơn cả màu trang trí của Sakura (1,78), nên viền,
+     chấm và gạch chân biến mất sạch. Màu mới đo 1,88:1: ngang Sakura, và vẫn
+     là một màu nước nhạt chứ không thành màu nhấn chói. */
+  --accent:#63B2D6;                   /* trang trí: viền, chấm, gradient */
+  --accent-ink:#0B5A78;               /* chữ link, nhãn — 6.05:1 trên --bg */
   --accent-ink-hover:#084A64;
-  --accent-2:#A8DED6;                 /* nốt lục giữ lại — xem mục 4 ở trên */
-  --accent-3:#BAD9F4;
-  --accent-wash:rgba(159,211,234,.16);
+  /* Hai nốt phụ đậm theo cùng một bậc: chúng đi chung trong --glass-tint, và
+     một dải gradient có một nốt đậm hai nốt nhạt thì đọc ra là bị lem. Chữ
+     trên nút chính vẫn còn 5,8:1 ở chặng tối nhất. */
+  --accent-2:#7FC7BD;                 /* nốt lục giữ lại — xem mục 4 ở trên */
+  --accent-3:#93BFE4;
+  --accent-wash:rgba(99,178,214,.18);
 
-  /* .16 → .22. Đường kẻ là thứ CÒN LẠI để nói "đây là mép thẻ" khi mặt thẻ và
-     nền chỉ chênh nhau 1.12:1 — nền sáng hơn nữa thì thôi là theme tươi, nên
-     phần việc ấy dồn hết sang đường kẻ. */
-  --line:rgba(21,48,62,.22);
-  --line-strong:rgba(21,48,62,.36);
-  --sel-bg:rgba(159,211,234,.38);
+  /* .16 → .22 → .34. Hai nấc đầu vẫn để đường kẻ ở 1,51:1 — thấy thì thấy,
+     nhưng chưa tới ngưỡng 3:1 mà WCAG 1.4.11 đòi cho mép của một component.
+     .34 đo 1,93:1 và .50 đo 2,79:1; chưa chạm 3:1, nhưng cộng với chênh lệch
+     nền vừa nới ở trên thì mép thẻ nay do HAI thứ cùng nói, không còn dồn hết
+     lên một đường kẻ mảnh. */
+  --line:rgba(21,48,62,.34);
+  --line-strong:rgba(21,48,62,.50);
+  --sel-bg:rgba(99,178,214,.38);
 
   /* Bốn khối callout phải còn ĐỌC RA được là bốn việc khác nhau, nên ba màu
      trạng thái giữ nguyên sắc gốc (lục · hổ phách · đỏ) và chỉ hạ độ tươi cho

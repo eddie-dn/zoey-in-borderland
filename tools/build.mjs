@@ -2515,6 +2515,17 @@ function trangChu(bai) {
 
   <div class="hero-luoi">
 
+    <!-- ── MÀN THỨ NHẤT ──
+         Ba khối này là thứ người ta thấy lúc mở trang, và chúng phải chiếm
+         TRỌN một màn. Bọc lại thành một khối vì ở khổ dọc danh sách bài mở ra
+         bên dưới: không bọc thì cả bốn khối cùng chia nhau chiều cao, khối chữ
+         lớn mất hết phần dôi ra, và màn đầu co lại còn nửa màn — cuộn lên
+         cũng không về được trạng thái ban đầu nữa.
+
+         Ở khổ ngang lớp bọc này tàng hình, nên lưới ba cột không hề biết có
+         nó. Luật ở src/styles/list.css. -->
+    <div class="hero-man">
+
     <div class="hero-cot hero-cot--trai">
       <a class="hero-hoso" href="${BASE}/about/">${escapeHtml(NHAN.profile)} →</a>
       ${oQuote('hero-quote')}
@@ -2533,6 +2544,8 @@ function trangChu(bai) {
         <i aria-hidden="true"></i>
       </a>
     </div>
+
+    </div><!-- /.hero-man -->
 
     <div class="hero-cot hero-cot--phai">
       <p class="hero-nhan">${escapeHtml(NHAN.index)}</p>

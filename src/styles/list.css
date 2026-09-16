@@ -466,7 +466,15 @@
   min-height:0;
   border-left:1px solid var(--line);
 }
-.hero-cot:last-child{border-right:1px solid var(--line)}
+/* Lớp bọc màn thứ nhất TÀNG HÌNH ở khổ ngang: `display:contents` cho ba khối
+   con nhảy thẳng lên làm ô của lưới, y như lúc chưa có nó. Lý do nó tồn tại
+   nằm ở khổ dọc — xem @media bên dưới. */
+.hero-man{display:contents}
+
+/* Viền phải gọi ĐÍCH DANH cột phải, không gọi `:last-child`. Từ khi ba khối
+   đầu nằm trong `.hero-man`, `:last-child` còn khớp thêm cột giữa — và cột
+   giữa mọc một đường kẻ dọc ngay giữa màn. */
+.hero-cot--phai{border-right:1px solid var(--line)}
 
 /* BẤT ĐỐI XỨNG — ba khối neo ba tầng khác nhau. Cùng canh giữa cả ba thì lại
    ra một hàng ngay ngắn, và mất hẳn cái nhịp của trang. */
@@ -662,6 +670,26 @@
     display:flex;flex-direction:column;justify-content:space-between;
     border-top:none;gap:var(--s4);
   }
+
+  /* ── MÀN THỨ NHẤT GIỮ ĐỦ MỘT MÀN, KỂ CẢ SAU KHI MỞ DANH SÁCH ──
+     Trước bản này ba khối của màn đầu và danh sách bài là bốn khối ngang hàng
+     nhau trong một cột flex. Lúc danh sách còn đóng thì tổng nội dung thấp hơn
+     một màn, phần dôi ra rơi hết vào khối chữ lớn (`flex:1`) — đúng ý.
+
+     Bấm "Read on" một cái là danh sách hiện ra, tổng nội dung vượt một màn,
+     phần dôi ra thành số âm, và `flex:1` không còn gì để nhận: khối chữ co về
+     đúng chiều cao chữ của nó. Kết quả là cuộn lên trên cùng cũng KHÔNG về
+     được màn đầu nữa — nó đã teo lại thành nửa màn, với danh sách thò lên ngay
+     dưới nút "Read on".
+
+     Bọc ba khối ấy lại rồi khoá sàn một màn cho riêng lớp bọc: bên trong nó,
+     phần dôi ra vẫn là số dương và vẫn rơi vào khối chữ. Danh sách nở ra bên
+     NGOÀI lớp bọc nên không đụng gì tới nó. */
+  .hero-man{
+    display:flex;flex-direction:column;gap:var(--s4);
+    min-height:calc(100svh - var(--header-h));
+    flex:none;
+  }
   .hero-cot{
     border:none;
     padding:0 var(--gutter);
@@ -688,27 +716,24 @@
      CÂN GIỮA. Khổ dọc không có hai đường kẻ dọc để xén chữ, nên trò xén không
      còn nghĩa gì — giữ lại chỉ ra một vệt chữ mờ đè lên nội dung.
 
-     ── VÌ SAO BỎ BẬC THANG BÁM MÉP TRÁI ──
-     Bản trước xếp ba dòng bám mép trái rồi đẩy dần sang phải bằng
-     `margin-left`. Ở khổ ngang cách ấy đúng: hai đường kẻ dọc của lưới làm
-     khung, và cụm chữ neo vào đường kẻ trái.
+     ── HAI DÒNG CHUNG MỘT MÉP TRÁI ──
+     Đời trước cân giữa: dòng "Zoey in" tự nằm giữa dòng "Borderland". Cân thì
+     có cân, nhưng nó cân theo một trục KHÔNG có gì khác trên màn neo vào — mọi
+     thứ còn lại ở khổ dọc (ô trích dẫn, nhãn, danh sách) đều bám mép trái, nên
+     riêng tiêu đề lại lửng lơ giữa màn.
 
-     Khổ dọc thì KHÔNG có đường kẻ nào. Mà dòng đầu ("Zoey") chỉ dài chừng một
-     phần ba dòng dưới ("Borderland"), nên bám trái là bên phải dòng đầu bỏ
-     trống hẳn một mảng bằng hai phần ba bề ngang màn. Mắt đọc ra một cụm chữ
-     bị dồn về góc trái, không đọc ra một tiêu đề.
+     Nay hai dòng dùng CHUNG một mép trái, và mép ấy chính là mép của mọi khối
+     khác. Chữ "Z" đứng thẳng cột với chữ "B" ngay dưới nó, thành một cạnh dọc
+     chạy suốt màn đầu — thứ mắt bắt được ngay, mà cân giữa không cho.
 
-     Cân giữa thì dòng ngắn tự nằm giữa dòng dài — đó là cách mọi tiêu đề nhiều
-     dòng vẫn cân, và nó không cần một đường kẻ nào để neo vào.
-
-     Bậc thang KHÔNG mất hẳn: nó còn lại dưới dạng hai cú nghiêng ±.05em quanh
-     trục giữa, làm bằng `translate` nên chỗ NẰM của chữ không đổi và cụm vẫn
-     cân. Đủ để đọc ra là có nhịp, chưa đủ để thành lệch. */
+     Hai cú nghiêng ±.05em của đời trước bỏ luôn: chúng sinh ra để phá cái đều
+     của trục giữa, mà giờ không còn trục giữa nào để phá. Giữ lại thì đúng hai
+     dòng cần thẳng cột nhất lại lệch nhau một chút. */
   .hero-danh{
     order:0;overflow:visible;
     container-type:normal;opacity:1;
     display:flex;flex-direction:column;justify-content:center;
-    align-items:center;text-align:center;
+    align-items:flex-start;text-align:left;
     flex:1;min-height:0;
     padding:var(--s6) var(--gutter) 0;
     /* .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc — trò ấy
@@ -720,36 +745,40 @@
      hẳn so với lúc bám mép trái, và ở cỡ cũ nó chạm gần sát hai lề — đọc ra
      là chật chứ không ra là lớn. Nhỏ một bậc thì hai bên thở được, mà nó vẫn
      là thứ to nhất trên màn. */
-  .hd-hang--1{font-size:clamp(42px,15.5vw,88px);margin:0;translate:-.05em 0}
+  .hd-hang--1{font-size:clamp(42px,15.5vw,88px);margin:0}
   /* 14vw → 16,5vw. Bỏ lề bậc thang là cụm chữ tự dôi ra gần 30px, và cân giữa
      rồi thì hai bên chia đều chỗ trống — nên dòng này được phép to thêm.
      Có chỗ: cả từ rộng 4,03 × cỡ chữ, nên ở màn 375px là 4,03 × 61,9 ≈ 249px
      trong khung 343px — chiếm 73%, hai bên còn 47px mỗi bên.
      16,5/17 ≈ 0,97: hai dòng gần bằng nhau về cỡ, và vì dòng này dài gấp ba
      nên nó vẫn nặng hơn hẳn. Đó là chỗ muốn tới — dòng dưới là dòng đỡ cả cụm. */
-  .hd-hang--3{font-size:clamp(35px,15vw,74px);margin:0;translate:.05em 0}
+  .hd-hang--3{font-size:clamp(35px,15vw,74px);margin:0}
 
-  /* ── HIỆU ỨNG MỞ MÀN, THAY CHO CÚ RÊ CHUỘT ──
-     Ở khổ ngang, khối chữ nằm mờ cho tới khi rê chuột vào: lúc ấy nó đậm lên
-     và phần còn lại của chữ "Zoey" đẩy ra từ sau chữ Z. Điện thoại KHÔNG có
-     cú rê chuột nào, nên bản trước đành bày sẵn trạng thái cuối — tức là mất
-     hẳn cái chuyển động, thứ đáng nhìn nhất của màn đầu.
+  /* ── "Z in" TRƯỚC, "Zoey in Borderland" SAU — DO NGƯỜI ĐỌC MỞ ──
+     Ở khổ ngang, khối chữ nằm ở dạng rút gọn cho tới khi rê chuột vào: lúc ấy
+     "oey" trượt ra từ sau chữ Z. Điện thoại không có cú rê chuột, nên đời
+     trước cho cùng quãng đường ấy TỰ CHẠY một lần lúc mở trang.
 
-     Nay cùng một quãng đường ấy chạy MỘT LẦN lúc mở trang: nhạt → đậm, và
-     "oey" trượt ra từ sau chữ "Z". Chạy một lần rồi đứng yên (`forwards`) —
-     lặp lại thì nó thành một thứ nhấp nháy giữa trang.
+     Tự chạy thì hỏng ở chỗ: nó diễn ra lúc người ta còn chưa nhìn vào màn
+     hình, và xong là hết — mở lại trang mới thấy lần nữa. Người đọc không bao
+     giờ là người bấm nút.
 
-     Độ trễ .35s chờ phông chữ: chạy ngay lúc chưa có Cormorant thì nửa đầu
-     hoạt hình diễn ra bằng phông dự phòng, và lúc phông thật tới thì chữ nhảy
-     một cái ngay giữa chuyển động. */
-  .hd-con{opacity:1;letter-spacing:-.03em}
-  .hero-danh{animation:hd-mo .9s var(--ease-glass) .35s backwards}
-  .hd-con{animation:hd-day 1.1s var(--ease-glass) .35s backwards}
-  @keyframes hd-mo{from{opacity:.3}to{opacity:1}}
-  @keyframes hd-day{
-    from{opacity:0;letter-spacing:-.58em}
-    to  {opacity:1;letter-spacing:-.03em}
+     Nay giống hệt khổ ngang: mở trang ra là "Z in", chạm vào (hoặc rê chuột,
+     với máy có chuột) thì nở thành "Zoey in Borderland", chạm lần nữa thì thu
+     lại. Cùng một quãng đường, nhưng do người đọc điều khiển.
+
+     `hd-mo` vẫn còn để cả khối mờ dần hiện lên lúc mở trang — đó là chuyện
+     khác, và nó không tiết lộ trước trạng thái nở. */
+  .hero-danh{
+    animation:hd-mo .9s var(--ease-glass) .35s backwards;
+    /* Bật lại cú chạm: khối này vốn `pointer-events:none` để không chắn nút
+       phía dưới. Ở khổ dọc nó là thứ PHẢI chạm được, còn nút "Read on" thì
+       nằm ngoài vùng chữ nên không có gì để chắn. */
+    pointer-events:auto;cursor:pointer;
   }
+  @keyframes hd-mo{from{opacity:.3}to{opacity:1}}
+
+  .hero.hd-ro .hd-con{opacity:1;letter-spacing:-.03em}
 
   /* ── DANH SÁCH BÀI: CHỜ BẤM "READ ON" ──
      Bày sẵn thì màn đầu trên điện thoại không còn là một màn — cuộn xuống là
@@ -758,12 +787,14 @@
      thì mới có câu trả lời. */
   .hero-cot--phai{display:none}
   .hero-cot--phai.hien{display:flex;animation:hd-mo .5s var(--ease-glass)}
-  /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng.
-     Nó nằm TRONG dòng một (xem markup ở tools/build.mjs), nên `text-align`
-     thừa kế từ khối cha đưa nó về giữa chữ "Zoey" — không cần lề nào. Đẩy
-     nhẹ sang phải để nó không thẳng cột với cả hai dòng kia: ba thứ thẳng
-     một cột thì cụm chữ đứng im như một danh sách. */
-  .hd-in{display:block;translate:.9em 0;font-size:.33em;margin:.25em 0 0;opacity:.7}
+  /* "in" NẰM CÙNG HÀNG với chữ đầu, không tách thành dòng riêng.
+     Tách ra thì cụm thành ba dòng, mà dòng giữa chỉ có hai chữ cái — nó đọc ra
+     như một dòng bị bỏ dở. Cùng hàng thì "Zoey in" là một dòng hoàn chỉnh, và
+     cụm còn đúng hai dòng để thẳng cột với nhau.
+
+     Ở dạng rút gọn ("Z in") nó cũng là chỗ duy nhất nói cho người đọc biết còn
+     chữ nữa phía sau — một chữ "Z" đứng trơ thì không nói được gì. */
+  .hd-in{display:inline-block;font-size:.3em;translate:.34em -.04em;opacity:.66}
 
   .hero-quote{width:100%}
   .hero-moc,.hero-tem{display:none}

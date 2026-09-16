@@ -35,9 +35,14 @@ xem được, không cần cài gì.
 > đanh nét · xoáy nhoè rồi nổ). Bốn nấc mới ấy là bốn khoảnh khắc riêng, gộp
 > vào mười hai mốc cũ thì mất đúng những chỗ vừa thêm vào.
 
-`lat-cat.svg` — **đã xoá.** Tấm lưới 5×5 ấy dựng từ 25 khung của vòng kể CŨ,
-nên nó kể một chuyện khác hẳn thứ đang chạy trên trang. Giữ một bản lưu sai
-còn tệ hơn không có bản lưu nào. Dựng lại: xem mục *Dựng lại* ở cuối.
+`lat-cat.svg` — **cả vòng trên một tấm.** Lưới 5 cột, mười bốn ô theo đúng thứ
+tự bảng trên, mỗi ô ghi mốc phần trăm và tên chặng. Mở một file là đọc hết cả
+vòng kể, không phải mở mười bốn file hay ngồi chờ hoạt hình chạy.
+
+Bản cũ từng bị xoá: nó là lưới 5×5 dựng từ 25 mốc cách đều của vòng kể CŨ, nên
+nó kể một chuyện khác hẳn thứ đang chạy trên trang — mà một bản lưu sai còn tệ
+hơn không có bản lưu nào. Bản này dựng thẳng từ mười bốn file khung nằm cạnh
+nó, nên nó không thể lệch khỏi chúng được nữa.
 
 `logo-dong.svg` — **trọn vòng, tự chạy.** Mở bằng trình duyệt là nó kể lại từ
 đầu tới cuối rồi lặp. Không cần trang web, không cần mạng, không cần phông chữ.
@@ -109,7 +114,7 @@ thừa nằm lệch hẳn ra ngoài bông hoa.
 |---|---|---|
 | `trich-logo.js` | bảng điều khiển của **trình duyệt** | dừng hoạt hình ở từng mốc, đọc trạng thái thật, tải từng khung về máy |
 | `dung-logo-dong.mjs` | `node` | gộp markup trong `dist/index.html` với đúng phần CSS của logo → `logo-dong.svg` |
-| `dung-lat-cat.mjs` | `node` | xếp 25 khung đã trích thành một tấm lưới 5×5 → `lat-cat.svg` |
+| `dung-lat-cat.mjs` | `node` | xếp 14 file khung cạnh nó thành một tấm lưới 5 cột → `lat-cat.svg` |
 
 ### Các bước
 
@@ -118,24 +123,25 @@ npm run build && npm run dev
 ```
 
 1. Mở trang chủ, mở bảng điều khiển của trình duyệt.
-2. Dán trọn `trich-logo.js` vào rồi Enter. Nó tải mười hai file `.svg` về thư
+2. Dán trọn `trich-logo.js` vào rồi Enter. Nó tải mười bốn file `.svg` về thư
    mục Tải về — lần đầu trình duyệt sẽ hỏi có cho tải nhiều file không, bấm
    cho. Chép chúng đè lên `docs/logo/`.
 3. Dựng file động:
    ```bash
    node docs/logo/dung-logo-dong.mjs
    ```
-4. **Tấm lát cắt** cần 25 khung chứ không phải 12. Trước khi dán bộ trích,
-   khai mốc riêng:
-   ```js
-   window.__KHUNG = Array.from({length: 25}, (_, i) =>
-     [i * 4, 'f' + String(i * 4).padStart(2, '0') + '.svg', 'mốc ' + (i * 4) + '%']);
-   ```
-   Chép 25 file ấy vào `docs/logo/_khung/` rồi:
+4. Dựng tấm lát cắt:
    ```bash
    node docs/logo/dung-lat-cat.mjs
    ```
-   `_khung/` là thư mục tạm, đã nằm trong `.gitignore`.
+   Không cần trình duyệt và không cần thư mục tạm nào: nó đọc thẳng mười bốn
+   file khung vừa chép vào ở bước 2. Bản trước đọc 25 file trong `docs/logo/_khung/`
+   — một thư mục tạm phải tự tay dựng lấy, và nó thành lối chết ngay khi vòng
+   kể đổi sang mười bốn chặng có tên.
+
+   Đổi mốc hay đổi tên chặng thì sửa bảng `KHUNG` ở **cả hai** file: `trich-logo.js`
+   (để trích đúng khung) và `dung-lat-cat.mjs` (để ghi đúng nhãn). Lệch nhau thì
+   hình vẫn đúng mà con số nói sai — loại sai khó thấy nhất.
 
 > **Bộ trích KHÔNG ghi thẳng vào đĩa, và cố ý vậy.** Bản đầu POST từng khung về
 > một đường `/__luu` của máy chủ dev — mà máy chủ ấy không có đường đó, nên mỗi

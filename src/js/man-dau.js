@@ -19,14 +19,34 @@
 (function () {
   'use strict';
 
+  var man = document.querySelector('.hero');
   var nut = document.querySelector('.hero-xuong');
   var cot = document.querySelector('.hero-cot--phai');
-  if (!nut || !cot) return;
 
   /* Ngưỡng phải KHỚP câu @media trong list.css. Đọc bằng matchMedia chứ không
      đo `innerWidth`: xoay ngang điện thoại là ngưỡng đổi, mà matchMedia báo
      tin còn một phép so sánh thì phải tự đi hỏi lại. */
   var hep = window.matchMedia('(max-width: 1000px)');
+
+  /* ── TÊN BLOG: CHẠM ĐỂ MỞ RA ──
+     Khổ ngang mở bằng `:hover`, thuần CSS. Khổ dọc không có cú rê chuột nào,
+     nên cần đúng một chỗ trong JavaScript: gạt một lớp lên `.hero`.
+
+     Gạt lên `.hero` chứ không lên chính khối chữ, để câu CSS viết được giống
+     hệt câu `:hover` đang có — cùng một trạng thái thì nên cùng một cách tả,
+     không thì hai bên trôi khỏi nhau sau vài lần sửa.
+
+     Chạm lần nữa thì thu lại: mở ra mà không đóng được thì nó là một cú bấm
+     một chiều, và người đọc không có cách nào xem lại cái mình vừa bỏ lỡ. */
+  var danh = document.querySelector('.hero-danh');
+  if (man && danh) {
+    danh.addEventListener('click', function () {
+      if (!hep.matches) return;            /* khổ ngang: :hover lo rồi */
+      man.classList.toggle('hd-ro');
+    });
+  }
+
+  if (!nut || !cot) return;
 
   nut.addEventListener('click', function (e) {
     if (!hep.matches) return;              /* khổ ngang: để nó đi /posts/ */

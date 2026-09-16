@@ -27,6 +27,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V10.07 | 2026-09-16 | 07 | theme Tĩnh lặng: hạ nền một bậc, đậm màu trang trí và đường kẻ cho thẻ ra thẻ |
+| V10.06 | 2026-09-16 | 06 | điện thoại: màn đầu giữ trọn một màn sau khi mở danh sách; tên blog chạm để mở, hai dòng thẳng cột |
+| V10.05 | 2026-09-16 | 05 | bộ khung logo: dựng lại tấm lát cắt 14 chặng, đồng bộ trọn thư mục sang zoey-blog-logo |
+| V10.04 | 2026-09-16 | 04 | nền theme: mưa chạm mặt nước có nước hắt lên; ngân hà phủ trọn màn hình |
 | V10.03 | 2026-09-16 | 03 | chữa header dính ở trang chủ; chân trang liền mạch; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
 | V10.02 | 2026-09-16 | 02 | bình luận thành nút tim + icon; đếm tim đặt cạnh lượt xem ở đầu bài |
 | V10.01 | 2026-09-16 | 01 | logo: nét nối đứng thẳng rồi mới ngả vào nối; xuất lại bộ khung 14 chặng |
@@ -122,6 +126,71 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V10.07 — 16-Sep-2026
+
+- **Theme Tĩnh lặng: thẻ ra thẻ, mép ra mép.** Chữ ở theme này chưa bao giờ
+  thiếu tương phản — đo được 12:1, hơn cả Sakura. Thứ hỏng là lớp cấu trúc:
+  mặt thẻ chỉ nổi 1,12:1 so với nền, nền lõm 1,09:1, đường kẻ 1,51:1. Nghĩa là
+  thẻ, khối code và bảng đều không có mép, cả trang đọc ra một mảng xanh nhạt
+  liền và chữ nổi trôi trên đó.
+- **Chỗ sửa là NỀN, không phải mặt thẻ.** Mặt thẻ đã .86 trắng, gần chạm trần,
+  nên nới thêm cũng chẳng được bao nhiêu. Hạ nền một bậc (#E9F1FA → #D8E7F2)
+  thì mọi chênh lệch tăng cùng lúc: thẻ/nền 1,12 → 1,23 (Sakura là 1,05), nền
+  lõm 1,02 → 1,39 so với mặt thẻ, đường kẻ 1,51 → 1,93. Chữ vẫn còn 10,9:1.
+- **Màu trang trí đậm thêm một bậc.** Ở màu cũ nó nổi 1,32:1 — nhạt hơn cả màu
+  trang trí của Sakura — nên viền, chấm và gạch chân biến mất sạch. Nay 1,88:1,
+  ngang Sakura, mà vẫn là một màu nước nhạt.
+- **Quầng nền thôi kéo cả trang đi.** Bản trước đỉnh trang gần trắng còn chân
+  trang xanh lục, nên nền dưới một tấm thẻ đổi hẳn theo chỗ thẻ đang nằm. Nay
+  ba quầng dao động quanh nền chứ không lôi nó lệch đi.
+
+## V10.06 — 16-Sep-2026
+
+- **Màn đầu trên điện thoại giữ đủ một màn, kể cả sau khi đã bấm "Read on".**
+  Trước đây bấm một cái là danh sách bài hiện ra, tổng nội dung vượt một màn,
+  và khối chữ lớn — vốn nhận phần chiều cao dôi ra — không còn gì để nhận. Nó
+  co về đúng chiều cao chữ, nên cuộn ngược lên trên cùng cũng không về được
+  màn đầu ban đầu nữa: thứ hiện ra là một màn đầu teo lại còn nửa, với danh
+  sách thò lên ngay dưới cái nút. Nay ba khối của màn đầu có sàn riêng một
+  màn, và danh sách nở ra bên ngoài sàn ấy.
+- **Tên blog trên điện thoại bắt đầu ở "Z in", chạm vào mới mở ra đủ.** Giống
+  hệt cách khổ ngang mở bằng cú rê chuột. Đời trước cho hoạt hình ấy tự chạy
+  một lần lúc mở trang — tức là nó diễn ra khi người ta còn chưa kịp nhìn, và
+  xong là hết.
+- **"in" về cùng hàng với "Zoey", và hai dòng thẳng chung một mép trái.** Chữ
+  "Z" đứng đúng cột với chữ "B" ngay dưới, thành một cạnh dọc chạy suốt màn
+  đầu — và mép ấy chính là mép của ô trích dẫn, của nhãn, của mọi thứ còn lại.
+  Cân giữa như đời trước thì riêng tiêu đề neo vào một trục không có gì khác
+  dùng chung.
+
+## V10.05 — 16-Sep-2026
+
+- **`docs/logo/` có lại tấm lát cắt cả vòng kể.** 14 chặng trên một lưới 5 cột,
+  mỗi ô ghi mốc phần trăm và tên chặng. Bản cũ đã xoá vì nó dựng từ 25 mốc của
+  vòng kể đời trước — kể một chuyện khác hẳn thứ đang chạy trên trang.
+- **Bộ dựng tấm lát cắt thôi cần trình duyệt.** Nó đọc thẳng 14 file khung nằm
+  cạnh nó, thay vì 25 file trong một thư mục tạm phải tự tay dựng lấy. Một câu
+  lệnh là xong.
+- **Thư mục `zoey-blog-logo/logo/` đồng bộ trọn vẹn với `docs/logo/`.** Lượt
+  trước mới chép mấy file khung; bộ trích, hai bộ dựng và README vẫn là bản cũ
+  từ đầu chiều. Nay cả hai bên khớp từng byte.
+
+## V10.04 — 16-Sep-2026
+
+- **Ngân hà phủ trọn màn hình.** Ở khổ dọc, đĩa sao trước đây lấy bề NGANG làm
+  mốc — màn hẹp thì đĩa co lại thành một dải nằm giữa, trên và dưới trống
+  hoác. Nay nó lấy cạnh nào lớn hơn, nên khổ dọc được phủ kín mà khổ ngang
+  không đổi gì. Quầng lõi bị kẹp lại theo khung để đĩa to ra không kéo theo
+  một vầng sáng chiếm nửa màn.
+- **Giọt mưa chạm mặt nước có nước hắt lên.** Vài hạt bật ngược lên rồi rơi
+  lại theo đúng đường parabol. Chỉ chừng ba phần năm số giọt toé, và số hạt
+  mỗi lần mỗi khác — giọt nào cũng toé đều thì mắt bắt ra ngay cái đều ấy.
+- **Mặt nước nhìn ra mặt nước.** Đường nước đổi sang màu nước sâu thay vì màu
+  sáng (sáng trên nền sáng thì tăng độ đục bao nhiêu cũng vô ích), và nó nhấp
+  nhô theo hai sóng sin chồng nhau có chu kỳ không chia hết cho nhau, nên chỗ
+  gợn chỗ phẳng chứ không lượn đều.
+- **Mưa chậm thêm một nhịp nữa**, còn khoảng 40% tốc độ bản đầu.
 
 ## V10.03 — 16-Sep-2026
 
