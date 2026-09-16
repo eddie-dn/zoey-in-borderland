@@ -89,18 +89,42 @@ const mau = {
    một bộ phân tích cú pháp nửa vời, hỏng lúc nào không biết. Sáu màu này đã
    đứng yên từ V0.10; đổi thì sửa ở đây một dòng. */
 const BANG = {
+  /* Sakura */
   lav:    '#F4E7FB', blush:  '#F3DCDC', coral:  '#F5BCBA',
   orchid: '#E3AADD', violet: '#C8A8E9', peri:   '#C3C7F3',
-  paper:  '#F6EFFB', bg:     '#FAF6FD'
+  paper:  '#F6EFFB', bg:     '#FAF6FD',
+  /* Thiên hà — nền đêm, hai nốt sáng */
+  dem:    '#1B1233', dem2:   '#2B1E4C', dem3:   '#120C22',
+  sao:    '#EFC2E9', tim2:   '#C8A8E9',
+  /* Tĩnh lặng — nước */
+  suong:  '#DAE8F5', troi:   '#BAD9F4', suoi:   '#9FD3EA',
+  reu:    '#A8DED6', nuoc:   '#E9F1FA'
 };
-/* Mấy cặp màu chính. Bài nào rơi vào cặp nào là do tên bài quyết định. */
+/* ── MẤY CẶP MÀU, TRẢI KHẮP BA THEME ──
+   Bài nào rơi vào cặp nào là do TÊN BÀI quyết định — tất định, nên cùng một
+   bài luôn ra cùng một tấm.
+
+   Sáu cặp đầu là Sakura (bảng màu mặc định của trang), rồi ba cặp Thiên hà và
+   ba cặp Tĩnh lặng. Trước bản này cả mười hai bài đều rơi vào một họ hồng-tím:
+   nhìn từng tấm thì đẹp, nhưng một feed có bốn năm đường dẫn của blog này hiện
+   ra bốn năm tấm gần như trùng nhau, và mắt thôi phân biệt được bài nào với
+   bài nào.
+
+   Tỉ lệ 6/3/3 là cố ý: Sakura vẫn là bảng màu chính của trang, hai bảng kia
+   là biến tấu. Muốn đều nhau thì thêm cặp cho hai bảng sau. */
 const CAP = [
   ['paper', 'violet', 'coral'],
   ['lav',   'peri',   'orchid'],
   ['bg',    'orchid', 'peri'],
   ['blush', 'violet', 'peri'],
   ['paper', 'coral',  'orchid'],
-  ['lav',   'violet', 'blush']
+  ['lav',   'violet', 'blush'],
+  ['dem',   'sao',    'tim2'],
+  ['dem3',  'tim2',   'sao'],
+  ['dem2',  'sao',    'peri'],
+  ['nuoc',  'suoi',   'reu'],
+  ['suong', 'troi',   'suoi'],
+  ['nuoc',  'reu',    'troi']
 ];
 
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];

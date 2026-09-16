@@ -49,20 +49,22 @@ src/styles/     tokens · base · glass · layout · components · prose
 src/styles/     …· list (chưa kể ở dòng trên)
 src/js/         theme · nen · toc · media · comments · duyet · copy-guard
                 reveal · so-tay · quote · search · trang-so · moc · bang-anh
-                xem · ghi-chu · viet-bai · admin
+                xem · ghi-chu · viet-bai · admin · khoa · soan · man-dau
+                chia-se · logo-nhip
 src/templates/  shell.html · post.html · page.html
-tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh
-                ghi-chu-keo · lib/
+tools/          build · new-post · anh · bia · og · nen · dev · version
+                kiem-dinh · ghi-chu-keo · og-font/ · lib/
 worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/*
 wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1
-docs/logo/      bản lưu 12 trạng thái của logo + một file chạy trọn vòng
+docs/logo/      14 chặng của vòng kể + một file chạy trọn vòng + tấm lát cắt
 functions/api/  binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
                 ghi-chu.js — đăng ghi chú thẳng lên /notes/, không phải dựng lại
                 xem.js — đếm lượt xem thật
+                thich.js — đếm lượt thích, cùng kiểu với xem.js
                 bai.js — đăng BÀI từ /z-admin/, ghi thẳng vào kho mã GitHub
                 quote.js — xin câu trích dẫn từ Gemini (tuỳ chọn)
                 _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay
-docs/           chín file tài liệu ở bảng trên
+docs/           tài liệu — xem bảng trên; VIEC-DANG-CHO.md là hàng đợi việc
 site.config.json
 dist/           ← build sinh ra, không commit
 ```

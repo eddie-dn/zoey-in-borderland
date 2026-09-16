@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V12.03 | 2026-09-17 | 03 | ảnh chia sẻ mới: logo, tên blog, ba theme; sinh bằng npm run og |
 | V12.02 | 2026-09-17 | 02 | rà soát tài liệu: sửa chỗ nói sai, bỏ file thừa, thêm ba phép kiểm chống lệch |
 | V12.01 | 2026-09-17 | 01 | cụm tương tác xuống cột phải dưới Read next; cột bên thôi kẹp cuộn; nội dung bám mép logo |
 | V12.00 | 2026-09-17 | 00 | chip ở Notes và Search về đúng cỡ chip ở Posts |
@@ -141,6 +142,29 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V12.03 — 17-Sep-2026
+
+- **Ảnh chia sẻ có logo và tên blog.** Tấm cũ là một gradient trơn với hai vòng
+  nét đứt rất mờ — không logo, không tên, không địa chỉ. Dán một đường dẫn lên
+  Facebook hay Zalo thì thẻ hiện ra gần như một ô trống. Tấm mới mang đúng ba
+  thứ người lướt feed cần để nhận ra đây là ai.
+- **Ba bản, một cho mỗi theme.** Bài không có ảnh bìa riêng thì lấy một trong
+  ba, chọn theo TÊN BÀI — tất định, nên một bài luôn là một tấm cố định.
+  "Ngẫu nhiên mỗi lần chia sẻ" thì không làm được: máy quét của Facebook, Zalo,
+  X… đọc `og:image` một lần cho mỗi đường dẫn rồi nhớ lại hàng tuần, nên ai
+  chia sẻ cũng nhận đúng tấm đã nhớ. Ngẫu nhiên theo BÀI cho ra đúng thứ muốn
+  có: một feed vài đường dẫn của blog này hiện ba sắc khác nhau.
+- **Ảnh bìa tự sinh cũng trải khắp ba theme.** Trước đây mười hai cặp màu đều
+  nằm trong họ hồng-tím: nhìn từng tấm thì đẹp, nhưng bốn năm đường dẫn cạnh
+  nhau trong một feed thì gần như trùng nhau. Nay 6 cặp Sakura · 3 Thiên hà ·
+  3 Tĩnh lặng. Chỉ áp cho bài MỚI — bài đã có bìa giữ nguyên, vì đổi ảnh sau
+  khi đã chia sẻ chỉ làm hỏng mấy thẻ cũ.
+- **`npm run og`** dựng lại cả ba tấm. Nó nhúng thẳng hai phông của trang vào
+  SVG rồi raster hoá bằng công cụ có sẵn của macOS — chữ đúng phông ở bất kỳ
+  máy nào, không cần cài phông, không thêm một thư viện nào.
+- Ảnh xuất ra **JPEG thay vì PNG**: gần như toàn gradient mềm, đúng thứ PNG nén
+  tệ nhất — 670KB xuống còn 72KB mà mắt không thấy khác.
 
 ## V12.02 — 17-Sep-2026
 

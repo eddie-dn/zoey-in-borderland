@@ -222,7 +222,7 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 | `/archive/` gom theo năm | `congKhai` |
 | `/about/` khung bento | `content/pages/` |
 | `/z-admin/` — bàn làm việc của chủ trang: ba ngăn **Note · Comment · Post**, mỗi lúc một ngăn | `admin.js` + `ghi-chu.js` · `duyet.js` · `viet-bai.js` |
-| Ảnh chia sẻ mặc định `og.png` | bài không có `cover` thì rơi về ảnh này |
+| Ảnh chia sẻ mặc định `og.jpg` · `og-thien-ha.jpg` · `og-tinh-lang.jpg` | bài không có `cover` rơi về một trong ba, chọn theo tên bài. Sinh bằng `npm run og` |
 
 ### 6.0b · Chưa làm
 

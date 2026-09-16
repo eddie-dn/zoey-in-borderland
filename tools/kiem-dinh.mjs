@@ -1355,6 +1355,120 @@ const KIEM = [
     }
   },
   {
+    /* ── TÀI LIỆU PHẢI KỂ ĐỦ MỌI FILE MÃ CHẠY Ở TRÌNH DUYỆT VÀ MỌI CỬA API ──
+       Bản đồ file trong README là thứ người mới mở kho mã đọc đầu tiên. Nó
+       không tự cập nhật, và thêm một file mới thì chẳng có gì nhắc — nên nó
+       lặng lẽ cũ đi. Đã lệch thật: năm file trong src/js/ và một cửa API
+       (thich.js) ra đời mà bản đồ vẫn giữ nguyên danh sách cũ, và đọc README
+       thì tưởng chúng không tồn tại.
+
+       Chỉ canh CHIỀU THIẾU. README được phép nhắc tới thứ không còn (một dòng
+       lịch sử, một ví dụ) — nhưng không được phép bỏ sót thứ đang chạy. */
+    ten: 'README kể đủ mọi file trong src/js/ và functions/api/',
+    muc: 'canh',
+    chay: () => {
+      const doc = fs.readFileSync(path.join(GOC, 'README.md'), 'utf8');
+      const ra = [];
+      for (const [thu, mo] of [['src/js', 'src/js/'], ['functions/api', 'functions/api/']]) {
+        const d = path.join(GOC, thu);
+        if (!fs.existsSync(d)) continue;
+        for (const f of fs.readdirSync(d)) {
+          if (!f.endsWith('.js') || f.startsWith('_')) continue;
+          const ten = f.replace(/\.js$/, '');
+          /* Bản đồ viết tên có lúc kèm đuôi .js, có lúc không — chấp cả hai. */
+          if (!doc.includes(f) && !new RegExp('\\b' + ten.replace(/-/g, '\\-') + '\\b').test(doc)) {
+            ra.push(`README chưa nhắc tới ${mo}${f}`);
+          }
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── ĐƯỜNG DẪN NÊU TRONG TÀI LIỆU PHẢI CÓ THẬT ──
+       Tài liệu ở đây chỉ đích danh file rất nhiều — đó là điểm mạnh của nó, và
+       cũng là chỗ nó hỏng: đổi tên hay dời một file thì mọi câu trỏ tới nó
+       thành lời nói dối, mà không có gì báo.
+
+       Chỉ xét đường trong dấu nháy ngược và bắt đầu bằng một thư mục có thật
+       của kho mã. Mấy đường DÙNG LÀM VÍ DỤ (thứ người đọc sẽ tự tạo) nằm trong
+       danh sách miễn ở dưới — chúng cố ý chưa tồn tại. */
+    ten: 'Đường dẫn file nêu trong tài liệu đều có thật',
+    muc: 'loi',
+    chay: () => {
+      const MIEN = new Set([
+        'content/pages/lien-he.md',        /* ví dụ: trang tĩnh người đọc tự thêm */
+      ]);
+      /* LICH-SU.md là SỔ LỊCH SỬ: nó kể chuyện đã xảy ra, nên nó được phép —
+         và phải được phép — nhắc tới file từng tồn tại rồi bị đổi tên hay xoá.
+         Bắt nó chỉ nói về hiện tại là bắt nó viết lại quá khứ. */
+      const BO_QUA = new Set(['LICH-SU.md']);
+      const docs = [];
+      (function quet(d) {
+        for (const f of fs.readdirSync(d)) {
+          const p = path.join(d, f);
+          if (fs.statSync(p).isDirectory()) quet(p);
+          else if (f.endsWith('.md') && !BO_QUA.has(f)) docs.push(p);
+        }
+      })(path.join(GOC, 'docs'));
+      docs.push(path.join(GOC, 'README.md'));
+
+      const ra = [];
+      for (const f of docs) {
+        const van = fs.readFileSync(f, 'utf8');
+        const thay = new Set();
+        for (const m of van.matchAll(
+          /`((?:src|tools|docs|functions|content|public)\/[A-Za-z0-9._/-]+)`/g)) thay.add(m[1]);
+        for (const u of thay) {
+          if (u.endsWith('/') || MIEN.has(u)) continue;
+          if (!fs.existsSync(path.join(GOC, u))) {
+            ra.push(`${path.relative(GOC, f)} trỏ tới ${u} — không có file ấy`);
+          }
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── CỤM TIM · CHIA SẺ · BÌNH LUẬN: MỘT CỤM, ĐÚNG MỘT CHỖ ──
+       Cụm này đã đổi chỗ bốn lần (chân bài → cột phải → đầu bài → cột phải,
+       dưới "đọc tiếp"). Mỗi lần đổi là một lần có thể sót: hoặc nhả ra hai bản
+       trên cùng một trang, hoặc quên hẳn ở một khung nào đó.
+
+       Ba điều canh ở đây, và cả ba đều là lỗi đã suýt xảy ra:
+         · đúng MỘT cụm mỗi trang bài
+         · nó đứng SAU khối "đọc tiếp" (thứ tự trong HTML, nên đúng ở mọi khổ)
+         · số bình luận ở hàng meta, KHÔNG in trên nút */
+    ten: 'Mỗi trang bài có đúng một cụm tim · chia sẻ · bình luận, đặt sau "đọc tiếp"',
+    muc: 'loi',
+    chay: ({ trang }) => {
+      const ra = [];
+      for (const t of trang) {
+        if (!/class="post-layout/.test(t.html)) continue;
+        const so = (t.html.match(/class="cum-tt"/g) || []).length;
+        if (so !== 1) { ra.push(`${t.url} — có ${so} cụm tương tác, phải đúng 1`); continue; }
+        const iCum = t.html.indexOf('class="cum-tt"');
+        const iDoc = t.html.indexOf('class="read-next"');
+        if (iDoc >= 0 && iCum < iDoc) {
+          ra.push(`${t.url} — cụm tương tác đứng TRƯỚC khối "đọc tiếp"`);
+        }
+        if (!t.html.includes('data-bl-so')) {
+          ra.push(`${t.url} — hàng meta thiếu ô số bình luận`);
+        }
+        if (/class="bl-dem"/.test(t.html)) {
+          ra.push(`${t.url} — còn ô đếm trên nút bình luận; số phải ở hàng meta`);
+        }
+        if (!/class="bl-nut bl-chia"/.test(t.html)) {
+          ra.push(`${t.url} — thiếu nút chia sẻ`);
+        }
+        if (!/class="vb-nho bl-dong"/.test(t.html)) {
+          ra.push(`${t.url} — khung bình luận thiếu nút Back`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
     /* ── MỌI THẺ <script src> PHẢI TRỎ TỚI MỘT FILE CÓ THẬT ──
        Danh sách file .js được chép sang dist/ nằm RIÊNG một chỗ trong
        tools/build.mjs, tách khỏi chỗ viết ra thẻ <script>. Thêm một file mới

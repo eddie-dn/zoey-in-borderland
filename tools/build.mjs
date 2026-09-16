@@ -968,7 +968,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     canonical : attr(canonical),
     ogTitle   : attr(ogTitle || title),
     ogType    : ogType || 'website',
-    ogImage   : attr(ogImage || `${CAU.url}${BASE}/og.png`),
+    ogImage   : attr(ogImage || `${CAU.url}${BASE}/og.jpg`),
     locale    : CAU.locale,
     /* Không có bài nào noindex nữa (bản nháp không được dựng ra), nhưng giữ
        nhánh này phòng khi cần chặn một trang riêng lẻ.
@@ -1822,9 +1822,29 @@ function readNextHTML(bai, congKhai) {
 /* Ảnh dùng cho og:image VÀ cho JSON-LD — phải là MỘT, không thì Facebook hiện
    một ảnh còn Google hiện ảnh khác. Luôn là địa chỉ TUYỆT ĐỐI: cả hai bên đều
    bỏ qua đường dẫn tương đối. */
+/* ── BA THEME, MỖI BÀI MỘT SẮC ──
+   Ảnh chia sẻ mặc định có ba bản, một cho mỗi theme (xem tools/og.mjs). Bài
+   nào lấy bản nào là do TÊN BÀI quyết định.
+
+   Vì sao không ngẫu nhiên mỗi lần chia sẻ: máy quét của Facebook, Zalo, X…
+   đọc og:image MỘT LẦN cho mỗi đường dẫn rồi nhớ lại hàng tuần. "Mỗi lần
+   share một theme" vì thế là điều không làm được — ai chia sẻ cũng nhận đúng
+   tấm máy quét đã nhớ.
+
+   Ngẫu nhiên theo BÀI thì làm được, và cho ra đúng thứ muốn có: một feed có
+   vài đường dẫn của blog này hiện ba sắc khác nhau, mà mỗi bài vẫn luôn là một
+   tấm cố định — đổi ảnh sau khi đã chia sẻ chỉ tổ làm thẻ cũ hỏng.
+
+   Băm bằng tổng mã ký tự: không cần mạnh, chỉ cần TẤT ĐỊNH và rải tạm đều. */
+const OG_THEME = ['/og.jpg', '/og-thien-ha.jpg', '/og-tinh-lang.jpg'];
+
 function anhChiaSe(bai) {
-  if (!bai.cover) return `${CAU.url}${BASE}/og.png`;
-  return /^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`;
+  if (bai.cover) {
+    return /^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`;
+  }
+  let h = 0;
+  for (const k of String(bai.url)) h = (h + k.charCodeAt(0)) % 9973;
+  return `${CAU.url}${BASE}${OG_THEME[h % OG_THEME.length]}`;
 }
 
 function trangBai(bai, congKhai) {

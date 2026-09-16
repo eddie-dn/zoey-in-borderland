@@ -242,7 +242,7 @@ không đọc được SVG — link chia sẻ ra ô trắng. Trang vẫn hiện 
 
 ### 7.4 · `og.png` — ảnh chia sẻ mặc định
 
-`public/og.png` (1200×630) là ảnh dùng cho trang chủ và cho bài không khai
+`public/og.jpg` (1200×630) là ảnh dùng cho trang chủ và cho bài không khai
 `cover`. Đây là ảnh nền chuyển màu, không có chữ — thay được bằng bất kỳ ảnh
 nào cùng khổ, chỉ cần ghi đè file đó.
 
