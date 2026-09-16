@@ -652,13 +652,13 @@
     /* ── THANH NÚT ── */
     var thanh = el('div', 'sz-thanh');
     thanh.setAttribute('role', 'toolbar');
-    thanh.setAttribute('aria-label', L('toolbar', 'Định dạng'));
+    thanh.setAttribute('aria-label', L('toolbar', 'Format'));
 
     var khung = el('div', 'sz-khung');
     khung.contentEditable = 'true';
     khung.setAttribute('role', 'textbox');
     khung.setAttribute('aria-multiline', 'true');
-    khung.setAttribute('aria-label', L('body', 'Nội dung bài'));
+    khung.setAttribute('aria-label', L('body', 'Post body'));
     khung.spellcheck = true;
 
     function lenh(ten, gt) {
@@ -686,10 +686,10 @@
     function vach() { thanh.appendChild(el('span', 'sz-vach')); }
 
     /* ── Nhóm 1: nét trong dòng ── */
-    var nDam = nut('B', L('bold', 'Đậm') + ' (⌘B)', function () { lenh('bold'); }, 'sz-nut--dam');
-    var nNgh = nut('I', L('italic', 'Nghiêng') + ' (⌘I)', function () { lenh('italic'); }, 'sz-nut--ngh');
-    var nGac = nut('S', L('strike', 'Gạch ngang'), function () { lenh('strikeThrough'); }, 'sz-nut--gac');
-    nut(svg('M9 6 4 12l5 6M15 6l5 6-5 6'), L('code', 'Mã'), function () {
+    var nDam = nut('B', L('bold', 'Bold') + ' (⌘B)', function () { lenh('bold'); }, 'sz-nut--dam');
+    var nNgh = nut('I', L('italic', 'Italic') + ' (⌘I)', function () { lenh('italic'); }, 'sz-nut--ngh');
+    var nGac = nut('S', L('strike', 'Strikethrough'), function () { lenh('strikeThrough'); }, 'sz-nut--gac');
+    nut(svg('M9 6 4 12l5 6M15 6l5 6-5 6'), L('code', 'Code'), function () {
       if (goBoc(khung, function (n) { return n.nodeName === 'CODE'; })) { capNhat(); return; }
       bocChon(function () { return document.createElement('code'); });
       capNhat();
@@ -697,44 +697,44 @@
     vach();
 
     /* ── Nhóm 2: khối ── */
-    nut('H2', L('h2', 'Tiêu đề lớn'), function () { lenh('formatBlock', 'h2'); }, 'sz-nut--h');
-    nut('H3', L('h3', 'Tiêu đề nhỏ'), function () { lenh('formatBlock', 'h3'); }, 'sz-nut--h');
+    nut('H2', L('h2', 'Heading'), function () { lenh('formatBlock', 'h2'); }, 'sz-nut--h');
+    nut('H3', L('h3', 'Subheading'), function () { lenh('formatBlock', 'h3'); }, 'sz-nut--h');
     nut(svg('M10 7H6a2 2 0 0 0-2 2v3h4l-2 5M20 7h-4a2 2 0 0 0-2 2v3h4l-2 5'),
-        L('quote', 'Trích dẫn'), function () { lenh('formatBlock', 'blockquote'); });
+        L('quote', 'Quote'), function () { lenh('formatBlock', 'blockquote'); });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M4.5 6h.01M4.5 12h.01M4.5 18h.01']),
-        L('ul', 'Danh sách'), function () { lenh('insertUnorderedList'); });
+        L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); });
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
-        L('ol', 'Danh sách đánh số'), function () { lenh('insertOrderedList'); });
+        L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); });
     vach();
 
     /* ── Nhóm 3: chèn ── */
     nut(svg('M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1'),
         L('link', 'Link') + ' (⌘K)', chenLink);
     nut(svg(['M3 5h18v14H3z', 'm3 16 5-5 4 4 3-3 6 6']),
-        L('img', 'Ảnh'), chenAnh);
-    nut(svg('M4 12h16'), L('hr', 'Đường kẻ ngang'), function () { lenh('insertHorizontalRule'); });
+        L('img', 'Image'), chenAnh);
+    nut(svg('M4 12h16'), L('hr', 'Divider'), function () { lenh('insertHorizontalRule'); });
     vach();
 
     /* ── Nhóm 4: nhấn mạnh ── */
-    nut(svg(['M5 19h14', 'M8 15 12 5l4 10z']), L('mark', 'Tô nền'), function () {
+    nut(svg(['M5 19h14', 'M8 15 12 5l4 10z']), L('mark', 'Highlight'), function () {
       if (goBoc(khung, function (n) { return n.nodeName === 'MARK'; })) { capNhat(); return; }
       bocChon(function () { return document.createElement('mark'); });
       capNhat();
     });
 
-    var nutMau = nut(el('span', 'sz-cham'), L('color', 'Màu chữ'), function () { moBangMau(); });
+    var nutMau = nut(el('span', 'sz-cham'), L('color', 'Text colour'), function () { moBangMau(); });
     nutMau.classList.add('sz-nut--mau');
     var bangMau = veBangMau();
     vach();
 
     /* ── Nhóm 5: dọn ── */
-    nut(svg(['M4 7h16', 'M9 7V5h6v2', 'M6 7l1 13h10l1-13']), L('clear', 'Xoá định dạng'), function () {
+    nut(svg(['M4 7h16', 'M9 7V5h6v2', 'M6 7l1 13h10l1-13']), L('clear', 'Clear formatting'), function () {
       goBoc(khung, function (n) { return n.nodeName === 'CODE' || n.nodeName === 'MARK' || !!lopMau(n); });
       lenh('removeFormat');
     });
 
     /* ── Nút CUỐI: chỉ dẫn ── */
-    var nutI = nut('i', L('help', 'Cách dùng'), function () { moGiupDo(); }, 'sz-nut--i');
+    var nutI = nut('i', L('help', 'How to use'), function () { moGiupDo(); }, 'sz-nut--i');
     nutI.setAttribute('aria-expanded', 'false');
     var bangGiup = veBangGiup();
 
@@ -766,7 +766,7 @@
       var xoa = el('button', 'sz-mau sz-mau--bo');
       xoa.type = 'button';
       xoa.appendChild(el('span', 'sz-mau-cham'));
-      xoa.appendChild(el('span', 'sz-mau-ten', L('noColor', 'Bỏ màu')));
+      xoa.appendChild(el('span', 'sz-mau-ten', L('noColor', 'Remove colour')));
       xoa.addEventListener('mousedown', function (e) { e.preventDefault(); });
       xoa.addEventListener('click', function () {
         goBoc(khung, function (n) { return !!lopMau(n); });
@@ -795,14 +795,14 @@
       b.hidden = true;
       var ds = el('ul', 'sz-giup-ds');
       [
-        L('h1', 'Bôi đen chữ rồi bấm nút — không phải nhớ cú pháp nào cả.'),
-        L('h2t', 'Đậm ⌘B · Nghiêng ⌘I · Link ⌘K (Ctrl trên Windows).'),
-        L('h3t', 'Màu: bôi đen → bấm chấm tròn → chọn màu. Bấm lại màu cũ để bỏ.'),
-        L('h4t', 'Xuống dòng trong cùng một đoạn: Shift + Enter.'),
-        L('h5t', 'Ảnh: bấm nút ảnh rồi dán đường dẫn, dạng /media/2026/ten-bai/anh.png'),
-        L('h6t', 'Dán từ nơi khác: giữ đậm/nghiêng/link, bỏ phông và cỡ chữ.'),
-        L('h7t', 'Bài tự lưu nháp trên máy này; đóng nhầm tab vẫn còn.'),
-        L('h8t', 'Bấm </> để xem đúng đoạn Markdown sắp gửi lên GitHub.')
+        L('h1', 'Select some text, then press a button — no syntax to remember.'),
+        L('h2t', 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).'),
+        L('h3t', 'Colour: select → press the dot → pick one. Press the same one again to remove.'),
+        L('h4t', 'New line inside the same paragraph: Shift + Enter.'),
+        L('h5t', 'Images: press the image button, paste a path like /media/2026/post-name/pic.png'),
+        L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
+        L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
+        L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
       ].forEach(function (chu) { ds.appendChild(el('li', null, chu)); });
       b.appendChild(ds);
       return b;
@@ -822,14 +822,14 @@
       var s = window.getSelection();
       var coChon = s && s.rangeCount && !s.isCollapsed;
       var chu = coChon ? s.toString() : '';
-      var u = window.prompt(L('linkAsk', 'Đường dẫn:'), 'https://');
+      var u = window.prompt(L('linkAsk', 'Link:'), 'https://');
       if (!u) return;
       if (!/^(https?:\/\/|\/|#|mailto:)/i.test(u)) {
         u = 'https://' + u.replace(/^\/+/, '');
       }
       khung.focus();
       if (!coChon) {
-        var t = window.prompt(L('linkText', 'Chữ hiện ra:'), u) || u;
+        var t = window.prompt(L('linkText', 'Text to show:'), u) || u;
         document.execCommand('insertHTML', false,
           '<a href="' + u.replace(/"/g, '%22') + '">' + t.replace(/[<>&]/g, '') + '</a>');
       } else {
@@ -839,10 +839,10 @@
     }
 
     function chenAnh() {
-      var u = window.prompt(L('imgAsk', 'Đường dẫn ảnh (bắt đầu bằng /media/):'), '/media/');
+      var u = window.prompt(L('imgAsk', 'Image path (starts with /media/):'), '/media/');
       if (!u) return;
       if (!/^(https?:\/\/|\/)/i.test(u)) return;
-      var mo = window.prompt(L('imgAlt', 'Mô tả ảnh (cho người không xem được ảnh):'), '') || '';
+      var mo = window.prompt(L('imgAlt', 'Describe the image (for people who cannot see it):'), '') || '';
       khung.focus();
       document.execCommand('insertHTML', false,
         '<p><img src="' + u.replace(/"/g, '%22') + '" alt="' + mo.replace(/[<>&"]/g, '') + '"></p>');
@@ -855,12 +855,12 @@
     var nutMD = el('button', 'sz-nut sz-nut--md');
     nutMD.type = 'button';
     nutMD.textContent = '</>';
-    nutMD.title = L('seeMd', 'Xem Markdown sắp gửi');
+    nutMD.title = L('seeMd', 'See the Markdown');
     nutMD.addEventListener('mousedown', function (e) { e.preventDefault(); });
     nutMD.addEventListener('click', function () {
       oMD.hidden = !oMD.hidden;
       nutMD.classList.toggle('sz-nut--bat', !oMD.hidden);
-      if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(chưa có gì)');
+      if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
     });
     thanh.appendChild(el('span', 'sz-day'));
     thanh.appendChild(nutMD);
@@ -874,7 +874,7 @@
         try { bat = document.queryCommandState(x[0]); } catch (e) {}
         x[1].classList.toggle('sz-nut--bat', !!bat);
       });
-      if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(chưa có gì)');
+      if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
       luuNhap();
     }
 

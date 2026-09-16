@@ -314,8 +314,12 @@
 .prose pre code{background:none;border:none;padding:0;color:var(--text)}
 .prose pre[data-lang]::before{
   content:attr(data-lang);
-  position:absolute;top:0;right:0;
-  padding:3px 10px 4px;border-radius:0 var(--r-md) 0 var(--r-xs);
+  /* Nhãn ngôn ngữ nằm góc TRÁI: góc phải là chỗ của nút chép (xem .copy-btn
+     bên dưới), và hai cái ở cùng một góc thì chồng lên nhau. Một bản trước để
+     nhãn bên phải rồi khai lại luật này ở cuối khối chép để đẩy nó sang trái —
+     hai lần khai cùng một thứ, và đọc bản trên thì thấy nó ở bên phải. */
+  position:absolute;top:0;left:0;
+  padding:3px 10px 4px;border-radius:var(--r-md) 0 var(--r-xs) 0;
   background:var(--line);color:var(--text-faint);
   font-family:var(--font-label);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
 }
@@ -396,8 +400,8 @@
 .prose pre:hover .copy-btn,.prose pre .copy-btn:focus-visible{opacity:1}
 .prose pre .copy-btn:hover{color:var(--accent-ink);border-color:var(--accent)}
 @media (hover:none){.prose pre .copy-btn{opacity:.85}}
-/* Có nút chép thì nhãn ngôn ngữ phải nhường chỗ, không thì hai cái chồng lên nhau */
-.prose pre[data-lang]::before{right:auto;left:0;border-radius:var(--r-md) 0 var(--r-xs) 0}
+/* Nhãn ngôn ngữ đã nằm sẵn ở góc trái (khai một lần ở khối .prose pre trên
+   cùng), nên nút chép giữ góc phải mà không phải đẩy ai đi. */
 
 /* ══════════════════════════════════════════════════════════════
    CHÂN BÀI — khối tag riêng + gợi ý đọc tiếp

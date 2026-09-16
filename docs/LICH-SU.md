@@ -27,6 +27,12 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V11.06 | 2026-09-16 | 06 | dọn: luật CSS chết và trùng, nhãn thừa, script chỉ nạp ở trang cần |
+| V11.05 | 2026-09-16 | 05 | ô quản trị sang tiếng Anh; nút Back đứng cạnh Save |
+| V11.04 | 2026-09-16 | 04 | bình luận nở ra cột phải ở khổ rộng; ô tìm kiếm thôi khựng ở phím gõ đầu |
+| V11.03 | 2026-09-16 | 03 | điện thoại: mục lục thành nút hamburger; tên blog mở ra thì dòng dưới nở theo |
+| V11.02 | 2026-09-16 | 02 | logo: giữ nhịp khi quay lại trang; thanh đầu trang đổi qua lại giữa tên blog và logo |
+| V11.01 | 2026-09-16 | 01 | Tĩnh lặng: bỏ nốt đường kẻ mặt nước trên màn đầu |
 | V11.00 | 2026-09-16 | 00 | trang Posts thành bảng mục lục gọn: mỗi chuyên mục một danh sách dòng, tối đa 6 mục một trang |
 | V10.09 | 2026-09-16 | 09 | tim · chia sẻ · bình luận gom thành một cụm ở cột phải; thêm nút chia sẻ / chép đường dẫn |
 | V10.08 | 2026-09-16 | 08 | Tĩnh lặng: trả nền về bản cũ, giữ phần mép; bỏ lằn nước, toé mềm hơn, mưa chạm sớm hơn |
@@ -129,6 +135,82 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V11.06 — 16-Sep-2026
+
+- **Một luật CSS trùng đã chặn một tính năng.** `.post-layout.khung-a` được
+  khai HAI lần, cùng chọn lọc, cùng giá trị — im lặng suốt cho tới lúc thêm
+  luật nới cột phải khi mở bình luận: luật mới nằm ngay dưới bản đầu, còn bản
+  sao thì ở tận cuối file và bằng điểm, nên bản sao thắng và cột không chịu
+  nới. Không lỗi nào nổ ra, chỉ là một tính năng không xảy ra. Đã gộp, cùng ba
+  chỗ khác có cùng bệnh (`.vb-khoi`, `.vb-o > span`, nhãn ngôn ngữ trong khối mã).
+- **Bỏ mười lăm lớp CSS không HTML nào nhả ra** — dấu vết của trang chủ đời cũ,
+  ô trích dẫn ở lề bài, tem phiên bản ở màn đầu, và ô quản trị hồi còn xếp dọc
+  một trang. Cùng với đó là năm nhãn không ai gọi trong bảng chữ.
+- **Script chỉ nạp ở trang thật sự cần.** Bộ số trang trước đây nạp trên MỌI
+  trang danh sách, kể cả `/search/` — nơi không bao giờ phân trang. Nay nó chỉ
+  đi kèm những trang có một danh sách bị cắt thật.
+
+## V11.05 — 16-Sep-2026
+
+- **Ô quản trị nói tiếng Anh.** 101 nhãn trong bảng chữ cộng 115 chuỗi dự phòng
+  trong mã chạy ở trình duyệt. Ngoại lệ tiếng Việt trước đây có lý do của nó —
+  chỉ chủ trang đọc — nhưng ô quản trị không phải một ứng dụng riêng, nó là
+  cùng một trang: đi từ bài sang ngăn Post là đi qua hai thứ tiếng trong hai cú
+  bấm, và mọi thành phần dùng chung phải mang hai bộ nhãn cho cùng một hình.
+- **Tên màu chữ vẫn là tiếng Việt, và đó là cố ý**: cú pháp ghi vào file `.md`
+  là `{tím: chữ}`, nên tên màu là một phần của cú pháp chứ không phải một nhãn.
+  Nút ghi "Purple" mà file ghi `tím` thì hai thứ nói hai chuyện.
+- **Back đứng cạnh Save.** Trước đây mỗi nút tự đẩy mình sang phải, nên ô đánh
+  dấu nháp ở mép trái, Back trôi ra giữa, Save ra tận mép phải. Hai nút ấy là
+  hai ngã của cùng một quyết định — cách nhau cả bề ngang màn thì mắt phải đi
+  một vòng mới thấy được ngã thứ hai.
+
+## V11.04 — 16-Sep-2026
+
+- **Khổ rộng: bấm bình luận thì khung viết chiếm luôn cột phải**, mục lục và
+  "đọc tiếp" nhường chỗ, cột nới từ 280 lên 400px. Mở ở cuối bài nghĩa là phải
+  cuộn xuống đáy để viết, và lúc viết thì bài không còn trong tầm mắt — muốn
+  trích một câu phải cuộn lên đọc, nhớ lấy, cuộn xuống gõ.
+- **Ô tìm kiếm thôi khựng ở phím đầu.** Hai chỗ: chỉ mục chờ tới lúc ô được bấm
+  vào mới tải, nên vòng mạng ấy rơi đúng vào giữa phím đầu tiên; và phép bỏ dấu
+  tiếng Việt chạy lại SÁU lần cho MỖI bài trong MỖI lượt lọc, kể cả trên toàn
+  văn thân bài. Nay tải ngay lúc mở trang, và bỏ dấu đúng một lần lúc tải xong.
+
+## V11.03 — 16-Sep-2026
+
+- **Mục lục trên điện thoại thành một nút hamburger.** Trước đây nó mở sẵn:
+  sáu mục là chừng 240px chen giữa dòng tóm tắt và câu đầu tiên của bài — gần
+  một phần ba màn đầu tiêu vào thứ người đọc chưa cần. Nay đóng sẵn, cao 31px,
+  bấm thì mở tại chỗ. Vạch giữa của hamburger ngắn lại khi mở.
+- **Tên blog mở ra thì dòng "Borderland" nở theo.** Lúc rút gọn, dòng trên chỉ
+  có "Z in" còn dòng dưới dài gấp bốn, nên cả cụm tựa hẳn vào mép trái. Cho
+  dòng dưới to thêm một nhịp và giãn chữ ra thì phần dôi chạy sang phải, kéo
+  trọng tâm về giữa: lề phải từ 108px xuống 62px.
+
+## V11.02 — 16-Sep-2026
+
+- **Logo thôi chạy sai thứ tự sau khi đi đâu đó rồi quay lại.** Vòng kể do HAI
+  đồng hồ kéo: thẻ `<animate>` của SVG lo phần biến hình, `@keyframes` của CSS
+  lo phần xoay và mờ. Chúng khớp nhau tới từng mili-giây lúc chạy liền một
+  mạch, nhưng KHÔNG cùng một gốc thời gian khi trang bị cất vào bộ nhớ đệm hay
+  bị ẩn đi — và lệch bao nhiêu thì bông hoa xoay trong lúc nét chữ còn đang ở
+  chặng chữ Z. Nay mỗi lần trang được nhìn thấy trở lại, đồng hồ SVG kéo về
+  theo đồng hồ CSS; đã khớp sẵn thì không đụng vào.
+- **Thanh đầu trang ở các trang trong đổi qua lại giữa tên blog và logo.** Rê
+  chuột vào thì đổi ngay; không rê thì cứ 20 giây tự đổi một lần. Chỉ mờ dần
+  chứ không chạy lại vòng kể 27 giây — vòng kể là chuyện của màn đầu. Hai lớp
+  chồng lên nhau nên bề rộng đứng yên: nếu co giãn theo thì cả hàng điều hướng
+  bên phải nhích một cái mỗi hai mươi giây.
+
+## V11.01 — 16-Sep-2026
+
+- **Bỏ nốt đường kẻ mặt nước ở theme Tĩnh lặng.** Nó làm đúng việc nó sinh ra —
+  nói rằng "từ đây trở xuống là nước" — và đó chính là vấn đề: nó nói bằng một
+  ĐƯỜNG KẺ. Trên một màn đầu vốn đã có hai đường kẻ dọc của lưới, thêm một nét
+  ngang chạy suốt bề rộng là thêm một cạnh hình học, và mặt nước đọc ra như một
+  ô nữa của bố cục. Mặt nước giờ nói bằng dải màu, vòng sóng và mấy hạt bắn
+  lên — không cái nào là một đường thẳng.
 
 ## V11.00 — 16-Sep-2026
 

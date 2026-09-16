@@ -435,15 +435,15 @@
         }
 
         /* ── 2b. MẶT NƯỚC ── vẽ TRƯỚC giọt và gợn: nó là cái mặt, hai thứ kia
-           nằm trên nó. Ba lớp, và bỏ lớp nào cũng mất một nửa ý:
+           nằm trên nó.
 
-             · DẢI: đậm dần xuống chân màn. Nước sâu thì tối và no màu hơn
-               nước nông — không có dốc màu này thì vũng nước phẳng như giấy.
-             · LẰN SÁNG: một vệt mảnh ngay trên đường nước, chỗ ánh sáng hắt
-               qua mép. Đây là thứ NÓI RA rằng "từ đây trở xuống là mặt nước";
-               thiếu nó thì dải màu chỉ như một bóng mờ ở chân trang.
-             · SÓNG LĂN TĂN: mấy lằn ngang rất nhạt, trôi chậm sang ngang. Mặt
-               nước đứng yên tuyệt đối đọc ra là sàn nhà, không phải nước. */
+           Chỉ còn MỘT lớp: dải màu đậm dần xuống chân màn. Nước sâu thì tối và
+           no màu hơn nước nông, và cái dốc màu ấy là toàn bộ chỗ dựa để mắt
+           đọc ra "đây là một mặt nước nhìn xiên".
+
+           Hai lớp kia — một nét kẻ ở đường nước và năm lằn trôi bên dưới — đã
+           bỏ, lý do ghi ngay dưới đây và ở chỗ năm lằn. Cùng một chuyện: tả
+           nước bằng đường kẻ thì ra hình học, không ra nước. */
         var day = H - mn;
         g = ctx.createLinearGradient(0, mn, 0, H);
         /* Đậm hơn hẳn bản trước (.13/.26 → .2/.42). Ở độ đậm cũ, dải nước
@@ -456,28 +456,19 @@
         ctx.globalAlpha = 1; ctx.fillStyle = g;
         ctx.fillRect(0, mn, W, day);
 
-        /* ── MÀU ĐƯỜNG NƯỚC: ĐẬM, KHÔNG SÁNG ──
-           Trước đây kẻ bằng MAU[1] (#DAE8F5) — một màu SÁNG, và nền theme Tĩnh
-           lặng vốn đã sáng gần trắng. Trắng trên trắng thì tăng độ đục hay dày
-           nét đều vô ích: không có tương phản thì không có đường nào cả. Đổi
-           sang màu nước sâu nhất trong bảng, cùng màu với vòng sóng — chúng là
-           cùng một mặt nước, kẻ hai màu thì đọc ra hai thứ. */
-        ctx.globalAlpha = 0.55;
-        ctx.strokeStyle = MAU[5]; ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        /* Đường nước KHÔNG thẳng: nhấp nhô rất nhẹ theo một sóng sin chạy
-           ngang. Kẻ thẳng thì đọc ra là mép một khối hộp. Bước 14px đủ mịn ở
-           mọi khổ màn mà không phải vẽ hàng nghìn đoạn. */
-        for (var gx = 0; gx <= W; gx += 14) {
-          /* Biên độ 1,9 → 3,2 và cộng thêm một sóng thứ hai tần số khác: một
-             sóng sin đơn đọc ra là một đường lượn đều, mà mặt nước thật thì
-             không bao giờ đều. Hai sóng chồng nhau, chu kỳ không chia hết cho
-             nhau, cho ra cái nhấp nhô "chỗ có chỗ không". */
-          var gy = mn + Math.sin(gx * 0.022 + t * 0.018) * 3.2
-                      + Math.sin(gx * 0.061 - t * 0.011) * 1.4;
-          gx ? ctx.lineTo(gx, gy) : ctx.moveTo(gx, gy);
-        }
-        ctx.stroke();
+        /* ── ĐƯỜNG KẺ MẶT NƯỚC: ĐÃ BỎ ──
+           Từng có một nét mảnh chạy ngang ở mốc `mn`, nhấp nhô theo hai sóng
+           sin, để NÓI RA rằng "từ đây trở xuống là mặt nước". Nó làm đúng việc
+           ấy, và đó chính là vấn đề: nó nói bằng một ĐƯỜNG KẺ.
+
+           Trên một màn hero vốn đã có hai đường kẻ dọc của lưới, thêm một nét
+           ngang chạy suốt bề rộng là thêm một cạnh hình học — mắt đọc nó chung
+           với lưới, thành ra mặt nước trông như một ô nữa của bố cục chứ không
+           như nước. Cùng lý do đã bỏ năm lằn trôi ở ngay dưới.
+
+           Mặt nước giờ nói bằng thứ không phải nét vẽ: dải màu đậm dần xuống
+           chân màn, vòng sóng loang ra mỗi lần có giọt chạm, và mấy hạt bắn
+           ngược lên. Mềm hơn, và không cái nào là một đường thẳng. */
 
         /* ── NĂM LẰN TRÔI: ĐÃ BỎ ──
            Chúng là năm vòng elip rất bẹt nằm ngang, trôi qua trôi lại để tả

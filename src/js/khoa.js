@@ -130,9 +130,9 @@
       if (kq.ma === 401) return { ok: false, chu: '' };
       /* Mạng hỏng hay máy chủ đổ thì vẫn báo: đó không phải chuyện khoá, và
          im lặng ở đây chỉ làm người ta bấm lại mười lần. */
-      return { ok: false, chu: L('failed', 'Máy chủ không nhận.') };
+      return { ok: false, chu: L('failed', 'The server did not accept it.') };
     }).catch(function () {
-      return { ok: false, chu: L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.') };
+      return { ok: false, chu: L('netErr', 'Network hiccup. Try again in a moment.') };
     });
   }
 
@@ -154,12 +154,12 @@
 
     var de = document.createElement('p');
     de.className = 'kh-de';
-    de.textContent = L('title', 'Đăng nhập');
+    de.textContent = L('title', 'Sign in');
     khung.appendChild(de);
 
     var dan = document.createElement('p');
     dan.className = 'kh-dan';
-    dan.textContent = L('lead', 'Nhập một lần, dùng cho cả ghi chú, bình luận và bài viết.');
+    dan.textContent = L('lead', 'Sign in once — it covers notes, comments and posts.');
     khung.appendChild(dan);
 
     var hang = document.createElement('div');
@@ -179,14 +179,14 @@
       return i;
     }
 
-    var oId  = o(L('keyId', 'Mã chủ'), 'text', 'gc-id');
-    var oKey = o(L('keySecret', 'Khoá'), 'password', 'gc-key');
+    var oId  = o(L('keyId', 'Owner ID'), 'text', 'gc-id');
+    var oKey = o(L('keySecret', 'Key'), 'password', 'gc-key');
     khung.appendChild(hang);
 
     var nut = document.createElement('button');
     nut.type = 'button';
     nut.className = 'btn btn--chinh';
-    nut.textContent = L('signIn', 'Đăng nhập');
+    nut.textContent = L('signIn', 'Sign in');
 
     var hangNut = document.createElement('div');
     hangNut.className = 'kh-nut';
@@ -205,9 +205,9 @@
     function gui() {
       var id = (oId.value || '').trim();
       var key = (oKey.value || '').trim();
-      if (!id || !key) { noi(L('needBoth', 'Nhập đủ hai ô.'), true); return; }
+      if (!id || !key) { noi(L('needBoth', 'Fill in both fields.'), true); return; }
       nut.disabled = true;
-      noi(L('checking', 'Đang thử khoá…'));
+      noi(L('checking', 'Checking…'));
       thu(id, key).then(function (kq) {
         nut.disabled = false;
         if (!kq.ok) {
@@ -260,7 +260,7 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'kh-ra';
-    b.textContent = L('signOut', 'Đăng xuất');
+    b.textContent = L('signOut', 'Sign out');
     b.addEventListener('click', function () { xoa(); });
     hop.appendChild(b);
     return b;

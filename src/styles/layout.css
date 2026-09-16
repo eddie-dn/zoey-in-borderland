@@ -598,7 +598,41 @@
 }
 /* Trang chủ và trang giới thiệu: chỉ logo. Mọi trang khác: chỉ chữ. */
 .brand--logo b{display:none}
-.brand--chu .logo{display:none}
+.brand--chu:not(.brand--doi) .logo{display:none}
+
+/* ── ĐỔI QUA LẠI GIỮA CHỮ VÀ LOGO (mọi trang ngoài Home và About) ──
+   Hai lớp CHỒNG lên nhau trong cùng một ô lưới, chứ không đứng cạnh nhau: đặt
+   cạnh nhau thì ô thương hiệu rộng gấp rưỡi và nó lấy mất chỗ của thanh điều
+   hướng, mà thanh ấy đã chật sẵn ở khổ vừa.
+
+   Chồng lên nhau còn giữ cho bề rộng ĐỨNG YÊN lúc đổi. Nếu bề rộng co giãn
+   theo thì cả hàng điều hướng bên phải nhích một cái mỗi hai mươi giây — một
+   chuyển động ở rìa mắt, không ai nhìn thẳng vào nó, và đó đúng là loại
+   chuyển động gây khó chịu nhất.
+
+   Bề rộng do DÒNG CHỮ quyết định (nó rộng hơn), nên logo tự căn trái trong ô
+   ấy — đúng chỗ chữ "Z" vẫn đứng. */
+.brand--doi{display:grid;align-items:center;justify-items:start}
+.brand--doi > *{grid-area:1/1}
+.brand--doi .logo{
+  width:30px;height:30px;opacity:0;
+  transition:opacity .5s var(--ease-glass);
+}
+.brand--doi b{transition:opacity .5s var(--ease-glass)}
+/* Rê chuột vào thì đổi ngay, bất kể đồng hồ đang ở đâu. `:focus-visible`
+   trong `:is()` để bàn phím đi tới cũng thấy — nó là cùng một "đang chú ý". */
+.brand--doi:is(:hover,:focus-visible) .logo,
+.brand--doi.brand--hien-logo .logo{opacity:1}
+.brand--doi:is(:hover,:focus-visible) b,
+.brand--doi.brand--hien-logo b{opacity:0}
+/* Người tắt hiệu ứng chuyển động thì chỉ còn dòng chữ. Không phải vì cú mờ
+   dần này nặng, mà vì một thứ tự đổi hình sau mỗi hai mươi giây ĐÚNG LÀ loại
+   chuyển động tự phát mà cài đặt ấy sinh ra để tắt. */
+@media (prefers-reduced-motion:reduce){
+  .brand--doi .logo,.brand--doi b{transition:none}
+  .brand--doi.brand--hien-logo .logo{opacity:0}
+  .brand--doi.brand--hien-logo b{opacity:1}
+}
 /* Bỏ dòng chữ đi thì ô thương hiệu còn trống cả một khoảng, mà 30px là cỡ
    tính cho lúc logo đứng CẠNH chữ — đứng một mình ở cỡ ấy thì nó thành một
    chấm nhỏ lạc lõng. Nới lên 36px: vẫn thấp hơn chiều cao thanh đầu trang nên
@@ -801,6 +835,19 @@
   .khung-a .prose    {grid-column:1;grid-row:2}
   .khung-a .post-foot{grid-column:1;grid-row:3}
   .khung-a .ben      {grid-column:2;grid-row:2}
+
+  /* ── ĐANG BÌNH LUẬN: CỘT PHẢI NỚI RA ──
+     280px vừa cho một mục lục, nhưng một ô nhập tên, một ô email và một khung
+     soạn ba dòng thì không: mỗi dòng gãy sau bốn năm chữ, và gõ trong đó giống
+     gõ trong một khe hẹp. 400px là chỗ một dòng chứa được chừng 45 ký tự —
+     ngắn hơn thân bài, nhưng bình luận vốn ngắn.
+
+     Cột chữ KHÔNG hẹp lại theo: nó giữ nguyên `--measure`, và phần rộng thêm
+     lấy từ lề hai bên (lưới có `justify-content:center`). Bóp cột chữ thì mỗi
+     lần mở khung bình luận là cả bài xô dòng lại một lượt. */
+  .post-layout.khung-a--bl{
+    grid-template-columns:minmax(0,calc(var(--measure) + var(--s8))) 400px;
+  }
 }
 
 .toc{font-size:var(--fs-sm);line-height:1.55}
@@ -836,6 +883,16 @@
      chỉ là tính năng không xảy ra. */
   .ben{position:sticky;top:calc(var(--header-h) + var(--s6));align-self:start;
     display:flex;flex-direction:column;gap:var(--s6)}
+  /* Trong lúc viết bình luận, mục lục và "đọc tiếp" nhường chỗ — cả hai là thứ
+     để ĐI TIẾP, mà người đang viết thì chưa đi đâu cả. */
+  .ben--bl .toc-box,.ben--bl .read-next{display:none}
+  /* Khối dính chỉ trượt được trong ô của nó; danh sách bình luận thì dài bao
+     nhiêu cũng được. Kẹp lại trong một màn và cho cuộn riêng, không thì phần
+     dưới của khung nằm ngoài màn mà không có cách nào tới. */
+  .ben--bl{
+    max-height:calc(100dvh - var(--header-h) - var(--s9));
+    overflow-y:auto;overscroll-behavior:contain;
+  }
   .toc-box{
     max-height:calc(100dvh - var(--header-h) - var(--s9));overflow-y:auto}
   .toc-box summary{display:none}
@@ -864,20 +921,55 @@
      SAU chân bài, đúng chỗ nó vẫn đứng từ trước. Không có khổ nào mất nó, và
      cũng không có khổ nào thấy nó chen lên giữa lúc đang đọc. */
   .read-next{order:4;margin:0 var(--gutter)}
+/* ── MỤC LỤC TRÊN ĐIỆN THOẠI: MỘT NÚT, KHÔNG PHẢI MỘT KHỐI ──
+     Bản trước mở sẵn. Sáu mục là chừng 240px chen giữa dòng tóm tắt và câu đầu
+     tiên của bài — tức là người đọc mở một bài viết ra và phải cuộn qua một
+     bảng mục lục mới tới được chữ. Trên màn 812px, đó là gần một phần ba màn
+     đầu tiêu vào một thứ họ chưa cần.
+
+     Khép lại thì lại mất dấu: `<summary>` chữ trơn giữa hai khối chữ khác đọc
+     ra như một cái nhãn, không ra một cái bấm được.
+
+     Nên nó thành một CÁI NÚT thật: viền bo tròn, ba vạch hamburger bên trái —
+     ký hiệu duy nhất mà ai cũng đọc ngay ra "bấm vào đây có danh sách". Đóng
+     mặc định, bấm thì mở tại chỗ, không phủ lên trang. `toc.js` gỡ thuộc tính
+     `open` ở khổ hẹp; khổ rộng giữ nguyên vì ở đó mục lục là một cột thật. */
   .toc-box{
-    margin:0 var(--gutter) var(--s7);
-    border-radius:var(--r-md);
-    padding:var(--s3) var(--s4);
+    margin:0 var(--gutter) var(--s6);
+    border:none;background:none;padding:0;
   }
   .toc-box summary{
+    display:inline-flex;align-items:center;gap:9px;
     cursor:pointer;list-style:none;
-    font-family:var(--font-label);font-size:var(--fs-xs);font-weight:600;
-    letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);
+    padding:7px var(--s4) 7px var(--s3);
+    border-radius:var(--r-pill);
+    box-shadow:inset 0 0 0 1px var(--line);
+    background:var(--surface);
+    font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+    transition:color var(--dur-fast),box-shadow var(--dur-fast),
+               background var(--dur-fast);
   }
   .toc-box summary::-webkit-details-marker{display:none}
-  .toc-box summary::after{content:" ▾";color:var(--accent-ink)}
-  .toc-box[open] summary::after{content:" ▴"}
-  .toc-box .toc{margin-top:var(--s3)}
+  /* Ba vạch vẽ bằng gradient trên MỘT phần tử giả: ba thẻ rỗng trong HTML chỉ
+     để vẽ ba cái gạch là ba thứ trình đọc màn hình phải bước qua. */
+  .toc-box summary::before{
+    content:"";width:13px;height:9px;flex:none;
+    background:linear-gradient(currentColor 0 0) 0 0/100% 1.5px no-repeat,
+               linear-gradient(currentColor 0 0) 0 50%/100% 1.5px no-repeat,
+               linear-gradient(currentColor 0 0) 0 100%/100% 1.5px no-repeat;
+    transition:background-size var(--dur-fast);
+  }
+  /* Mở ra thì vạch giữa ngắn lại — đủ để thấy trạng thái đã đổi mà không phải
+     xoay hay biến thành dấu X (dấu X nghĩa là ĐÓNG TRANG, không phải thu gọn). */
+  .toc-box[open] summary::before{
+    background-size:100% 1.5px,55% 1.5px,100% 1.5px;
+  }
+  .toc-box summary:hover,.toc-box summary:focus-visible{
+    color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+  }
+  .toc-box[open] summary{color:var(--accent-ink)}
+  .toc-box .toc{margin-top:var(--s4)}
   .toc-box .toc-title{display:none}
 }
 
@@ -920,22 +1012,18 @@
    vào thì cột chữ hẹp tới mức mỗi dòng chỉ còn vài chữ.
    ══════════════════════════════════════════════════════════════ */
 
-/* ── A · mặc định ── đã khai ở .post-layout phía trên.
-   Cột bên 210 → 260px. Cột chữ vừa hẹp lại (xem --measure ở tokens.css), mà
-   cột bên thì vẫn thế: để nguyên thì trang thành một làn chữ vừa phải nằm cạnh
-   một cái nẹp mỏng, và khoảng trống dồn hết ra rìa phải. 260px cũng là bề ngang
-   đủ để mục lục thôi phải xuống dòng giữa chừng ở phần lớn tiêu đề mục. */
-@media (min-width:1080px){
-  /* `column-gap` chứ KHÔNG phải `gap`. `gap` đặt luôn cả khoảng cách giữa các
-     HÀNG, mà đầu bài đã có `margin-bottom:var(--s8)` của riêng nó (prose.css):
-     margin của ô lưới CỘNG với gap chứ không nuốt nhau, nên chỗ giữa câu tóm
-     tắt và ảnh bìa hở đúng 80px — gấp đôi ý định. Nhịp dọc của trang này do
-     margin lo, gap chỉ lo chiều ngang. */
-  .post-layout.khung-a{
-    grid-template-columns:minmax(0,calc(var(--measure) + var(--s8))) 280px;
-    column-gap:var(--s9);justify-content:center;
-  }
-}
+/* ── A · mặc định ── khai ở @media (min-width:1080px) phía trên, cùng chỗ với
+   mấy luật đặt ô lưới cho khung A.
+
+   Ở đây từng có một BẢN SAO của luật ấy — cùng chọn lọc, cùng giá trị, chỉ
+   khác chỗ đứng. Nó im lặng suốt vì hai bản giống hệt nhau, cho tới lúc thêm
+   `.khung-a--bl` (nới cột phải khi mở khung bình luận): luật mới nằm ngay dưới
+   bản đầu, còn bản sao thì nằm mãi dưới đây và bằng điểm chọn lọc — nên bản
+   sao thắng, và cột phải không chịu nới ra. Không có lỗi nào nổ, chỉ là một
+   tính năng không xảy ra.
+
+   Bài học: hai luật cùng chọn lọc cho cùng một thứ thì cái thứ hai không
+   "thừa", nó là một cái bẫy chờ sẵn. */
 
 /* ── B · bìa tràn màn, cột đọc nằm giữa ──
    Không có cột mục lục. Mục lục thu về khối gập ngay đầu bài ở mọi bề ngang.

@@ -635,12 +635,8 @@
 .hero-moc--tt{left:var(--s5);top:calc(var(--header-h) + var(--s5))}
 .hero-moc--tp{right:var(--s5);top:calc(var(--header-h) + var(--s5))}
 .hero-moc--dt{left:var(--s5);bottom:var(--s5)}
-.hero-tem{
-  position:absolute;right:var(--s5);bottom:var(--s5);z-index:1;
-  font-family:var(--font-label);font-size:9px;font-weight:600;
-  letter-spacing:.2em;color:var(--text-faint);opacity:.75;
-  user-select:none;pointer-events:none;
-}
+/* `.hero-tem` — ĐÃ BỎ. Tem phiên bản ở góc màn đầu bỏ từ V9.08 (chân trang đã
+   in sẵn số ấy rồi), nhưng luật của nó nằm lại. */
 
 /* ── KHỔ HẸP ──
    Ba cột kẻ dọc trên màn 390px thì mỗi cột còn 120px. Xếp dọc, và đổi đường kẻ
@@ -796,6 +792,24 @@
 
   .hero.hd-ro .hd-con{opacity:1;letter-spacing:-.03em}
 
+  /* ── MỞ RA THÌ DÒNG DƯỚI NỞ THEO ──
+     Lúc rút gọn, dòng trên chỉ là "Z in" — ba ký tự, còn dòng dưới
+     "Borderland" thì dài gấp bốn. Cụm vì thế nặng hẳn về phía dưới bên trái,
+     và mở "Zoey in" ra mới chỉ chữa được một nửa: dòng trên dài thêm, nhưng
+     vẫn ngắn hơn dòng dưới, nên cả khối vẫn là một tam giác tựa vào mép trái.
+
+     Cho dòng dưới to thêm một nhịp (15 → 16,4vw) và GIÃN chữ ra: vì cụm bám
+     mép trái nên phần dôi ra chạy hết sang phải, kéo trọng tâm về giữa khung.
+     Giãn chữ làm được việc mà phóng to không làm nổi — nó nới đều khắp từ, nên
+     chữ không bị béo ra, chỉ trải rộng hơn.
+
+     Vẫn vừa lề: ở màn 375px, "Borderland" rộng chừng 4,03 lần cỡ chữ, tức
+     248px, cộng giãn chữ là 255px trong khung 337px. */
+  .hero.hd-ro .hd-hang--3{
+    font-size:clamp(42px,18.5vw,92px);
+    letter-spacing:.02em;
+  }
+
   /* ── DANH SÁCH BÀI: CHỜ BẤM "READ ON" ──
      Bày sẵn thì màn đầu trên điện thoại không còn là một màn — cuộn xuống là
      gặp ngay danh sách, và cái khoảng lặng giữa tên blog với nội dung mất
@@ -813,7 +827,7 @@
   .hd-in{display:inline-block;font-size:.3em;translate:.34em -.04em;opacity:.66}
 
   .hero-quote{width:100%}
-  .hero-moc,.hero-tem{display:none}
+  .hero-moc{display:none}
 }
 /* ══════════ THẺ BÀI Ở KHỔ DỌC ══════════
    Ở khổ ngang, lưới ba cột nên mỗi thẻ hẹp và tóm tắt ba dòng là vừa. Xếp dọc
@@ -840,24 +854,19 @@
    ngang thì riêng tấm ảnh đã chiếm nửa màn hình, và tiêu đề bài rơi xuống dưới
    nếp gấp — đúng thứ mà một "bài nổi bật" không được phép bị. */
 @media (max-width:760px){
-  .chu-the--anh{grid-template-columns:1fr}
+  /* Việc kéo về một cột do khối luật của chính `.chu-the--anh` lo (ở dưới,
+     cùng câu @media này). Ở đây chỉ còn phần RIÊNG của thẻ nổi bật: băng ảnh
+     thấp hơn 16:9 thường. */
   .chu-the--anh .chu-anh{aspect-ratio:16 / 7}
 }
 /* ── Ô TRÍCH DẪN Ở LỀ BÀI ──
    Cùng khối dính-khi-cuộn với mục lục, nằm ngay dưới nó. Chỉ viền, không nền:
    lề bài đã có mục lục làm khối chính, thêm một mảng đặc nữa là hai thứ tranh
    chỗ trong một cột hẹp. */
-.quote-tab{
-  padding:var(--s5) var(--s5) var(--s6);
-  border-radius:var(--r-md);
-  background:none;
-  box-shadow:inset 0 0 0 1px var(--line);
-  gap:var(--s2);
-}
-.quote-tab .q-chu{font-size:clamp(15px,.88rem + .3vw,17px);line-height:1.42}
-.quote-tab .q-ai{font-size:12px}
-.quote-tab .q-nut{bottom:var(--s2);right:var(--s2);width:26px;height:26px}
-.quote-tab .q-nut svg{width:13px;height:13px}
+/* `.quote-tab` — ĐÃ BỎ. Ô trích dẫn từng có một bản nhỏ nằm ở cột bên trang
+   bài; bản ấy đã rút về đúng hai chỗ nó thuộc về (màn đầu trang chủ và trang
+   giới thiệu), nhưng bộ luật cho nó thì ở lại thêm mấy bản nữa. Không lớp nào
+   trong HTML mang tên ấy.
 /* Màn THẤP mà cột bên đang DÍNH khi cuộn: cả cột phải lọt trong một màn hình,
    nên mục lục được ưu tiên giữ và ô trích dẫn nhường chỗ.
 
@@ -1027,11 +1036,9 @@
   .ad-nut[aria-selected="true"]{border-left:0;border-bottom-color:var(--accent)}
 }
 
-.ql-khoi + .ql-khoi{
-  margin-top:var(--s9);
-  padding-top:var(--s8);
-  border-top:1px solid var(--line);
-}
+/* `.ql-khoi` — ĐÃ BỎ. Ô quản trị từng xếp mọi thứ thành một chồng khối trên
+   MỘT trang; nay nó là ba ngăn có tab (`.ad-o`), nên lớp ấy hết việc. Luật
+   dùng chung với `.ad-o` ở dưới thì giữ, chỉ bỏ phần riêng của `.ql-khoi`. */
 .ql-de{
   margin:0 0 var(--s5);
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
@@ -1039,17 +1046,19 @@
 }
 /* Ở trang này ô viết và bàn duyệt là NỘI DUNG chính, không phải khối lạc vào
    một trang đọc — nên bỏ lề ngoài và cho chúng rộng hết khung. */
-.ql-khoi .gc-viet,.ql-khoi .bl-duyet,
 .ad-o .gc-viet,.ad-o .bl-duyet{margin:0;width:100%}
 
 /* ══════════ Ô VIẾT BÀI ══════════ */
-.vb-khoi{display:flex;flex-direction:column;gap:var(--s4)}
+.vb-khoi{display:flex;flex-direction:column;gap:var(--s3)}
 .vb-hang{display:flex;gap:var(--s3);flex-wrap:wrap}
 .vb-o{display:flex;flex-direction:column;gap:6px;flex:1 1 180px;min-width:0}
 .vb-o--rong{flex-basis:100%}
 .vb-o > span{
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+  /* .12em chứ không phải --ls-label (.22em): nhãn ở đây đứng ngay trên ô nhập
+     của nó, nên nó là một CẶP với ô ấy chứ không phải một nhãn đứng riêng —
+     giãn rộng là tách cặp ra. */
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
 }
 .vb-o input,.vb-o select,.vb-o textarea{
   width:100%;box-sizing:border-box;
@@ -1073,12 +1082,23 @@
   letter-spacing:var(--ls-label);text-transform:uppercase;
 }
 .vb-duong code{font-size:var(--fs-xs);color:var(--text-muted)}
+/* ── BACK VÀ SAVE ĐỨNG CẠNH NHAU ──
+   Trước đây mỗi nút tự đẩy mình sang phải bằng `margin-left:auto`, nên cái ô
+   đánh dấu nháp nằm mép trái, "Back" trôi ra giữa và "Save" ra tận mép phải —
+   ba thứ rải khắp bề ngang khung.
+
+   Nhưng Back và Save là HAI NGÃ của cùng một quyết định: cất bài đi, hay bỏ
+   không cất. Hai lựa chọn của một quyết định thì phải nằm cạnh nhau để so —
+   cách nhau cả bề ngang màn là bắt mắt đi một vòng mới thấy được cái thứ hai,
+   và ở khổ rộng thì cái thứ hai còn nằm ngoài tầm nhìn tập trung.
+
+   Nay chỉ có MỘT khoảng co giãn, và nó nằm ở ô đánh dấu: ô ấy đẩy cả cặp nút
+   về phải, còn cặp nút thì dính vào nhau bằng đúng `gap` của hàng. */
 .vb-nut{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
 .vb-nhap{
-  display:flex;gap:6px;align-items:center;
+  display:flex;gap:6px;align-items:center;margin-right:auto;
   font-size:var(--fs-xs);color:var(--text-muted);cursor:pointer;
 }
-.vb-nut .btn{margin-left:auto}
 .vb-cho,.vb-noi{margin:0;font-size:var(--fs-xs);color:var(--text-faint)}
 .vb-noi--hong{color:var(--accent-ink)}
 .vb-xong{display:flex;flex-direction:column;gap:var(--s3)}
@@ -1231,18 +1251,11 @@
   margin-top:var(--s6);padding-top:var(--s5);
   border-top:1px solid var(--line);
 }
-.ds-loi{
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;
-  color:var(--text-muted);text-decoration:none;
-  transition:color var(--dur-fast);
-}
-.ds-loi:hover,.ds-loi:focus-visible{color:var(--accent-ink);outline:none}
-/* ── TRANG CHỦ ── */
+/* `.ds-loi`, `.trang-chu`, `.chu-nb` — ĐÃ BỎ. Ba lớp của đời trang chủ cũ
+   (khi nó còn có lưới bài, khối "bài nổi bật" và một hàng lối đi ở chân danh
+   sách). Trang chủ nay chỉ còn màn đầu, và không HTML nào nhả ra ba tên ấy. */
 
-.trang-chu{scroll-margin-top:var(--header-h)}
-.chu-nb{margin-bottom:var(--s9)}
-.chu-nb .label{margin:0 0 var(--s4)}
+/* ── TRANG CHỦ ── */
 .chu-the{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s7)}
 
 /* ── THẺ NỔI BẬT CÓ ẢNH ──
@@ -1290,11 +1303,7 @@
   margin:0;max-width:60ch;font-size:var(--fs-base);line-height:1.66;
   color:var(--text-muted);text-wrap:pretty;
 }
-.ds-thanh{
-  display:flex;align-items:baseline;justify-content:space-between;
-  gap:var(--s4);margin-bottom:var(--s4);
-}
-.ds-thanh .label{margin:0}
+/* `.ds-thanh` — ĐÃ BỎ. Hàng tiêu đề của một khối danh sách ở trang chủ cũ. */
 .ds-them{
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;
@@ -1648,8 +1657,10 @@
    Mấy ô phụ (tiêu đề, chuyên mục, ngày, tag, tóm tắt) là thứ điền trong mười
    giây; khung soạn thảo là thứ ngồi với nó nửa tiếng. Nên chúng phải chiếm
    ÍT chỗ nhất có thể, để khung gõ bắt đầu ngay trong tầm mắt đầu tiên. */
-.vb-khoi{gap:var(--s3)}
-.vb-o > span{font-size:var(--fs-3xs);letter-spacing:.12em}
+/* `.vb-khoi{gap}` và `.vb-o > span{font-size,letter-spacing}` từng khai lại ở
+   đây, đè lên bản khai gốc cách hơn sáu trăm dòng phía trên. Cùng chọn lọc, nên
+   bản dưới luôn thắng và bản trên không bao giờ chạy — đọc bản trên thì thấy
+   một con số, chạy thì ra một con số khác. Đã gộp về đúng một chỗ ở trên. */
 .vb-o textarea[name="summary"]{
   /* Cao một dòng lúc chưa gõ, tự nở khi gõ dài — field-sizing là cách làm
      việc ấy mà không cần một dòng JavaScript nào. Trình duyệt chưa hiểu thì
@@ -1707,7 +1718,11 @@
 .vb-nho:hover{color:var(--accent-ink)}
 .vb-nho:disabled{opacity:.45;cursor:default}
 .vb-nho:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
-.vb-nut .vb-nho{margin-left:auto;margin-right:var(--s4)}
+/* Trong hàng nút cuối khung soạn, "Back" đứng sát bên trái "Save" — không còn
+   `margin-left:auto` đẩy nó đi. Lý do ở chỗ khai .vb-nut. Nới khoảng cách hai
+   nút rộng hơn `gap` một nhịp: chúng cạnh nhau nhưng KHÁC sức nặng, và một cú
+   bấm nhầm ở đây là mất bài đang sửa. */
+.vb-nut .vb-nho{margin-right:var(--s2)}
 @media (max-width:640px){
   /* Ngày và trạng thái lên một dòng, tiêu đề và nút xuống dòng dưới. */
   .vb-dong{grid-template-columns:5.5rem minmax(0,1fr);gap:2px var(--s3)}

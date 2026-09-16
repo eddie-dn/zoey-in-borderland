@@ -272,8 +272,8 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = 'gc-xoa';
-        b.title = N.del || 'Xoá ghi chú';
-        b.setAttribute('aria-label', N.del || 'Xoá ghi chú');
+        b.title = N.del || 'Delete note';
+        b.setAttribute('aria-label', N.del || 'Delete note');
         b.textContent = '×';
         b.addEventListener('click', function () {
           var li = this.closest('.gc-mot');
@@ -286,7 +286,7 @@
             li.remove();
             dungLoc();
           }).catch(function () {
-            noi(N.delFail || 'Không xoá được.', true);
+            noi(N.delFail || 'Could not delete.', true);
           });
         });
         cac[i].querySelector('.gc-dau').appendChild(b);
@@ -299,7 +299,7 @@
        đó khung này chen vào giữa một trang đang đọc và phải tự giới thiệu. */
     function de2() {
       return oVietCamSan() ? ''
-        : '<h2 class="gc-viet-de">' + tho(N.write || 'Viết ghi chú') + '</h2>';
+        : '<h2 class="gc-viet-de">' + tho(N.write || 'Write a note') + '</h2>';
     }
 
     function khungViet() {
@@ -308,18 +308,18 @@
                   .toISOString().slice(0, 10);
       return de2() +
         '<div class="gc-hang">' +
-          '<label class="gc-o gc-o--ngay"><span>' + tho(N.date || 'Ngày') + '</span>' +
+          '<label class="gc-o gc-o--ngay"><span>' + tho(N.date || 'Date') + '</span>' +
             '<input type="date" name="ngay" value="' + iso + '"></label>' +
-          '<label class="gc-o"><span>' + tho(N.kind || 'Loại') + '</span>' +
+          '<label class="gc-o"><span>' + tho(N.kind || 'Kind') + '</span>' +
             '<input type="text" name="loai" list="gc-loai-co" maxlength="24" ' +
-              'autocapitalize="off" placeholder="sách · nhạc · ý"></label>' +
+              'autocapitalize="off" placeholder="books · music · ideas"></label>' +
         '</div>' +
         '<datalist id="gc-loai-co">' + loaiDaCo() + '</datalist>' +
-        '<label class="gc-o"><span>' + tho(N.body || 'Nội dung') + '</span>' +
+        '<label class="gc-o"><span>' + tho(N.body || 'Note') + '</span>' +
           '<textarea name="chu" rows="5" maxlength="2000"></textarea></label>' +
         '<div class="gc-nut">' +
           '<button type="button" class="btn btn--chinh" data-dang>' +
-            tho(N.post || 'Đăng') + '</button>' +
+            tho(N.post || 'Post') + '</button>' +
           /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ nút ấy đã nằm ở cột
              trái nên chỗ này để rỗng; chỉ /notes/#viet mới cần một lối ra
              ngay tại đây. */
@@ -347,7 +347,7 @@
 
       if (bDang) bDang.addEventListener('click', function () {
         var chu = (hop.querySelector('[name=chu]').value || '').trim();
-        if (!chu) { noi(N.bodyMissing || 'Chưa có chữ nào.', true); return; }
+        if (!chu) { noi(N.bodyMissing || 'Nothing written yet.', true); return; }
         var g = {
           /* Mã sinh ở đây chứ không ở máy chủ: bấm Đăng mà mạng chập, gửi lại
              lần nữa thì cùng một mã ⇒ máy chủ ghi đè, không đẻ ra bản trùng. */
@@ -358,7 +358,7 @@
           chu : chu
         };
         bDang.disabled = true;
-        noi(N.posting || 'Đang gửi…');
+        noi(N.posting || 'Sending…');
         fetch(api, {
           method: 'POST',
           headers: K.dau({ 'Content-Type': 'application/json' }),
@@ -370,7 +370,7 @@
           bDang.disabled = false;
           if (!kq.ok) {
             noi((kq.d && (kq.d.chiTiet || kq.d.loi)) ||
-                (N.postFail || 'Không gửi được.'), true);
+                (N.postFail || 'Could not send.'), true);
             return;
           }
           var trong = document.querySelector('.ds-trong');
@@ -381,7 +381,7 @@
           noi(N.posted || 'Xong.');
         }).catch(function () {
           bDang.disabled = false;
-          noi(N.postFail || 'Không gửi được.', true);
+          noi(N.postFail || 'Could not send.', true);
         });
       });
     }

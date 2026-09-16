@@ -87,12 +87,35 @@
     dangTai = true;
     return fetch(goc + '/search-index.json')
       .then(function (r) { return r.json(); })
-      .then(function (d) { DU = d || []; veChip(); })
+      .then(function (d) { DU = chuanBi(d || []); veChip(); })
       .catch(function () { DU = []; })
       .finally(function () { dangTai = false; });
   }
 
   /* Chip chủ đề dựng từ chính chỉ mục — không phải khai thêm ở đâu. */
+  /* ── BỎ DẤU MỘT LẦN, KHÔNG PHẢI MỖI PHÍM MỘT LẦN ──
+     `boDau` gọi `String.normalize('NFD')`, và đó là phép đắt nhất trong cả file
+     này. Bản trước gọi nó SÁU lần cho MỖI bài, trong MỖI lượt lọc — tức là mỗi
+     phím gõ ra là cả kho bài bị tách tổ hợp dấu lại từ đầu, kể cả trường `tho`
+     vốn là toàn văn thân bài.
+
+     Chín bài thì chưa ai thấy. Chín mươi bài thì lượt lọc nào cũng là chín mươi
+     lần chuẩn hoá toàn văn, và ô tìm kiếm bắt đầu khựng theo từng phím — kiểu
+     chậm lớn dần theo kho bài, nên tới lúc nhận ra thì nó đã chậm từ lâu.
+
+     Bỏ dấu ngay lúc tải xong, cất vào mấy trường `_*`. Một lần cho cả phiên. */
+  function chuanBi(ds) {
+    for (var i = 0; i < ds.length; i++) {
+      var b = ds[i];
+      b._de  = boDau(b.title);
+      b._tag = boDau((b.tags || []).join(' '));
+      b._muc = boDau((b.muc || []).join(' '));
+      b._tom = boDau(b.summary || '');
+      b._tho = boDau(b.tho || '');
+    }
+    return ds;
+  }
+
   function veChip() {
     if (!loc || !DU) return;
     var d = {};
@@ -140,10 +163,7 @@
 
       var diem = 0;
       if (tu) {
-        var tieuDe = boDau(b.title);
-        var tags   = boDau((b.tags || []).join(' '));
-        var muc    = boDau((b.muc || []).join(' '));
-        var tom    = boDau(b.summary || '');
+        var tieuDe = b._de, tags = b._tag, muc = b._muc, tom = b._tom;
 
         /* Thang điểm: trúng ở tiêu đề đáng giá hơn trúng ở thân bài rất nhiều.
            Trúng ĐẦU tiêu đề còn hơn nữa — gõ "vô thức" thì bài tên
@@ -154,7 +174,7 @@
         if (muc.indexOf(tu) >= 0)  diem += 30;
         if (tom.indexOf(tu) >= 0)  diem += 15;
         if ((b.kd || '').indexOf(tu) >= 0) diem += 8;
-        if (boDau(b.tho || '').indexOf(tu) >= 0) diem += 4;
+        if (b._tho.indexOf(tu) >= 0) diem += 4;
         if (!diem) continue;
       } else {
         diem = 1;
@@ -244,7 +264,16 @@
     clearTimeout(hen);
     hen = setTimeout(chay, 120);
   });
-  o.addEventListener('focus', tai, { once: true });
+  /* ── TẢI CHỈ MỤC NGAY, KHÔNG CHỜ Ô ĐƯỢC BẤM VÀO ──
+     Bản trước chờ sự kiện `focus`. Nghe thì tiết kiệm, nhưng người đang ở
+     trang /search/ thì chắc chắn sắp gõ — và lượt tải ấy rơi đúng vào giữa
+     phím đầu tiên: `chay()` thấy `DU` còn rỗng, phải đứng đợi trọn một vòng
+     mạng rồi mới lọc. Đó chính là cú khựng ở lần gõ đầu, và chỉ lần đầu.
+
+     Tải ngay lúc mở trang thì vòng mạng ấy chạy song song với việc người ta
+     còn đang đưa tay lên bàn phím. Chỉ mục 17KB, và nó chỉ được nạp trên đúng
+     trang này. */
+  tai();
 
   if (xoa) {
     xoa.addEventListener('click', function () {

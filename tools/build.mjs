@@ -208,11 +208,10 @@ const NHAN = {
   allPosts    : 'All posts',
   allTopics   : 'All topics',
   archive     : 'Archive',
-  latest      : 'Latest',
   index       : 'Index',
   notes       : 'Notes',
-  notesHint   : 'Mấy dòng nhặt dọc đường — sách, nhạc, và ý chưa thành bài',
-  noNotes     : 'Chưa có ghi chú nào.',
+  notesHint   : 'Bits picked up along the way — books, music, thoughts not yet essays',
+  noNotes     : 'No notes yet.',
   allNotes    : 'All',
   filter      : 'Filter',
   /* Ô viết ghi chú — chỉ chủ trang thấy, nên KHÔNG theo lệ tiếng Anh của phần
@@ -222,19 +221,19 @@ const NHAN = {
   /* Năm nhãn gcKey* đã xoá cùng bản đưa khung đăng nhập về một chỗ: ô viết
      ghi chú không còn tự hỏi khoá. Nhãn của khung chung nằm ở nhóm kh* bên
      dưới. */
-  gcWrite     : 'Viết ghi chú',
-  gcDate      : 'Ngày',
-  gcKind      : 'Loại',
-  gcBody      : 'Nội dung',
-  gcBodyEmpty : 'Chưa có chữ nào.',
-  gcPost      : 'Đăng',
-  gcPosting   : 'Đang gửi…',
-  gcPosted    : 'Xong — ghi chú đã lên trang.',
-  gcPostFail  : 'Không gửi được. Kiểm tra lại khoá hoặc mạng.',
-  gcDel       : 'Xoá ghi chú',
-  gcDelFail   : 'Không xoá được.',
-  blUnapproveHint: 'Rút xuống hàng chờ, không xoá',
-  blHideHint  : 'Ẩn hẳn khỏi trang',
+  gcWrite     : 'Write a note',
+  gcDate      : 'Date',
+  gcKind      : 'Kind',
+  gcBody      : 'Note',
+  gcBodyEmpty : 'Nothing written yet.',
+  gcPost      : 'Post',
+  gcPosting   : 'Sending…',
+  gcPosted    : 'Done — the note is live.',
+  gcPostFail  : 'Could not send. Check the key or your connection.',
+  gcDel       : 'Delete note',
+  gcDelFail   : 'Could not delete.',
+  blUnapproveHint: 'Back to the queue, not deleted',
+  blHideHint  : 'Hide from the page entirely',
   /* ── trang quản lý /z-admin/ ──
      Ba việc, ba ngăn, chỉ một ngăn hiện mỗi lúc. Nhãn để NGẮN vì chúng nằm
      trong một cột hẹp bên trái và phải đọc được bằng một cái liếc. */
@@ -245,41 +244,41 @@ const NHAN = {
      tả lại đúng thứ người ta đang nhìn thấy, tức là không nói thêm gì. */
   qlDan       : '',
   khHello     : 'Haluuu, {ten}!',
-  qlViet      : 'Viết ghi chú',
-  qlDuyet     : 'Bình luận',
-  qlMenu      : 'Chọn việc',
+  qlViet      : 'Write a note',
+  qlDuyet     : 'Comments',
+  qlMenu      : 'Pick a task',
   qlNote      : 'Note',
   qlComment   : 'Comment',
   qlPost      : 'Post',
-  qlBai       : 'Viết bài',
+  qlBai       : 'Write a post',
   /* ── ô viết bài ── */
-  vbTitle     : 'Tiêu đề',
-  vbMuc       : 'Chuyên mục',
-  vbDate      : 'Ngày',
-  vbTags      : 'Tag — cách nhau bằng dấu phẩy',
-  vbSummary   : 'Tóm tắt',
-  vbBody      : 'Bài',
-  vbWillBe    : 'Sẽ nằm ở',
-  vbDraft     : 'Để nháp — dựng ra nhưng chưa công khai',
-  vbPublish   : 'Đăng',
-  vbCrash     : 'Ô viết bài dựng hỏng — mở bảng điều khiển của trình duyệt để xem lỗi.',
-  vbDraftAsk  : 'Còn một bài gõ dở trên máy này. Mở lại?',
+  vbTitle     : 'Title',
+  vbMuc       : 'Category',
+  vbDate      : 'Date',
+  vbTags      : 'Tags — separated by commas',
+  vbSummary   : 'Summary',
+  vbBody      : 'Post',
+  vbWillBe    : 'Will live at',
+  vbDraft     : 'Keep as draft — built but not public',
+  vbPublish   : 'Publish',
+  vbCrash     : 'The editor failed to load — open the browser console to see the error.',
+  vbDraftAsk  : 'There is an unfinished post saved on this device. Open it?',
 
   /* ── BẢNG BÀI ĐÃ ĐĂNG (ngăn Post) ── */
-  vbNewPost   : 'Viết bài mới',
-  vbAll       : 'Tất cả',
-  vbEdit      : 'Sửa',
-  vbHide      : 'Ẩn',
-  vbUnhide    : 'Bỏ ẩn',
-  vbBack      : 'Quay lại',
-  vbSave      : 'Lưu',
-  vbSaved     : 'Xong. Cloudflare đang dựng lại.',
+  vbNewPost   : 'New post',
+  vbAll       : 'All',
+  vbEdit      : 'Edit',
+  vbHide      : 'Hide',
+  vbUnhide    : 'Unhide',
+  vbBack      : 'Back',
+  vbSave      : 'Save',
+  vbSaved     : 'Saved. Cloudflare is rebuilding.',
   vbWorking   : '…',
-  vbEmptyList : 'Không có bài nào ở đây.',
+  vbEmptyList : 'Nothing here.',
   /* {n} bài đang xem, {t} tổng số. Trần này có thật — mỗi bài là một lượt gọi
      ra GitHub, mà Workers giới hạn số lượt trong một request. */
-  vbCapped    : 'Đang xem {n} bài mới nhất trong tổng số {t}.',
-  vbClash     : 'Bài này vừa đổi ở chỗ khác. Quay lại rồi mở lại để lấy bản mới.',
+  vbCapped    : 'Showing the {n} newest of {t} posts.',
+  vbClash     : 'This post changed somewhere else. Go back and reopen it to get the latest version.',
 
   /* ── NHÃN CỦA KHUNG SOẠN THẢO (src/js/soan.js) ──
      Đi CHUNG bảng với ô viết bài chứ không tách bảng riêng: soan.js chỉ mọc
@@ -287,48 +286,48 @@ const NHAN = {
      chỗ nữa để quên cập nhật. Tám dòng `szH*` là nội dung bảng chỉ dẫn hiện
      ra khi bấm nút `i` — mỗi dòng ĐÚNG MỘT việc, cố ý ngắn: đây là thứ người
      ta liếc lúc đang quên, không phải thứ ngồi đọc. */
-  szToolbar   : 'Định dạng',
-  szBold      : 'Đậm',
-  szItalic    : 'Nghiêng',
-  szStrike    : 'Gạch ngang',
-  szCode      : 'Mã',
-  szH2        : 'Tiêu đề lớn',
-  szH3        : 'Tiêu đề nhỏ',
-  szQuote     : 'Trích dẫn',
-  szUl        : 'Danh sách',
-  szOl        : 'Danh sách đánh số',
+  szToolbar   : 'Format',
+  szBold      : 'Bold',
+  szItalic    : 'Italic',
+  szStrike    : 'Strikethrough',
+  szCode      : 'Code',
+  szH2        : 'Heading',
+  szH3        : 'Subheading',
+  szQuote     : 'Quote',
+  szUl        : 'Bullet list',
+  szOl        : 'Numbered list',
   szLink      : 'Link',
-  szImg       : 'Ảnh',
-  szHr        : 'Đường kẻ ngang',
-  szMark      : 'Tô nền',
-  szColor     : 'Màu chữ',
-  szNoColor   : 'Bỏ màu',
-  szClear     : 'Xoá định dạng',
-  szHelp      : 'Cách dùng',
-  szSeeMd     : 'Xem Markdown sắp gửi',
-  szEmpty     : '(chưa có gì)',
-  szLinkAsk   : 'Đường dẫn:',
-  szLinkText  : 'Chữ hiện ra:',
-  szImgAsk    : 'Đường dẫn ảnh (bắt đầu bằng /media/):',
-  szImgAlt    : 'Mô tả ảnh (cho người không xem được ảnh):',
-  szH1t       : 'Bôi đen chữ rồi bấm nút — không phải nhớ cú pháp nào cả.',
-  szH2t       : 'Đậm ⌘B · Nghiêng ⌘I · Link ⌘K (Ctrl trên Windows).',
-  szH3t       : 'Màu: bôi đen → bấm chấm tròn → chọn màu. Bấm lại để bỏ màu.',
-  szH4t       : 'Xuống dòng trong cùng một đoạn: Shift + Enter.',
-  szH5t       : 'Ảnh: bấm nút ảnh rồi dán đường dẫn, dạng /media/2026/ten-bai/anh.png',
-  szH6t       : 'Dán từ nơi khác: giữ đậm/nghiêng/link, bỏ phông và cỡ chữ.',
-  szH7t       : 'Bài tự lưu nháp trên máy này; đóng nhầm tab vẫn còn.',
-  szH8t       : 'Bấm </> để xem đúng đoạn Markdown sắp gửi lên GitHub.',
-  vbNeedBoth  : 'Cần cả tiêu đề lẫn nội dung.',
-  vbSending   : 'Đang gửi…',
-  vbDone      : 'Đã đưa vào kho mã',
-  vbBuilding  : 'Cloudflare đang dựng lại. Bài lên sau khoảng một phút.',
-  vbSeeCommit : 'Xem commit trên GitHub',
-  vbAnother   : 'Viết bài nữa',
-  vbFailed    : 'Không đăng được.',
-  vbNoConfig  : 'Máy chủ chưa có',
+  szImg       : 'Image',
+  szHr        : 'Divider',
+  szMark      : 'Highlight',
+  szColor     : 'Text colour',
+  szNoColor   : 'Remove colour',
+  szClear     : 'Clear formatting',
+  szHelp      : 'How to use',
+  szSeeMd     : 'See the Markdown',
+  szEmpty     : '(nothing yet)',
+  szLinkAsk   : 'Link:',
+  szLinkText  : 'Text to show:',
+  szImgAsk    : 'Image path (starts with /media/):',
+  szImgAlt    : 'Describe the image (for people who cannot see it):',
+  szH1t       : 'Select some text, then press a button — no syntax to remember.',
+  szH2t       : 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).',
+  szH3t       : 'Colour: select → press the dot → pick one. Press again to remove.',
+  szH4t       : 'New line inside the same paragraph: Shift + Enter.',
+  szH5t       : 'Images: press the image button, paste a path like /media/2026/post-name/pic.png',
+  szH6t       : 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.',
+  szH7t       : 'Drafts save to this device on their own; closing the tab is safe.',
+  szH8t       : 'Press </> to see the exact Markdown that will go to GitHub.',
+  vbNeedBoth  : 'Both a title and some text are needed.',
+  vbSending   : 'Sending…',
+  vbDone      : 'Pushed to the repository',
+  vbBuilding  : 'Cloudflare is rebuilding. The post goes live in about a minute.',
+  vbSeeCommit : 'See the commit on GitHub',
+  vbAnother   : 'Write another',
+  vbFailed    : 'Could not publish.',
+  vbNoConfig  : 'The server is missing',
   vbSeeDoc    : 'xem docs/CAI-DAT.md',
-  vbLoading   : 'Đang tải…',
+  vbLoading   : 'Loading…',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -336,12 +335,13 @@ const NHAN = {
   pages       : 'Pages',
   prevPage    : 'Previous page',
   nextPage    : 'Next page',
-  aboutMe     : 'About me',
-  pinned      : 'Pinned',
-  more        : 'More writing',
+  /* Năm nhãn của đời trang chủ cũ — latest · aboutMe · pinned · more · browse —
+     đã bỏ cùng lượt dọn CSS chết: trang chủ nay chỉ còn màn đầu, không còn khối
+     "bài mới nhất", "bài ghim" hay hàng lối đi ở chân danh sách. Một bảng nhãn
+     giữ lại nhãn không ai gọi thì lần sau đọc nó không còn biết cái nào đang
+     sống. */
   noPosts     : 'Nothing here yet.',
   readOn      : 'Read on',
-  browse      : 'Browse everything',
   noTags      : 'No topics yet.',
   searchHint  : 'Search by title, topic or category. Accents optional.',
   searchPh    : 'Type to search…',
@@ -363,36 +363,36 @@ const NHAN = {
      Tiếng Việt, khác lệ tiếng Anh của phần khung: chỉ chủ trang đọc mấy dòng
      này, mà chủ trang thì đọc tiếng Việt nhanh hơn. Cùng lý do với ô viết ghi
      chú. */
-  queue       : 'Hàng chờ duyệt',
-  queueEmpty  : 'Không có gì đang chờ.',
-  loading     : 'Đang tải…',
-  approve     : 'Duyệt',
-  unapprove   : 'Bỏ duyệt',
-  hide        : 'Ẩn',
+  queue       : 'Waiting for review',
+  queueEmpty  : 'Nothing waiting.',
+  loading     : 'Loading…',
+  approve     : 'Approve',
+  unapprove   : 'Unapprove',
+  hide        : 'Hide',
   /* ── KHUNG ĐĂNG NHẬP DÙNG CHUNG (src/js/khoa.js) ──
      Một bộ nhãn cho MỘT khung. Trước đây mỗi ngăn tự xin khoá nên có ba bộ
      nhãn gần giống nhau (gcKey*, key*, và câu chờ của ô viết bài); ba bộ ấy
      rồi cũng trôi lệch chữ nghĩa với nhau. Nay chỉ còn bộ này. */
-  khTitle     : 'Đăng nhập',
-  khLead      : 'Nhập một lần, dùng được cho cả ghi chú, bình luận và bài viết.',
-  khSignIn    : 'Đăng nhập',
-  khSignOut   : 'Đăng xuất',
-  khChecking  : 'Đang thử khoá…',
-  khNeedBoth  : 'Nhập đủ hai ô.',
-  khFailed    : 'Máy chủ không nhận khoá này.',
-  khLocked    : 'Đăng nhập ở trên để mở ô này.',
+  khTitle     : 'Sign in',
+  khLead      : 'Sign in once — it covers notes, comments and posts.',
+  khSignIn    : 'Sign in',
+  khSignOut   : 'Sign out',
+  khChecking  : 'Checking…',
+  khNeedBoth  : 'Fill in both fields.',
+  khFailed    : 'The server did not accept this key.',
+  khLocked    : 'Sign in above to unlock this.',
 
-  keyId       : 'Mã chủ',
-  keySecret   : 'Khoá',
-  badKey      : 'Sai khoá.',
-  sentOwner   : 'Đã đăng — lời của chủ trang không phải chờ duyệt.',
+  keyId       : 'Owner ID',
+  keySecret   : 'Key',
+  badKey      : 'Wrong key.',
+  sentOwner   : 'Posted — the owner’s words skip the queue.',
 
   /* ── bình luận: khung ── */
   comments    : 'Leave a note',
-  blLike      : 'Thích bài này',
-  blShare     : 'Chia sẻ bài này',
-  shareCopied : 'Đã chép đường dẫn',
-  shareFail   : 'Không chép được — chép tay từ thanh địa chỉ nhé',
+  blLike      : 'Like this post',
+  blShare     : 'Share this post',
+  shareCopied : 'Link copied',
+  shareFail   : 'Could not copy — copy it from the address bar',
   yourName    : 'Name',
   yourNote    : 'Your note',
   optional    : 'optional',
@@ -949,9 +949,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        hình theo vòng lặp. Trang giới thiệu vẫn là logo, nhưng vẽ một lần rồi
        đứng yên — đó là trang nhiều chữ nhất, một hình động lặp mãi ở góc trên
        là thứ mắt không bỏ qua được. */
+    /* ── TRANG TRONG: CHỮ LÀ CHÍNH, LOGO GHÉ QUA ──
+       `brand--chu` vẫn là trạng thái NGHỈ — mở một trang bài ra thì thấy tên
+       blog viết đủ, đúng như trước. `brand--doi` thêm lớp logo nằm chồng lên,
+       mờ sẵn, và nó chỉ hiện khi người đọc rê chuột vào hoặc khi đồng hồ
+       trong logo-nhip.js gạt qua sau mỗi 20 giây.
+
+       Nét logo vốn ĐÃ nằm sẵn trong HTML của mọi trang (logoHTML() nhả ra bất
+       kể trang nào), trước nay chỉ bị `display:none` giấu đi. Nên chỗ này
+       không thêm một byte markup nào — chỉ thôi giấu nó. */
     lopBrand  : duong === '/'        ? ' brand--logo brand--dong'
               : duong === '/about/'  ? ' brand--logo brand--dong'
-              :                        ' brand--chu',
+              :                        ' brand--chu brand--doi',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
     author    : escapeHtml(CAU.author),
@@ -995,6 +1004,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
     scripts: `<script src="${BASE}/assets/moc.js" defer></script>\n` +
+             /* Mọi trang: file này lo hai việc của logo — giữ hai đồng hồ cùng
+                nhịp ở hai trang có logo động, và gạt qua lại giữa chữ với logo
+                ở mọi trang còn lại. Nó tự thoát ngay khi trang không có việc
+                nào trong hai việc ấy. */
+             `<script src="${BASE}/assets/logo-nhip.js" defer></script>\n` +
              ((CAU.luotXem || {}).bat
                ? `<script src="${BASE}/assets/xem.js" defer></script>\n` : '') +
              scripts + doanTruocHTML() + beaconHTML(),
@@ -2457,7 +2471,13 @@ function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, descr
     duong,
     scripts: ((CAU.baoVeChu || {}).bat === false ? ''
       : `<script src="${BASE}/assets/copy-guard.js" defer></script>`) +
-      `\n<script src="${BASE}/assets/trang-so.js" defer></script>` + scripts,
+      /* Bộ số trang chỉ nạp khi trang NÀY thật sự có một danh sách bị cắt.
+         Trước đây mọi trang danh sách đều nạp, kể cả /search/ — mà kết quả tìm
+         kiếm không phân trang bao giờ (đã lọc bằng câu tìm rồi, cắt thêm một
+         lần nữa là bắt người đang tìm phải tìm trong kết quả tìm). Một file tải
+         về rồi chạy xong mà không có gì để làm là một vòng mạng trắng. */
+      (String(than).includes('data-phan-trang')
+        ? `\n<script src="${BASE}/assets/trang-so.js" defer></script>` : '') + scripts,
     content: `
 <div class="container ds-trang">
   <header class="ds-dau">
@@ -3238,7 +3258,7 @@ async function chay() {
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',
                      'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
-                     'chia-se.js',
+                     'chia-se.js', 'logo-nhip.js',
                      'soan.js', 'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng

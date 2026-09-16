@@ -3,6 +3,28 @@
    ============================================================ */
 (function(){
   'use strict';
+
+  /* ── KHỔ HẸP: MỤC LỤC ĐÓNG SẴN ──
+     HTML ghi `<details open>` vì ở khổ rộng mục lục là một CỘT — nó phải hiện
+     sẵn, và ở đó `<summary>` còn bị ẩn đi hẳn. Khổ hẹp thì ngược lại: mở sẵn
+     là chen gần một phần ba màn đầu vào giữa tóm tắt và câu đầu tiên của bài.
+
+     Gỡ `open` ở đây chứ không dựng sẵn hai bản HTML: trang là file tĩnh dùng
+     chung cho mọi khổ màn, và một thuộc tính phụ thuộc bề ngang cửa sổ thì
+     không thể quyết định lúc dựng.
+
+     Nghe cả lúc ĐỔI ngưỡng: xoay ngang điện thoại hay kéo rộng cửa sổ là đổi
+     vai của khối này, và nếu không nghe thì người ta vượt ngưỡng xong thấy một
+     cột mục lục rỗng không mở ra được. */
+  var hop = document.querySelector('.toc-box');
+  if (hop) {
+    var hep = window.matchMedia('(max-width:1079px)');
+    var theo = function (m) { if (m.matches) hop.removeAttribute('open'); else hop.open = true; };
+    theo(hep);
+    (hep.addEventListener ? hep.addEventListener('change', theo)
+                          : hep.addListener(theo));
+  }
+
   var toc = document.querySelector('.toc');
   var bar = document.querySelector('.read-bar');
   var art = document.querySelector('.prose');

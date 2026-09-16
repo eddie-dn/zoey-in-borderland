@@ -76,7 +76,7 @@
      hợp khoa.js không tải được. */
   function khungCho() {
     hop.innerHTML = '<p class="vb-cho">' + tho(L('locked',
-      'Đăng nhập ở trên để mở ô này.')) + '</p>';
+      'Sign in above to unlock this.')) + '</p>';
   }
 
   /* ══════════════ BẢNG BÀI ĐÃ ĐĂNG ══════════════
@@ -102,18 +102,18 @@
   var dangSua = null;     /* {duong, sha, fm, khoaKhac} của bài đang mở */
   var locTrang = '';      /* '' = tất cả */
 
-  var TEN_TRANG = { hien: 'Hiện', nhap: 'Nháp', an: 'Đã ẩn' };
+  var TEN_TRANG = { hien: 'Live', nhap: 'Draft', an: 'Hidden' };
 
   function veBang() {
     soan = null;
     hop.innerHTML =
       '<div class="vb-thanh">' +
         '<button type="button" class="btn btn--chinh" data-moi>' +
-          tho(L('newPost', 'Viết bài mới')) + '</button>' +
+          tho(L('newPost', 'New post')) + '</button>' +
         '<div class="vb-loc" data-loc></div>' +
       '</div>' +
       '<div class="vb-bang" data-bang>' +
-        '<p class="vb-cho">' + tho(L('loading', 'Đang tải…')) + '</p>' +
+        '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>' +
       '</div>' +
       '<p class="vb-noi"></p>';
 
@@ -137,7 +137,7 @@
       .catch(function () {
         var o = hop.querySelector('[data-bang]');
         if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' +
-          tho(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.')) + '</p>';
+          tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
       });
   }
 
@@ -153,7 +153,7 @@
 
     if (oLoc) {
       var h = '<button type="button" class="chip' + (locTrang ? '' : ' chip--nay') +
-              '" data-t="">' + tho(L('all', 'Tất cả')) +
+              '" data-t="">' + tho(L('all', 'All')) +
               '<span class="chip-so">' + bangDS.length + '</span></button>';
       ['hien', 'nhap', 'an'].forEach(function (t) {
         if (!dem[t]) return;
@@ -171,7 +171,7 @@
 
     var ds = bangDS.filter(function (b) { return !locTrang || b.trang === locTrang; });
     if (!ds.length) {
-      oBang.innerHTML = '<p class="vb-cho">' + tho(L('empty', 'Không có bài nào ở đây.')) + '</p>';
+      oBang.innerHTML = '<p class="vb-cho">' + tho(L('empty', 'Nothing here.')) + '</p>';
       return;
     }
 
@@ -183,15 +183,15 @@
           ? '<span class="vb-cd vb-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
           : '<span class="vb-cd"></span>') +
         '<span class="vb-dong-nut">' +
-          '<button type="button" class="vb-nho" data-sua>' + tho(L('edit', 'Sửa')) + '</button>' +
+          '<button type="button" class="vb-nho" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
           '<button type="button" class="vb-nho" data-an>' +
-            tho(b.trang === 'an' ? L('unhide', 'Bỏ ẩn') : L('hide', 'Ẩn')) + '</button>' +
+            tho(b.trang === 'an' ? L('unhide', 'Unhide') : L('hide', 'Hide')) + '</button>' +
         '</span>' +
       '</div>';
     }).join('') +
     (bangDS.cut
       ? '<p class="vb-cho">' + tho(
-          (L('capped', 'Đang xem {n} bài mới nhất trong tổng số {t}.'))
+          (L('capped', 'Showing the {n} newest of {t} posts.'))
             .replace('{n}', bangDS.tran).replace('{t}', bangDS.tong)) + '</p>'
       : '');
 
@@ -238,11 +238,11 @@
           if (bangDS[i].duong === duong) { bangDS[i].trang = d.trang; bangDS[i].sha = d.sha; }
         }
         veHang();
-        noi(L('saved', 'Xong. Cloudflare đang dựng lại.'));
+        noi(L('saved', 'Saved. Cloudflare is rebuilding.'));
       })
       .catch(function () {
         nut.disabled = false; nut.textContent = cu;
-        noi(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.'), 'hong');
+        noi(L('netErr', 'Network hiccup. Try again in a moment.'), 'hong');
       });
   }
 
@@ -251,7 +251,7 @@
      thành nút Lưu, và có thêm nút Quay lại. Dựng một khung sửa riêng thì hai
      khung phải giữ cho giống nhau mãi mãi — mà chúng vốn là một việc. */
   function moSua(duong) {
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Đang tải…')) + '</p>';
+    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
@@ -264,7 +264,7 @@
       })
       .catch(function () {
         hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
-          tho(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.')) + '</p>';
+          tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
       });
   }
 
@@ -275,7 +275,7 @@
 
     hop.innerHTML =
       '<div class="vb-hang">' +
-        '<label class="vb-o vb-o--rong"><span>' + tho(L('title', 'Tiêu đề')) + '</span>' +
+        '<label class="vb-o vb-o--rong"><span>' + tho(L('title', 'Title')) + '</span>' +
           '<input type="text" name="title" autocomplete="off" maxlength="200"></label>' +
       '</div>' +
       /* ── BA Ô PHỤ TRÊN MỘT HÀNG ──
@@ -286,30 +286,30 @@
          `.vb-o` khai `flex:1 1 180px`, nên ba ô này tự xếp một hàng ở khổ rộng
          và tự xuống hàng ở khổ hẹp — không cần thêm câu @media nào. */
       '<div class="vb-hang">' +
-        '<label class="vb-o"><span>' + tho(L('muc', 'Chuyên mục')) + '</span>' +
+        '<label class="vb-o"><span>' + tho(L('muc', 'Category')) + '</span>' +
           '<select name="muc">' + chon + '</select></label>' +
-        '<label class="vb-o"><span>' + tho(L('date', 'Ngày')) + '</span>' +
+        '<label class="vb-o"><span>' + tho(L('date', 'Date')) + '</span>' +
           '<input type="date" name="date" value="' + new Date().toISOString().slice(0, 10) + '"></label>' +
-        '<label class="vb-o"><span>' + tho(L('tags', 'Tag — cách nhau bằng dấu phẩy')) + '</span>' +
+        '<label class="vb-o"><span>' + tho(L('tags', 'Tags — separated by commas')) + '</span>' +
           '<input type="text" name="tags" autocomplete="off"></label>' +
       '</div>' +
       '<div class="vb-hang">' +
-        '<label class="vb-o vb-o--rong"><span>' + tho(L('summary', 'Tóm tắt')) + '</span>' +
+        '<label class="vb-o vb-o--rong"><span>' + tho(L('summary', 'Summary')) + '</span>' +
           '<textarea name="summary" rows="1" maxlength="400"></textarea></label>' +
       '</div>' +
       '<div class="vb-hang">' +
-        '<div class="vb-o vb-o--rong"><span>' + tho(L('body', 'Bài')) + '</span>' +
+        '<div class="vb-o vb-o--rong"><span>' + tho(L('body', 'Post')) + '</span>' +
           '<div data-soan></div></div>' +
       '</div>' +
-      '<p class="vb-duong"><span class="vb-duong-nhan">' + tho(L('willBe', 'Sẽ nằm ở')) +
+      '<p class="vb-duong"><span class="vb-duong-nhan">' + tho(L('willBe', 'Will live at')) +
         '</span> <code data-xem-duong>…</code></p>' +
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
-          tho(L('draft', 'Để nháp — dựng ra nhưng chưa công khai')) + '</label>' +
+          tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
         (cu ? '<button type="button" class="vb-nho" data-ve>' +
-                tho(L('back', 'Quay lại')) + '</button>' : '') +
+                tho(L('back', 'Back')) + '</button>' : '') +
         '<button type="button" class="btn" data-dang>' +
-          tho(cu ? L('save', 'Lưu') : L('publish', 'Đăng')) + '</button>' +
+          tho(cu ? L('save', 'Save') : L('publish', 'Post')) + '</button>' +
       '</div>' +
       '<p class="vb-noi"></p>';
 
@@ -354,7 +354,7 @@
       } else {
         var nhap = soan.nhapCu();
         if (nhap && soan.rong()) {
-          if (window.confirm(L('draftAsk', 'Còn một bài gõ dở trên máy này. Mở lại?'))) {
+          if (window.confirm(L('draftAsk', 'There is an unfinished post saved on this device. Open it?'))) {
             soan.datHTML(nhap);
           } else {
             soan.boNhap();
@@ -396,12 +396,12 @@
       draft  : hop.querySelector('[name=draft]').checked
     };
     if (!b.title.trim() || !b.noiDung.trim()) {
-      noi(L('needBoth', 'Cần cả tiêu đề lẫn nội dung.'), 'hong');
+      noi(L('needBoth', 'Both a title and some text are needed.'), 'hong');
       return;
     }
 
     nut.disabled = true;
-    noi(L('sending', 'Đang gửi…'));
+    noi(L('sending', 'Sending…'));
 
     /* Sửa bài là PUT và mang theo `sha` + mọi khoá front matter đọc ra lúc
        mở — máy chủ dựng lại CẢ file, nên thiếu một khoá là mất khoá ấy. */
@@ -428,7 +428,7 @@
              từ chối vì cầm mã băm cũ. */
           dangSua.sha = kq.d.sha || dangSua.sha;
           bangDS = null;
-          noi(L('saved', 'Xong. Cloudflare đang dựng lại.'));
+          noi(L('saved', 'Saved. Cloudflare is rebuilding.'));
           return;
         }
         xong(kq.d, b);
@@ -437,29 +437,29 @@
       noi(loiChu(kq.d), 'hong');
     }).catch(function () {
       nut.disabled = false;
-      noi(L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.'), 'hong');
+      noi(L('netErr', 'Network hiccup. Try again in a moment.'), 'hong');
     });
   }
 
   /* Báo lỗi phải nói được PHẢI LÀM GÌ, không chỉ nói là hỏng. Bài vừa gõ vẫn
      còn nguyên trong ô — đó là điều quan trọng nhất lúc này. */
   function loiChu(d) {
-    if (!d) return L('failed', 'Không đăng được.');
-    if (d.loi === 'khoa') return L('badKey', 'Mã chủ hoặc khoá sai.');
+    if (!d) return L('failed', 'Could not publish.');
+    if (d.loi === 'khoa') return L('badKey', 'Wrong owner ID or key.');
     if (d.loi === 'cauhinh') {
       /* Máy chủ biết rõ thiếu gì và phải bấm vào đâu — câu của nó luôn đúng
          hơn câu ghép sẵn ở đây. Chỉ ghép khi nó không gửi câu nào. */
       return d.chiTiet
-          || L('noConfig', 'Máy chủ chưa có') + ' ' + (d.thieu || []).join(', ')
+          || L('noConfig', 'The server is missing') + ' ' + (d.thieu || []).join(', ')
            + ' — ' + L('seeDoc', 'xem docs/CAI-DAT.md');
     }
     if (d.loi === 'kiem') return (d.chiTiet || []).join(' · ');
     if (d.loi === 'lechban') return L('clash',
-      'Bài này vừa đổi ở chỗ khác. Quay lại rồi mở lại để lấy bản mới.');
-    if (d.loi === 'duong' || d.loi === 'sha') return L('failed', 'Không lưu được.');
-    if (d.loi === 'trung') return d.chiTiet || L('dup', 'Đã có bài trùng tên.');
-    if (d.loi === 'muc') return d.chiTiet || L('badMuc', 'Chuyên mục không có.');
-    return d.chiTiet || L('failed', 'Không đăng được.');
+      'This post changed somewhere else. Go back and reopen it to get the latest version.');
+    if (d.loi === 'duong' || d.loi === 'sha') return L('failed', 'Could not save.');
+    if (d.loi === 'trung') return d.chiTiet || L('dup', 'A post with that name already exists.');
+    if (d.loi === 'muc') return d.chiTiet || L('badMuc', 'No such category.');
+    return d.chiTiet || L('failed', 'Could not publish.');
   }
 
   /* ── SAU KHI GỬI: NÓI RÕ NÓ ĐANG Ở ĐÂU ──
@@ -476,19 +476,19 @@
     soan = null;
     hop.innerHTML =
       '<div class="vb-xong">' +
-        '<p class="vb-xong-de">' + tho(L('done', 'Đã đưa vào kho mã')) + '</p>' +
+        '<p class="vb-xong-de">' + tho(L('done', 'Pushed to the repository')) + '</p>' +
         '<p class="vb-xong-chu">' + tho(b.title) + '</p>' +
         '<ul class="vb-xong-ds">' +
-          '<li>' + tho(L('willBe', 'Sẽ nằm ở')) + ' <code>' + tho(d.duongBai) + '</code></li>' +
+          '<li>' + tho(L('willBe', 'Will live at')) + ' <code>' + tho(d.duongBai) + '</code></li>' +
           (d.commit ? '<li><a href="' + tho(d.commit) + '" target="_blank" rel="noopener">' +
-            tho(L('seeCommit', 'Xem commit trên GitHub')) + '</a></li>' : '') +
+            tho(L('seeCommit', 'See the commit on GitHub')) + '</a></li>' : '') +
         '</ul>' +
         '<p class="vb-noi">' + tho(d.nhac || L('building',
-          'Cloudflare đang dựng lại. Bài lên sau khoảng một phút.')) + '</p>' +
+          'Cloudflare is rebuilding. The post goes live in about a minute.')) + '</p>' +
         '<div class="vb-nut">' +
-          '<button type="button" class="vb-nho" data-ve>' + tho(L('back', 'Quay lại')) + '</button>' +
+          '<button type="button" class="vb-nho" data-ve>' + tho(L('back', 'Back')) + '</button>' +
           '<button type="button" class="btn" data-nua>' +
-            tho(L('another', 'Viết bài nữa')) + '</button>' +
+            tho(L('another', 'Write another')) + '</button>' +
         '</div>' +
       '</div>';
     hop.querySelector('[data-nua]').addEventListener('click', function () { khungViet(); });
@@ -504,7 +504,7 @@
      hẳn biết sau. */
   function nap() {
     if (!coKhoa()) { khungCho(); return; }
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Đang tải…')) + '</p>';
+    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api, { headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
@@ -523,8 +523,8 @@
         var laMang = (e instanceof TypeError) && /fetch|network|Load failed/i.test(String(e.message));
         if (!laMang && window.console) console.error('[viet-bai]', e);
         hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
-          tho(laMang ? L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.')
-                     : L('crash', 'Ô viết bài dựng hỏng — mở bảng điều khiển để xem lỗi.')) +
+          tho(laMang ? L('netErr', 'Network hiccup. Try again in a moment.')
+                     : L('crash', 'The editor failed to load — open the browser console to see the error.')) +
           '</p>';
       });
   }

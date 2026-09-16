@@ -167,15 +167,76 @@
     });
   })();
 
-  /* ══════════ ĐÓNG MỞ CẢ KHỐI ══════════ */
+  /* ══════════ ĐÓNG MỞ CẢ KHỐI ══════════
+
+     ── KHỔ RỘNG: KHUNG BÌNH LUẬN CHIẾM LUÔN CỘT PHẢI ──
+     Ở khổ rộng, khung bình luận mở ra ở CUỐI bài nghĩa là người đọc phải cuộn
+     xuống tận đáy để viết — và lúc đang viết thì bài không còn trong tầm mắt.
+     Muốn trích một câu trong bài thì phải cuộn lên đọc, nhớ lấy, cuộn xuống gõ.
+
+     Cột phải thì nằm ngang tầm bài và dính theo lúc cuộn. Chuyển khung sang
+     đó là vừa đọc vừa viết được, và đó đúng là việc người ta đang làm.
+
+     Mục lục và "đọc tiếp" nhường chỗ trong lúc ấy: cả hai là thứ để ĐI TIẾP,
+     mà người đang viết bình luận thì chưa đi đâu cả.
+
+     ── DI CHUYỂN NÚT DOM, KHÔNG PHẢI DỰNG BẢN SAO ──
+     Chép ra một khung thứ hai thì có hai cái form, hai danh sách, và mọi thứ
+     comments.js đang giữ tham chiếu tới đều trỏ vào bản cũ. Dời hẳn nút đi thì
+     chữ đang gõ dở, ô đang chọn, cả cái chip "đang trả lời ai" đều đi theo.
+
+     `moc` là một nút rỗng đánh dấu chỗ cũ, để lúc đóng còn biết trả về đâu. */
   if (nutMo && than) {
+    var ben  = document.querySelector('.ben');
+    var luoi = document.querySelector('.post-layout');
+    /* Chỉ khung A mới có cột bên THẬT (xem benLaCot trong tools/build.mjs), và
+       lưới hai cột ấy chỉ bật từ 1080px. Dưới ngưỡng đó `.ben` là
+       `display:contents`, nên dời khung vào đấy chẳng chuyển nó đi đâu cả. */
+    var rong = window.matchMedia('(min-width:1080px)');
+    var duocDoi = !!(ben && luoi && luoi.classList.contains('khung-a'));
+    var moc = null;
+
+    function doiCho(vaoBen) {
+      if (!duocDoi) return;
+      if (vaoBen) {
+        if (moc) return;
+        moc = document.createComment('bl-than');
+        than.parentNode.insertBefore(moc, than);
+        ben.appendChild(than);
+        ben.classList.add('ben--bl');
+        luoi.classList.add('khung-a--bl');
+      } else {
+        if (!moc) return;
+        moc.parentNode.insertBefore(than, moc);
+        moc.remove(); moc = null;
+        ben.classList.remove('ben--bl');
+        luoi.classList.remove('khung-a--bl');
+      }
+    }
+
     nutMo.addEventListener('click', function () {
       var dangMo = nutMo.getAttribute('aria-expanded') === 'true';
       nutMo.setAttribute('aria-expanded', dangMo ? 'false' : 'true');
       /* .hidden chứ không phải style.display: thuộc tính này vừa giấu khỏi mắt
          vừa giấu khỏi trình đọc màn hình, và bấm Tab không lọt vào được. */
       than.hidden = dangMo;
+      doiCho(!dangMo && rong.matches);
+      /* Khổ hẹp: khung mở ra ở cuối bài, cách chỗ vừa bấm cả màn hình. Đưa mắt
+         tới đó thay vì để người ta tự đi tìm thứ mình vừa mở. */
+      if (!dangMo && !rong.matches) {
+        than.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
     });
+
+    /* Vượt ngưỡng lúc đang mở — xoay điện thoại, kéo rộng cửa sổ — thì khung
+       phải đổi chỗ theo. Không nghe thì có lúc nó nằm trong một `.ben` đang là
+       `display:contents`, tức là mất luôn cái cột mà nó vừa được dời vào. */
+    var theoNgang = function () {
+      if (than.hidden) return;
+      doiCho(rong.matches);
+    };
+    (rong.addEventListener ? rong.addEventListener('change', theoNgang)
+                           : rong.addListener(theoNgang));
   }
 
   /* Chưa khai địa chỉ script: khoá form lại thay vì để một cái nút bấm không

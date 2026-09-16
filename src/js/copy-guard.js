@@ -35,7 +35,7 @@
 
   var NGUONG  = Number(khoi.dataset.nguong) || 220;   /* dưới mức này: không đụng */
   var GIOIHAN = Number(khoi.dataset.gioihan) || 0;    /* >0 = cắt còn bấy nhiêu ký tự */
-  var NHAC    = khoi.dataset.nhac || 'Đọc bản đầy đủ tại';
+  var NHAC    = khoi.dataset.nhac || 'Read the full piece at';
   var TIEUDE  = khoi.dataset.tieude || document.title;
 
   function trongKhoiMa(sel) {
@@ -108,7 +108,7 @@
     var el = document.createElement('div');
     el.className = 'copy-nhac';
     el.setAttribute('role', 'status');
-    el.textContent = 'Đoạn vừa chép khá dài nên đã được rút gọn, kèm sẵn nguồn ✦';
+    el.textContent = 'That was a long excerpt, so it was shortened and the source added ✦';
     document.body.appendChild(el);
     requestAnimationFrame(function () { el.classList.add('hien'); });
     dangHien = { el: el, t: setTimeout(function () {

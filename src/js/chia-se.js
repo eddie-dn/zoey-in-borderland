@@ -74,23 +74,23 @@
         /* Người đọc bấm huỷ bảng chia sẻ cũng rơi vào đây, và đó KHÔNG phải
            lỗi — báo "không chia sẻ được" lúc họ vừa cố ý huỷ là nói sai. */
         if (e && e.name === 'AbortError') return;
-        if (chepTay(duong)) noi(NHAN.copied || 'Đã chép đường dẫn');
-        else noi(NHAN.fail || 'Không chép được', true);
+        if (chepTay(duong)) noi(NHAN.copied || 'Link copied');
+        else noi(NHAN.fail || 'Could not copy', true);
       });
       return;
     }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(duong).then(function () {
-        noi(NHAN.copied || 'Đã chép đường dẫn');
+        noi(NHAN.copied || 'Link copied');
       }).catch(function () {
-        if (chepTay(duong)) noi(NHAN.copied || 'Đã chép đường dẫn');
-        else noi(NHAN.fail || 'Không chép được', true);
+        if (chepTay(duong)) noi(NHAN.copied || 'Link copied');
+        else noi(NHAN.fail || 'Could not copy', true);
       });
       return;
     }
 
-    if (chepTay(duong)) noi(NHAN.copied || 'Đã chép đường dẫn');
-    else noi(NHAN.fail || 'Không chép được', true);
+    if (chepTay(duong)) noi(NHAN.copied || 'Link copied');
+    else noi(NHAN.fail || 'Could not copy', true);
   });
 })();

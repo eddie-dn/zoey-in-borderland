@@ -1142,6 +1142,22 @@ const KIEM = [
         const coLogo = lop.includes('brand--logo');
         const coChu  = lop.includes('brand--chu');
         const coDong = lop.includes('brand--dong');
+        /* ── Ô ĐỔI QUA LẠI ──
+           Trang KHÔNG kể chuyện thì ô thương hiệu phải biết đổi giữa chữ và
+           logo (brand--doi). Canh cả hai chiều: thiếu ở một trang thì trang ấy
+           lặng lẽ đứng im mãi ở dòng chữ, mà thừa ở trang chủ thì hai cơ chế
+           cùng tranh một ô — một bên mờ dần theo đồng hồ, một bên đang chạy
+           vòng kể 27 giây. */
+        const coDoi = lop.includes('brand--doi');
+        if (coDoi !== !CHO_KE.includes(t.url)) {
+          ra.push(`${t.url} — ${coDoi ? 'có' : 'thiếu'} brand--doi; lớp ấy chỉ dành cho `
+                + `trang NGOÀI ${CHO_KE.join(' và ')}`);
+        }
+        if (coDoi && !coChu) ra.push(`${t.url} — có brand--doi mà không có brand--chu`);
+        /* Ô đổi qua lại phải có SẴN nét logo trong HTML để mà đổi sang. */
+        if (coDoi && !t.html.includes('class="lg-vc lg-vc--1"')) {
+          ra.push(`${t.url} — khai brand--doi mà trong HTML không có nét logo để đổi sang`);
+        }
         if (coLogo === coChu) {
           ra.push(`${t.url} — lớp "brand${lop}": phải có ĐÚNG MỘT trong brand--logo / brand--chu`);
         }

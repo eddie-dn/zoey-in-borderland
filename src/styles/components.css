@@ -131,10 +131,7 @@
 /* Ô trích dẫn ở màn rộng cũng vậy: nó nằm trong cột lề hẹp, và nút ở góc dưới
    phải của ô. Neo giữa thì tooltip thò ra ngoài cột. */
 @media (hover:hover){
-  .quote-tab .q-nut.tip::after,
   .hero-quote .q-nut.tip::after{left:auto;right:0;translate:0 -4px}
-  .quote-tab .q-nut.tip:hover::after,
-  .quote-tab .q-nut.tip:focus-visible::after,
   .hero-quote .q-nut.tip:hover::after,
   .hero-quote .q-nut.tip:focus-visible::after{translate:0 0}
 }
