@@ -27,18 +27,22 @@
 <script>
 (function(){try{
   var h=document.documentElement;
+  /* Ba theme, và MÀU THANH TRẠNG THÁI của mỗi cái. Bảng này lặp lại ở
+     src/js/theme.js — cố ý, vì đoạn này phải chạy trước khi có file ngoài
+     nào kịp tải. Sửa màu nền thì sửa cả hai chỗ. */
+  var MAU={light:'#FAF6FD',dark:'#120C22',calm:'#F1F7F8'};
   var t=localStorage.getItem('zib-theme');
-  if(t==='dark'||t==='light'){
-    /* Người đọc đã tự chọn thì theo họ, kể cả trên trang có ép theme. Ép đè
-       lên lựa chọn của người dùng là kiểu trang web cãi lại chính người dùng. */
-    h.setAttribute('data-theme',t);
-  }else{
+  /* Tra bảng chứ không liệt kê `t==='dark'||t==='light'||...`: thêm theme là
+     thêm một dòng ở MAU, không phải đi sửa thêm một câu điều kiện ở đây. */
+  if(!MAU[t]){
     /* Chưa chọn gì: trang nào khai data-ep thì theo trang (trang chủ ép sáng
        để màn hero luôn ra đúng tông đã thiết kế), còn lại theo hệ điều hành. */
     t=h.getAttribute('data-ep')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
-    h.setAttribute('data-theme',t);
   }
-  if(t==='dark')document.querySelector('meta[name=theme-color]').content='#120C22';
+  /* Đã tự chọn thì theo họ, kể cả trên trang có ép theme. Ép đè lên lựa chọn
+     của người dùng là kiểu trang web cãi lại chính người dùng. */
+  h.setAttribute('data-theme',t);
+  document.querySelector('meta[name=theme-color]').content=MAU[t]||MAU.light;
 }catch(e){}})();
 </script>
 
@@ -64,14 +68,21 @@
     <nav class="nav" aria-label="Main">
       {{nav}}
       {{napTimKiem}}
-      <!-- Hai nhãn đi kèm dưới dạng data-*: theme.js đổi qua đổi lại giữa
-           chúng mỗi lần bấm, nên nó phải có SẴN CẢ HAI chứ không tự chế chữ.
-           Gõ cứng trong theme.js thì bảng NHAN sửa xong không có tác dụng. -->
+      <!-- BA nhãn đi kèm dưới dạng data-*: theme.js xoay vòng giữa chúng mỗi
+           lần bấm, nên nó phải có SẴN CẢ BA chứ không tự chế chữ. Gõ cứng
+           trong theme.js thì bảng NHAN sửa xong không có tác dụng.
+
+           Nhãn ban đầu để "sang Galaxy" vì theme mặc định là Sakura; theme.js
+           sửa lại ngay lúc nạp nếu người đọc đang ở theme khác. -->
       <button class="ico-btn tip theme-btn" type="button"
               aria-label="{{toDark}}" data-tip="{{toDark}}"
-              data-nhan-sang="{{toLight}}" data-nhan-toi="{{toDark}}">
+              data-nhan-sang="{{toLight}}" data-nhan-toi="{{toDark}}"
+              data-nhan-tinh="{{toCalm}}">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.4A8.6 8.6 0 1 1 9.6 3.5a6.9 6.9 0 0 0 10.9 10.9Z"/></svg>
+        <!-- Giọt nước rơi xuống, cộng một gợn sóng dưới chân. Chỉ mỗi giọt thì
+             ở cỡ 24px nó đọc ra là một cái lá; có gợn thì đọc ra là NƯỚC. -->
+        <svg class="i-giot" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2c3.1 3.8 4.9 6.5 4.9 8.7a4.9 4.9 0 0 1-9.8 0c0-2.2 1.8-4.9 4.9-8.7Z"/><path d="M4.2 19.4c1.5 0 1.5 1.5 3 1.5s1.5-1.5 3-1.5 1.5 1.5 3 1.5 1.5-1.5 3-1.5 1.5 1.5 3 1.5"/></svg>
       </button>
     </nav>
   </div>

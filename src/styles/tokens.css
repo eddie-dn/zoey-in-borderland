@@ -2,16 +2,28 @@
    TOKENS — nguồn duy nhất của màu, chữ, nhịp, bóng đổ.
    Kế thừa bảng màu của HAN-961030-A (Sakura) và -B (Galaxy).
 
-   BA TRẠNG THÁI THEME, viết đúng thứ tự này thì nút chuyển mới
-   thắng được cả hai chiều:
-     1. :root                         → bảng SÁNG, định nghĩa ĐỦ mọi biến
-     2. @media (prefers-color-scheme: dark) :root:not([data-theme="light"])
+   BA THEME, BỐN KHỐI. Viết đúng thứ tự này thì nút chuyển mới
+   thắng được mọi chiều:
+     1. :root                         → SAKURA sáng, định nghĩa ĐỦ mọi biến
+     2. @media (prefers-color-scheme: dark) :root:not([data-theme])
                                       → máy để tối & người đọc chưa chọn gì
-     3. :root[data-theme="dark"]      → người đọc tự bấm chọn tối
+     3. :root[data-theme="dark"]      → GALAXY, người đọc tự bấm chọn
+     4. :root[data-theme="calm"]      → TĨNH LẶNG, chỉ có khi người đọc tự chọn
    Không bao giờ để một màu CHỈ tồn tại trong khối (2) hoặc (3):
    máy để sáng + người đọc bấm tối là màu đó biến mất.
-   ============================================================ */
 
+   ── VÌ SAO KHỐI (2) LÀ `:not([data-theme])` CHỨ KHÔNG PHẢI
+      `:not([data-theme="light"])` ──
+   Hồi còn hai theme thì hai cách viết cho ra cùng một kết quả. Thêm theme thứ
+   ba vào thì không: `:not([data-theme="light"])` khớp luôn cả `calm`, nên máy
+   để tối mà người đọc chọn Tĩnh lặng là khối (2) và khối (4) cùng nổ, bằng
+   điểm nhau (0,2,0) và chỉ hơn thua nhau ở thứ tự dòng trong file. Một bảng
+   màu quyết định bằng thứ tự dòng là bảng màu vỡ ngay lần đầu có người dời
+   khối đi chỗ khác.
+   `:not([data-theme])` nói đúng cái cần nói: CHƯA AI CHỌN GÌ. Đó là hai
+   trường hợp thật — tắt JavaScript, và theme.js gỡ attribute ra khi người đọc
+   đổi cài đặt máy mà chưa từng tự bấm chọn (xem cuối src/js/theme.js).
+   ============================================================ */
 :root{
   /* ── 1. MÀU GỐC — chép từ 2 file HAN, không đổi giá trị ── */
   --raw-lav:#F4E7FB;    --raw-blush:#F3DCDC;  --raw-coral:#F5BCBA;
@@ -201,7 +213,7 @@
 
 /* ── THEME TỐI: máy để tối VÀ người đọc chưa tự chọn sáng ── */
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
+  :root:not([data-theme]){
     --bg:#120C22;
     --bg-tint:radial-gradient(125% 85% at 50% 38%, #2B1E4C 0%, #1B1233 54%, #120C22 100%);
     --surface:rgba(255,255,255,.065);
@@ -230,6 +242,13 @@
     --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
     --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
 
+    /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
+       --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
+       nguyên cả ba màu ấy — nên nút chính ở hai theme là một. Viết ra để
+       chỗ này TỰ NÓI rằng giống nhau là cố ý, chứ không phải bị quên. Bỏ
+       trống thì người đọc file sau phải tự đi dò xem nó vô tình hay hữu ý,
+       và phép kiểm cũng không phân biệt được hai chuyện đó. */
+    --btn-ink:#3A2A52;
     --shadow-sm:0 2px 10px rgba(8,3,20,.34);
     --shadow-md:0 12px 32px rgba(8,3,20,.46);
     --shadow-lg:0 26px 64px rgba(8,3,20,.58);
@@ -269,8 +288,15 @@
 
   --text:#F6EFFB;
   --text-muted:rgba(246,239,251,.72);
-  --text-faint:rgba(246,239,251,.50);
   --text-invert:#2A1E44;
+  /* .62 chứ không phải .50 — và đây từng là chỗ lệch nhau giữa HAI khối tối.
+     Khối @media đã sửa lên .62 kèm chú thích "(.50 chỉ đạt 3.9:1)", còn khối
+     này bị bỏ quên ở .50. Nên suốt một thời gian, ngày tháng và tem chân trang
+     đạt chuẩn với người để máy ở chế độ tối, mà KHÔNG đạt với người tự bấm nút
+     chọn tối — đúng cái bẫy mà "luật cứng" ở đầu file cảnh báo, vấp ngay trong
+     chính file viết ra nó. Phép kiểm "Galaxy và Tĩnh lặng khai cùng một bộ
+     biến" nay so cả giá trị giữa hai khối tối, nên không lệch lại được nữa. */
+  --text-faint:rgba(246,239,251,.62);
 
   --accent:#E3AADD;
   --accent-ink:#EFC2E9;
@@ -287,6 +313,13 @@
   --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
   --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
 
+    /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
+     --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
+     nguyên cả ba màu ấy — nên nút chính ở hai theme là một. Viết ra để
+     chỗ này TỰ NÓI rằng giống nhau là cố ý, chứ không phải bị quên. Bỏ
+     trống thì người đọc file sau phải tự đi dò xem nó vô tình hay hữu ý,
+     và phép kiểm cũng không phân biệt được hai chuyện đó. */
+  --btn-ink:#3A2A52;
   --shadow-sm:0 2px 10px rgba(8,3,20,.34);
   --shadow-md:0 12px 32px rgba(8,3,20,.46);
   --shadow-lg:0 26px 64px rgba(8,3,20,.58);
@@ -307,4 +340,115 @@
   --glass-sat:1.25;
 
   color-scheme:dark;
+}
+
+/* ════════════════════════════════════════════════════════════
+   THEME TĨNH LẶNG — thác nước, suối, thiền.
+
+   Chỉ tồn tại khi người đọc TỰ CHỌN. Không hệ điều hành nào báo
+   "tôi đang muốn yên tĩnh", nên theme này không có khối @media
+   song sinh như Galaxy — nó chỉ có đúng một khối, chính là đây.
+
+   ── BA THỨ QUYẾT ĐỊNH BẢNG MÀU NÀY ────────────────────────────
+
+   1. VẪN LÀ NỀN SÁNG, không phải theme tối thứ hai.
+      Thác nước ban ngày. Nền tối hoá ra là hang động, mà hang động
+      thì không phải thứ người ta thấy khi nghĩ tới tiếng suối.
+      Vì vậy `color-scheme:light` và `--chu-bong:none` — hai thứ
+      này đi theo ĐỘ SÁNG của nền chứ không theo tên theme.
+
+   2. CHỈ XOAY SẮC, KHÔNG ĐỔI CẤU TRÚC.
+      Mọi biến ở đây là bản dịch 1–1 của khối :root Sakura sang trục
+      lam–lục: cùng số biến, cùng vai trò, cùng khoảng tương phản.
+      Nhờ vậy không component nào phải biết theme này có tồn tại.
+
+   3. HAI MÀU NHẤN VẪN TÁCH ĐÔI, và ở đây còn GẮT hơn Sakura.
+      --accent #9BD3DA trên nền sáng chỉ đạt 1.45:1 — thấp hơn cả
+      orchid bên Sakura (1.78:1). Aqua pastel là màu sáng nhất trong
+      cả ba bảng, nên chữ BẮT BUỘC phải đi bằng --accent-ink.
+      Đo thật, tính bằng công thức WCAG 2.1 trên nền --bg #F1F7F8:
+        --accent      #9BD3DA → 1.45:1   chỉ để trang trí
+        --accent-ink  #0F6B77 → 5.72:1   AA cho cả chữ nhỏ ✓
+        --text        #1F3B42 → 11.01:1  ✓
+        --text-muted  #44646C → 5.91:1   ✓
+        --text-faint  #4E6F77 → 5.02:1   ✓ (và 4.72:1 trên --surface-sunken,
+                                 nền tối nhất mà nó từng phải nằm lên)
+   ════════════════════════════════════════════════════════════ */
+:root[data-theme="calm"]{
+  /* Màu gốc của riêng theme này. Để TRONG khối chứ không lên :root: bảng
+     --raw-* ở :root là di sản của hai file HAN, thêm màu lạ vào đó thì mai
+     mốt không ai đọc ra màu nào thuộc về đâu. Component vẫn không được phép
+     đọc --raw-* — đây thuần tuý là chú thích chạy được. */
+  --raw-suoi:#9BD3DA;   --raw-reu:#A8DED6;   --raw-troi:#C2DCEE;
+  --raw-suong:#E6F1F2;  --raw-da:#1F3B42;    --raw-tham:#0F6B77;
+
+  --bg:#F1F7F8;
+  /* Ba quầng, đọc từ trên xuống đúng như một cái thác: sương ở đỉnh, khoảng
+     trời hở bên phải, rồi vũng nước lắng ở chân màn. Cùng số lớp và cùng kiểu
+     dựng với --bg-tint bên Sakura — chỉ thay trục màu. */
+  --bg-tint:
+    radial-gradient(120% 70% at 10% -4%, #EDF8F8 0%, rgba(237,248,248,0) 52%),
+    radial-gradient(90% 55% at 94% 2%, #E1EFF7 0%, rgba(225,239,247,0) 58%),
+    radial-gradient(120% 60% at 50% 104%, #DCEFEC 0%, rgba(220,239,236,0) 60%);
+  --surface:rgba(255,255,255,.70);
+  --surface-solid:#FFFFFF;
+  --surface-sunken:#E6F1F2;
+
+  --text:#1F3B42;                     /* mực đá ướt — cố ý KHÔNG dùng đen */
+  --text-muted:#44646C;
+  --text-faint:#4E6F77;
+  --text-invert:#FFFFFF;
+  /* Chữ trên nút chính. Nút chính tô bằng --glass-tint, mà ở theme này
+     gradient ấy là reu → suoi → troi: ba màu pastel sáng gần bằng nhau.
+     Mực đá đạt 7.22:1 trên đoạn tối nhất và 8.38:1 trên đoạn sáng nhất. */
+  --btn-ink:#1F3B42;
+
+  --accent:#9BD3DA;                   /* trang trí: viền, chấm, gradient */
+  --accent-ink:#0F6B77;               /* chữ link, nhãn — 5.72:1 trên --bg */
+  --accent-ink-hover:#0B5A66;
+  --accent-2:#A8DED6;
+  --accent-3:#C2DCEE;
+  --accent-wash:rgba(155,211,218,.16);
+
+  --line:rgba(31,59,66,.16);
+  --line-strong:rgba(31,59,66,.30);
+  --sel-bg:rgba(155,211,218,.38);
+
+  /* Bốn khối callout phải còn ĐỌC RA được là bốn việc khác nhau, nên ba màu
+     trạng thái giữ nguyên sắc gốc (lục · hổ phách · đỏ) và chỉ hạ độ tươi cho
+     hợp nền lạnh. Kéo cả ba về trục lam-lục cho "hợp theme" thì chúng giống
+     nhau, và lúc đó chỉ còn cái nhãn chữ phân biệt được — mà nhãn chữ vốn là
+     lớp dự phòng cho người mù màu, không phải lớp chính. */
+  --ok:#1F6B57;  --ok-wash:rgba(31,107,87,.10);
+  --warn:#8A5E18; --warn-wash:rgba(138,94,24,.10);
+  --bad:#A83B54; --bad-wash:rgba(168,59,84,.10);
+
+  --shadow-sm:0 2px 8px rgba(31,72,82,.07);
+  --shadow-md:0 10px 28px rgba(31,72,82,.12);
+  --shadow-lg:0 24px 60px rgba(31,72,82,.18);
+
+  /* Kính trên nền sáng: cùng thông số ruột với Sakura (.42 → .17) vì nền hai
+     bên sáng ngang nhau. Chỉ viền cấu trúc đổi sang mực đá — để trắng thì tấm
+     kính mất đường bao đúng như lỗi đã vấp ở bản Sakura đầu tiên. */
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
+  --glass-edge:rgba(31,72,82,.14);
+  --glass-ring:rgba(255,255,255,.75);
+  --glass-spec:rgba(255,255,255,.95);
+  --glass-spec2:rgba(255,255,255,.10);
+  --glass-drop:0 10px 34px rgba(31,72,82,.13);
+  --glass-drop-lift:0 18px 48px rgba(31,72,82,.20);
+
+  /* Quầng nước thay quầng tím. Nền đã sáng sẵn nên để rất nhẹ, đúng như
+     Sakura — quầng mạnh trên nền sáng chỉ làm bẩn chứ không làm sáng. */
+  --glow:0 10px 24px rgba(52,150,166,.17);
+  --glow-manh:0 16px 40px rgba(52,150,166,.25);
+  /* `none`, giống Sakura. Bóng chữ là thứ để tách tiêu đề khỏi nền TỐI; bật
+     lên trên nền sáng thì chữ trông như bị nhoè. */
+  --chu-bong:none;
+  /* Cao hơn Sakura một nhịp (1.35 so với 1.45 và 1.25). Bảng màu này nhạt và
+     lạnh hơn hẳn, nên qua lớp backdrop-filter nó bạc màu nhanh hơn — nâng bão
+     hoà lên thì nền sau kính mới còn ánh xanh. */
+  --glass-sat:1.35;
+
+  color-scheme:light;
 }

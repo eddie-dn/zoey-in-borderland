@@ -151,28 +151,125 @@ const KIEM = [
     }
   },
   {
-    /* Ba biến quầng sáng phải có ở CẢ BA trạng thái theme. Thiếu ở khối nào
-       thì đúng khối đó mất quầng — mà người đọc chỉ gặp một khối tại một thời
-       điểm, nên lỗi này rất dễ lọt: thử ở theme hệ điều hành thì thấy đẹp, chỉ
-       ai bấm nút đổi theme mới gặp bản phẳng lì. */
-    ten: 'Quầng sáng khai đủ ở cả ba trạng thái theme',
+    /* Ba biến quầng sáng phải có ở MỌI khối theme. Thiếu ở khối nào thì đúng
+       khối đó mất quầng — mà người đọc chỉ gặp một khối tại một thời điểm, nên
+       lỗi này rất dễ lọt: thử ở theme hệ điều hành thì thấy đẹp, chỉ ai bấm
+       nút đổi theme mới gặp bản phẳng lì.
+
+       ── PHÉP KIỂM NÀY TỪNG XANH MÀ KHÔNG KIỂM GÌ CẢ ──
+       Bản trước dò khối bằng `css.search(/prefers-color-scheme: dark/)` rồi
+       cắt tới `indexOf('\n}')` đầu tiên. Hai chỗ sai chồng nhau:
+         · tokens.css viết `(prefers-color-scheme:dark)` KHÔNG có dấu cách, nên
+           thứ khớp được lại là dòng CHÚ THÍCH ở đầu file;
+         · từ chú thích đó cắt tới `\n}` đầu tiên thì lấy trúng trọn khối
+           :root sáng — vốn khai đủ cả ba biến.
+       Tức là nó đọc nhầm khối, tìm thấy đủ, và báo xanh. Xoá sạch `--glow` ra
+       khỏi cả hai khối tối thì nó VẪN xanh. Đã cắm lỗi vào thử đúng như vậy
+       trước khi viết lại.
+
+       Bản này dò bằng chính dòng mở khối rồi ĐẾM NGOẶC để lấy đúng thân của
+       nó, nên không cắt nhầm sang khối bên cạnh được nữa. */
+    ten: 'Quầng sáng khai đủ ở mọi khối theme',
     muc: 'loi',
     chay: ({ goc }) => {
       const f = path.join(goc, 'src', 'styles', 'tokens.css');
       if (!fs.existsSync(f)) return [];
-      const css = fs.readFileSync(f, 'utf8');
+      /* Bỏ chú thích TRƯỚC khi dò: chú thích trong file này có nhắc lại nguyên
+         văn mấy dòng selector để giải thích, và đó chính là thứ đã lừa được
+         bản trước. */
+      const css = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
       const KHOI = [
-        ['theme sáng (:root)', /^:root\{/m],
-        ['@media prefers-color-scheme: dark', /prefers-color-scheme: dark/],
-        ['[data-theme="dark"]', /:root\[data-theme="dark"\]\{/]
+        ['theme sáng (:root)',            /^:root\{/m],
+        ['@media prefers-color-scheme',   /@media\s*\(prefers-color-scheme\s*:\s*dark\)/],
+        ['[data-theme="dark"]',           /:root\[data-theme="dark"\]\s*\{/],
+        ['[data-theme="calm"]',           /:root\[data-theme="calm"\]\s*\{/]
       ];
       const ra = [];
       for (const [ten, re] of KHOI) {
         const i = css.search(re);
         if (i < 0) { ra.push(`tokens.css thiếu hẳn khối ${ten}`); continue; }
-        const khoi = css.slice(i, css.indexOf('\n}', i));
+        /* Đếm ngoặc từ dấu `{` đầu tiên sau chỗ khớp. Khối @media lồng một
+           khối con bên trong, nên cắt tới `}` đầu tiên là hụt mất cả thân. */
+        const mo = css.indexOf('{', i);
+        let sau = 0, het = mo;
+        for (let j = mo; j < css.length; j++) {
+          if (css[j] === '{') sau++;
+          else if (css[j] === '}' && --sau === 0) { het = j; break; }
+        }
+        const than = css.slice(mo, het);
         for (const k of ['--glow:', '--glow-manh:', '--chu-bong:']) {
-          if (!khoi.includes(k)) ra.push(`tokens.css — khối ${ten} thiếu ${k}`);
+          if (!than.includes(k)) ra.push(`tokens.css — khối ${ten} thiếu ${k}`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* LUẬT CỨNG của tokens.css, bản tổng quát: không biến màu nào được phép
+       chỉ tồn tại ở MỘT theme.
+
+       Phép kiểm ngay trên chỉ soi ba biến quầng sáng, vì hồi hai theme thì ba
+       biến đó là chỗ duy nhất từng vấp. Có theme thứ ba rồi thì cách vấp không
+       còn đếm được nữa: mỗi lần thêm một màu vào Galaxy mà quên Tĩnh lặng là
+       một biến rơi ngược về giá trị Sakura, và nó rơi ÂM THẦM — CSS không báo
+       lỗi biến thiếu, nó chỉ lấy giá trị kế thừa gần nhất. Trang vẫn lên, chỉ
+       là sai màu ở đúng một theme mà người sửa không mở ra xem. */
+    ten: 'Galaxy và Tĩnh lặng khai cùng một bộ biến',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'styles', 'tokens.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+
+      const than = (re) => {
+        const i = css.search(re);
+        if (i < 0) return null;
+        const mo = css.indexOf('{', i);
+        let sau = 0;
+        for (let j = mo; j < css.length; j++) {
+          if (css[j] === '{') sau++;
+          else if (css[j] === '}' && --sau === 0) return css.slice(mo, j);
+        }
+        return null;
+      };
+      const bien = (t) => new Set([...t.matchAll(/(--[a-z0-9-]+)\s*:/gi)].map((m) => m[1]));
+
+      const toi  = than(/:root\[data-theme="dark"\]\s*\{/);
+      const tinh = than(/:root\[data-theme="calm"\]\s*\{/);
+      if (!toi || !tinh) return ['tokens.css thiếu khối [data-theme="dark"] hoặc [data-theme="calm"]'];
+
+      /* --raw-* là chú thích chạy được, mỗi theme đặt tên màu gốc của riêng nó
+         (raw-orchid bên Sakura, raw-suoi bên Tĩnh lặng). Component không được
+         phép đọc chúng nên chúng không cần khớp nhau. */
+      const bo = (s) => new Set([...s].filter((k) => !k.startsWith('--raw-')));
+      const a = bo(bien(toi)), b = bo(bien(tinh));
+
+      const ra = [];
+      for (const k of a) if (!b.has(k)) ra.push(`tokens.css — [data-theme="calm"] thiếu ${k} (Galaxy có khai)`);
+      for (const k of b) if (!a.has(k)) ra.push(`tokens.css — [data-theme="dark"] thiếu ${k} (Tĩnh lặng có khai)`);
+
+      /* ── HAI KHỐI GALAXY PHẢI GIỐNG NHAU TỪNG GIÁ TRỊ ──
+         Media query và attribute selector không giao nhau nên không kế thừa
+         được của nhau; design system gọi đây là "luật cứng" và bắt chép y hệt.
+         Chép tay thì sớm muộn cũng lệch, và ĐÃ lệch thật: --text-faint được
+         sửa lên .62 ở khối @media cho đủ tương phản, còn khối attribute nằm
+         lại ở .50 (3.9:1). Người để máy ở chế độ tối thì đọc được; người tự
+         bấm nút chọn tối thì không. Không ai bắt được bằng mắt vì hai khối
+         không bao giờ hiện cùng lúc. */
+      const gt = (t) => new Map([...t.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)]
+        .map((m) => [m[1], m[2].replace(/\s+/g, ' ').trim()]));
+      const media = than(/@media\s*\(prefers-color-scheme\s*:\s*dark\)/);
+      if (media) {
+        const m1 = gt(media), m2 = gt(toi);
+        for (const [k, v] of m2) {
+          if (!m1.has(k)) ra.push(`tokens.css — khối @media tối thiếu ${k}`);
+          else if (m1.get(k) !== v) {
+            ra.push(`tokens.css — ${k} lệch giữa hai khối Galaxy: ` +
+                    `@media để "${m1.get(k)}", [data-theme="dark"] để "${v}"`);
+          }
+        }
+        for (const k of m1.keys()) {
+          if (!m2.has(k)) ra.push(`tokens.css — khối [data-theme="dark"] thiếu ${k}`);
         }
       }
       return ra;
@@ -802,6 +899,9 @@ const KIEM = [
     ten: 'Logo và dòng chữ tên blog không cùng hiện trên một trang',
     muc: 'loi',
     chay: ({ trang }) => {
+      /* Hai trang có logo. Đổi danh sách này là đổi luôn cả hai vế của phép
+         kiểm — chỗ báo sai trang, và chỗ đếm tổng. */
+      const CHO_KE = ['/', '/about/'];
       const ra = [];
       let soDong = 0;
       for (const t of trang) {
@@ -816,7 +916,14 @@ const KIEM = [
         }
         if (coDong) {
           soDong++;
-          if (t.url !== '/') ra.push(`${t.url} — có brand--dong, nhưng logo chỉ được kể chuyện ở trang chủ`);
+          /* Hai trang được kể chuyện: trang chủ và trang giới thiệu. Đúng hai
+             trang ấy là hai trang có logo — nên luật gọn lại thành "có logo
+             thì kể chuyện", và điều kiện thật sự cần canh là ĐỪNG LAN sang
+             trang thứ ba. Một trang bài viết mà logo lặp suốt ở thanh đầu là
+             thứ mắt không bỏ qua được, mà người ta tới đó để đọc. */
+          if (!CHO_KE.includes(t.url)) {
+            ra.push(`${t.url} — có brand--dong, nhưng logo chỉ được kể chuyện ở ${CHO_KE.join(' và ')}`);
+          }
           if (!coLogo) ra.push(`${t.url} — có brand--dong mà không có brand--logo`);
         }
         /* Lớp đúng nhưng quên nhả nét vào HTML thì ô thương hiệu rỗng. */
@@ -824,7 +931,10 @@ const KIEM = [
           ra.push(`${t.url} — khai brand--logo mà trong HTML không có nét logo`);
         }
       }
-      if (soDong !== 1) ra.push(`có ${soDong} trang khai brand--dong — phải đúng một (trang chủ)`);
+      if (soDong !== CHO_KE.length) {
+        ra.push(`có ${soDong} trang khai brand--dong — phải đúng ${CHO_KE.length} ` +
+                `(${CHO_KE.join(' và ')})`);
+      }
       return ra;
     }
   },
@@ -861,7 +971,11 @@ const KIEM = [
       const f = path.join(GOC, 'tools', 'build.mjs');
       const js = fs.readFileSync(f, 'utf8');
       const ra = [];
-      const ten = ['P_INF1', 'P_INF2', 'P_ZZ', 'P_VONG'];
+      /* P_NOI KHÔNG có trong danh sách: nét nối chữ i không biến hình với ai,
+         nó chỉ vẽ dần ra rồi tắt, nên nó được phép là một đoạn thẳng `M…L…`.
+         Bốn đường dưới đây thì phải cùng cấu trúc, vì chúng nội suy vào nhau
+         theo từng cặp: P_ZZ→P_INF1 và P_B→P_INF2. */
+      const ten = ['P_INF1', 'P_INF2', 'P_ZZ', 'P_B'];
       for (const k of ten) {
         /* Cắt bằng chỉ số chứ không dựng RegExp từ chuỗi: RegExp dựng động ở đây
            phải escape hai tầng — một cho chuỗi mẫu, một cho biểu thức — và đã sai
@@ -906,58 +1020,71 @@ const KIEM = [
     }
   },
   {
-    /* ── TỪ "BORDERLAND" LẤN RA NGOÀI CỘT TỐI ĐA NỬA CHỮ CUỐI ──
-       Màn đầu trang chủ đặt cỡ chữ bằng `cqw` — phần trăm bề ngang khung bao.
-       Chữ thì không có `overflow` nào chặn, nên đặt cỡ quá tay là từ ấy cứ thò
-       ra ngoài khung và chui xuống dưới khung danh sách bên phải.
+    /* ── TỪ CUỐI Ở MÀN ĐẦU PHẢI BỊ ĐƯỜNG KẺ XÉN ĐÚNG NỬA CHỮ ──
+       Ở trạng thái NGHỈ, từ "Borderland" cố ý chạy quá đường kẻ phải của ô
+       lưới để bị xén — đó là trò bố cục, không phải tràn lề. Xén quá tay thì
+       mất hai chữ cuối và đọc ra là "Borderl"; xén hụt thì chữ dừng lửng lơ
+       giữa cột và cả khối trông như bị bó lại.
 
-       Lấn MỘT CHÚT là cố ý: chữ đầu khuất một phần ba sau đường kẻ trái, chữ
-       cuối khuất một nửa sau đường kẻ phải, khối chữ đọc ra là được đặt vào
-       khuôn rồi khuôn xén bớt. Lấn NHIỀU là lỗi: đã vấp thật với --s3:26cqw —
-       từ dài 914px trong cột rộng 712px, mất hẳn hai chữ cuối, trên màn hình
-       đọc ra là "Borderl". Ranh giới giữa hai thứ đó là NỬA CHỮ CUỐI, và đây
-       là phép kiểm canh đúng ranh giới ấy.
+       ── PHÉP KIỂM NÀY TỪNG CHỈ CANH MỘT CHIỀU, VÀ ĐÃ ĐỂ LỌT ──
+       Bản trước chỉ báo khi lấn QUÁ nửa chữ. Chữ không lấn tới nơi thì nó im,
+       nên khi hằng số đo lệch đi, `--s3` tụt xuống 20,35cqw và chữ "d" dừng
+       cách đường kẻ 45px — bộ kiểm định vẫn xanh suốt. Nay canh cả hai đầu.
 
-       Bề ngang tính được, không phải ước lượng. Đo trong trình duyệt ở phông
-       Cormorant nghiêng: cả từ "Borderland" chiếm 4,72 lần cỡ chữ (chưa tính
-       giãn), riêng chữ "d" cuối chiếm 0,538 lần. `letter-spacing` cộng một
-       nhịp sau MỖI chữ cái, kể cả chữ cuối, nên là 10 nhịp.
-
-           lấn ra = lùi + 4,72 + 10 × giãn − 100cqw/cỡ
-           cho phép ≤ nửa chữ "d" = 0,538 ÷ 2
-
-       Đổi phông thì hai con số đo được kia sai, và phép kiểm này sai theo —
-       nên chúng nằm ngay đây thành hằng có tên chứ không rải trong công thức. */
-    ten: 'Từ cuối ở màn đầu lấn ra ngoài cột không quá nửa chữ',
+       ── HAI HẰNG SỐ ĐÃ ĐO LẠI ──
+       Số cũ (4,72 và 0,538) lệch 17% so với nét chữ đang thật sự hiện ra. Đo
+       lại bằng Range trên chính phần tử đó, phông Cormorant Garamond italic
+       600 đã nạp xong, bốn cỡ 80/103/137/200px cho cùng một tỉ lệ. Đổi phông
+       hay đổi chữ thì phải đo lại — đo thật, đừng ước lượng. */
+    ten: 'Từ cuối ở màn đầu bị xén đúng nửa chữ, không hụt không quá',
     muc: 'loi',
     chay: () => {
       const f = path.join(GOC, 'src', 'styles', 'list.css');
       if (!fs.existsSync(f)) return [];
       const css = fs.readFileSync(f, 'utf8');
-      const BE_NGANG_TU  = 4.72;    /* "Borderland" / cỡ chữ, đo thật */
-      const BE_NGANG_D   = 0.538;   /* riêng chữ "d" cuối / cỡ chữ */
+      const BE_NGANG_TU  = 4.0343;   /* "Borderland" / cỡ chữ, CHƯA gồm giãn chữ */
+      const BE_NGANG_D   = 0.4481;   /* riêng nét chữ "d" cuối / cỡ chữ */
       const SO_CHU       = 10;
-      const LAN_TOI_DA   = BE_NGANG_D / 2;
 
-      /* Mỗi chỗ khai đủ bộ ba --s3/--x3/--ls3 là MỘT trạng thái (nghỉ, hiện đủ,
-         bản cho máy không có chuột). Kiểm hết, không chỉ cái đầu. */
+      /* Mỗi chỗ khai đủ bộ ba --s3/--x3/--ls3 là MỘT trạng thái. Bộ ĐẦU TIÊN
+         theo thứ tự dòng là trạng thái NGHỈ — trạng thái duy nhất được phép
+         lấn ra ngoài; mấy bộ sau là "hiện đủ", và ở đó chữ là chữ ĐỂ ĐỌC nên
+         không được dính vào đường kẻ. */
       const bo = [...css.matchAll(
         /--s3:\s*([\d.]+)cqw;\s*--x3:\s*([\d.-]+)em;\s*--ls3:\s*([\d.-]+)em/g)];
       if (!bo.length) return ['list.css không còn khai --s3/--x3/--ls3 — phép kiểm này hết bám được vào đâu'];
 
       const ra = [];
-      for (const m of bo) {
+      bo.forEach((m, vt) => {
         const [s3, x3, ls3] = [+m[1], +m[2], +m[3]];
-        /* Quy hết về ĐƠN VỊ CỠ CHỮ: bề ngang cột = 100cqw, mà cỡ chữ = s3 cqw,
-           nên cột rộng 100/s3 lần cỡ chữ. */
-        const cot = 100 / s3;
-        const tu  = x3 + BE_NGANG_TU + SO_CHU * ls3;
-        const lan = tu - cot;
-        if (lan > LAN_TOI_DA + 0.005) {          /* .005 là dung sai làm tròn */
-          ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em → lấn ra ngoài cột ` +
-                  `${Math.round(lan * 100)}% cỡ chữ, quá nửa chữ cuối (${Math.round(LAN_TOI_DA * 100)}%)`);
+        /* Quy hết về ĐƠN VỊ CỠ CHỮ: ô rộng 100cqw, cỡ chữ = s3 cqw, nên ô rộng
+           100/s3 lần cỡ chữ. Mép phải của NÉT CHỮ "d" nằm ở `+ 9·ls3`, không
+           phải `+ 10·ls3`: giãn chữ cộng thêm sau cả ký tự cuối, mà nhịp giãn
+           ấy là khoảng trống chứ không phải chữ. Bản trước cộng 10 nhịp, tức
+           là đo cả một khoảng trống vào bề ngang con chữ. */
+        const o      = 100 / s3;
+        const mepChu = x3 + BE_NGANG_TU + (SO_CHU - 1) * ls3;
+        const lan    = mepChu - o;
+
+        if (vt === 0) {
+          /* Trạng thái NGHỈ: đường kẻ phải cắt ngang chữ "d", và cắt gần đúng
+             giữa. Dung sai ±15% bề ngang chữ — hẹp hơn thì mỗi lần tinh chỉnh
+             cỡ chữ một nhịp là đỏ, rộng hơn thì hụt/quá lọt qua được. */
+          const dich = BE_NGANG_D / 2;
+          const saiSo = Math.abs(lan - dich);
+          if (saiSo > BE_NGANG_D * 0.15) {
+            ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em (trạng thái nghỉ) → ` +
+                    (lan < dich
+                      ? `chữ "d" HỤT, chưa tới đường kẻ ${Math.round((dich - lan) * 100)}% cỡ chữ`
+                      : `xén QUÁ nửa chữ ${Math.round((lan - dich) * 100)}% cỡ chữ`) +
+                    ` — cần s3 ≈ ${(100 / (x3 + BE_NGANG_TU + (SO_CHU - 1) * ls3 - dich)).toFixed(2)}cqw`);
+          }
+        } else if (lan > 0) {
+          ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em (trạng thái hiện đủ) → ` +
+                  `chữ lấn ra ngoài đường kẻ ${Math.round(lan * 100)}% cỡ chữ; ` +
+                  `lúc chữ đã rõ để ĐỌC thì không được dính đường kẻ`);
         }
-      }
+      });
       return ra;
     }
   },

@@ -1,19 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   NỀN ĐỘNG — hoa rơi ở theme sáng, thiên hà ở theme tối.
+   NỀN ĐỘNG — ba theme, ba hiệu ứng.
 
-   Port từ hai bản gốc:
-     HAN-961030-a  cánh hoa anh đào rơi chéo
-     HAN-961030-b  đĩa thiên hà xoắn ốc
+     Sakura      cánh hoa anh đào rơi chéo      (port từ HAN-961030-a)
+     Galaxy      đĩa thiên hà xoắn ốc           (port từ HAN-961030-b)
+     Tĩnh lặng   thác nước · giọt · gợn · sương (dựng mới cho blog)
 
    Bật ở đâu: front matter `nen: dong` (hoặc `nen: tinh` để tắt). Trang chủ
    mặc định bật. Xem docs/DESIGN-SYSTEM.md §12.
 
    ── BỐN THỨ KHÁC BẢN GỐC ───────────────────────────────────────────────
 
-   1. MỘT FILE, HAI HIỆU ỨNG, TỰ ĐỔI THEO THEME.
+   1. MỘT FILE, BA HIỆU ỨNG, TỰ ĐỔI THEO THEME.
       Bản gốc là hai trang riêng nên mỗi trang một canvas cứng. Ở đây người
       đọc bấm đổi theme bất cứ lúc nào, nên phải dừng hiệu ứng cũ và dựng
-      hiệu ứng mới ngay tại chỗ.
+      hiệu ứng mới ngay tại chỗ. Bảng tra BO ở phần ĐIỀU PHỐI là chỗ duy nhất
+      biết theme nào đi với hiệu ứng nào.
 
    2. DỪNG HẲN KHI TAB BỊ ẨN.
       Bản gốc chạy requestAnimationFrame mãi. Trình duyệt có tiết lưu rAF ở
@@ -74,17 +75,29 @@
         /* Lần đầu rải sẵn khắp chiều cao, để trang vừa mở đã có hoa ở cả trên
            lẫn dưới chứ không phải chờ chúng rơi xuống. */
         y: batDau ? Math.random() * H : -18 - Math.random() * 80,
-        r: 5 + lop * 14,
+        /* CỠ CÁNH: 3,2 → 11,4px, trước là 5 → 19.
+           Bản trước phóng cánh to gần gấp đôi để "thấy rõ là cánh hoa". Thấy
+           rõ thật, nhưng ở 19px trên một màn hero thì mỗi cánh thành một mảng
+           màu có viền, và cả màn đọc ra là đám bìa cắt dán chứ không phải hoa
+           đang rơi. Hoa anh đào thật, nhìn từ khoảng cách người ta thường nhìn
+           nó, là những mẩu rất nhỏ — cái làm nên vẻ đẹp là SỐ LƯỢNG và cách
+           chúng lượn, không phải cỡ từng cánh. */
+        r: 3.2 + lop * 8.2,
         /* Gió dạt trái chậm hơn tốc độ rơi nhiều lần, nên cánh đi hết chiều
            dọc màn hình mới ra khỏi mép — nửa dưới không bị trống. */
-        vy: 0.34 + lop * 1.2,
-        vx: -0.07 - lop * 0.34,
+        vy: 0.3 + lop * 1.05,
+        vx: -0.06 - lop * 0.3,
         sw: 0.5 + Math.random() * 1.5,
         ph: Math.random() * 6.28,
         sp: 0.011 + Math.random() * 0.024,
         go: Math.random() * 6.28,
         mau: MAU[iMau], dam: DAM[iMau],
-        mo: 0.46 + lop * 0.5
+        /* ĐỘ ĐẬM: 0,22 → 0,70, trước là 0,46 → 0,96.
+           Gần như đục hoàn toàn ở lớp gần. Cánh hoa là vật MỎNG — ánh sáng
+           xuyên qua được, nên nó không bao giờ đặc như một mảnh giấy màu. Hạ
+           trần xuống 0,70 là chỗ nó bắt đầu đọc ra là cánh hoa; và hạ sàn
+           xuống 0,22 thì lớp xa lùi hẳn ra sau, chiều sâu rõ hơn hẳn. */
+        mo: 0.22 + lop * 0.48
       };
     }
 
@@ -101,27 +114,51 @@
          không phải một vệt màu. */
       var g = ctx.createLinearGradient(0, -r, 0, r);
       g.addColorStop(0, '#FFFFFF');
-      g.addColorStop(0.55, h.mau);
+      /* Chặng giữa đẩy xuống 0,62 và mũi đậm chỉ bắt đầu từ 0,88: nhờ vậy phần
+         TRẮNG chiếm hơn nửa cánh, còn màu đậm co về đúng cái mũi. Bản trước
+         chia 0 / 0,55 / 1 nên nửa dưới cánh là một mảng màu đặc, và chính mảng
+         ấy làm cánh trông nặng. Cánh hoa thật nhạt dần về phía gốc và chỉ ngả
+         hồng ở rìa ngoài. */
+      g.addColorStop(0.62, h.mau);
+      g.addColorStop(0.88, h.dam || h.mau);
       g.addColorStop(1, h.dam || h.mau);
       ctx.fillStyle = g;
       ctx.globalAlpha = h.mo * (0.58 + 0.42 * lat);
       ctx.fill();
-      /* Viền dày theo LỚP SÂU. Nền ngả hồng, cánh trắng-hồng không viền thì
-         chìm hẳn — cánh vẫn ở đó mà mắt không nhận ra. Cánh gần viền đậm và
-         dày hơn, nên nó nổi hẳn lên trước; cánh xa gần như không viền. */
-      ctx.strokeStyle = 'rgba(184,112,162,' + (0.26 + h.lop * 0.34).toFixed(3) + ')';
-      ctx.lineWidth = 0.55 + h.lop * 1.15;
-      ctx.globalAlpha *= 0.92;
-      ctx.stroke();
-      /* Gân giữa — một nét cong mảnh. Chỉ vẽ cho cánh đủ to, vì dưới ~9px thì
-         nó chỉ làm cánh trông bẩn. Đây là chi tiết khiến cánh đọc ra là CÁNH
-         HOA chứ không phải một hình giọt nước. */
-      if (r > 9) {
+      /* VIỀN — chỗ làm cả màn hoa thành thô nhất, và là chỗ sửa mạnh tay nhất.
+
+         Bản trước: alpha 0,26 → 0,60, bề dày 0,55 → 1,70px. Trên một cánh chỉ
+         rộng mươi pixel thì một nét viền 1,7px chiếm tới một phần sáu bề ngang
+         cánh — đọc ra là hình CÓ ĐƯỜNG BAO, tức là một cái nhãn dán, không
+         phải một vật mỏng đang lượn trong không khí.
+
+         Nay: alpha 0,08 → 0,26, bề dày 0,35 → 0,75px. Viền còn đúng việc cần
+         nó — tách cánh khỏi nền hồng nhạt để nó khỏi chìm — mà thôi tự nhận
+         mình là một nét vẽ.
+
+         Và chỉ viền cho cánh ĐỦ TO. Dưới 6px thì đường bao gần bằng cả cánh:
+         vẽ vào là được một chấm đậm, xoá sạch phần chuyển màu bên trong. Lớp
+         xa vốn đã mờ, không cần viền để tách khỏi nền. */
+      if (r > 6) {
+        ctx.strokeStyle = 'rgba(184,112,162,' + (0.08 + h.lop * 0.18).toFixed(3) + ')';
+        ctx.lineWidth = 0.35 + h.lop * 0.4;
+        ctx.globalAlpha *= 0.9;
+        ctx.stroke();
+      }
+      /* Gân giữa — một nét cong mảnh. Chỉ vẽ cho cánh đủ to, vì dưới ngưỡng
+         này nó chỉ làm cánh trông bẩn. Đây là chi tiết khiến cánh đọc ra là
+         CÁNH HOA chứ không phải một hình giọt nước.
+
+         Ngưỡng nâng từ 9 lên 10px dù cánh đã nhỏ đi — tức là nay CHỈ lớp gần
+         nhất mới có gân. Đó là đúng cách mắt hoạt động: chi tiết bên trong chỉ
+         đọc được ở vật gần, vẽ gân cho cánh xa là vẽ thứ không ai phân giải
+         nổi, và ở cỡ ấy nó chỉ thành một vệt bẩn giữa cánh. */
+      if (r > 10) {
         ctx.beginPath();
         ctx.moveTo(0, -r * 0.72);
         ctx.quadraticCurveTo(r * 0.12, 0, 0, r * 0.82);
-        ctx.strokeStyle = 'rgba(206,138,178,' + (0.16 + h.lop * 0.2).toFixed(3) + ')';
-        ctx.lineWidth = 0.6;
+        ctx.strokeStyle = 'rgba(206,138,178,' + (0.10 + h.lop * 0.14).toFixed(3) + ')';
+        ctx.lineWidth = 0.5;
         ctx.stroke();
       }
     }
@@ -130,9 +167,13 @@
       dung: function () {
         /* Mật độ theo DIỆN TÍCH thật, không theo một con số cố định: cùng một
            số cánh thì màn 1440px thấy thưa mà màn 390px thấy dày đặc. */
-        /* Cánh to gần gấp đôi bản trước, nên mật độ phải BỚT đi chứ không tăng:
-           giữ nguyên số cánh mà phóng to là màn hình kín đặc và thành rối. */
-        var n = Math.max(36, Math.min(112, Math.round(W * H / 5200)));
+        /* Cánh nhỏ lại thì mật độ phải TĂNG theo, không thì màn hình trống
+           trơn: mắt đọc ra "nhiều hoa" bằng tổng diện tích phủ, mà diện tích
+           một cánh giảm theo BÌNH PHƯƠNG bán kính. Cánh từ trung bình 12px
+           xuống 7,3px là diện tích còn khoảng 37%, nên số cánh phải lên gần
+           gấp rưỡi mới giữ được cảm giác cũ — và vì mỗi cánh nhạt hơn nhiều,
+           đông hơn vẫn không thành rối. */
+        var n = Math.max(54, Math.min(170, Math.round(W * H / 3300)));
         while (hoa.length < n) hoa.push(moi(true));
         hoa.length = n;
       },
@@ -160,6 +201,266 @@
           canh(h, lat);
           ctx.restore();
         }
+        ctx.globalAlpha = 1;
+      }
+    };
+  }
+
+  /* ══════════ THÁC NƯỚC ══════════
+     Theme Tĩnh lặng. Bốn tầng, và thiếu tầng nào cũng không ra thác:
+
+       1. MÀN NƯỚC  vệt dọc rơi nhanh, mờ dần về phía chân — đây là KHỐI nước
+                    đang đổ. Vệt nào cũng tan trước khi chạm mặt nước.
+       2. GIỌT      vài hạt rời, to và chậm hơn hẳn, rơi TỚI CÙNG và chạm mặt
+                    nước. Đây là tầng duy nhất có điểm kết.
+       3. GỢN       vòng sóng loang ra từ đúng chỗ giọt vừa chạm.
+       4. SƯƠNG     mảng mờ dâng lên ở chân thác — bụi nước bắn lên.
+
+     ── VÌ SAO PHẢI CÓ TẦNG 2 ──
+     Bản đầu chỉ có màn nước cộng gợn sóng ngẫu nhiên ở đáy. Nhìn ra ngay là
+     sai: vệt nước tan giữa chừng còn vòng sóng thì nổi lên ở chỗ chẳng có gì
+     rơi xuống, nên hai tầng đọc thành hai hiệu ứng rời nhau chạy song song.
+     Mắt người bắt quan hệ NHÂN QUẢ rất nhanh — phải có một vật rơi tới nơi và
+     vòng sóng phải nở ra từ đúng chỗ nó chạm, thì cả màn mới thành một cảnh.
+
+     ── ĐƯỜNG NƯỚC ──
+     Mọi thứ quy về `mn` (mặt nước) = 0.74 × chiều cao. Đó là ranh giới giữa
+     thác và vũng: trên nó là nước rơi, dưới nó là nước lặng. Không có đường
+     này thì gợn sóng rải khắp khung và cả màn thành cơn mưa, không phải thác. */
+  function dungThac() {
+    /* Sáu màu lấy thẳng từ bảng Tĩnh lặng trong tokens.css — trắng và suong
+       cho phần bọt sáng, suoi/reu/troi cho thân nước. */
+    var MAU = ['#FFFFFF', '#E6F1F2', '#9BD3DA', '#A8DED6', '#C2DCEE', '#7FBECB'];
+    var vet = [], giot = [], gon = [], suong = [];
+    var mn = 0;          /* y của mặt nước */
+
+    function moiVet(batDau) {
+      /* LỚP SÂU: 0 = màn nước phía xa, 1 = ngay trước mặt. Y hệt cách hoa rơi
+         dựng chiều sâu — cỡ, độ đậm và tốc độ đều suy ra từ một con số này.
+         Mũ 0.75 nghiêng về phía gần để có vài vệt đủ rõ làm điểm nhìn; rải đều
+         thì cả màn ra một lớp sương xám không có lớp lang. */
+      var lop = Math.pow(Math.random(), 0.75);
+      return {
+        lop: lop,
+        x: Math.random() * W,
+        y: batDau ? Math.random() * mn : -40 - Math.random() * 160,
+        /* Vệt càng gần càng DÀI: cùng một khoảng thời gian phơi sáng, vật đi
+           nhanh hơn thì để lại vệt dài hơn. Đây là chỗ làm nước có tốc độ. */
+        dai: 26 + lop * 96,
+        rong: 0.7 + lop * 1.9,
+        vy: 3.4 + lop * 9.5,
+        /* Dạt ngang rất nhẹ và LUÔN cùng một chiều: thác có hướng gió của nó.
+           Cho mỗi vệt một chiều riêng thì màn nước loạn như tuyết rơi. */
+        vx: 0.06 + lop * 0.16,
+        mau: MAU[(Math.random() * MAU.length) | 0],
+        mo: (0.16 + lop * 0.42)
+      };
+    }
+
+    function moiGiot(batDau) {
+      var lop = Math.pow(Math.random(), 0.6);
+      /* Mỗi giọt nhắm sẵn một điểm chạm trong DẢI nước. Cho mọi giọt cùng chạm
+         ở `mn` thì mười tám vòng sóng nở ra trên đúng một đường ngang, và mắt
+         đọc ngay ra cái đường ấy — vũng nước thành một vạch kẻ. */
+      var s = Math.random();
+      return {
+        lop: lop, s: s,
+        cham: mn + s * (H - mn) * 0.92,
+        x: 20 + Math.random() * Math.max(1, W - 40),
+        y: batDau ? Math.random() * mn : -20 - Math.random() * 420,
+        r: 1.6 + lop * 2.6,
+        vy: 2.2 + lop * 4.2,
+        mo: 0.3 + lop * 0.5
+      };
+    }
+
+    /* Gợn sóng nở ra từ chỗ giọt chạm. Bán kính đích theo lớp sâu của giọt:
+       giọt gần thì to, nên vòng sóng nó tạo ra cũng rộng hơn.
+
+       `y` rải trong cả DẢI nước chứ không nằm đúng trên đường mặt nước: mặt
+       nước nhìn xiên từ trên xuống thì nó là một MẶT, không phải một đường —
+       chỗ xa nằm cao trên màn, chỗ gần nằm thấp. Dồn hết gợn vào một đường thì
+       cả vũng bẹp lại thành một sợi chỉ. Càng xuống thấp (càng gần người xem)
+       vòng sóng càng to, nên bán kính đích nhân thêm theo độ sâu. */
+    function moiGon(x, lop) {
+      var s = Math.random();                 /* 0 = mép xa, 1 = sát chân màn */
+      gon.push({ x: x, y: mn + s * (H - mn) * 0.92,
+                 r: 1, rMax: (18 + lop * 46) * (0.55 + s * 0.85),
+                 v: (0.42 + lop * 0.5) * (0.6 + s * 0.8),
+                 mo: 0.3 + s * 0.42 });
+    }
+
+    return {
+      dung: function () {
+        mn = H * 0.74;
+        /* Mật độ theo DIỆN TÍCH thật, không theo một con số cố định: cùng một
+           số vệt thì màn 1440px thấy thưa mà màn 390px thấy dày đặc. */
+        var nVet = Math.max(40, Math.min(190, Math.round(W * H / 4200)));
+        var nGiot = Math.max(9, Math.min(34, Math.round(W / 58)));
+        while (vet.length < nVet) vet.push(moiVet(true));
+        vet.length = nVet;
+        while (giot.length < nGiot) giot.push(moiGiot(true));
+        giot.length = nGiot;
+
+        suong = [];
+        /* Bụi nước bám sát chân thác, nên tâm rải quanh ĐƯỜNG NƯỚC chứ không
+           rải khắp nửa dưới — rải khắp thì nó thành một lớp mù phủ chữ. */
+        for (var i = 0; i < 16; i++) {
+          suong.push({
+            x: Math.random() * W,
+            y: mn - Math.random() * H * 0.1,
+            r: H * (0.06 + Math.random() * 0.13),
+            vy: 0.06 + Math.random() * 0.14,
+            mo: 0.035 + Math.random() * 0.05,
+            m: MAU[2 + ((Math.random() * 4) | 0)]
+          });
+        }
+
+        /* Người tắt chuyển động vẫn phải thấy một cảnh CÓ BỐ CỤC, không phải
+           một màn nước đứng hình giữa khoảng không. Rải sẵn mấy vòng sóng ở
+           các kích cỡ khác nhau thì khung tĩnh vẫn đọc ra là mặt nước đang
+           động — chỉ là ta bắt được nó ở đúng một khoảnh khắc. */
+        if (itMotion && !gon.length) {
+          for (i = 0; i < 7; i++) {
+            moiGon(Math.random() * W, Math.random());
+            gon[gon.length - 1].r = gon[gon.length - 1].rMax * (0.15 + Math.random() * 0.7);
+          }
+        }
+      },
+
+      ve: function (t) {
+        var i, o, g;
+        ctx.clearRect(0, 0, W, H);
+
+        /* ── 4. SƯƠNG ── vẽ TRƯỚC: nó là lớp xa nhất, nước rơi qua phía trước nó. */
+        for (i = 0; i < suong.length; i++) {
+          o = suong[i];
+          if (!itMotion) {
+            o.y -= o.vy;
+            /* Dâng quá cao thì thả lại xuống chân thác. Sương bốc lên mãi tới
+               đỉnh màn là mây, không phải bụi nước. */
+            if (o.y < mn - H * 0.34) { o.y = mn + H * 0.04; o.x = Math.random() * W; }
+          }
+          g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+          g.addColorStop(0, o.m);
+          g.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.globalAlpha = o.mo; ctx.fillStyle = g;
+          ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, 6.2832); ctx.fill();
+        }
+
+        /* ── 1. MÀN NƯỚC ── */
+        ctx.lineCap = 'round';
+        for (i = 0; i < vet.length; i++) {
+          o = vet[i];
+          if (!itMotion) { o.y += o.vy; o.x += o.vx; }
+          if (o.y - o.dai > mn) { vet[i] = moiVet(false); continue; }
+          if (o.x > W + 10) o.x = -10;
+
+          /* TAN DẦN KHI TỚI GẦN MẶT NƯỚC. Cắt cụt ở đúng đường nước thì mỗi
+             vệt kết thúc bằng một nhát dao ngang, và cả màn có một đường kẻ
+             thẳng mà mắt bắt được ngay. Nhạt dần trong 22% chiều cao cuối thì
+             nước "đi vào" bụi sương. */
+          var gan = (o.y - (mn - H * 0.22)) / (H * 0.22);
+          var mo = o.mo * (gan > 0 ? Math.max(0, 1 - gan) : 1);
+          if (mo <= 0.004) continue;
+
+          /* Vệt tô bằng GRADIENT dọc, không phải màu đặc: đầu vệt (chỗ nước
+             đang tới) đậm, đuôi nhạt dần về không. Màu đặc cho ra một cái que,
+             gradient cho ra một vệt chuyển động. */
+          g = ctx.createLinearGradient(o.x, o.y - o.dai, o.x, o.y);
+          g.addColorStop(0, 'rgba(255,255,255,0)');
+          g.addColorStop(1, o.mau);
+          ctx.globalAlpha = mo;
+          ctx.strokeStyle = g;
+          ctx.lineWidth = o.rong;
+          ctx.beginPath();
+          ctx.moveTo(o.x - o.vx * o.dai / Math.max(0.1, o.vy), o.y - o.dai);
+          ctx.lineTo(o.x, o.y);
+          ctx.stroke();
+        }
+
+        /* ── 2b. MẶT NƯỚC ── vẽ TRƯỚC giọt và gợn: nó là cái mặt, hai thứ kia
+           nằm trên nó. Ba lớp, và bỏ lớp nào cũng mất một nửa ý:
+
+             · DẢI: đậm dần xuống chân màn. Nước sâu thì tối và no màu hơn
+               nước nông — không có dốc màu này thì vũng nước phẳng như giấy.
+             · LẰN SÁNG: một vệt mảnh ngay trên đường nước, chỗ ánh sáng hắt
+               qua mép. Đây là thứ NÓI RA rằng "từ đây trở xuống là mặt nước";
+               thiếu nó thì dải màu chỉ như một bóng mờ ở chân trang.
+             · SÓNG LĂN TĂN: mấy lằn ngang rất nhạt, trôi chậm sang ngang. Mặt
+               nước đứng yên tuyệt đối đọc ra là sàn nhà, không phải nước. */
+        var day = H - mn;
+        g = ctx.createLinearGradient(0, mn, 0, H);
+        g.addColorStop(0, 'rgba(155,211,218,0)');
+        g.addColorStop(0.35, 'rgba(155,211,218,.13)');
+        g.addColorStop(1, 'rgba(105,178,194,.26)');
+        ctx.globalAlpha = 1; ctx.fillStyle = g;
+        ctx.fillRect(0, mn, W, day);
+
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = MAU[1]; ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        /* Đường nước KHÔNG thẳng: nhấp nhô rất nhẹ theo một sóng sin chạy
+           ngang. Kẻ thẳng thì đọc ra là mép một khối hộp. Bước 14px đủ mịn ở
+           mọi khổ màn mà không phải vẽ hàng nghìn đoạn. */
+        for (var gx = 0; gx <= W; gx += 14) {
+          var gy = mn + Math.sin(gx * 0.022 + t * 0.018) * 1.9;
+          gx ? ctx.lineTo(gx, gy) : ctx.moveTo(gx, gy);
+        }
+        ctx.stroke();
+
+        for (i = 0; i < 5; i++) {
+          /* Lằn nào ở thấp thì trôi nhanh hơn — cùng một tốc độ thật, chỗ gần
+             quét qua mắt nhanh hơn chỗ xa. Đó là toàn bộ chiều sâu của lớp này. */
+          var ly = mn + day * (0.17 + i * 0.19);
+          var lech = itMotion ? 0 : Math.sin(t * (0.006 + i * 0.004) + i * 1.7) * (10 + i * 16);
+          ctx.globalAlpha = 0.1 - i * 0.012;
+          ctx.beginPath();
+          ctx.ellipse(W * 0.5 + lech, ly, W * (0.34 + i * 0.1), 1.6 + i * 0.7, 0, 0, 6.2832);
+          ctx.stroke();
+        }
+
+        /* ── 2. GIỌT ── rơi tới cùng, chạm mặt nước rồi sinh ra một vòng sóng. */
+        for (i = 0; i < giot.length; i++) {
+          o = giot[i];
+          if (!itMotion) o.y += o.vy;
+          if (o.y >= o.cham) { moiGon(o.x, o.lop); giot[i] = moiGiot(false); continue; }
+          ctx.globalAlpha = o.mo;
+          ctx.fillStyle = MAU[0];
+          /* Hình giọt: ép dọc theo tốc độ. Một hình tròn rơi thẳng đọc ra là
+             hạt bụi; kéo dài ra theo chiều rơi thì đọc ra là nước. */
+          ctx.beginPath();
+          ctx.ellipse(o.x, o.y, o.r, o.r * (1 + o.vy * 0.26), 0, 0, 6.2832);
+          ctx.fill();
+        }
+
+        /* ── 3. GỢN ── ELIP chứ không phải tròn: mặt nước nhìn xiên từ trên
+           xuống thì vòng sóng tròn chiếu lên màn thành hình bẹt. Vẽ tròn là cả
+           vũng nước dựng đứng lên như một tấm bảng. */
+        for (i = gon.length - 1; i >= 0; i--) {
+          o = gon[i];
+          if (!itMotion) { o.r += o.v; }
+          var pha = o.r / o.rMax;
+          if (pha >= 1) { gon.splice(i, 1); continue; }
+          /* Mờ dần theo BÌNH PHƯƠNG phần còn lại: sóng loang ra thì năng lượng
+             tãi trên một chu vi mỗi lúc một dài, nên nó tắt nhanh về cuối chứ
+             không tắt đều. Giảm tuyến tính thì vòng sóng cứ lởn vởn mãi ở rìa. */
+          ctx.globalAlpha = (o.mo || 0.3) * (1 - pha) * (1 - pha);
+          ctx.strokeStyle = MAU[5];
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.ellipse(o.x, o.y, o.r, o.r * 0.3, 0, 0, 6.2832);
+          ctx.stroke();
+          /* Vòng thứ hai chạy sau, nhỏ hơn và nhạt hơn. Một vòng đơn đọc ra là
+             một cái vòng tròn; hai vòng đuổi nhau mới đọc ra là sóng. */
+          if (o.r > 12) {
+            ctx.globalAlpha *= 0.5;
+            ctx.beginPath();
+            ctx.ellipse(o.x, o.y, o.r * 0.58, o.r * 0.58 * 0.3, 0, 0, 6.2832);
+            ctx.stroke();
+          }
+        }
+
         ctx.globalAlpha = 1;
       }
     };
@@ -351,11 +652,21 @@
   }
 
   /* ══════════ ĐIỀU PHỐI ══════════ */
-  function dangToi() {
+
+  /* Theme → hiệu ứng. Một bảng tra, không phải một chuỗi if: thêm theme là
+     thêm đúng một dòng ở đây, và không có đường nào rơi vào nhánh "còn lại"
+     để rồi lặng lẽ chạy sai hiệu ứng. */
+  var BO = { light: dungHoa, dark: dungThienHa, calm: dungThac };
+
+  /* Theme nào đang chạy. Trả về đúng tên theme chứ không trả về true/false như
+     bản hai theme: thêm theme thứ ba vào thì một câu hỏi có/không không còn
+     đủ chỗ cho câu trả lời. */
+  function themeNao() {
     var t = document.documentElement.getAttribute('data-theme');
-    if (t === 'dark') return true;
-    if (t === 'light') return false;
-    return matchMedia('(prefers-color-scheme: dark)').matches;
+    if (BO[t]) return t;
+    /* Attribute vắng mặt (tắt JavaScript ở tab khác, hoặc theme.js vừa gỡ nó
+       ra vì người đọc đổi cài đặt máy) — hỏi lại hệ điều hành. */
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
   function coLai() {
@@ -387,7 +698,7 @@
 
   function doiBo() {
     ngung();
-    may = dangToi() ? dungThienHa() : dungHoa();
+    may = BO[themeNao()]();
     coLai();
     /* Vẽ ngay một khung trước khi vào vòng lặp: không có dòng này thì lúc đổi
        theme canvas trắng một nhịp rồi mới có hình. */

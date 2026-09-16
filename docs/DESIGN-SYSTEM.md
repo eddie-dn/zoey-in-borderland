@@ -11,33 +11,78 @@
 
 ---
 
-## 1 · HAI THEME
+## 1 · BA THEME
 
-| | Sakura (mặc định) | Galaxy |
-|---|---|---|
-| Nền | `#FAF6FD` + ba quầng pastel | `#120C22` → `#2B1E4C` ở giữa |
-| Chữ chính | `#3E2F56` tím mực | `#F6EFFB` |
-| Nhấn (trang trí) | `#E3AADD` | `#E3AADD` |
-| Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` |
+| | Sakura (mặc định) | Galaxy | Tĩnh lặng |
+|---|---|---|---|
+| Nền | `#FAF6FD` + ba quầng pastel | `#120C22` → `#2B1E4C` ở giữa | `#F1F7F8` + ba quầng xanh |
+| Chữ chính | `#3E2F56` tím mực | `#F6EFFB` | `#1F3B42` mực đá ướt |
+| Nhấn (trang trí) | `#E3AADD` | `#E3AADD` | `#9BD3DA` |
+| Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` | `#0F6B77` |
+| Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước |
 
-Người đọc bấm nút ở góc phải header để đổi; lựa chọn được nhớ lại.
+Người đọc bấm nút ở góc phải header để đổi; lựa chọn được nhớ lại. Nút là một
+**vòng xoay ba nhịp** — sáng → tối → tĩnh lặng → sáng — chứ không phải cái bập
+bênh hai nhịp như trước.
 
-### 1.1 · Ba trạng thái, phải viết đủ cả ba
+**Ba là ngưỡng cuối cùng còn xoay vòng được.** Bấm quá tay một nhịp thì bấm
+thêm hai nhịp nữa là về chỗ cũ. Từ bốn theme trở lên phải đổi sang menu thả
+xuống: cái nút một-hình không cho người đọc nhìn thấy trước mình sắp đi đâu, và
+quá ba lựa chọn thì việc mò mẫm ấy thành phiền.
+
+**Tĩnh lặng là theme NỀN SÁNG,** không phải theme tối thứ hai. Thác nước ban
+ngày; nền tối hoá ra là hang động. Nên nó để `color-scheme:light` và
+`--chu-bong:none` — hai thứ ấy đi theo ĐỘ SÁNG của nền chứ không theo tên theme.
+
+### 1.0 · Hệ điều hành không bao giờ tự chọn Tĩnh lặng
+
+Máy chỉ báo được hai trạng thái, sáng hoặc tối. Không có `prefers-color-scheme:
+calm`. Nên Tĩnh lặng **chỉ tồn tại khi người đọc tự bấm**, và trong `tokens.css`
+nó chỉ có đúng MỘT khối — không có khối `@media` song sinh như Galaxy.
+
+### 1.1 · Bốn khối, phải viết đủ cả bốn
 
 ```css
-:root{ … }                                    /* 1. SÁNG — khai ĐỦ mọi biến */
+:root{ … }                                    /* 1. SAKURA — khai ĐỦ mọi biến */
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){ … }        /* 2. máy để tối, chưa ai chọn  */
+  :root:not([data-theme]){ … }                /* 2. máy để tối, chưa ai chọn  */
 }
-:root[data-theme="dark"]{ … }                 /* 3. người đọc tự bấm chọn tối */
+:root[data-theme="dark"]{ … }                 /* 3. GALAXY, người đọc tự chọn */
+:root[data-theme="calm"]{ … }                 /* 4. TĨNH LẶNG, chỉ có khi tự chọn */
 ```
 
 Khối (2) và (3) **phải lặp lại y hệt nhau** — media query và attribute selector
 không giao nhau nên không kế thừa được của nhau.
 
-> **Luật cứng.** Không bao giờ để một màu CHỈ tồn tại trong khối (2) hoặc (3).
-> Máy để sáng mà người đọc bấm chọn tối là màu đó biến mất — và lỗi này chỉ lộ
-> ra đúng ở một tổ hợp, nên rất dễ lọt qua lúc kiểm thử.
+> **Luật cứng.** Không bao giờ để một màu CHỈ tồn tại trong một khối. Máy để
+> sáng mà người đọc bấm chọn tối là màu đó biến mất — và lỗi này chỉ lộ ra ở
+> đúng một tổ hợp, nên rất dễ lọt qua lúc kiểm thử.
+
+**Luật này đã bị vi phạm ngay trong chính file viết ra nó.** `--text-faint` ở
+theme tối được sửa lên `.62` cho đủ tương phản ở khối (2), còn khối (3) nằm lại
+`.50` (3,9:1). Ai để máy ở chế độ tối thì đọc được ngày tháng và tem chân trang;
+ai tự bấm nút chọn tối thì không. Hai khối không bao giờ hiện cùng lúc nên
+không ai bắt bằng mắt được. Nay có hai phép kiểm canh: một phép soi ba biến
+quầng sáng ở **cả bốn khối**, một phép so Galaxy với Tĩnh lặng phải khai cùng
+một bộ biến **và** hai khối Galaxy phải giống nhau **từng giá trị**.
+
+### 1.1b · Vì sao khối (2) là `:not([data-theme])`
+
+Hồi còn hai theme thì `:not([data-theme="light"])` và `:not([data-theme])` cho
+ra cùng một kết quả. Thêm theme thứ ba vào thì không: `:not([data-theme="light"])`
+khớp luôn cả `calm`, nên máy để tối mà người đọc chọn Tĩnh lặng là khối (2) và
+khối (4) cùng nổ, **bằng điểm nhau** (0,2,0) và chỉ hơn thua ở thứ tự dòng
+trong file. Một bảng màu quyết định bằng thứ tự dòng là bảng màu vỡ ngay lần
+đầu có người dời khối đi chỗ khác.
+
+`:not([data-theme])` nói đúng cái cần nói: **chưa ai chọn gì**. Đó là hai trường
+hợp thật — tắt JavaScript, và `theme.js` gỡ attribute ra khi người đọc đổi cài
+đặt máy mà chưa từng tự bấm chọn.
+
+> **Bẫy đi kèm, đã vấp.** Vế thứ hai ấy chỉ đúng nếu `theme.js` **không** ghi
+> localStorage ở cú gọi lúc nạp trang. Bản trước ghi, nên mở trang một lần là
+> đã có "lựa chọn đã lưu", và từ đó trang thôi đi theo cài đặt sáng/tối của máy.
+> Lỗi chỉ lộ ra ở lần mở trang thứ hai trở đi.
 
 ### 1.2 · Vì sao màu nhấn tách làm HAI
 
@@ -635,12 +680,41 @@ và không ai cuộn ngược để xem lại hiệu ứng.
 
 ## 12 · NỀN ĐỘNG
 
-Hai hiệu ứng, tự đổi theo theme:
+Ba hiệu ứng, tự đổi theo theme. Bảng tra `BO` ở phần ĐIỀU PHỐI của
+`src/js/nen.js` là **chỗ duy nhất** biết theme nào đi với hiệu ứng nào — thêm
+theme là thêm đúng một dòng ở đó, không phải đi sửa một chuỗi `if`.
 
 | Theme | Hiệu ứng | Gốc |
 |---|---|---|
-| sáng | cánh hoa anh đào rơi chéo | HAN-961030-a |
-| tối | đĩa thiên hà xoắn ốc | HAN-961030-b |
+| Sakura | cánh hoa anh đào rơi chéo | HAN-961030-a |
+| Galaxy | đĩa thiên hà xoắn ốc | HAN-961030-b |
+| Tĩnh lặng | thác nước · giọt · gợn · mặt nước | dựng mới cho blog |
+
+### 12.0 · Thác nước — bốn tầng, và vì sao tầng GIỌT là tầng quan trọng nhất
+
+| Tầng | Làm gì |
+|---|---|
+| 1 · MÀN NƯỚC | vệt dọc rơi nhanh, **tan dần** trước khi chạm mặt nước |
+| 2 · GIỌT | vài hạt rời, to và chậm hơn, rơi **tới cùng** và chạm mặt nước |
+| 3 · MẶT NƯỚC | dải nước đậm dần xuống chân màn + lằn sáng + sóng lăn tăn |
+| 4 · GỢN | vòng sóng loang ra từ **đúng chỗ giọt vừa chạm** |
+
+Bản đầu chỉ có màn nước cộng vòng sóng ngẫu nhiên ở đáy. Nhìn ra ngay là sai:
+vệt nước tan giữa chừng còn vòng sóng thì nổi lên ở chỗ chẳng có gì rơi xuống,
+nên hai tầng đọc thành hai hiệu ứng rời nhau chạy song song. **Mắt người bắt
+quan hệ nhân quả rất nhanh** — phải có một vật rơi tới nơi và vòng sóng phải nở
+ra từ đúng chỗ nó chạm, thì cả màn mới thành một cảnh.
+
+Ba chỗ dễ làm sai:
+
+- **Vệt nước phải TAN, không được cắt cụt.** Cắt ở đúng đường nước thì mỗi vệt
+  kết thúc bằng một nhát dao ngang, và cả màn có một đường kẻ thẳng mà mắt bắt
+  được ngay. Nhạt dần trong 22% chiều cao cuối thì nước "đi vào" bụi sương.
+- **Mặt nước là một MẶT, không phải một đường.** Nhìn xiên từ trên xuống thì chỗ
+  xa nằm cao trên màn, chỗ gần nằm thấp. Giọt và gợn rải trong cả dải; dồn hết
+  vào một đường thì vũng nước bẹp thành một sợi chỉ.
+- **Gợn vẽ bằng ELIP, không phải hình tròn.** Vòng sóng tròn chiếu lên màn nhìn
+  xiên thì thành hình bẹt. Vẽ tròn là cả vũng nước dựng đứng lên như tấm bảng.
 
 ### 12.1 · Bật ở đâu
 
@@ -1071,21 +1145,112 @@ tới một màn.
 
 ## 19 · LOGO
 
-Một hình, dựng ra bằng cách kể lại chính cái tên co lại:
+Một hình, dựng ra bằng cách kể lại chính cái tên co lại — rồi phá nó đi và kể lại:
 
 ```
 Zoey in Borderland
    ↓  cả dòng bóp lại còn một điểm
 nét gấp khúc hình chữ Z
-   ↓  xoay ngang
-một nét thẳng quét vào nối hai đầu        ← chữ i
-   ↓  cong dần ra
+   ↓  một nét thẳng nối ĐỈNH PHẢI xuống ĐÁY TRÁI     ← chữ i
+VÔ CỰC DẠNG ĐA GIÁC        (nút thắt, bốn cạnh một chỗ cắt)
+   ↓  xoay ngang rồi bo góc
 VÔ CỰC THỨ NHẤT
-   ↓  một vòng tròn khép lại rồi vặn       ← chữ B
+   ↓  chữ B, BỤNG DƯỚI vòng ra                        ← chữ B
 VÔ CỰC THỨ HAI
+   ↓  bốn cánh nở thành tám
+MANDALA
+   ↓  xoay chậm → nhanh → VỠ, mười tám hạt bụi rơi
    ↓
-bốn cánh
+tụ lại, kể lại từ đầu
 ```
+
+### 19.0 · Nét nối phải chạm vào ĐÚNG hai đầu tự do
+
+Nét chữ Z có hai đầu tự do: `(35,13)` và `(13,35)` trong toạ độ của file. Nét
+nối chạy đúng giữa hai điểm ấy, nên nối nó vào là **khép hình lại**.
+
+Và khép xong thì nó tự thắt nút: đường chéo sẵn có của chữ Z chạy
+`(35,35)→(13,13)`, nét nối chạy `(35,13)→(13,35)` — hai đường **cắt nhau ngay
+giữa khung**, ở đúng `(24,24)`. Bốn cạnh, một chỗ cắt: một vô cực dạng đa giác.
+Từ đó chỉ cần bo góc là ra vô cực nét cong.
+
+> **Bản trước để `M24 15V33`** — một vạch dựng giữa khung, quét vào rồi xoay
+> ngang. Nhìn thì có động, nhưng nó **không nối vào đâu cả**: hai đầu chữ Z vẫn
+> hở nguyên, và chặng sau chữ Z cong ra thành vô cực mà chẳng nhờ gì tới nó.
+> Nét nối phải chạm vào đúng hai đầu ấy thì cả chuỗi mới đọc ra là nhân quả.
+
+**Nét nối nằm ở nhóm khác nên nó KHÔNG tự ăn theo phép xoay của chữ Z.** Phải
+lặp lại cùng giá trị `rotate` ở cùng các mốc trong `@keyframes lg-noi`. Lệch một
+mốc thôi là hai đầu nó rời khỏi hai đầu chữ Z, và cái nút thắt — thứ cả chặng
+này sinh ra để có — thành hai nét bắt chéo nhau hụt.
+
+### 19.0b · Chữ B, và vì sao thứ tự nút quyết định tất cả
+
+Chặng này trước đây là một **vòng tròn**. Vòng tròn vặn ra vô cực thì đúng về
+hình học, nhưng nó đánh rơi mất con chữ: cái tên là *Borderland*, chữ B mới là
+thứ đang được kể lại, còn vòng tròn thì chẳng của riêng ai.
+
+`P_B` viết B bằng đúng một nét, theo thứ tự tay người viết: từ giữa sống lưng
+xuống bụng dưới, ngược lên giữa, lên bụng trên, rồi về giữa. Sống lưng bị đi qua
+hai lần — đúng như khi viết tay, và hai lượt chồng khít nhau nên nhìn ra vẫn là
+một nét.
+
+Quan trọng nhất: **thứ tự nút của nó trùng khít `P_INF2`.**
+
+```
+P_INF2 :  tâm → đáy → tâm → đỉnh → tâm
+P_B    :  tâm → đáy → tâm → đỉnh → tâm
+```
+
+Đó không phải tình cờ mà là điều kiện để phép biến hình đọc ra là **bụng dưới
+đang xoay**: mỗi nút bò tới đúng nút tương ứng của nó, nên bụng dưới của chữ B
+là thứ vòng ra thành thuỳ dưới của vô cực. Xếp lệch thứ tự thì hai hình vẫn nội
+suy được, nhưng các nút bò chéo qua nhau và mắt chỉ đọc ra một mớ nét đang quẫy.
+
+### 19.0c · Mandala: tám cánh và hai vành
+
+Hai vô cực đã nằm vuông góc nhau — tức là đã có bốn cánh. Thêm hai bản **sao**
+của vô cực ngang, xoay 45° và 135°, là thành tám: một bông đối xứng tám hướng,
+đúng cái khung mà mọi hình mandala dựng trên đó.
+
+- **Bản sao là nét TĨNH, không mang `<animate>`.** Chúng chỉ hiện ở chặng
+  mandala, mà chặng ấy nằm sau khi hai vô cực đã thành hình xong. Cho chúng
+  `<animate>` nữa thì mỗi bông có thêm hai nét âm thầm chạy chữ Z ở dưới lớp
+  mờ — tốn việc vẽ mà không ai nhìn thấy.
+- **Nét mandala mảnh hơn nét chính** (1,5 so với 2,6). Cùng bề dày thì tám cánh
+  nặng ngang nhau và hình thành một mớ rối; mảnh đi thì hai vô cực gốc vẫn là
+  nét chính, sáu nét kia là hoa văn quanh nó.
+- **Hai vành tròn đồng tâm** là thứ làm nó đọc ra là *mandala* chứ không phải
+  một bông hoa tám cánh: mandala luôn có đường viền khép vòng ngoài và một tâm
+  rõ ràng. Thiếu chúng thì tám cánh chỉ toả ra rồi hết, không có chỗ dừng.
+
+### 19.0d · Chậm → nhanh là do KHOẢNG MỐC, không do hàm nhịp
+
+```
+64%  rotate(30deg)     ·  30° trong 12% vòng   — chậm
+76%  rotate(180deg)    · 150° trong 10% vòng   — nhanh dần
+86%  rotate(480deg)    · 300° trong 10% vòng   — nhanh
+```
+
+Hàm nhịp của cả cụm để `linear`, nên nhanh-chậm **hoàn toàn** do khoảng cách
+giữa các mốc quyết định. Chia đều góc quay thì tốc độ không đổi và cú tăng tốc
+biến mất — mà cú tăng tốc chính là thứ dẫn vào lúc vỡ.
+
+### 19.0e · Bụi: toạ độ TÍNH RA, và hai tầng điều khiển
+
+Mười tám hạt, toạ độ do `tools/build.mjs` tính lúc dựng chứ không gõ tay: rải
+đều theo góc, bán kính so le theo một chu kỳ **không chia hết cho mười tám** nên
+không hạt nào xếp thành hàng với hạt nào. Gõ tay mười tám cặp số thì kiểu gì
+cũng lọt ba bốn hạt thẳng hàng, và mắt bắt được ngay cái hàng ấy.
+
+Mỗi hạt mang sẵn `--bx` (dạt ngang), `--by` (rơi sâu), `--bt` (trễ) trong thuộc
+tính `style` của nó. Nhờ vậy **cả mười tám dùng chung đúng một `@keyframes`** mà
+vẫn rơi mỗi hạt một kiểu.
+
+Hai tầng, và cần cả hai: nhóm `.lg-bui` lo *"có được phép hiện không"* (theo
+vòng lớn), từng hạt lo *"rơi tới đâu rồi"* (theo đường rơi riêng, có trễ âm).
+Nhét cả hai vào một bộ keyframes thì mỗi hạt phải có một bộ riêng — mười tám bộ,
+và cùng một hiệu ứng phải sửa mười tám chỗ.
 
 ### 19.1 · Vì sao không phải ô vuông gạch chéo
 
@@ -1117,8 +1282,12 @@ hỏng cũng không ảnh hưởng gì.
 
 ### 19.3 · Bốn đường, một cấu trúc — luật phải giữ
 
-Cả bốn đường (`P_INF1`, `P_INF2`, `P_ZZ`, `P_VONG` trong `tools/build.mjs`) đều
-là `M` rồi **đúng bốn** `C`. Trình duyệt chỉ nội suy được giữa hai đường khi
+Cả bốn đường (`P_INF1`, `P_INF2`, `P_ZZ`, `P_B` trong `tools/build.mjs`) đều
+là `M` rồi **đúng bốn** `C`. Chúng nội suy vào nhau theo từng cặp —
+`P_ZZ → P_INF1` và `P_B → P_INF2`.
+
+`P_NOI` **không** nằm trong luật này: nét nối chữ i không biến hình với ai, nó
+chỉ vẽ dần ra rồi tắt, nên nó được phép là một đoạn thẳng `M…L…`. Trình duyệt chỉ nội suy được giữa hai đường khi
 chúng cùng chuỗi lệnh và cùng số điểm — nhờ vậy nét chữ Z **cong dần** ra thành
 vô cực chứ không nhảy sang.
 
@@ -1130,8 +1299,10 @@ chỉ là hình thôi biến. Bộ kiểm định có một phép canh việc n�
 
 | Phần | Chạy bằng | Khai ở |
 |---|---|---|
-| mờ · xoay · vẽ dần | hoạt hình CSS | `--lg-ck` trong `layout.css` |
+| mờ · xoay · vẽ dần · rơi | hoạt hình CSS | `--lg-ck` trong `layout.css` |
 | biến hình (`d`) | thẻ `<animate>` trong SVG | `LG_CK` trong `build.mjs` |
+
+Hiện là **30 giây** (trước là 20 — xem §19.5b).
 
 Phải dùng `<animate>` chứ không dùng thuộc tính CSS `d`: Chrome và Safari nội
 suy được `d` qua CSS, Firefox thì không, và ở đó nét sẽ nhảy thay vì cong dần.
@@ -1151,17 +1322,37 @@ máy. Đã vấp hai lần đúng vì chuyện này, và cả hai lần đều t
 
 | Trang | Thấy gì | Lớp |
 |---|---|---|
-| `/` | logo, tự kể chuyện, vòng 20 giây | `.brand--logo .brand--dong` |
-| `/about/` | logo, vẽ một lần rồi đứng yên | `.brand--logo` |
+| `/` | logo, tự kể chuyện, vòng 30 giây | `.brand--logo .brand--dong` |
+| `/about/` | logo, tự kể chuyện, vòng 30 giây | `.brand--logo .brand--dong` |
 | mọi trang khác | dòng chữ *Zoey in Borderland* | `.brand--chu` |
 
 Không bao giờ hiện cả hai cùng lúc: logo và tên viết đầy đủ nói **cùng một
 điều**, đặt cạnh nhau thì thành lặp, và ở thanh đầu trang thì lặp là tốn chỗ của
 mục điều hướng.
 
-Vòng lặp nghỉ 42% thời gian (kể hết 58% rồi đứng yên 8 giây). Một hình động lặp
-liên tục ở thanh đầu trang là thứ mắt không bỏ qua được, mà người ta tới đây để
-đọc. Trang giới thiệu — trang nhiều chữ nhất — không cho nó lặp chút nào.
+Danh sách hai trang ấy khai ở **một chỗ**: hằng `CHO_KE` trong phép kiểm
+"Logo và dòng chữ tên blog không cùng hiện trên một trang". Phép kiểm dùng nó
+cho cả hai vế — chỗ báo sai trang, và chỗ đếm tổng.
+
+### 19.5b · Trang giới thiệu nay CÓ lặp — và cái giá của nó
+
+Trước bản này, `/about/` cố ý **không** cho logo lặp: đó là trang nhiều chữ
+nhất, và một hình động lặp ở thanh đầu trang là thứ mắt không bỏ qua được.
+
+Nay nó có lặp. Bù lại bằng hai chỗ:
+
+- **Vòng kéo từ 20 lên 30 giây.** Phần mandala xoay và vỡ chiếm mất quãng nghỉ
+  cũ (bản trước kể hết 58% rồi đứng yên 42%), nên nếu giữ 20 giây thì thanh đầu
+  trang gần như không lúc nào đứng yên. Kéo dài vòng ra thì mỗi chặng vẫn đủ
+  thời gian đọc, mà tần suất một chuyện được kể lại thì thưa đi.
+- **Vòng vẫn mở và đóng bằng hình ĐỦ**, không bằng hình rỗng. Logo là dấu nhận
+  mặt của trang; để nó biến mất thì có lúc người đọc nhìn lên góc trái và không
+  thấy gì cả. Bụi rơi xong thì bông phải tụ lại.
+
+Nếu đọc thấy vướng thì chỗ chỉnh là đúng **một con số** `--lg-ck` trong
+`layout.css` — nhớ sửa kèm `LG_CK` trong `tools/build.mjs`, có phép kiểm canh
+hai số ấy khớp nhau.
 
 Bật "giảm chuyển động" thì dừng hẳn ở hình đủ, không dừng ở một chặng giữa
-chừng: người bật tuỳ chọn ấy vẫn phải thấy logo, chỉ là không thấy nó động.
+chừng. Hình đủ của logo này là **bông tám cánh**, nên mandala được giữ lại —
+dừng ở bốn cánh là dừng giữa chừng.

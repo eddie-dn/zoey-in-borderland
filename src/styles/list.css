@@ -228,7 +228,32 @@
      đọc ra là "Borderl", một chữ bị cắt cụt chứ không phải một bố cục. Bản sau
      đó kéo về 19,3cqw cho vừa khít cột, nhưng vừa khít thì mất luôn trò xén và
      khối chữ nhỏ hẳn đi. 20,35cqw là chỗ ở giữa: to hơn, mà xén đúng nửa chữ. */
-  --s3:20.35cqw;  --x3:.06em;  --ls3:.038em;
+  /* ĐO LẠI TRONG TRÌNH DUYỆT, 16-Sep-2026 — con số cũ đã lệch.
+     Số đời trước tính trên "cả từ chiếm 5,117 lần cỡ chữ, riêng chữ d chiếm
+     0,538". Đo lại bằng Range trên chính nét chữ đang hiện, phông Cormorant
+     Garamond italic 600 đã nạp xong (kiểm bằng document.fonts.check), ở bốn cỡ
+     80/103/137/200px đều ra cùng một tỉ lệ:
+
+         cả từ "Borderland"  4,0343 × cỡ chữ   (CHƯA gồm giãn chữ)
+         riêng chữ "d"       0,4481 × cỡ chữ
+
+     Lệch so với số cũ tới 17%, và lệch theo chiều làm từ NGẮN đi — nên ở
+     20,35cqw chữ "d" dừng cách đường kẻ phải 45px, không hề bị xén. Trò xén
+     hai đầu mất hẳn một bên, và cả khối chữ đọc ra là bị bó lại giữa cột.
+
+     ── GIẢI LẠI ──
+     Giãn chữ cộng thêm sau MỌI ký tự, kể cả ký tự cuối, nên mép phải của nét
+     chữ "d" nằm ở `4,0343 + 9·ls` chứ không phải `+ 10·ls` — bề ngang cả ô có
+     tính nhịp giãn thừa phía sau, mà nhịp ấy là khoảng trống, không phải chữ.
+     Muốn đường kẻ cắt ĐÚNG GIỮA chữ "d":
+
+         x3 + 4,0343 + 9·ls3 − 0,4481/2 = 100/s3
+         0,06 + 4,0343 + 0,342 − 0,224  = 4,2123  →  s3 = 23,74cqw
+
+     Đổi phông hay đổi chữ là phải đo lại rồi giải lại — bộ kiểm định có một
+     phép canh việc này, và nay nó canh CẢ HAI chiều: lấn quá nửa chữ, và
+     không lấn tới nơi. */
+  --s3:23.74cqw;  --x3:.06em;  --ls3:.038em;
   /* KHOẢNG GIỮA HAI DÒNG, chỉ mở ra lúc hiện đủ.
      line-height .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc.
      Nhưng lúc hiện đủ thì đuôi chữ "y" của dòng trên thò xuống đúng chỗ thân
@@ -249,8 +274,17 @@
   --nhip:.62s cubic-bezier(.22,.61,.36,1);
   transition:opacity var(--nhip);
 }
-:root[data-theme="dark"] .hero-danh,
-:root:not([data-theme="light"]) .hero-danh{opacity:.22}
+/* Chỉ GALAXY hạ khối chữ xuống .22. Trên nền đêm, khối chữ khổng lồ ở độ đậm
+   của nền sáng át hết cả đĩa thiên hà phía sau.
+   Tĩnh lặng KHÔNG nằm trong luật này: nó là theme nền sáng, và ở đó khối chữ
+   mờ đi thì màn hero mất luôn điểm nhìn.
+   Viết `:not([data-theme])` chứ không `:not([data-theme="light"])` — lý do đầy
+   đủ ở đầu tokens.css. Bản trước để vế thứ hai NGOÀI @media, nên máy tắt
+   JavaScript là khối chữ bị mờ ngay trên nền Sakura sáng trắng. */
+:root[data-theme="dark"] .hero-danh{opacity:.22}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]) .hero-danh{opacity:.22}
+}
 
 .hd-hang{
   display:block;white-space:nowrap;
@@ -287,7 +321,12 @@
   --s1:25cqw;   --x1:.1em;    --gap1:.13em;
   /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:18.2cqw; --x3:.135em;  --ls3:.038em;
+  /* Lùi vào TRONG, nhưng chỉ vừa đủ: mép nét chữ "d" cách đường kẻ phải
+     0,05 lần cỡ chữ. 18,2cqw đời trước để hở tới 0,95 lần cỡ chữ — gần một
+     con chữ trống bên phải, và khối chữ đọc ra là chưa dàn hết cột.
+         x3 + 4,0343 + 9·ls3 + 0,05 = 100/s3
+         0,135 + 4,0343 + 0,342 + 0,05 = 4,5613  →  s3 = 21,92cqw */
+  --s3:21.92cqw; --x3:.135em;  --ls3:.038em;
   --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
 }
 .hero:hover .hd-con,
@@ -303,7 +342,12 @@
   --s1:25cqw;   --x1:.1em;    --gap1:.13em;
     /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:18.2cqw; --x3:.135em;  --ls3:.038em;
+  /* Lùi vào TRONG, nhưng chỉ vừa đủ: mép nét chữ "d" cách đường kẻ phải
+     0,05 lần cỡ chữ. 18,2cqw đời trước để hở tới 0,95 lần cỡ chữ — gần một
+     con chữ trống bên phải, và khối chữ đọc ra là chưa dàn hết cột.
+         x3 + 4,0343 + 9·ls3 + 0,05 = 100/s3
+         0,135 + 4,0343 + 0,342 + 0,05 = 4,5613  →  s3 = 21,92cqw */
+  --s3:21.92cqw; --x3:.135em;  --ls3:.038em;
     --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
   }
   .hd-con{opacity:1;letter-spacing:-.03em}

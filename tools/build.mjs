@@ -140,6 +140,10 @@ const NHAN = {
   skipToMain  : 'Skip to content',
   toLight     : 'Switch to light',
   toDark      : 'Switch to dark',
+  /* "Calm" chứ không phải "Zen" hay "Still": nhãn này nằm cạnh light/dark
+     trong cùng một vòng xoay, nên nó phải cùng loại chữ — một tính từ tả cảm
+     giác của trang, không phải một cái tên riêng. */
+  toCalm      : 'Switch to calm',
   older       : 'Older',
   newer       : 'Newer',
 
@@ -573,7 +577,12 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                    : ''
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
-    logo      : logoHTML(duong === '/'),
+    /* Logo kể chuyện ở CẢ hai trang có logo — trang chủ và trang giới thiệu.
+       Trước đây chỉ trang chủ được kể; trang giới thiệu vẽ một lần rồi đứng
+       yên, vì đó là trang nhiều chữ nhất và một hình động lặp ở thanh đầu
+       trang là thứ mắt không bỏ qua được. Nay cả hai cùng kể — xem ghi chú
+       "MỘT VÒNG DÀI HƠN" ở layout.css về cách bù lại chỗ đó. */
+    logo      : logoHTML(duong === '/' || duong === '/about/'),
     /* LOGO CHỈ Ở TRANG CHỦ VÀ TRANG GIỚI THIỆU, và ở đó nó đứng MỘT MÌNH.
        Mọi trang khác chỉ có dòng chữ tên blog, không logo.
 
@@ -586,7 +595,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        đứng yên — đó là trang nhiều chữ nhất, một hình động lặp mãi ở góc trên
        là thứ mắt không bỏ qua được. */
     lopBrand  : duong === '/'        ? ' brand--logo brand--dong'
-              : duong === '/about/'  ? ' brand--logo'
+              : duong === '/about/'  ? ' brand--logo brand--dong'
               :                        ' brand--chu',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
@@ -612,6 +621,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     skipToMain: escapeHtml(NHAN.skipToMain),
     toLight   : attr(NHAN.toLight),
     toDark    : attr(NHAN.toDark),
+    toCalm    : attr(NHAN.toCalm),
     nav       : navHTML(duong),
     napTimKiem: coTrang('/search/')
       ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
@@ -825,9 +835,43 @@ const P_INF2 = 'M24 24C16 32 18 41 24 41C30 41 32 32 24 24C32 16 30 7 24 7C18 7 
    Làm ngược lại — vẽ Z đứng rồi xoay +90° — thì cái vô cực nó cong ra cũng bị
    xoay theo và thành vô cực DỰNG ĐỨNG, sai mất hình cuối. */
 const P_ZZ   = 'M35 13C35 20 35 28 35 35C31 31 28 28 24 24C20 20 17 17 13 13C13 20 13 28 13 35';
-/* Vòng tròn dựng bằng bốn cung phần tư — cách dựng hình tròn kinh điển bằng
-   đường Bézier, hằng số 0.5523 × bán kính. */
-const P_VONG = 'M24 12C30.6 12 36 17.4 36 24C36 30.6 30.6 36 24 36C17.4 36 12 30.6 12 24C12 17.4 17.4 12 24 12';
+/* ── CHỮ B ──
+   Trước đây chặng này là một VÒNG TRÒN. Vòng tròn vặn ra vô cực thì đúng về
+   hình học, nhưng nó đánh rơi mất con chữ: cái tên là *Borderland*, chữ B mới
+   là thứ đang được kể lại, còn vòng tròn thì chẳng của riêng ai.
+
+   Viết B bằng ĐÚNG MỘT nét, theo thứ tự tay người viết: từ giữa sống lưng
+   xuống bụng dưới, ngược lên giữa, lên bụng trên, rồi về giữa. Sống lưng bị
+   đi qua hai lần — đúng như khi viết tay, và hai lượt chồng khít nhau nên
+   nhìn ra vẫn là một nét.
+
+   ── VÌ SAO CÁC NÚT PHẢI XẾP ĐÚNG THỨ TỰ NÀY ──
+   P_INF2 đi: tâm → đáy → tâm → đỉnh → tâm.
+   Chữ B ở đây đi: tâm → đáy → tâm → đỉnh → tâm.
+   Trùng khít từng nút một. Đó không phải tình cờ mà là điều kiện để phép biến
+   hình đọc ra là BỤNG DƯỚI ĐANG XOAY: mỗi nút bò tới đúng nút tương ứng của
+   nó, nên bụng dưới của chữ B là thứ vòng ra thành thuỳ dưới của vô cực. Xếp
+   lệch thứ tự thì hai hình vẫn nội suy được, nhưng các nút bò chéo qua nhau và
+   mắt chỉ đọc ra một mớ nét đang quẫy. */
+const P_B    = 'M16 24C30 26 30 38 16 40C16 35 16 29 16 24C30 22 30 10 16 8C16 13 16 19 16 24';
+
+/* ── NÉT NỐI — CHỮ i ──
+   Nối ĐỈNH PHẢI của chữ Z (35,13) xuống ĐÁY TRÁI của nó (13,35). Đó đúng là
+   hai ĐẦU TỰ DO của nét chữ Z, nên nối chúng lại là KHÉP hình lại.
+
+   Và khép xong thì nó tự thắt nút: đường chéo sẵn có của chữ Z chạy
+   (35,35)→(13,13), nét nối này chạy (35,13)→(13,35) — hai đường cắt nhau ngay
+   giữa khung, ở đúng (24,24). Bốn cạnh, một chỗ cắt: một VÔ CỰC DẠNG ĐA GIÁC.
+   Từ đó chỉ cần bo góc là ra vô cực nét cong.
+
+   Bản trước để `M24 15V33`, một vạch dựng giữa khung — nó quét vào rồi xoay
+   ngang, nhìn thì có động, nhưng nó không nối vào đâu cả: hai đầu chữ Z vẫn hở
+   nguyên, và chặng sau chữ Z cong ra thành vô cực mà chẳng nhờ gì tới nó. Nét
+   nối phải chạm vào đúng hai đầu ấy thì cả chuỗi mới đọc ra là NHÂN QUẢ.
+
+   Không cần cấu trúc `M + 4C` vì nó không biến hình với ai — nó chỉ vẽ dần ra
+   rồi tắt đi. */
+const P_NOI  = 'M35 13L13 35';
 
 /* ── PHÉP BIẾN HÌNH CHẠY BẰNG SMIL, KHÔNG PHẢI CSS ──────────────────────
    CSS có thuộc tính `d` và Chrome/Safari nội suy được nó, nhưng Firefox thì
@@ -841,11 +885,11 @@ const P_VONG = 'M24 12C30.6 12 36 17.4 36 24C36 30.6 30.6 36 24 36C17.4 36 12 30
    `keyTimes` là PHẦN CỦA VÒNG, không phải giây: 0.12 = 12% của 20s. Hai mốc
    đầu giữ nguyên hình cuối cho tới lúc bốn cánh vỡ xong, rồi mới nháy sang
    hình chữ — nháy lúc đang vô hình thì không ai thấy cú nháy ấy. */
-/* 20 giây — PHẢI khớp với `--lg-ck` trong src/styles/layout.css. Thuộc tính
+/* 30 giây — PHẢI khớp với `--lg-ck` trong src/styles/layout.css. Thuộc tính
    `dur` của <animate> là attribute của SVG, không phải CSS, nên `var()` ở đây
    không nở ra gì cả; buộc phải ghi số. Hai chỗ ghi cùng một con số là đúng cái
    kiểu sớm muộn cũng lệch nhau, nên bộ kiểm định có một phép canh việc ấy. */
-const LG_CK = '20s';
+const LG_CK = '30s';
 
 function bien(tu, den, t1, t2) {
   return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
@@ -857,18 +901,56 @@ function bien(tu, den, t1, t2) {
 function logoHTML(dong) {
   const net = (lop, d, smil) =>
     `<path class="lg-vc ${lop}" fill="none" stroke="currentColor" d="${d}">${smil}</path>`;
+
+  /* ── MANDALA ──
+     Hai vô cực đã có sẵn nằm vuông góc nhau (một ngang, một đứng) — tức là đã
+     có bốn cánh. Thêm hai bản SAO của vô cực ngang, xoay 45° và 135°, là thành
+     TÁM cánh: một bông đối xứng tám hướng, đúng cái khung mà mọi hình mandala
+     dựng trên đó.
+
+     Bản sao là nét TĨNH, không mang thẻ <animate> nào. Chúng chỉ hiện ở chặng
+     mandala, mà chặng ấy nằm SAU khi hai vô cực đã thành hình xong — nên không
+     có lúc nào chúng phải biến hình theo. Cho chúng <animate> nữa thì mỗi bông
+     hoa có thêm hai nét âm thầm chạy chữ Z ở dưới lớp mờ, tốn việc vẽ mà không
+     ai nhìn thấy.
+
+     Hai vành tròn đồng tâm là thứ làm nó đọc ra là MANDALA chứ không phải một
+     bông hoa tám cánh: mandala luôn có đường viền khép vòng ngoài và một tâm
+     rõ ràng. Thiếu chúng thì tám cánh chỉ toả ra rồi hết, không có chỗ dừng. */
+  const mandala = `<g class="lg-man" fill="none" stroke="currentColor">
+      <path class="lg-canh" d="${P_INF1}" transform="rotate(45 24 24)"/>
+      <path class="lg-canh" d="${P_INF1}" transform="rotate(135 24 24)"/>
+      <circle class="lg-vanh" cx="24" cy="24" r="21.5"/>
+      <circle class="lg-vanh" cx="24" cy="24" r="6"/>
+    </g>`;
+
+  /* ── BỤI ──
+     Toạ độ TÍNH RA lúc dựng chứ không gõ tay: mười tám hạt rải đều theo góc,
+     bán kính so le theo một chu kỳ không chia hết cho mười tám nên không hạt
+     nào xếp thành hàng với hạt nào. Gõ tay mười tám cặp số thì kiểu gì cũng
+     lọt ba bốn hạt thẳng hàng, và mắt bắt được ngay cái hàng ấy.
+
+     Mỗi hạt mang sẵn hướng dạt, độ sâu rơi và độ trễ của riêng nó trong ba
+     biến CSS. Nhờ vậy CẢ MƯỜI TÁM dùng chung đúng một @keyframes mà vẫn rơi
+     mỗi hạt một kiểu — viết mười tám bộ keyframes thì cùng một hiệu ứng phải
+     sửa mười tám chỗ. */
+  const bui = `<g class="lg-bui" fill="currentColor"><circle cx="30.6" cy="26.4" r="0.9" style="--bx:-6px;--by:22px;--bt:0.0"/><circle cx="34.7" cy="33.0" r="2.0" style="--bx:5px;--by:35px;--bt:0.214"/><circle cx="28.0" cy="30.9" r="1.56" style="--bx:-1px;--by:29px;--bt:0.428"/><circle cx="26.6" cy="38.8" r="1.12" style="--bx:10px;--by:23px;--bt:0.092"/><circle cx="22.4" cy="32.9" r="2.22" style="--bx:4px;--by:36px;--bt:0.306"/><circle cx="16.0" cy="37.8" r="1.78" style="--bx:-2px;--by:30px;--bt:0.519"/><circle cx="16.3" cy="30.4" r="1.34" style="--bx:9px;--by:24px;--bt:0.183"/><circle cx="8.0" cy="29.8" r="0.9" style="--bx:3px;--by:37px;--bt:0.397"/><circle cx="13.0" cy="24.0" r="2.0" style="--bx:-3px;--by:31px;--bt:0.061"/><circle cx="7.1" cy="17.8" r="1.56" style="--bx:8px;--by:25px;--bt:0.275"/><circle cx="14.8" cy="16.3" r="1.12" style="--bx:2px;--by:38px;--bt:0.489"/><circle cx="14.5" cy="7.5" r="2.22" style="--bx:-4px;--by:32px;--bt:0.153"/><circle cx="21.8" cy="11.2" r="1.78" style="--bx:7px;--by:26px;--bt:0.367"/><circle cx="25.2" cy="17.1" r="1.34" style="--bx:1px;--by:39px;--bt:0.031"/><circle cx="31.0" cy="11.9" r="0.9" style="--bx:-5px;--by:33px;--bt:0.244"/><circle cx="30.1" cy="18.9" r="2.0" style="--bx:6px;--by:27px;--bt:0.458"/><circle cx="38.1" cy="18.9" r="1.56" style="--bx:0px;--by:40px;--bt:0.122"/><circle cx="33.0" cy="24.0" r="1.12" style="--bx:-6px;--by:34px;--bt:0.336"/></g>`;
+
   return `<svg class="logo${dong ? ' logo--dong' : ''}" viewBox="0 0 48 48"` +
     ` aria-hidden="true" focusable="false">` +
     (dong ? `<g class="lg-ke">
       <g class="lg-ten" fill="none" stroke="currentColor">
         <path d="M6 24H17"/><path d="M20 24H24"/><path d="M27 24H42"/>
       </g>
-      <path class="lg-nhanh" fill="none" stroke="currentColor" d="M24 15V33"/>
+      <path class="lg-noi" fill="none" stroke="currentColor" d="${P_NOI}"/>
     </g>` : '') +
     `<g class="lg-hoa">` +
-      net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.37', '.44') : '') +
-      net('lg-vc--2', P_INF2, dong ? bien(P_VONG, P_INF2, '.51', '.58') : '') +
-    `</g></svg>`;
+      (dong ? mandala : '') +
+      net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.38', '.44') : '') +
+      net('lg-vc--2', P_INF2, dong ? bien(P_B, P_INF2, '.50', '.58') : '') +
+    `</g>` +
+    (dong ? bui : '') +
+    `</svg>`;
 }
 function tocHTML(headings) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở

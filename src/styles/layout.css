@@ -66,130 +66,211 @@
 .logo:not(.logo--dong) .lg-vc--2{animation:lg-ve .85s cubic-bezier(.65,0,.35,1) .8s forwards}
 @keyframes lg-ve{to{stroke-dashoffset:0}}
 
-/* ══════════════ LOGO TỰ KỂ CHUYỆN (CHỈ TRANG CHỦ) ══════════════
-   Một vòng kể lại đúng trình tự đã dựng ra cái hình này:
+/* ══════════════ LOGO TỰ KỂ CHUYỆN (TRANG CHỦ + TRANG GIỚI THIỆU) ══════════════
+   Một vòng kể lại đúng trình tự đã dựng ra cái hình này, rồi phá nó đi:
 
-     ┌───────┬───────────────────────────────────────────────────┐
-     │  0– 4 │ bốn cánh đứng yên — đây là trạng thái NGHỈ         │
-     │  4– 8 │ bốn cánh xoay một vòng rồi vỡ ra                   │
-     │  8–20 │ ba vạch dài ngắn khác nhau — một dòng chữ nhìn từ  │
-     │       │ xa — rồi cả dòng BÓP LẠI còn một điểm             │
-     │ 18–25 │ nét gấp khúc hình chữ Z vẽ dần ra, đứng thẳng      │
-     │ 25–32 │ nó XOAY NGANG                                     │
-     │ 29–41 │ một nét thẳng quét vào, xoay ngang, nối hai đầu    │
-     │ 37–44 │ nét gấp khúc CONG DẦN thành VÔ CỰC THỨ NHẤT       │
-     │ 44–51 │ một vòng tròn khép lại                            │
-     │ 51–58 │ vòng tròn VẶN thành VÔ CỰC THỨ HAI                │
-     │ 58–100│ bốn cánh đủ hình, đứng yên cho tới hết vòng        │
-     └───────┴───────────────────────────────────────────────────┘
+     ┌────────┬──────────────────────────────────────────────────────┐
+     │  0– 5% │ bông tám cánh đứng yên — trạng thái NGHỈ              │
+     │  5–16% │ ba vạch dài ngắn khác nhau — một dòng chữ nhìn từ xa  │
+     │        │ — rồi cả dòng BÓP LẠI còn một điểm                   │
+     │ 16–26% │ nét gấp khúc hình chữ Z vẽ dần ra, đứng thẳng         │
+     │ 26–32% │ nét nối (chữ i) quét vào, chạm ĐÚNG hai đầu tự do của │
+     │        │ chữ Z → khép thành VÔ CỰC DẠNG ĐA GIÁC               │
+     │ 32–38% │ cả cụm XOAY NGANG                                    │
+     │ 38–44% │ đa giác bo dần thành VÔ CỰC THỨ NHẤT                 │
+     │ 44–50% │ chữ B vẽ dần ra                                      │
+     │ 50–58% │ BỤNG DƯỚI chữ B vòng ra → VÔ CỰC THỨ HAI            │
+     │ 58–64% │ bốn cánh nở thành TÁM — mandala hiện đủ              │
+     │ 64–76% │ mandala xoay CHẬM                                    │
+     │ 76–86% │ xoay NHANH DẦN                                       │
+     │ 86–93% │ VỠ RA — mười tám hạt bụi rơi xuống                   │
+     │ 93–100%│ bông tụ lại, đứng yên, rồi kể lại từ đầu             │
+     └────────┴──────────────────────────────────────────────────────┘
 
    ── PHÉP BIẾN HÌNH KHÔNG NẰM Ở ĐÂY ─────────────────────────────────────
-   Chữ Z cong ra thành vô cực, vòng tròn vặn thành vô cực — hai phép ấy đổi
-   THUỘC TÍNH `d` của đường, và chúng chạy bằng thẻ <animate> viết thẳng trong
-   SVG (xem hàm `bien` ở tools/build.mjs). Lý do ở đó. File này chỉ lo phần mờ,
-   xoay và vẽ dần.
+   Chữ Z bo thành vô cực, chữ B vặn thành vô cực — hai phép ấy đổi THUỘC TÍNH
+   `d` của đường, và chúng chạy bằng thẻ <animate> viết thẳng trong SVG (xem
+   hàm `bien` ở tools/build.mjs). Lý do ở đó. File này chỉ lo phần mờ, xoay,
+   vẽ dần và rơi.
 
-   Hai hệ chạy song song nhưng cùng một vòng 20 giây và cùng khởi động lúc
+   Hai hệ chạy song song nhưng cùng một vòng 30 giây và cùng khởi động lúc
    trang mở, nên chúng không trôi lệch nhau.
 
-   ── VÌ SAO NGHỈ CHIẾM 42% VÒNG ─────────────────────────────────────────
-   Kể hết 58% của 20 giây rồi ĐỨNG YÊN 8 giây. Không phải tiết kiệm: một hình
-   động lặp liên tục ở thanh đầu trang là thứ mắt không bỏ qua được, mà người
-   ta tới đây để đọc. Có quãng nghỉ dài thì nó thành một chuyện thỉnh thoảng
-   kể lại, không phải một cái đèn nháy.
+   ── MỘT VÒNG DÀI HƠN, VÀ VÌ SAO ────────────────────────────────────────
+   20 → 30 giây. Vòng cũ chỉ kể tới 58% rồi nghỉ hẳn 42%; nay phần mandala
+   xoay và vỡ chiếm mất chỗ nghỉ ấy, nên nếu giữ 20 giây thì cái thanh đầu
+   trang gần như không lúc nào đứng yên. Kéo dài vòng ra là cách bù: mỗi chặng
+   vẫn đủ thời gian đọc, mà tần suất một chuyện được kể lại thì thưa đi.
 
-   ── VÌ SAO BỐN CÁNH LÀ TRẠNG THÁI NGHỈ, KHÔNG PHẢI KHOẢNG TRỐNG ────────
-   Vòng lặp bắt đầu bằng hình ĐỦ chứ không bằng hình rỗng. Logo là dấu nhận
-   mặt của trang; để nó biến mất 40% thời gian thì có lúc người đọc nhìn lên
-   góc trái và không thấy gì cả. */
-.logo--dong{--lg-ck:20s}     /* phải khớp LG_CK trong tools/build.mjs */
+   Điều này quan trọng gấp đôi ở TRANG GIỚI THIỆU — trang nhiều chữ nhất, và
+   trước bản này nó cố tình KHÔNG cho logo lặp. Nay nó có lặp. Nếu đọc thấy
+   vướng thì chỗ chỉnh là đúng một con số `--lg-ck` dưới đây (nhớ sửa kèm
+   `LG_CK` trong tools/build.mjs — có phép kiểm canh hai số ấy khớp nhau).
+
+   ── VÌ SAO BÔNG HOA LÀ TRẠNG THÁI NGHỈ, KHÔNG PHẢI KHOẢNG TRỐNG ────────
+   Vòng lặp bắt đầu VÀ kết thúc bằng hình ĐỦ chứ không bằng hình rỗng. Logo là
+   dấu nhận mặt của trang; để nó biến mất thì có lúc người đọc nhìn lên góc
+   trái và không thấy gì cả. Bụi rơi xong thì bông phải tụ lại. */
+.logo--dong{--lg-ck:30s}     /* phải khớp LG_CK trong tools/build.mjs */
 
 /* Mốc quay/phóng tính theo KHUNG NHÌN của svg, không theo hộp bao từng nét:
    `fill-box` lấy hộp bao riêng mỗi phần tử, nên nét chữ Z quay quanh tâm của
    nó còn bốn cánh quay quanh tâm khác — hai tâm lệch nhau thì cả cụm giật mỗi
    lần đổi chặng. `view-box` cho mọi thứ chung một tâm 24,24. */
-.logo--dong :is(.lg-hoa,.lg-vc,.lg-ten,.lg-nhanh){
+.logo--dong :is(.lg-hoa,.lg-vc,.lg-ten,.lg-noi,.lg-man,.lg-bui,.lg-bui circle){
   transform-box:view-box;transform-origin:50% 50%;
 }
 .logo--dong .lg-hoa  {animation:lg-hoa   var(--lg-ck) linear      infinite}
 .logo--dong .lg-vc--1{animation:lg-n1    var(--lg-ck) ease-in-out infinite}
 .logo--dong .lg-vc--2{animation:lg-n2    var(--lg-ck) ease-in-out infinite}
 .logo--dong .lg-ten  {animation:lg-ten   var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-nhanh{animation:lg-nhanh var(--lg-ck) ease-in-out infinite}
-.lg-ten,.lg-nhanh{opacity:0}
+.logo--dong .lg-noi  {animation:lg-noi   var(--lg-ck) ease-in-out infinite}
+.logo--dong .lg-man  {animation:lg-man   var(--lg-ck) ease-in-out infinite}
+.logo--dong .lg-bui  {animation:lg-bui   var(--lg-ck) linear      infinite}
+.lg-ten,.lg-noi{opacity:0}
 
-/* Bốn cánh: xoay một vòng rồi phóng to + mờ đi = "vỡ ra". Mốc 8.5% kéo hình về
-   nguyên trạng NGAY SAU khi nó đã vô hình — không có mốc ấy thì nó nhả từ
-   scale(2) về scale(1) một cách từ từ và người xem thấy một bóng mờ co lại
-   giữa lúc đang kể chuyện. Từ 8.5% trở đi nhóm này luôn hiện; việc chặng nào
-   thấy gì là do độ mờ của từng nét bên dưới quyết định. */
+/* Nét mandala mảnh hơn nét chính (2.6 → 1.5) và vành tròn mảnh hơn nữa. Để
+   cùng bề dày thì tám cánh nặng ngang nhau và hình đọc ra là một mớ rối; mảnh
+   đi thì hai vô cực gốc vẫn là nét chính, sáu nét kia là hoa văn quanh nó. */
+.lg-canh{stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.lg-vanh{stroke-width:.9}
+.lg-man{opacity:0}
+.lg-bui circle{opacity:0}
+
+/* Cả cụm hoa: chặng mandala xoay CHẬM rồi NHANH DẦN, rồi phóng to + mờ đi =
+   "vỡ ra". Mốc 93,5% kéo hình về nguyên trạng NGAY SAU khi nó đã vô hình —
+   không có mốc ấy thì nó nhả từ scale(1.9) về scale(1) một cách từ từ và người
+   xem thấy một bóng mờ co lại giữa lúc chưa tới chặng của nó.
+
+   Ba mốc 64 / 76 / 86 không chia đều góc quay: 30° trong 12% đầu, rồi 150°
+   trong 10%, rồi 300° trong 10% cuối. Đó chính là "chậm dần sang nhanh" —
+   chia đều góc thì tốc độ không đổi và cú tăng tốc biến mất. Hàm nhịp để
+   `linear` cho cả cụm, nên nhanh-chậm hoàn toàn do khoảng cách giữa các mốc
+   quyết định, không bị hàm nhịp bẻ thêm lần nữa. */
 @keyframes lg-hoa{
-  0%,4%     {opacity:1;transform:none}
-  6.5%      {opacity:.8;transform:rotate(300deg) scale(1.18)}
-  8%        {opacity:0;transform:rotate(360deg) scale(2)}
-  8.5%,100% {opacity:1;transform:none}
+  0%,5%      {opacity:1;transform:none}
+  5.5%,57%   {opacity:1;transform:none}
+  64%        {opacity:1;transform:rotate(30deg)}
+  76%        {opacity:1;transform:rotate(180deg)}
+  86%        {opacity:1;transform:rotate(480deg) scale(1.06)}
+  /* Vỡ: xoay tiếp, phóng to, mờ hẳn. Bụi rơi ra đúng lúc này. */
+  90%        {opacity:.35;transform:rotate(560deg) scale(1.55)}
+  93%        {opacity:0;transform:rotate(600deg) scale(1.9)}
+  93.5%      {opacity:0;transform:none}
+  96%,100%   {opacity:1;transform:none}
 }
 
 /* NÉT THỨ NHẤT — chữ Z → vô cực ngang.
    Xoay -90° suốt chặng chữ: đường trong file nằm ngang sẵn, nên -90° là lúc
-   nó ĐỨNG trên màn hình. Xoay về 0 chính là cú "Z xoay ngang".
+   nó ĐỨNG trên màn hình. Xoay về 0 chính là cú "xoay ngang".
 
-   `stroke-dashoffset` chỉ về tới 52 ở mốc 24% chứ không về 0: nét chữ Z dài
-   khoảng 75 đơn vị, mà dasharray là 130, nên đường vẽ XONG ngay khi offset
-   còn 55. Ép nó chạy tiếp về 0 trong cùng quãng ấy là nửa sau không có gì để
-   nhìn. Phần 52 → 0 đẩy sang lúc đang xoay, chỗ mắt bận nhìn chỗ khác. */
+   `stroke-dashoffset` chỉ về tới 52 chứ không về 0 ở chặng vẽ: nét chữ Z dài
+   khoảng 75 đơn vị, mà dasharray là 130, nên đường vẽ XONG ngay khi offset còn
+   55. Ép nó chạy tiếp về 0 trong cùng quãng ấy là nửa sau không có gì để nhìn.
+   Phần 52 → 0 đẩy sang lúc đang xoay, chỗ mắt bận nhìn chỗ khác. */
 @keyframes lg-n1{
-  0%,8%     {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
-  8.5%,17%  {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
-  18%       {opacity:1;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
-  24%,25%   {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
-  32%,44%   {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
-  /* Lùi lại còn 30% suốt chặng vòng tròn: lúc ấy vô cực thứ nhất đã xong và nằm
-     ĐÚNG giữa khung, còn vòng tròn thì cũng vẽ quanh đúng tâm ấy. Để hai nét
-     cùng độ đậm chồng lên nhau thì ra một mớ rối, không đọc ra vòng nào. Lùi
-     một nét xuống là đủ tách lớp, mà vẫn thấy nó còn đó chờ nét thứ hai. */
-  47%,56%   {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
-  60%,100%  {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  0%,5%      {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  5.5%,15%   {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
+  16%        {opacity:1;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
+  24%,32%    {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
+  38%,44%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  /* Lùi lại còn 30% suốt chặng chữ B: lúc ấy vô cực thứ nhất đã xong và nằm
+     ĐÚNG giữa khung, còn chữ B thì cũng vẽ quanh đúng tâm ấy. Để hai nét cùng
+     độ đậm chồng lên nhau thì ra một mớ rối, không đọc ra nét nào. Lùi một nét
+     xuống là đủ tách lớp, mà vẫn thấy nó còn đó chờ nét thứ hai. */
+  47%,56%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
+  60%,100%   {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
 }
-/* NÉT THỨ HAI — vòng tròn → vô cực đứng.
-   Xoay 180° trong lúc <animate> bẻ vòng tròn thành vô cực: đó là cú "vặn".
-   Vô cực đứng đối xứng qua tâm, nên 180° và 0° vẽ ra y hệt nhau — nhờ vậy mốc
-   cuối vòng nối lại đầu vòng mà không thấy cú nhảy nào. */
+/* NÉT THỨ HAI — chữ B → vô cực đứng.
+   Xoay 180° trong lúc <animate> vặn chữ B thành vô cực: đó là cú "bụng dưới
+   vòng ra". Vô cực đứng đối xứng qua tâm, nên 180° và 0° vẽ ra y hệt nhau —
+   nhờ vậy mốc cuối vòng nối lại đầu vòng mà không thấy cú nhảy nào. */
 @keyframes lg-n2{
-  0%,8%     {opacity:1;transform:none;stroke-dashoffset:0}
-  8.5%,43%  {opacity:0;transform:none;stroke-dashoffset:130}
-  44%       {opacity:1;transform:none;stroke-dashoffset:130}
-  50%,51%   {opacity:1;transform:none;stroke-dashoffset:52}
-  58%,100%  {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
+  0%,5%      {opacity:1;transform:none;stroke-dashoffset:0}
+  5.5%,43%   {opacity:0;transform:none;stroke-dashoffset:130}
+  44%        {opacity:1;transform:none;stroke-dashoffset:130}
+  49%,50%    {opacity:1;transform:none;stroke-dashoffset:52}
+  58%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
 }
 /* Ba vạch dài ngắn khác nhau = một dòng chữ nhìn từ xa. Chúng bóp lại theo BỀ
    NGANG rồi tắt — đó là "thu gọn" trong ý tưởng gốc, và phải là bóp ngang chứ
    không phải thu nhỏ đều: thu nhỏ đều thì dòng chữ chỉ lùi ra xa, bóp ngang
    thì nó dồn về một điểm để nét chữ Z mọc lên từ đó. */
 @keyframes lg-ten{
-  0%,8%      {opacity:0;transform:scaleX(1)}
-  11%,15%    {opacity:.95;transform:scaleX(1)}
-  20%        {opacity:0;transform:scaleX(.04)}
-  20.5%,100% {opacity:0;transform:scaleX(1)}
+  0%,5%      {opacity:0;transform:scaleX(1)}
+  8%,12%     {opacity:.95;transform:scaleX(1)}
+  16%        {opacity:0;transform:scaleX(.04)}
+  16.5%,100% {opacity:0;transform:scaleX(1)}
 }
-/* Nét nối quét từ ngoài vào rồi xoay ngang — nó NỐI HAI ĐẦU nét chữ Z, nên
-   phải đi TỚI chỗ ấy chứ không hiện ra sẵn ở đó. Tắt ở 41%, ngay trước lúc
-   nét chữ Z bắt đầu cong ra: để nó nằm lại giữa phép biến hình thì thành một
-   gạch thừa vắt ngang cái vô cực đang thành hình. */
-@keyframes lg-nhanh{
-  0%,29%     {opacity:0;transform:translateX(18px) rotate(0) scale(.6)}
-  34%,38%    {opacity:.92;transform:translateX(0) rotate(90deg) scale(1)}
-  41%        {opacity:0;transform:translateX(0) rotate(90deg) scale(1)}
-  41.5%,100% {opacity:0;transform:translateX(18px) rotate(0) scale(.6)}
+/* NÉT NỐI — chữ i.
+   Nó quét từ ngoài vào rồi nằm đúng vào chỗ nối hai đầu tự do của chữ Z, nên
+   phải ĐI TỚI chỗ ấy chứ không hiện ra sẵn ở đó.
+
+   Xoay -90° CÙNG NHỊP với nét chữ Z ở mọi mốc, rồi cùng về 0 ở mốc 38%. Đây
+   là chỗ bắt buộc phải khớp: nét nối nằm ở một nhóm khác nên nó không tự ăn
+   theo phép xoay của chữ Z. Lệch một mốc thôi là hai đầu nó rời khỏi hai đầu
+   chữ Z, và cái nút thắt — thứ cả chặng này sinh ra để có — thành hai nét bắt
+   chéo nhau hụt.
+
+   Tắt ở 39%, ngay sau khi phép bo góc bắt đầu: để nó nằm lại giữa phép biến
+   hình thì thành một gạch thừa vắt ngang cái vô cực đang thành hình. */
+@keyframes lg-noi{
+  0%,25%     {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
+  29%,32%    {opacity:.92;transform:rotate(-90deg) translate(0,0) scale(1)}
+  38%        {opacity:.92;transform:rotate(0deg) translate(0,0) scale(1)}
+  39%        {opacity:0;transform:rotate(0deg) translate(0,0) scale(1)}
+  39.5%,100% {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
+}
+/* Bốn cánh nở thành tám. Hai cánh thêm và hai vành tròn hiện dần từ tâm ra —
+   `scale` từ .6 lên 1 chứ không chỉ đổi độ mờ: chỉ mờ dần thì chúng "bật" ra
+   sẵn ở kích thước đủ và đọc như một lớp ảnh chồng lên, còn nở ra từ tâm thì
+   đọc đúng là bông hoa đang mở. Tắt ngay trước lúc vỡ, cùng nhịp với cụm hoa. */
+@keyframes lg-man{
+  0%,57%     {opacity:0;transform:scale(.6)}
+  64%,86%    {opacity:.55;transform:scale(1)}
+  93%        {opacity:0;transform:scale(1.9)}
+  93.5%,100% {opacity:0;transform:scale(.6)}
+}
+/* ── BỤI ──
+   Nhóm bụi chỉ mở cửa trong chặng vỡ; từng hạt rơi bằng @keyframes riêng bên
+   dưới. Tách làm hai tầng vì một hạt cần cả "có được phép hiện không" (theo
+   vòng lớn) lẫn "rơi tới đâu rồi" (theo đường rơi của chính nó) — nhét cả hai
+   vào một bộ keyframes thì mỗi hạt phải có một bộ riêng. */
+@keyframes lg-bui{
+  0%,85.9%   {opacity:0}
+  86%,93%    {opacity:1}
+  93.1%,100% {opacity:0}
+}
+/* Mỗi hạt mang sẵn --bx (dạt ngang), --by (rơi sâu) và --bt (trễ) do build
+   tính ra và ghi thẳng vào thuộc tính style của nó. Cùng một bộ keyframes,
+   mười tám đường rơi khác nhau.
+
+   `--bt` nhân với 7% — đúng bề rộng của chặng vỡ — nên hạt trễ nhất vẫn rơi
+   xong trước lúc bông tụ lại. Trễ tính bằng ÂM: animation-delay âm là "đã
+   chạy được bấy nhiêu rồi", nên mọi hạt vẫn dùng chung một mốc vòng lặp mà
+   xuất phát so le nhau. */
+.logo--dong .lg-bui circle{
+  animation:lg-hat var(--lg-ck) cubic-bezier(.32,.12,.66,1) infinite;
+  animation-delay:calc(var(--bt) * var(--lg-ck) * -0.07);
+}
+@keyframes lg-hat{
+  0%,86%     {opacity:0;transform:translate(0,0) scale(1)}
+  87%        {opacity:.9;transform:translate(0,0) scale(1)}
+  93%        {opacity:0;transform:translate(var(--bx),var(--by)) scale(.35)}
+  93.1%,100% {opacity:0;transform:translate(0,0) scale(1)}
 }
 /* Tắt máy thì dừng ở hình ĐỦ, không dừng ở một chặng giữa chừng: người bật
    "giảm chuyển động" vẫn phải thấy logo, chỉ là không thấy nó động.
-   `.lg-ke` ẩn hẳn — mấy thẻ <animate> trong SVG thì CSS không tắt được, nhưng
-   nét đã ẩn thì chúng không còn gì để vẽ lại. */
+   `.lg-ke` và `.lg-bui` ẩn hẳn — mấy thẻ <animate> trong SVG thì CSS không tắt
+   được, nhưng nét đã ẩn thì chúng không còn gì để vẽ lại. Mandala thì GIỮ:
+   hình đủ của logo này là bông tám cánh, dừng ở bốn cánh là dừng giữa chừng. */
 @media (prefers-reduced-motion:reduce){
   .lg-vc{stroke-dashoffset:0;animation:none!important}
   .logo--dong .lg-hoa{opacity:1;transform:none;animation:none}
-  .lg-ke{display:none}
+  .logo--dong .lg-man{opacity:.55;transform:none;animation:none}
+  .lg-ke,.lg-bui{display:none}
+}
+
 }
 
 .brand b{

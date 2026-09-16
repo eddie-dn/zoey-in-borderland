@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V6.00 | 2026-09-16 | 00 | hoa Sakura nhỏ và mỏng lại, đông hơn; bỏ viền ở cánh xa |
+| V5.09 | 2026-09-16 | 09 | logo: nút thắt vô cực, chữ B vặn bụng, mandala xoay rồi vỡ thành bụi |
+| V5.08 | 2026-09-16 | 08 | theme thứ ba Tĩnh lặng: bảng màu xanh pastel, nền thác nước ở màn đầu |
 | V5.07 | 2026-09-16 | 07 | rà docs: ba khung, trang ghi chú, chương logo; thêm 4 phép kiểm |
 | V5.06 | 2026-09-16 | 06 | logo kể chuyện bằng nét biến hình, bỏ hẳn con chữ |
 | V5.05 | 2026-09-16 | 05 | băng ảnh lấy tỉ lệ theo tấm đầu, kẹp trong khoảng Instagram cho phép |
@@ -80,6 +83,64 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V6.00 — 16-Sep-2026
+
+- **Hoa Sakura thôi thô.** Cánh từ 5–19px xuống 3,2–11,4px, độ đậm từ 0,46–0,96
+  xuống 0,22–0,70, và số cánh tăng gần gấp rưỡi để bù diện tích. Cánh hoa là
+  vật MỎNG — ánh sáng xuyên qua được, nên nó không bao giờ đặc như mảnh giấy
+  màu; cái làm nên vẻ đẹp là số lượng và cách chúng lượn, không phải cỡ từng
+  cánh.
+- **Viền cánh nhẹ đi ba lần, và cánh nhỏ thì bỏ hẳn viền.** Đây là chỗ làm cả
+  màn thành thô nhất: trên một cánh rộng mươi pixel, nét viền 1,7px chiếm tới
+  một phần sáu bề ngang — đọc ra là hình CÓ ĐƯỜNG BAO, tức một cái nhãn dán,
+  không phải vật mỏng đang lượn trong không khí. Gân giữa cũng chỉ còn vẽ cho
+  lớp gần nhất: chi tiết bên trong chỉ đọc được ở vật gần.
+- **Mảng màu đậm co về đúng cái mũi cánh.** Chặng chuyển màu đổi từ 0/0,55/1
+  sang 0/0,62/0,88 nên phần trắng chiếm hơn nửa cánh — cánh hoa thật nhạt dần
+  về phía gốc và chỉ ngả hồng ở rìa ngoài.
+
+## V5.09 — 16-Sep-2026
+
+- **Logo kể một câu chuyện dài hơn, và có kết.** Nét nối (chữ i) nay chạm đúng
+  HAI ĐẦU TỰ DO của chữ Z nên nó *khép* hình lại thành một nút thắt vô cực dạng
+  đa giác — bản trước để một vạch dựng giữa khung, quét vào rồi xoay, nhìn thì
+  có động nhưng nó không nối vào đâu cả. Chặng vòng tròn đổi thành **chữ B**,
+  xếp nút trùng khít vô cực đứng nên phép biến hình đọc ra là bụng dưới đang
+  vòng ra. Xong hai vô cực thì bốn cánh nở thành **mandala tám cánh**, xoay
+  chậm → nhanh → vỡ thành mười tám hạt bụi rơi, rồi tụ lại kể tiếp.
+- **Trang giới thiệu nay cũng kể chuyện.** Trước chỉ trang chủ. Bù lại, vòng
+  lặp kéo từ 20 lên 30 giây — phần mandala chiếm mất quãng nghỉ cũ, giữ 20 giây
+  thì thanh đầu trang gần như không lúc nào đứng yên.
+- **"Borderland" hết bị bó giữa cột.** Trò xén hai đầu ở màn đầu dựa trên hai
+  con số đo bề ngang con chữ, mà hai số ấy đã lệch 17% so với nét chữ đang thật
+  sự hiện ra — nên chữ "d" dừng cách đường kẻ phải 45px, không hề bị xén. Đo
+  lại bằng Range ở bốn cỡ chữ, giải lại phương trình, `--s3` từ 20,35 lên
+  23,74cqw. Phép kiểm canh việc này trước đây **chỉ canh một chiều** (xén quá
+  tay) nên nó im suốt; nay canh cả hai đầu, và đã cắm lại đúng lỗi cũ vào để
+  thử xem nó có bắt không.
+
+## V5.08 — 16-Sep-2026
+
+- **Theme thứ ba: Tĩnh lặng.** Thác nước, suối, thiền — nền xanh pastel, nút
+  chuyển theme thành vòng xoay ba nhịp (sáng → tối → tĩnh lặng) thay vì bập
+  bênh hai nhịp. Màn đầu trang chủ có nền động riêng: màn nước rơi, giọt rơi
+  tới mặt nước rồi loang thành gợn sóng, bụi nước dâng lên ở chân thác.
+- **Hai lỗi cũ lộ ra nhờ phép kiểm mới.** `--text-faint` ở theme tối bị lệch
+  giữa hai khối: khối `@media` đã sửa lên `.62` cho đủ tương phản, khối
+  `[data-theme="dark"]` còn nằm ở `.50` (3,9:1). Nghĩa là ai để máy ở chế độ
+  tối thì đọc được ngày tháng và tem chân trang, ai tự bấm nút chọn tối thì
+  không — mà hai khối không bao giờ hiện cùng lúc nên không ai bắt bằng mắt
+  được. Lỗi thứ hai: `theme.js` ghi lựa chọn vào localStorage ngay từ lần mở
+  trang đầu, nên sau đó trang không còn đi theo cài đặt sáng/tối của máy nữa.
+- **Bộ kiểm định lên 42 phép, và một phép cũ được viết lại.** Phép "quầng sáng
+  khai đủ ở mọi khối theme" trước đây **xanh mà không kiểm gì cả**: nó dò khối
+  bằng `/prefers-color-scheme: dark/` có dấu cách, trong khi tokens.css viết
+  liền — thứ khớp được lại là dòng chú thích ở đầu file, và từ đó nó cắt trúng
+  trọn khối `:root` sáng vốn khai đủ. Xoá sạch `--glow` khỏi cả hai khối tối
+  thì nó vẫn xanh. Nay dò bằng chính dòng mở khối rồi đếm ngoặc. Phép mới canh
+  luật tổng quát: Galaxy và Tĩnh lặng phải khai cùng một bộ biến, và hai khối
+  Galaxy phải giống nhau từng giá trị.
 
 ## V5.07 — 16-Sep-2026
 
