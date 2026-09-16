@@ -155,7 +155,17 @@ Chạy `npm run build`, đẩy lên.
 | Tên | Để làm gì | Mặc định |
 |---|---|---|
 | `GEMINI_MODEL_QUOTE` | đổi model cho riêng ô trích dẫn | `gemini-flash-lite-latest` |
-| `GEMINI_MODEL` | model lùi về khi tên trên bị 404/403 | `gemini-2.0-flash` |
+| `GEMINI_MODEL` | model lùi về khi tên trên bị 404/403 | `gemini-flash-latest` |
+
+> **Đừng đặt hai biến này.** Cả hai mặc định đều là bí danh `-latest`, thứ
+> Google tự hoán đổi sang bản mới nhất của dòng đó (đổi lớn thì báo trước hai
+> tuần). Đặt một số hiệu cụ thể — `gemini-3.6-flash` chẳng hạn — là hẹn trước
+> một ngày phải quay lại sửa: tháng 9/2026, `gemini-2.0-flash` mà bản trước
+> dùng làm lưới dự phòng đã nằm trong mục *Previous models* với nhãn
+> *(Shut down)*.
+>
+> Hai bí danh KHÁC NHAU là chỗ an toàn: bản lite hỏng thì còn bản flash đầy
+> đủ. Chỉ đặt tay khi bạn thật sự muốn một model khác hẳn.
 
 ### 2.5 · Kiểm xem có chạy không
 

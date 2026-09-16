@@ -143,10 +143,24 @@ export async function onRequest(context) {
 
   try {
     let kq = await goi(env.GEMINI_MODEL_QUOTE || MODEL_MAC_DINH);
-    /* Tên model sai hoặc chưa được cấp → 404/403. Lùi một lần về model chính,
-       khỏi phải sửa mã khi Google đổi tên bản lite. */
+    /* ── LÙI MỘT LẦN, VÀ LÙI VỀ MỘT BÍ DANH KHÁC ──
+       Tên model sai hoặc chưa được cấp → 404/403.
+
+       Bản trước lùi về `gemini-2.0-flash`, một tên GHIM CỨNG — ý là "cái lưới
+       chắc chắn tồn tại". Tra lại tháng 9/2026 thì chính nó đã nằm trong mục
+       "Previous models" của Google với nhãn (Shut down). Tức là cái lưới rách
+       trước cả thứ nó đỡ, mà rách IM LẶNG: cả hai cùng 404 thì ô trích dẫn chỉ
+       lặng lẽ dùng câu từ kho mãi mãi, không ai biết lớp AI đã chết.
+
+       Ghim cứng vào một số hiệu là hẹn trước một ngày phải đi sửa. Nay cả hai
+       đều là bí danh `-latest`, thứ Google tự hoán đổi mỗi lần ra bản mới:
+         · chính     gemini-flash-lite-latest   bản lite, rẻ nhất
+         · dự phòng  gemini-flash-latest        bản flash đầy đủ
+       Hai bí danh KHÁC NHAU, nên cái này hỏng cái kia vẫn còn. Google bỏ đồng
+       thời cả hai thì mới hết đường, và lúc ấy thì ghim số hiệu cũng chẳng cứu
+       được gì. */
     if (kq.status === 404 || kq.status === 403) {
-      kq = await goi(env.GEMINI_MODEL || 'gemini-2.0-flash');
+      kq = await goi(env.GEMINI_MODEL || 'gemini-flash-latest');
     }
     if (!kq.ok) throw new Error('gemini ' + kq.status);
 

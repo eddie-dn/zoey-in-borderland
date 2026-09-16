@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.05 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
 | V7.04 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
 | V7.03 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
 | V7.02 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
@@ -93,6 +94,19 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.05 — 16-Sep-2026
+
+- **Model dự phòng của ô trích dẫn đã chết từ lúc nào không hay.** Nó ghim cứng
+  vào một số hiệu cụ thể, với ý là "cái tên chắc chắn còn tồn tại". Tra lại
+  danh sách của Google thì chính cái tên ấy đã nằm trong mục model cũ, dán nhãn
+  đã ngừng chạy. Cái lưới rách trước cả thứ nó đỡ.
+- **Và nó rách im lặng.** Cả model chính lẫn model dự phòng cùng trả về "không
+  có" thì ô trích dẫn chỉ lặng lẽ dùng câu từ kho sẵn — đúng như thiết kế, và
+  cũng vì thế mà không ai biết lớp viết mới đã ngừng hoạt động.
+- **Nay cả hai đều là bí danh tự cập nhật**, và là hai bí danh khác nhau: một
+  bản gọn nhẹ, một bản đầy đủ. Google ra bản mới thì chúng tự trỏ theo. Ghim
+  vào một số hiệu là hẹn trước một ngày phải quay lại sửa.
 
 ## V7.04 — 16-Sep-2026
 
