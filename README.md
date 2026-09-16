@@ -49,7 +49,7 @@ src/styles/     tokens · base · glass · layout · components · prose
 src/styles/     …· list (chưa kể ở dòng trên)
 src/js/         theme · nen · toc · media · comments · duyet · copy-guard
                 reveal · so-tay · quote · search · trang-so · moc · bang-anh
-                xem · ghi-chu
+                xem · ghi-chu · viet-bai · admin
 src/templates/  shell.html · post.html · page.html
 tools/          build · new-post · anh · bia · nen · dev · version · kiem-dinh
                 ghi-chu-keo · lib/
@@ -59,6 +59,7 @@ docs/logo/      bản lưu 12 trạng thái của logo + một file chạy trọ
 functions/api/  binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
                 ghi-chu.js — đăng ghi chú thẳng lên /notes/, không phải dựng lại
                 xem.js — đếm lượt xem thật
+                bai.js — đăng BÀI từ /z-admin/, ghi thẳng vào kho mã GitHub
                 quote.js — xin câu trích dẫn từ Gemini (tuỳ chọn)
                 _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay
 docs/           chín file tài liệu ở bảng trên
@@ -67,6 +68,32 @@ dist/           ← build sinh ra, không commit
 ```
 
 File và thư mục mở đầu bằng `_` không được quét — dùng để cất bài nháp.
+
+---
+
+## Núm vặn — đổi trong `site.config.json`, không mở mã
+
+Mấy con số hay phải chỉnh, gom về một chỗ. Sửa xong chạy `npm run build`.
+
+| Khoá | Mặc định | Đổi cái gì |
+|---|---|---|
+| `soLuong.docTiep` | 2 | khối **Read next** cuối bài hiện mấy bài · `0` = tắt khối |
+| `soLuong.tagMoiThe` | 2 | mỗi thẻ bài trong lưới hiện tối đa mấy tag |
+| `soLuong.heroTrangChu` | 3 | màn đầu trang chủ xếp mấy bài |
+| `soLuong.rss` | 30 | `feed.xml` giữ mấy bài gần nhất |
+| `baiTrangChu` | 3 | trang chủ hiện mấy bài, không kể bài nổi bật |
+| `moiTrang` | 10 | mấy bài một trang ở Posts · Tags · Archive |
+| `logo.vongKe` | `"27s"` | trọn một vòng kể của logo chạy bao lâu |
+| `logo.soHat` | 18 | logo vỡ ra thành mấy hạt bụi |
+| `nhan` | `{}` | đè từng chữ giao diện, ví dụ `{"readNext": "Đọc tiếp"}` |
+
+**Gõ sai thì build kêu lên rồi dùng mặc định**, không im lặng bỏ qua — `"docTiep":
+"hai"` mà lọt qua thì `slice(0, NaN)` trả về mảng rỗng, và khối Read next biến
+mất khỏi mọi bài mà chẳng có dòng lỗi nào.
+
+`logo.vongKe` là **nguồn duy nhất** cho cả hai nửa hoạt hình logo: nó vào thuộc
+tính `dur` của thẻ `<animate>` lẫn biến CSS `--lg-ck`. Nhớ giữ đơn vị — viết
+trần `"27"` thì CSS bỏ qua cả luật còn SVG hiểu là 27 giây.
 
 ---
 

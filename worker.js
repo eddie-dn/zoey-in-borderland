@@ -27,13 +27,14 @@
    ── `env.ASSETS` ──────────────────────────────────────────────────────
    Đây là binding trỏ tới thư mục `dist/`, khai ở `wrangler.jsonc`. Mọi đường
    KHÔNG phải `/api/...` đều giao thẳng cho nó — tức là Worker chỉ chen vào
-   đúng bốn đường dẫn, còn lại vẫn là trang tĩnh phục vụ từ biên như cũ.
+   đúng năm đường dẫn, còn lại vẫn là trang tĩnh phục vụ từ biên như cũ.
    ============================================================ */
 
 import * as binhLuan from './functions/api/binh-luan.js';
 import * as ghiChu   from './functions/api/ghi-chu.js';
 import * as xem      from './functions/api/xem.js';
 import * as quote    from './functions/api/quote.js';
+import * as bai      from './functions/api/bai.js';
 
 /* Bảng tra, không phải chuỗi if: thêm một hàm là thêm một dòng ở đây, và tên
    đường dẫn nằm ngay cạnh module lo nó — đọc một chỗ là biết trang có những
@@ -42,7 +43,8 @@ const CUA = {
   '/api/binh-luan': binhLuan,
   '/api/ghi-chu':   ghiChu,
   '/api/xem':       xem,
-  '/api/quote':     quote
+  '/api/quote':     quote,
+  '/api/bai':       bai
 };
 
 export default {

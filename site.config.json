@@ -34,7 +34,7 @@
     "url": "Dùng cho canonical, OG image và sitemap. Phải là địa chỉ thật khi đã lên sóng, không thì mạng xã hội lấy sai ảnh bìa.",
     "version": "Phiên bản KHÔNG khai ở đây. Nguồn duy nhất là dòng đầu bảng trong docs/LICH-SU.md. Ghi thêm bằng: npm run ver -- \"mô tả\"",
     "chuaDung": "Danh sách đường dẫn CHƯA DỰNG. Mọi chỗ trỏ tới chúng (nav, chân trang, nút tìm kiếm, chip tag, dòng phân cấp) sẽ hiện mờ thay vì thành link. Dựng xong trang nào thì xoá dòng đó khỏi đây. Cố ý làm vậy để không bao giờ có link chết — bộ kiểm định bắt ngay nếu sót.",
-    "nhan": "Chữ giao diện (nav, đường dẫn phân cấp, nhãn, ngày) để TIẾNG ANH cho đồng bộ; nội dung bài vẫn tiếng Việt. Bảng nhãn nằm ở đầu tools/build.mjs, biến NHAN — đổi ngôn ngữ giao diện là sửa đúng khối đó.",
+    "nhan": "Đè lên bảng chữ giao diện. Bảng gốc là biến NHAN ở đầu tools/build.mjs — mỗi nhãn ở đó có một dòng giải thích vì sao chọn chữ ấy, nên bảng vẫn nằm trong mã. Ở đây chỉ khai chữ NÀO MUỐN ĐỔI, ví dụ {\"readNext\": \"Đọc tiếp\", \"search\": \"Tìm\"}. Gõ sai tên khoá thì build kêu lên chứ không im lặng bỏ qua. Nhãn nào có {n} (chỗ điền con số) thì bản đè cũng phải giữ {n}.",
     "binhLuan": "api = đường dẫn hàm nhận bình luận, chạy trên Cloudflare D1 cùng tên miền với trang (KHÔNG còn là Google Apps Script — bản cũ bắt mỗi người đọc đợi một lượt gọi sang Google chỉ để lấy mấy dòng bình luận). Dùng chung cơ sở dữ liệu D1 với luotXem và ghiChu, cùng biến DB, và dùng chung cặp khoá chủ trang GC_ID + GC_KEY. Duyệt bình luận ngay trên trang: mở bất kỳ bài nào rồi thêm #duyet vào địa chỉ. Cài từng bước: docs/BINH-LUAN.md. Đặt bat:false để tắt hẳn khung bình luận trên mọi bài.",
     "baoVeChu": "Chép một đoạn DÀI thì tự kèm dòng nguồn. nguong = từ bao nhiêu ký tự trở lên mới can thiệp (dưới ngưỡng chép nguyên, để người ta trích một câu cho dễ). gioiHan = 0 nghĩa là không cắt, chỉ thêm nguồn; đặt số > 0 thì đoạn chép bị rút gọn còn bấy nhiêu ký tự. ĐÂY LÀ GỜ GIẢM TỐC CHỨ KHÔNG PHẢI Ổ KHOÁ — không có cách nào chặn được sao chép trên web. Đặt bat:false để tắt.",
     "baiTrangChu": "Số bài hiện ở trang chủ, KHÔNG kể bài nổi bật. Trang chủ là chỗ mời vào, không phải chỗ liệt kê kho bài — muốn xem nhiều hơn thì có trang Posts (xếp theo chuyên mục) và Archive (xếp theo năm).",
@@ -43,7 +43,10 @@
     "luotXem": "Đếm lượt xem THẬT bằng Cloudflare D1. Khác hẳn phanTich: Web Analytics đếm rất tốt nhưng KHÔNG có API đọc ngược — số liệu chỉ xem được trên bảng điều khiển, không lấy ra in lên bài được. Cần tạo một cơ sở dữ liệu D1 và gắn vào dự án với tên biến DB; từng bước ở docs/CAI-DAT.md §5. Chưa gắn thì hàm trả về trạng thái tắt và trang lặng lẽ bỏ qua, hàng meta chỉ ngắn đi một mục. Đây là con số GẦN ĐÚNG: bot biết chạy JavaScript vẫn lọt, và mở tab mới thì tính lại.",
     "phanTich": "Cloudflare Web Analytics — đếm lượt xem và đo tốc độ thật của người đọc. KHÔNG đặt cookie, không theo dấu người đọc sang trang web khác, nên không cần banner xin phép. Lấy token ở Cloudflare Dashboard → Web Analytics → Add a site. Token này CÔNG KHAI (nó nằm ngay trong HTML mọi trang) nên để ở đây là đúng chỗ — khác hẳn GEMINI_KEY. bat:false thì không chèn script nào cả. Xem docs/DUA-LEN-MANG.md §9.",
     "doanTruoc": "Đoán trước trang kế: trình duyệt tải sẵn trang mà người đọc sắp bấm, nên bấm xong hiện gần như tức thì. Chỉ TẢI trước chứ không CHẠY trước (prefetch, không phải prerender) — chạy trước thì script của trang đó chạy khi chưa ai xem, và số liệu lượt xem sai theo. Chỉ áp cho link trong cùng trang web. Đặt false để tắt.",
-    "quoteAI": "Lớp làm phong phú ô trích dẫn bằng Gemini. bat:false thì trang chỉ dùng kho câu trong content/quote-nguon.md — vẫn chạy đầy đủ, không cần mạng, không cần khoá. Bật lên thì trang xin thêm một câu viết mới cho mỗi ngày qua /api/quote; hỏng kiểu gì cũng lặng lẽ quay về kho sẵn. Cần khai GEMINI_KEY dạng Secret ở Cloudflare → Settings → Runtime → Variables and Secrets (KHÔNG phải ô cùng tên trong mục Builds — ô đó là biến lúc dựng, hàm không thấy). KHÔNG bao giờ để khoá trong repo. Xem docs/QUOTE.md."
+    "quoteAI": "Lớp làm phong phú ô trích dẫn bằng Gemini. bat:false thì trang chỉ dùng kho câu trong content/quote-nguon.md — vẫn chạy đầy đủ, không cần mạng, không cần khoá. Bật lên thì trang xin thêm một câu viết mới cho mỗi ngày qua /api/quote; hỏng kiểu gì cũng lặng lẽ quay về kho sẵn. Cần khai GEMINI_KEY dạng Secret ở Cloudflare → Settings → Runtime → Variables and Secrets (KHÔNG phải ô cùng tên trong mục Builds — ô đó là biến lúc dựng, hàm không thấy). KHÔNG bao giờ để khoá trong repo. Xem docs/QUOTE.md.",
+    "soLuong": "Mấy con số nhỏ của giao diện, gom về một chỗ để khỏi phải mở tools/build.mjs. docTiep = khối \"Read next\" cuối bài hiện mấy bài (0 = tắt hẳn khối đó). tagMoiThe = mỗi thẻ bài trong lưới hiện tối đa mấy tag — thẻ không phải chỗ liệt kê, ba tag trở lên là hàng tag dài hơn cả tiêu đề. heroTrangChu = màn đầu trang chủ xếp mấy bài; bốn dòng trở lên là màn ấy hết thoáng, mà thoáng mới là điểm của nó. rss = feed.xml giữ mấy bài gần nhất. Thiếu khoá nào thì dùng mặc định (2 · 2 · 3 · 30). Gõ sai kiểu (chữ, số âm, số lẻ) thì build kêu lên và dùng mặc định, không im lặng bỏ qua.",
+    "logo": "vongKe = trọn một vòng kể của logo chạy trong bao lâu. Nhỏ lại thì nhanh hơn. PHẢI có đơn vị (\"27s\", \"800ms\") — viết trần \"27\" thì CSS bỏ qua còn SVG hiểu là 27 giây, hai nửa hoạt hình chạy lệch nhau mà không ai báo. Đây là nguồn DUY NHẤT: build đưa số này vào cả thẻ <animate> lẫn biến --lg-ck. soHat = lúc logo vỡ ra thì có bao nhiêu hạt bụi bay. 18 chọn vì nó nguyên tố cùng nhau với ba nhịp 5·7·3 dùng để rải bán kính, cỡ hạt và quãng bay — đổi số khác thì mấy hạt bắt đầu trùng nhau, hết cảm giác ngẫu nhiên.",
+    "dangBai": "Ô viết BÀI ở /z-admin/ (ngăn Post). Khác ghi chú: bài không sống trong cơ sở dữ liệu mà được ghi thành một file .md trong kho mã trên GitHub, rồi Cloudflare tự dựng lại — khoảng một phút sau bài mới lên. Phải vậy vì một bài cần đường dẫn riêng, cần có mặt trong feed.xml, sitemap.xml, ô tìm kiếm và thẻ chia sẻ; tất cả những thứ đó do bộ dựng sinh ra. Cần ba biến ở Cloudflare: GH_TOKEN (Secret — token GitHub quyền Contents: Read and write), GH_REPO và GH_NHANH (Var). Dùng chung cặp khoá chủ trang GC_ID + GC_KEY. Từng bước: docs/CAI-DAT.md. Đặt bat:false để tắt hẳn ngăn Post."
   },
   "chuaDung": [],
   "binhLuan": {
@@ -73,5 +76,20 @@
   "luotXem": {
     "bat": true,
     "api": "/api/xem"
+  },
+  "soLuong": {
+    "docTiep": 2,
+    "tagMoiThe": 2,
+    "heroTrangChu": 3,
+    "rss": 30
+  },
+  "logo": {
+    "vongKe": "27s",
+    "soHat": 18
+  },
+  "nhan": {},
+  "dangBai": {
+    "bat": true,
+    "api": "/api/bai"
   }
 }

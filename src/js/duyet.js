@@ -168,23 +168,40 @@
       });
   }
 
+  /* ── BÀN DUYỆT CÓ ĐANG THẤY ĐƯỢC KHÔNG ──
+     Ở /z-admin/ ba việc nằm trong ba ngăn, ngăn không chọn thì mang `hidden`.
+     Phần tử nằm trong một khối `display:none` có `offsetParent` bằng null —
+     đọc dấu hiệu ấy rẻ hơn hẳn việc bắt admin.js phải báo tin sang đây, và nó
+     đúng cho MỌI cách ẩn chứ không riêng ba ngăn kia.
+
+     `document.hidden` chỉ biết cả TAB có đang hiện hay không; nó không biết
+     ngăn nào trong tab đang mở. Thiếu phép thử này thì bàn duyệt vẫn gọi máy
+     chủ hai mươi giây một lần suốt lúc chủ trang ngồi gõ bài ở ngăn bên cạnh. */
+  function dangThay() { return !!(hop && hop.offsetParent !== null); }
+
   /* ── TỰ XIN LẠI ──
      Bàn duyệt hay bị mở rồi để đó. Không tự làm mới thì con số đứng im, và chủ
      trang tưởng không có gì mới trong khi hàng chờ đã dài ra.
 
-     20 giây, và CHỈ khi tab đang hiện: tab nằm dưới thì không ai nhìn, gọi tiếp
-     là đốt hạn ngạch để vẽ cho cái không ai xem. Trình duyệt quay lại tab thì
-     xin ngay một lượt cho số liệu khớp lại. */
+     20 giây, và CHỈ khi tab đang hiện VÀ ngăn này đang mở: không ai nhìn mà
+     vẫn gọi là đốt hạn ngạch để vẽ cho cái không ai xem. Quay lại thì xin ngay
+     một lượt cho số liệu khớp lại. */
   function batDongHo() {
     dungDongHo();
     dongHo = setInterval(function () {
-      if (!document.hidden && coKhoa()) xin(true);
+      if (!document.hidden && dangThay() && coKhoa()) xin(true);
     }, 20000);
   }
   function dungDongHo() { if (dongHo) { clearInterval(dongHo); dongHo = null; } }
 
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && hop && coKhoa()) xin(true);
+    if (!document.hidden && dangThay() && hop && coKhoa()) xin(true);
+  });
+
+  /* Đổi sang ngăn Comment ở /z-admin/ thì xin ngay, đừng bắt đợi hết hai mươi
+     giây mới thấy hàng chờ đúng. Sự kiện do admin.js phát ra. */
+  document.addEventListener('zib:ngan', function () {
+    if (dangThay() && hop && coKhoa()) xin(true);
   });
 
   function veHang(ds) {

@@ -821,6 +821,56 @@
    dưới. Tách bằng một đường kẻ chứ không chỉ bằng khoảng trống — hai việc khác
    nhau, và ở một trang chỉ toàn ô nhập thì khoảng trống không đủ nói ra ranh
    giới. */
+/* ══════════ /z-admin/ — BA NGĂN ══════════
+   Cột chọn việc bên trái, nội dung bên phải. Cột trái hẹp và DÍNH khi cuộn:
+   ô viết bài cao hơn màn hình nhiều, mà đang gõ dở rồi muốn nhảy sang duyệt
+   một bình luận thì không nên phải cuộn ngược lên đầu trang. */
+.ad-khung{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:var(--s7);
+  align-items:start;
+}
+.ad-menu{
+  display:flex;flex-direction:column;gap:2px;
+  position:sticky;top:calc(var(--head-h,60px) + var(--s4));
+}
+.ad-nut{
+  appearance:none;border:0;background:none;cursor:pointer;
+  text-align:left;padding:var(--s2) var(--s3);
+  border-radius:var(--r-sm);
+  border-left:2px solid transparent;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+  transition:color .16s ease,background .16s ease,border-color .16s ease;
+}
+.ad-nut:hover{color:var(--text-muted);background:var(--surface)}
+.ad-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Đang chọn: đổi MÀU CHỮ và thêm một vạch bên trái, không tô nền đậm. Cột này
+   nằm cạnh khung soạn thảo — một mảng màu đặc ở đây kéo mắt khỏi chỗ đang gõ. */
+.ad-nut[aria-selected="true"]{
+  color:var(--accent-ink);
+  border-left-color:var(--accent);
+  background:var(--surface);
+}
+.ad-o{min-width:0}
+
+@media (max-width:719px){
+  .ad-khung{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
+  /* Nằm ngang thì thôi dính: một hàng nút dính trên đầu màn hình điện thoại
+     ăn mất một phần ba chỗ vốn đã ít của khung soạn thảo. */
+  .ad-menu{
+    position:static;flex-direction:row;gap:var(--s2);
+    border-bottom:1px solid var(--line);padding-bottom:var(--s2);
+  }
+  .ad-nut{
+    flex:1;text-align:center;border-left:0;border-bottom:2px solid transparent;
+    border-radius:var(--r-sm) var(--r-sm) 0 0;
+  }
+  .ad-nut[aria-selected="true"]{border-left:0;border-bottom-color:var(--accent)}
+}
+
 .ql-khoi + .ql-khoi{
   margin-top:var(--s9);
   padding-top:var(--s8);
@@ -833,7 +883,56 @@
 }
 /* Ở trang này ô viết và bàn duyệt là NỘI DUNG chính, không phải khối lạc vào
    một trang đọc — nên bỏ lề ngoài và cho chúng rộng hết khung. */
-.ql-khoi .gc-viet,.ql-khoi .bl-duyet{margin:0;width:100%}
+.ql-khoi .gc-viet,.ql-khoi .bl-duyet,
+.ad-o .gc-viet,.ad-o .bl-duyet{margin:0;width:100%}
+
+/* ══════════ Ô VIẾT BÀI ══════════ */
+.vb-khoi{display:flex;flex-direction:column;gap:var(--s4)}
+.vb-hang{display:flex;gap:var(--s3);flex-wrap:wrap}
+.vb-o{display:flex;flex-direction:column;gap:6px;flex:1 1 180px;min-width:0}
+.vb-o--rong{flex-basis:100%}
+.vb-o > span{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.vb-o input,.vb-o select,.vb-o textarea{
+  width:100%;box-sizing:border-box;
+  padding:var(--s2) var(--s3);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--text);
+  font:inherit;font-size:var(--fs-sm);
+}
+/* Thân bài gõ bằng Markdown — chữ đều nét thì đếm được thụt đầu dòng và thấy
+   ngay dấu ``` có khớp nhau không. */
+.vb-o textarea[name="noiDung"]{font-family:var(--font-mono);font-size:var(--fs-xs);line-height:1.6}
+.vb-o input:focus-visible,.vb-o select:focus-visible,.vb-o textarea:focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px;
+}
+.vb-duong{
+  margin:0;font-size:var(--fs-xs);color:var(--text-faint);
+  display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;
+}
+.vb-duong-nhan{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+}
+.vb-duong code{font-size:var(--fs-xs);color:var(--text-muted)}
+.vb-nut{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.vb-nhap{
+  display:flex;gap:6px;align-items:center;
+  font-size:var(--fs-xs);color:var(--text-muted);cursor:pointer;
+}
+.vb-nut .btn{margin-left:auto}
+.vb-cho,.vb-noi{margin:0;font-size:var(--fs-xs);color:var(--text-faint)}
+.vb-noi--hong{color:var(--accent-ink)}
+.vb-xong{display:flex;flex-direction:column;gap:var(--s3)}
+.vb-xong-de{
+  margin:0;font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+}
+.vb-xong-chu{margin:0;font-size:var(--fs-md);font-style:italic}
+.vb-xong-ds{margin:0;padding-left:1.1em;font-size:var(--fs-xs);color:var(--text-muted)}
+.vb-xong-ds code{font-size:var(--fs-xs)}
 
 /* ══════════ THƯ MỤC CHUYÊN MỤC (/posts/) ══════════
    Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới

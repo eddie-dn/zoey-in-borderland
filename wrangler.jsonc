@@ -38,6 +38,22 @@
     "not_found_handling": "none"
   },
 
+  // ── BIẾN THƯỜNG (KHÔNG PHẢI BÍ MẬT) ────────────────────────────────
+  // Hai dòng này để ô viết bài ở /z-admin/ biết ghi file vào kho mã nào.
+  // Chúng KHÔNG phải bí mật — tên kho mã công khai ai cũng đọc được — nên để
+  // trong file này là đúng chỗ, và đi theo repo thì không lo quên.
+  //
+  // Đổi "tai-khoan/ten-repo" thành kho mã thật của bạn. GH_NHANH phải là nhánh
+  // mà Cloudflare đang dựng; ghi vào nhánh khác thì commit vào được nhưng
+  // không có gì dựng lại cả, và trang đứng im không báo gì.
+  //
+  // Token thì NGƯỢC LẠI: GH_TOKEN là Secret, đặt ở Cloudflare →
+  // Settings → Runtime → Variables and Secrets. Đừng bao giờ đưa vào file này.
+  "vars": {
+    "GH_REPO": "tai-khoan/ten-repo",
+    "GH_NHANH": "main"
+  },
+
   "observability": { "enabled": true }
 
   // ── CƠ SỞ DỮ LIỆU D1 ────────────────────────────────────────────────

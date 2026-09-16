@@ -43,9 +43,60 @@ const CHI_TIET  = CO.has('--v') || CO.has('--verbose');
 const CO_NHAP   = CO.has('--nhap') || CO.has('--drafts');
 
 const CAU = JSON.parse(fs.readFileSync(path.join(GOC, 'site.config.json'), 'utf8'));
+
 const BASE = (CAU.base || '').replace(/\/$/, '');
 const CANH_BAO = [];
 const LOI = [];
+
+/* ── NÚM VẶN: ĐỌC TỪ site.config.json, KHÔNG GÕ THẲNG VÀO ĐÂY ──
+   Mấy con số dưới đây từng nằm rải rác trong file này dưới dạng `slice(0, 2)`,
+   `slice(0, 3)`, `slice(0, 30)`. Đọc mã thì thấy ngay, nhưng người VIẾT BLOG
+   thì không có lý do gì phải mở một file hai nghìn dòng chỉ để đổi "đọc tiếp
+   hai bài" thành ba bài — và mỗi lần đổi là một lần có thể sửa nhầm dòng.
+
+   Nay chúng nằm trong khối `soLuong` của site.config.json. Thiếu khoá nào thì
+   dùng số mặc định ghi ngay dưới đây, nên cấu hình cũ vẫn chạy y nguyên.
+
+   `so()` chặn luôn mấy thứ lặng lẽ hỏng: chữ thay vì số, số âm, số lẻ. Một
+   `"docTiep": "hai"` mà lọt qua thì slice(0, NaN) trả về mảng RỖNG — khối Đọc
+   tiếp biến mất khỏi mọi bài mà không một dòng lỗi nào. */
+function so(khoi, khoa, macDinh, itNhat = 0) {
+  const v = ((CAU[khoi] || {})[khoa]);
+  if (v === undefined || v === null || v === '') return macDinh;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < itNhat) {
+    CANH_BAO.push(`site.config.json — ${khoi}.${khoa} = ${JSON.stringify(v)} không dùng được `
+                + `(cần số nguyên ≥ ${itNhat}); tạm dùng ${macDinh}`);
+    return macDinh;
+  }
+  return n;
+}
+
+/* Đọc MỘT LẦN lúc nạp file, không phải mỗi lần dùng. Bản trước để chúng là hàm
+   và gọi lại ở mỗi bài — một giá trị gõ sai thì cùng một câu cảnh báo in ra chín
+   lần, đúng bằng số bài. Cảnh báo lặp thì người ta thôi đọc cảnh báo. */
+const SL = {
+  docTiep      : so('soLuong', 'docTiep', 2, 0),
+  tagMoiThe    : so('soLuong', 'tagMoiThe', 2, 0),
+  heroTrangChu : so('soLuong', 'heroTrangChu', 3, 1),
+  rss          : so('soLuong', 'rss', 30, 1),
+  logoSoHat    : so('logo', 'soHat', 18, 0)
+};
+
+/* Thời lượng vòng kể của logo. Phải là một quãng thời gian CSS hợp lệ, vì nó
+   vừa đi vào thuộc tính `dur` của thẻ <animate> vừa đi vào biến `--lg-ck`.
+   Viết "27" thiếu chữ s thì CSS bỏ qua cả luật, còn SVG thì hiểu là 27 GIÂY —
+   hai nửa hoạt hình chạy hai tốc độ khác nhau mà không ai báo gì. */
+function logoVongKe() {
+  const v = String((CAU.logo || {}).vongKe || '').trim();
+  if (!v) return '27s';
+  if (!/^\d+(\.\d+)?m?s$/.test(v)) {
+    CANH_BAO.push(`site.config.json — logo.vongKe = ${JSON.stringify(v)} không phải quãng `
+                + `thời gian CSS (ví dụ "27s" hoặc "800ms"); tạm dùng 27s`);
+    return '27s';
+  }
+  return v;
+}
 
 /* Phiên bản đọc từ docs/LICH-SU.md, KHÔNG từ site.config.json. Một nguồn duy
    nhất thì không bao giờ lệch. Khai ở cả hai chỗ là sớm muộn cũng quên một chỗ,
@@ -186,11 +237,39 @@ const NHAN = {
   gcDelFail   : 'Không xoá được.',
   blUnapproveHint: 'Rút xuống hàng chờ, không xoá',
   blHideHint  : 'Ẩn hẳn khỏi trang',
-  /* ── trang quản lý /z-admin/ ── */
-  qlTitle     : 'Chủ trang',
-  qlDan       : 'Viết ghi chú và duyệt bình luận. Chỉ mình bạn thấy trang này.',
+  /* ── trang quản lý /z-admin/ ──
+     Ba việc, ba ngăn, chỉ một ngăn hiện mỗi lúc. Nhãn để NGẮN vì chúng nằm
+     trong một cột hẹp bên trái và phải đọc được bằng một cái liếc. */
+  qlTitle     : 'Admin',
+  qlDan       : 'Ghi chú, bình luận và bài viết. Chỉ mình bạn thấy trang này.',
   qlViet      : 'Viết ghi chú',
   qlDuyet     : 'Bình luận',
+  qlMenu      : 'Chọn việc',
+  qlNote      : 'Note',
+  qlComment   : 'Comment',
+  qlPost      : 'Post',
+  qlBai       : 'Viết bài',
+  /* ── ô viết bài ── */
+  vbTitle     : 'Tiêu đề',
+  vbMuc       : 'Chuyên mục',
+  vbDate      : 'Ngày',
+  vbTags      : 'Tag — cách nhau bằng dấu phẩy',
+  vbSummary   : 'Tóm tắt',
+  vbBody      : 'Bài — viết bằng Markdown',
+  vbWillBe    : 'Sẽ nằm ở',
+  vbDraft     : 'Để nháp — dựng ra nhưng chưa công khai',
+  vbPublish   : 'Đăng',
+  vbNeedKey   : 'Nhập mã chủ và khoá ở ngăn Note, ô viết bài sẽ hiện ra.',
+  vbNeedBoth  : 'Cần cả tiêu đề lẫn nội dung.',
+  vbSending   : 'Đang gửi…',
+  vbDone      : 'Đã đưa vào kho mã',
+  vbBuilding  : 'Cloudflare đang dựng lại. Bài lên sau khoảng một phút.',
+  vbSeeCommit : 'Xem commit trên GitHub',
+  vbAnother   : 'Viết bài nữa',
+  vbFailed    : 'Không đăng được.',
+  vbNoConfig  : 'Máy chủ chưa có',
+  vbSeeDoc    : 'xem docs/CAI-DAT.md',
+  vbLoading   : 'Đang tải…',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -277,6 +356,38 @@ const NHAN = {
   close       : 'Close',
   back        : 'Back'
 };
+
+/* ── SỬA MỘT VÀI CHỮ MÀ KHÔNG ĐỤNG VÀO BẢNG TRÊN ──
+   Bảng NHAN ở trên là bản gốc, và nó nằm trong mã CÓ LÝ DO: mỗi nhãn đi kèm
+   một dòng giải thích vì sao lại chọn chữ ấy, và mấy dòng đó không sống được
+   trong một file JSON.
+
+   Nhưng muốn đổi đúng một chữ — "Read next" thành "Đọc tiếp" chẳng hạn — thì
+   không nên phải mở file hai nghìn dòng. Nên: khai `nhan` trong
+   site.config.json, nó đè lên bảng trên. Chỉ khai chữ nào muốn đổi.
+
+   Khoá lạ thì KÊU LÊN chứ không im lặng bỏ qua: gõ nhầm `"readnext"` thay vì
+   `"readNext"` mà không ai báo thì người ta ngồi đổi mãi không thấy trang đổi
+   theo, rồi kết luận là tính năng hỏng. */
+for (const [k, v] of Object.entries(CAU.nhan || {})) {
+  if (!(k in NHAN)) {
+    CANH_BAO.push(`site.config.json — nhan.${k} không có trong bảng nhãn, bỏ qua `
+                + `(gõ đúng hoa thường chưa? xem biến NHAN trong tools/build.mjs)`);
+    continue;
+  }
+  if (typeof v !== 'string') {
+    CANH_BAO.push(`site.config.json — nhan.${k} phải là một chuỗi chữ, bỏ qua`);
+    continue;
+  }
+  /* Nhãn nào có {n} thì chỗ thay số nằm ở đó; bỏ mất {n} là con số biến mất
+     khỏi câu mà câu vẫn đọc xuôi, nên không ai nhận ra. */
+  if (NHAN[k].includes('{n}') && !v.includes('{n}')) {
+    CANH_BAO.push(`site.config.json — nhan.${k} thiếu {n} (chỗ điền con số); `
+                + `giữ nguyên chữ gốc "${NHAN[k]}"`);
+    continue;
+  }
+  NHAN[k] = v;
+}
 
 /* Thay {n} trong một nhãn. */
 const nhan = (k, n) => String(NHAN[k] || '').replace('{n}', n);
@@ -656,6 +767,23 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         anon: NHAN.anon
                       }))}"`
                    : '',
+                 /* Ô viết BÀI chỉ có ở /z-admin/. Khác ghi chú và bàn duyệt —
+                    hai thứ ấy còn mọc được ở /notes/ và trong trang bài — viết
+                    bài là việc ngồi hẳn xuống làm, không phải việc tiện tay. */
+                 (duong === '/z-admin/' && (CAU.dangBai || {}).bat !== false)
+                   ? `data-bai-api="${attr(BASE + ((CAU.dangBai || {}).api || '/api/bai'))}" ` +
+                     `data-bai-nhan="${attr(JSON.stringify({
+                        title: NHAN.vbTitle, muc: NHAN.vbMuc, date: NHAN.vbDate,
+                        tags: NHAN.vbTags, summary: NHAN.vbSummary, body: NHAN.vbBody,
+                        willBe: NHAN.vbWillBe, draft: NHAN.vbDraft, publish: NHAN.vbPublish,
+                        needKey: NHAN.vbNeedKey, needBoth: NHAN.vbNeedBoth,
+                        sending: NHAN.vbSending, done: NHAN.vbDone,
+                        building: NHAN.vbBuilding, seeCommit: NHAN.vbSeeCommit,
+                        another: NHAN.vbAnother, failed: NHAN.vbFailed,
+                        noConfig: NHAN.vbNoConfig, seeDoc: NHAN.vbSeeDoc,
+                        loading: NHAN.vbLoading, badKey: NHAN.badKey, netErr: NHAN.netErr
+                      }))}"`
+                   : '',
                  ((duong === '/notes/' || duong === '/z-admin/') &&
                   (CAU.ghiChu || {}).online)
                    ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
@@ -992,11 +1120,18 @@ const P_NOI  = 'M35 13L13 35';
    `keyTimes` là PHẦN CỦA VÒNG, không phải giây: 0.12 = 12% của 20s. Hai mốc
    đầu giữ nguyên hình cuối cho tới lúc bốn cánh vỡ xong, rồi mới nháy sang
    hình chữ — nháy lúc đang vô hình thì không ai thấy cú nháy ấy. */
-/* 30 giây — PHẢI khớp với `--lg-ck` trong src/styles/layout.css. Thuộc tính
-   `dur` của <animate> là attribute của SVG, không phải CSS, nên `var()` ở đây
-   không nở ra gì cả; buộc phải ghi số. Hai chỗ ghi cùng một con số là đúng cái
-   kiểu sớm muộn cũng lệch nhau, nên bộ kiểm định có một phép canh việc ấy. */
-const LG_CK = '27s';
+/* ── MỘT NGUỒN CHO CẢ HAI NỬA HOẠT HÌNH LOGO ──
+   Logo chạy bằng hai cơ chế khác nhau: phần xoay/mờ do CSS lo (`--lg-ck` trong
+   layout.css), phần biến hình do thẻ <animate> trong SVG lo (thuộc tính `dur`).
+   `dur` là attribute của SVG chứ không phải CSS, nên `var(--lg-ck)` viết vào đó
+   không nở ra gì cả — buộc phải là một con số thật.
+
+   Bản trước vì thế ghi con số ấy ở HAI chỗ và nhờ bộ kiểm định canh cho khớp.
+   Canh được, nhưng vẫn là hai chỗ phải sửa. Nay chỉ còn một: site.config.json →
+   `logo.vongKe`. Con số đi vào `dur` ngay dưới đây, và gopCSS() ghi đè
+   `--lg-ck` ở cuối bundle bằng đúng nó. layout.css giữ nguyên 27s làm mặc định
+   để file ấy mở riêng ra vẫn chạy. */
+const LG_CK = logoVongKe();
 
 function bien(tu, den, t1, t2) {
   return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
@@ -1068,7 +1203,7 @@ function logoHTML(dong) {
      Ba con số 5, 7, 3 dưới đây đều nguyên tố cùng nhau với 18: nhờ vậy bán
      kính, cỡ hạt và quãng bay mỗi thứ chạy hết một vòng riêng của nó trước khi
      lặp lại, không có hai hạt nào trùng cả ba. */
-  const SO_HAT = 18;
+  const SO_HAT = SL.logoSoHat;
   const bui = `<g class="lg-bui" fill="currentColor">` +
     Array.from({ length: SO_HAT }, (_, i) => {
       const goc = (i / SO_HAT) * Math.PI * 2;
@@ -1217,7 +1352,7 @@ function tagBlockHTML(bai) {
    thì thẻ thứ ba rớt xuống hàng hai, để lại một hàng lẻ một thẻ — đọc ra là bố
    cục hỏng chứ không phải chủ ý. Và hết một bài dài thì hai gợi ý đã là nhiều:
    càng nhiều lựa chọn thì càng dễ không chọn cái nào. */
-function goiY(bai, congKhai, soLuong = 2) {
+function goiY(bai, congKhai, soLuong = SL.docTiep) {
   const tag = new Set(bai.tags.map((t) => slugify(t)));
   const i = congKhai.findIndex((b) => b.url === bai.url);
 
@@ -1714,7 +1849,9 @@ function gopCSS() {
     return `/* ───────── ${f} ───────── */\n${fs.readFileSync(p, 'utf8')}`;
   }).join('\n\n');
 
-  return boChuThichCSS(gop);
+  /* Ghi đè CUỐI bundle: cùng độ ưu tiên thì luật sau thắng, nên con số trong
+     site.config.json luôn thắng con số mặc định viết trong layout.css. */
+  return boChuThichCSS(gop) + `\n.logo--dong{--lg-ck:${LG_CK}}\n`;
 }
 
 /* ── CẮT CHÚ THÍCH KHI GỬI RA ──
@@ -1929,7 +2066,7 @@ function theBai(b, { hienMuc = true } = {}) {
     ${hangMeta(hienMuc ? b : { ...b, muc: [] })}
     <h3><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h3>
     <p class="the-tom">${escapeHtml(tomTat(b.summary, 150))}</p>
-    ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, 2).map((t) =>
+    ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, SL.tagMoiThe).map((t) =>
       `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
   </article>`;
 }
@@ -2045,7 +2182,7 @@ function trangChu(bai) {
 
   /* Màn đầu: TỐI ĐA BA bài. Bốn dòng trở lên là màn hero hết thoáng, mà thoáng
      mới là điểm của nó. */
-  const dauTien = xep.slice(0, 3);
+  const dauTien = xep.slice(0, SL.heroTrangChu);
   const noiBat  = xep[0];
   /* TRANG CHỦ CHỈ GIỮ 6 BÀI ngoài bài nổi bật. Màn đầu là chỗ mời vào, không
      phải chỗ liệt kê kho bài: đổ hết bài ra đây thì cuộn mãi không hết mà vẫn
@@ -2452,26 +2589,62 @@ function trangGhiChu() {
    được — và mở ra thì chỉ thấy một ô xin khoá. Lớp bảo mật là hai vế khoá ở
    phía máy chủ, không phải chỗ giấu đường dẫn.
 
-   Hai khối bên trong đều RỖNG lúc dựng; ghi-chu.js và duyet.js đổ nội dung vào
-   khi trang chạy, sau khi khoá đã khớp. Nhờ vậy HTML tĩnh của trang này không
-   chứa gì đáng giấu — kể cả lúc ai đó xem mã nguồn. */
+   Ba khối bên trong đều RỖNG lúc dựng; ghi-chu.js, duyet.js và viet-bai.js đổ
+   nội dung vào khi trang chạy, sau khi khoá đã khớp. Nhờ vậy HTML tĩnh của
+   trang này không chứa gì đáng giấu — kể cả lúc ai đó xem mã nguồn.
+
+   ── BA VIỆC, BA NGĂN, KHÔNG XẾP CHỒNG ──
+   Bản trước đổ cả ô viết ghi chú lẫn hàng chờ duyệt xuống một cột dọc. Với hai
+   khối thì còn chịu được; thêm ô viết BÀI — vốn cao gấp mấy lần vì có cả khung
+   soạn thảo — là thành một trang cuộn mãi không hết, và muốn duyệt một bình
+   luận thì phải lướt qua trọn một bài đang gõ dở.
+
+   Nay là một cột chọn việc bên trái, nội dung bên phải, mỗi lúc một ngăn.
+   Ngăn đang ẩn thì ẩn bằng `hidden` chứ không phải dịch ra ngoài màn hình:
+   nội dung của nó thật sự biến khỏi cây trang, nên trình đọc màn hình không
+   đọc phải ba khung cùng lúc, và bàn duyệt biết đường ngừng hỏi máy chủ.
+
+   Khổ hẹp thì cột trái nằm ngang thành một hàng nút trên đầu — xem list.css. */
+const AD_NGAN = [
+  { ma: 'note',    nhan: () => NHAN.qlNote,    de: () => NHAN.qlViet,  o: 'data-viet-host' },
+  { ma: 'comment', nhan: () => NHAN.qlComment, de: () => NHAN.qlDuyet, o: 'data-duyet-host' },
+  { ma: 'post',    nhan: () => NHAN.qlPost,    de: () => NHAN.qlBai,   o: 'data-viet-bai-host' }
+];
+
 function trangChuTrang() {
+  const menu = AD_NGAN.map((n, i) => `
+      <button type="button" role="tab" class="ad-nut" id="ad-tab-${n.ma}"
+              data-ad="${n.ma}" aria-controls="ad-o-${n.ma}"
+              aria-selected="${i === 0 ? 'true' : 'false'}"
+              tabindex="${i === 0 ? '0' : '-1'}">${escapeHtml(n.nhan())}</button>`).join('');
+
+  /* Ngăn thứ hai trở đi mang `hidden` ngay trong HTML tĩnh: không có
+     JavaScript thì cả ba vẫn hiện đủ… trừ khi đã có `hidden`. Cố ý chọn vế
+     sau — trang này KHÔNG chạy được nếu thiếu JavaScript (cả ba khung đều do
+     JS dựng), nên bày ba tiêu đề rỗng ra thì chỉ gây hiểu nhầm. */
+  const than = AD_NGAN.map((n, i) => `
+      <section role="tabpanel" class="ad-o" id="ad-o-${n.ma}"
+               aria-labelledby="ad-tab-${n.ma}"${i === 0 ? '' : ' hidden'}>
+        <h2 class="ql-de">${escapeHtml(n.de())}</h2>
+        <div ${n.o}></div>
+      </section>`).join('');
+
   return trangDanhSach({
     tieuDe: NHAN.qlTitle,
     dan: NHAN.qlDan,
     duong: '/z-admin/',
     noindex: true,
     than: `
-    <section class="ql-khoi">
-      <h2 class="ql-de">${NHAN.qlViet}</h2>
-      <div data-viet-host></div>
-    </section>
-    <section class="ql-khoi">
-      <h2 class="ql-de">${NHAN.qlDuyet}</h2>
-      <div data-duyet-host></div>
-    </section>`,
-    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
-             `\n<script src="${BASE}/assets/duyet.js" defer></script>`
+    <div class="ad-khung" data-admin>
+      <nav class="ad-menu" role="tablist" aria-label="${attr(NHAN.qlMenu)}">${menu}
+      </nav>
+      <div class="ad-than">${than}
+      </div>
+    </div>`,
+    scripts: `<script src="${BASE}/assets/admin.js" defer></script>` +
+             `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
+             `\n<script src="${BASE}/assets/duyet.js" defer></script>` +
+             `\n<script src="${BASE}/assets/viet-bai.js" defer></script>`
   });
 }
 
@@ -2540,7 +2713,7 @@ function trangSearch() {
 
 
 function rss(bai) {
-  const muc = bai.slice(0, 30).map((b) => `    <item>
+  const muc = bai.slice(0, SL.rss).map((b) => `    <item>
       <title>${escapeHtml(b.title)}</title>
       <link>${CAU.url}${b.url}</link>
       <guid isPermaLink="true">${CAU.url}${b.url}</guid>
@@ -2657,7 +2830,8 @@ async function chay() {
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js',
-                     'bang-anh.js', 'xem.js', 'ghi-chu.js', 'duyet.js']) {
+                     'bang-anh.js', 'xem.js', 'ghi-chu.js', 'duyet.js',
+                     'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng
          đúng bộ phân tích cú pháp của V8, nên nó bắt được mọi chỗ bộ đọc token

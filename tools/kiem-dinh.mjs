@@ -867,6 +867,48 @@ const KIEM = [
     }
   },
   {
+    /* ── BẬT Ô VIẾT BÀI THÌ PHẢI CÓ ĐỦ BỘ ──
+       Bốn mẩu đi cùng nhau: hàm ở functions/, ba ngăn ở /z-admin/, địa chỉ in
+       ra trang ấy, và hai file JS đọc địa chỉ đó. Thiếu mẩu nào thì ngăn Post
+       vẫn mở ra bình thường — chỉ là bấm Đăng xong không có gì xảy ra, hoặc
+       tệ hơn, ngăn ấy trống trơn mà không ai biết vì sao. */
+    ten: 'Bật ô viết bài thì phải có đủ hàm, ba ngăn và script',
+    muc: 'loi',
+    chay: ({ cau, goc, trang }) => {
+      if ((cau.dangBai || {}).bat === false) return [];
+      const ra = [];
+      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'bai.js'))) {
+        ra.push('site.config.json bật dangBai nhưng thiếu functions/api/bai.js');
+      }
+      const ql = trang.find((t) => t.url === '/z-admin/');
+      if (!ql) return ra;
+
+      for (const [o, ten] of [['data-viet-host', 'Note'],
+                              ['data-duyet-host', 'Comment'],
+                              ['data-viet-bai-host', 'Post']]) {
+        if (!ql.html.includes(o)) ra.push(`/z-admin/ thiếu chỗ cắm ngăn ${ten} (${o})`);
+      }
+      if (!/data-bai-api="[^"]+"/.test(ql.html)) {
+        ra.push('/z-admin/ không in data-bai-api — ô viết bài sẽ không mọc ra');
+      }
+      for (const j of ['admin.js', 'viet-bai.js']) {
+        if (!ql.html.includes(`/assets/${j}`)) ra.push(`/z-admin/ không nạp ${j}`);
+        if (!fs.existsSync(path.join(goc, 'dist', 'assets', j))) {
+          ra.push(`thiếu dist/assets/${j} — thêm vào danh sách chép trong tools/build.mjs`);
+        }
+      }
+
+      /* Ngăn thứ hai trở đi PHẢI mang `hidden` ngay trong HTML tĩnh. Thiếu nó
+         thì trong khoảnh khắc trước lúc admin.js chạy, cả ba khung hiện chồng
+         lên nhau rồi hai cái biến mất — một cú giật thấy rõ mỗi lần mở trang. */
+      const an = (ql.html.match(/role="tabpanel"[^>]*hidden/g) || []).length;
+      if (an !== 2) {
+        ra.push(`/z-admin/ có ${an} ngăn mang hidden sẵn, đáng lẽ 2 — mở trang sẽ thấy giật`);
+      }
+      return ra;
+    }
+  },
+  {
     /* ── WORKER.JS PHẢI BIẾT MỌI CỬA TRONG functions/api/ ──
        Đây là lỗi đã vấp thật, và nó im lặng tới mức nguy hiểm.
 
@@ -1169,26 +1211,42 @@ const KIEM = [
     }
   },
   {
-    /* ── HAI CHỖ KHAI THỜI LƯỢNG VÒNG LẶP PHẢI KHỚP NHAU ──
+    /* ── HAI NỬA HOẠT HÌNH LOGO PHẢI CHẠY CÙNG NHỊP ──
        Vòng kể chuyện của logo chạy bằng HAI cơ chế: phần mờ/xoay do CSS lo
-       (`--lg-ck` trong layout.css), phần biến hình do thẻ <animate> trong SVG lo
-       (`LG_CK` trong build.mjs). Thuộc tính `dur` của <animate> là attribute của
-       SVG chứ không phải CSS, nên `var(--lg-ck)` ở đó không nở ra gì cả — buộc
-       phải ghi số ở cả hai nơi.
+       (`--lg-ck`), phần biến hình do thẻ <animate> trong SVG lo (thuộc tính
+       `dur`). `dur` là attribute của SVG chứ không phải CSS, nên `var(--lg-ck)`
+       ở đó không nở ra gì cả — buộc phải là một con số thật.
 
        Lệch nhau thì không ai báo lỗi, chỉ là hai nửa câu chuyện trôi dần khỏi
        nhau: chữ Z cong ra lúc nó đã xoay xong từ đời nào, hoặc ngược lại. Và vì
-       trôi DẦN nên xem mấy vòng đầu vẫn thấy đúng. */
-    ten: 'Thời lượng vòng lặp logo khai giống nhau ở CSS và ở SVG',
+       trôi DẦN nên xem mấy vòng đầu vẫn thấy đúng.
+
+       Nay cả hai lấy từ một nguồn (`logo.vongKe` trong site.config.json), nên
+       phép kiểm này không còn canh hai chỗ KHAI nữa — nó soi hai chỗ ĐÃ DỰNG
+       RA. Đó mới là thứ trình duyệt đọc, và nó bắt được cả trường hợp một chỗ
+       nào đó ghi đè mất biến trên đường ra dist. */
+    ten: 'Hai nửa hoạt hình logo chạy cùng nhịp trong bản đã dựng',
     muc: 'loi',
-    chay: () => {
-      const js = fs.readFileSync(path.join(GOC, 'tools', 'build.mjs'), 'utf8');
-      const css = fs.readFileSync(path.join(GOC, 'src', 'styles', 'layout.css'), 'utf8');
-      const a = js.match(/const LG_CK\s*=\s*'([^']+)'/);
-      const b = css.match(/--lg-ck:\s*([\w.]+)/);
-      if (!a || !b) return ['không tìm thấy LG_CK (build.mjs) hoặc --lg-ck (layout.css)'];
-      return a[1] === b[1] ? []
-        : [`LG_CK = ${a[1]} nhưng --lg-ck = ${b[1]} — hai nửa hoạt hình logo sẽ trôi lệch nhau`];
+    chay: ({ trang, dist }) => {
+      const fCss = path.join(dist, 'assets', 'style.css');
+      if (!fs.existsSync(fCss)) return [];
+      const css = fs.readFileSync(fCss, 'utf8');
+      /* Lấy khai báo CUỐI CÙNG: cùng độ ưu tiên thì luật sau thắng, và build
+         ghi đè giá trị của cấu hình vào cuối bundle. */
+      const dsCss = [...css.matchAll(/--lg-ck:\s*([\w.]+)/g)].map((m) => m[1]);
+      if (!dsCss.length) return ['dist/assets/style.css không có --lg-ck nào'];
+      const cCss = dsCss[dsCss.length - 1];
+
+      const co = trang.find((t) => /<svg class="logo logo--dong"/.test(t.html));
+      if (!co) return [];
+      const dur = [...co.html.matchAll(/<animate[^>]*\bdur="([^"]+)"/g)].map((m) => m[1]);
+      if (!dur.length) return [`${co.url} có logo động nhưng không thẻ <animate> nào khai dur`];
+
+      const le = [...new Set(dur)].filter((d) => d !== cCss);
+      return le.length
+        ? [`--lg-ck = ${cCss} nhưng <animate dur> = ${le.join(', ')} — hai nửa hoạt hình `
+           + `logo sẽ trôi lệch nhau (sửa logo.vongKe trong site.config.json)`]
+        : [];
     }
   },
   {
