@@ -49,7 +49,7 @@
   "binhLuan": {
     "bat": true,
     "api": "/api/binh-luan",
-    "loiMoi": "Ghé ngang thì để lại một dòng cũng được — không cần đăng ký gì cả."
+    "loiMoi": ""
   },
   "baoVeChu": {
     "bat": true,

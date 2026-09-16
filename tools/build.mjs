@@ -1246,7 +1246,10 @@ function binhLuanHTML(bai) {
     </button>
 
     <div class="bl-than" id="bl-than">
-    <p class="bl-moi">${escapeHtml(c.loiMoi || 'Ghé ngang thì để lại một dòng cũng được.')}</p>
+    ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
+          định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
+          xong vẫn thấy một dòng khác hiện lên, và không có cách nào tắt. */''}
+    ${c.loiMoi ? `<p class="bl-moi">${escapeHtml(c.loiMoi)}</p>` : ''}
 
     <ul class="bl-ds"></ul>
 

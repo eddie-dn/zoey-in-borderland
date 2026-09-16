@@ -380,6 +380,15 @@
 
     lamOl();
     veLai();
+
+    /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. */
+    function denNoi() {
+      var y = hop.getBoundingClientRect().top + window.pageYOffset - 72;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
+    }
+    if (document.readyState === 'complete') denNoi();
+    else window.addEventListener('load', denNoi, { once: true });
+
     return { veLai: veLai };
   }
 

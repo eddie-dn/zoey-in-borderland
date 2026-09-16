@@ -342,6 +342,30 @@
     banDuyet.className = 'bl-duyet';
     than.insertBefore(banDuyet, than.firstChild);
     veBanDuyet();
+
+    /* ── PHẢI CUỘN TỚI, VÀ PHẢI NHẢY THẲNG ──
+       Khối này nằm cuối bài. Trên một bài dài nó rơi vào khoảng 4700px của một
+       trang cao 6200px — hơn năm màn hình. Mà `#duyet`/`#viet` không phải id
+       của phần tử nào nên trình duyệt không tự đưa tới: gõ địa chỉ xong thấy y
+       hệt một bài viết bình thường, không cách nào đoán ra là nó đã mở rồi.
+
+       Hai chỗ đã vấp khi chữa:
+
+       MỘT — `behavior:'smooth'`. Trang khai `scroll-behavior:smooth` ở :root
+       nên cú cuộn chạy thành hoạt hình dài mấy giây, và ảnh trong bài tải xong
+       giữa chừng làm chiều cao đổi, đích trôi đi. Đo ra: bốn giây sau khi mở
+       trang vẫn còn ở scrollY = 0. `instant` thì tới nơi ngay, và đây là bàn
+       làm việc chứ không phải một chặng đọc — không cần cảnh chuyển.
+
+       HAI — tính vị trí quá sớm. `requestAnimationFrame` chạy trước lúc ảnh
+       có kích thước, nên con số tính ra là của một bố cục chưa xong. Đợi
+       `load` thì mọi thứ đã đúng chỗ. */
+    function denNoi() {
+      var y = banDuyet.getBoundingClientRect().top + window.pageYOffset - 72;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
+    }
+    if (document.readyState === 'complete') denNoi();
+    else window.addEventListener('load', denNoi, { once: true });
   }
 
   function veBanDuyet() {

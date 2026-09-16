@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.03 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
 | V7.02 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
 | V7.01 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
 | V7.00 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
@@ -91,6 +92,22 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.03 — 16-Sep-2026
+
+- **Mở bàn duyệt hay ô viết là được đưa tới tận nơi.** Hai khối ấy nằm cuối
+  trang — trên một bài dài, bàn duyệt rơi vào khoảng 4700px của một trang cao
+  6200px, hơn năm màn hình. Mà dấu thăng trong địa chỉ không trỏ tới phần tử
+  nào nên trình duyệt không tự cuộn: gõ địa chỉ xong thấy y hệt một bài viết
+  bình thường, và không có cách nào đoán ra là nó đã mở rồi, chỉ nằm dưới xa.
+- **Và phải nhảy thẳng, không cuộn mượt.** Bản chữa đầu dùng cuộn mượt, nhưng
+  trang khai kiểu cuộn ấy ở cấp cao nhất nên nó thành một hoạt hình dài, rồi
+  ảnh trong bài tải xong giữa chừng làm đích trôi đi — đo ra: bốn giây sau khi
+  mở trang vẫn còn đứng nguyên ở đầu. Đây là bàn làm việc chứ không phải một
+  chặng đọc, tới nơi ngay là đúng.
+- **Dòng mời ở khung bình luận bỏ được.** Để trống trong cấu hình là nó biến
+  mất hẳn; bản trước để trống thì rơi về một câu mặc định khác, tức là không có
+  cách nào tắt.
 
 ## V7.02 — 16-Sep-2026
 
