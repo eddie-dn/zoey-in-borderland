@@ -747,7 +747,58 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 /* ══════════ HAI NÚT CUỐI BÀI: TIM · BÌNH LUẬN ══════════
    Thay cho cả một khung bình luận bày sẵn. Lý do ở chỗ dựng `binhLuanHTML`
    trong tools/build.mjs. */
-.bl-dau{display:flex;gap:var(--s3);align-items:center}
+/* ── CỤM TƯƠNG TÁC Ở CỘT BÊN ──
+   Tim · chia sẻ · bình luận. Nằm trên cùng cột bên, TRÊN cả mục lục: nó là
+   thứ người đọc quay lại tìm, còn mục lục là thứ họ liếc một lần lúc mới vào.
+
+   Trước đây ba nút này ở chân bài trong một khối `.bl-dau` — luật ấy đã bỏ,
+   và nó vốn còn trùng tên với `.bl-dau` của MỖI dòng bình luận (tên người +
+   giờ gửi). Hai luật cùng tên chồng lên nhau trong cùng một file, cái sau ăn
+   cái trước; may là hai nơi không bao giờ hiện cùng lúc nên chưa ai thấy. */
+.cum-tt{
+  display:flex;flex-direction:column;gap:var(--s2);
+  padding-bottom:var(--s5);margin-bottom:var(--s5);
+  border-bottom:1px solid var(--line);
+}
+.cum-nhan{
+  margin:0;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+}
+.cum-nut{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
+/* Câu báo "đã chép đường dẫn". Giữ chỗ sẵn một dòng kể cả lúc rỗng: không giữ
+   thì lúc chữ hiện ra cả cột bên nhảy xuống một nhịp, và cú nhảy ấy nhìn như
+   trang bị lỗi chứ không như một lời báo. */
+.cum-bao{
+  margin:0;min-height:1.2em;
+  font-size:var(--fs-2xs);color:var(--accent-ink);
+}
+.cum-bao--hong{color:var(--bad)}
+
+/* ── CÙNG MỘT CỤM, HAI CHỖ ĐỨNG ──
+   Khung A có cột bên thật nên cụm xếp DỌC ở đó. Khung B và C không có cột nào,
+   nên cụm lên đầu bài và xếp NGANG — ngay dưới hàng ngày tháng / lượt xem, nơi
+   mắt vừa đi qua. Cùng một khối HTML, đổi hướng bằng đúng một luật.
+
+   Không viền dưới ở đây: ngay dưới nó đã là đoạn tóm tắt có viền trái riêng,
+   hai đường kẻ sát nhau thì đọc ra là khung bị vỡ. */
+.post-head .cum-tt{
+  flex-flow:row wrap;align-items:center;gap:var(--s3) var(--s4);
+  border-bottom:none;padding-bottom:0;margin:var(--s4) 0 0;
+}
+/* Câu báo xuống HÀNG RIÊNG (ép chiếm trọn bề ngang) thay vì chen vào cuối
+   hàng nút: chen vào thì lúc nó hiện ra, cả hàng nút bị đẩy sang trái. */
+.post-head .cum-bao{flex:0 0 100%;min-height:0}
+.post-head .cum-bao:empty{display:none}
+
+/* Khổ hẹp: `.ben` thành `display:contents` (layout.css), nên cụm của khung A
+   rơi vào dòng chảy. `order:2` đặt nó ngay SAU thân bài và TRƯỚC chân bài —
+   cùng chỗ tương đối với lúc nó còn ở cột bên. */
+@media (max-width:1079px){
+  .cum-tt{order:2}
+}
+
 .bl-nut{
   appearance:none;cursor:pointer;
   display:inline-flex;align-items:center;gap:7px;

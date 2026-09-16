@@ -44,9 +44,19 @@
   var dsEl  = khoi.querySelector('.bl-ds');
   var form  = khoi.querySelector('.bl-form');
   var bao   = khoi.querySelector('.bl-bao');
-  var demEl = khoi.querySelector('.bl-dem');
   var than  = khoi.querySelector('.bl-than');
-  var nutMo = khoi.querySelector('.bl-mo');
+
+  /* ── HÀNG NÚT NAY Ở CỘT BÊN, KHÔNG CÒN TRONG KHỐI NÀY ──
+     Tim, chia sẻ và bình luận gom thành một cụm ở cột phải (xem cumTuongTac
+     trong tools/build.mjs), còn khối `[data-binh-luan]` chỉ giữ danh sách lời
+     nhắn và ô viết. Nên mấy nút ấy phải tìm từ `document`.
+
+     Vẫn thử trong khối trước: một trang chỉ có một bài, nhưng nếu mai này có
+     khung nào giữ lại hàng nút tại chỗ thì bản trong khối phải thắng — nút
+     gần với khối nó điều khiển là nút đúng. */
+  function tim1(sel) { return khoi.querySelector(sel) || document.querySelector(sel); }
+  var demEl = tim1('.bl-dem');
+  var nutMo = tim1('.bl-mo');
   var moLuc = Date.now();
 
   /* Chữ trên giao diện lấy từ bảng NHAN trong tools/build.mjs, gửi sang đây
@@ -94,7 +104,7 @@
 
      Con số hiện lên TRƯỚC khi máy chủ trả lời — bấm xong thấy ngay, không
      chờ một vòng mạng. Máy chủ từ chối thì trả lại trạng thái cũ. */
-  var tim = khoi.querySelector('.bl-tim');
+  var tim = tim1('.bl-tim');
   if (tim) (function () {
     var api = tim.getAttribute('data-thich');
     /* Con số hiện ở HÀNG META đầu bài, cạnh lượt xem — không hiện trên chính

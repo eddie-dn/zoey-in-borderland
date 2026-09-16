@@ -269,12 +269,21 @@
       /* Mỗi giọt nhắm sẵn một điểm chạm trong DẢI nước. Cho mọi giọt cùng chạm
          ở `mn` thì mười tám vòng sóng nở ra trên đúng một đường ngang, và mắt
          đọc ngay ra cái đường ấy — vũng nước thành một vạch kẻ. */
-      var s = Math.random();
+      /* Mũ 1,7 dồn phần lớn giọt về phía MÉP TRÊN của dải nước, sát đường mặt
+         nước. Rải đều (mũ 1) thì nửa số giọt chạm ở nửa dưới — chỗ nằm khuất
+         sau ô trích dẫn và chân trang, nên công toé nước rơi vào chỗ không ai
+         nhìn thấy. Vẫn còn ít giọt chạm sâu, đủ giữ cảm giác mặt nước là một
+         MẶT chứ không phải một vạch. */
+      var s = Math.pow(Math.random(), 1.7);
       return {
         lop: lop, s: s,
         cham: mn + s * (H - mn) * 0.92,
         x: 20 + Math.random() * Math.max(1, W - 40),
-        y: batDau ? Math.random() * mn : -20 - Math.random() * 420,
+        /* Sinh ra ngay trên mép màn chứ không từ tít trên cao. Quãng rơi cũ
+           tới 440px nằm ngoài khung: với tốc độ đã chậm ba nhịp, một giọt mất
+           hơn hai mươi giây mới vào tới khung hình, nên một lúc lâu sau khi mở
+           trang gần như không có cú chạm nào. */
+        y: batDau ? Math.random() * mn : -12 - Math.random() * 90,
         r: 1.6 + lop * 2.6,
         /* Giọt phải chậm theo màn nước, nếu không nó vượt lên trước và đọc
            ra là hai thứ rơi trong hai trọng trường khác nhau. */
@@ -311,10 +320,16 @@
       for (var k = 0; k < n; k++) {
         toe.push({
           x: x, y: y,
-          vx: (Math.random() - 0.5) * (1.1 + lop * 1.3),
-          vy: -(0.9 + Math.random() * (1.1 + lop * 1.2)),
-          r: 0.7 + Math.random() * (0.6 + lop * 0.9),
-          mo: 0.45 + Math.random() * 0.35,
+          /* ── MỀM HƠN ──
+             Bản trước bật lên tới 2,1 px mỗi khung dưới trọng lực .062: hạt
+             vọt cao, đi nhanh, và mắt đọc ra tia lửa chứ không ra nước. Nay
+             tốc độ bật còn chừng ba phần năm và trọng lực nhẹ đi một nửa —
+             hạt lên tới độ cao xấp xỉ cũ nhưng mất nhiều khung hơn để tới
+             đỉnh, và đó chính là chỗ "mềm" nằm. Hạt cũng nhỏ và nhạt hơn. */
+          vx: (Math.random() - 0.5) * (0.62 + lop * 0.8),
+          vy: -(0.52 + Math.random() * (0.62 + lop * 0.72)),
+          r: 0.6 + Math.random() * (0.5 + lop * 0.7),
+          mo: 0.3 + Math.random() * 0.26,
           /* Mốc rơi lại: chính chỗ nó bật lên. Hạt rơi quá mốc ấy là hạt chui
              xuống dưới mặt nước — mà nước thì không trong suốt tới thế. */
           day: y
@@ -464,16 +479,14 @@
         }
         ctx.stroke();
 
-        for (i = 0; i < 5; i++) {
-          /* Lằn nào ở thấp thì trôi nhanh hơn — cùng một tốc độ thật, chỗ gần
-             quét qua mắt nhanh hơn chỗ xa. Đó là toàn bộ chiều sâu của lớp này. */
-          var ly = mn + day * (0.17 + i * 0.19);
-          var lech = itMotion ? 0 : Math.sin(t * (0.006 + i * 0.004) + i * 1.7) * (10 + i * 16);
-          ctx.globalAlpha = 0.16 - i * 0.018;
-          ctx.beginPath();
-          ctx.ellipse(W * 0.5 + lech, ly, W * (0.34 + i * 0.1), 1.6 + i * 0.7, 0, 0, 6.2832);
-          ctx.stroke();
-        }
+        /* ── NĂM LẰN TRÔI: ĐÃ BỎ ──
+           Chúng là năm vòng elip rất bẹt nằm ngang, trôi qua trôi lại để tả
+           chiều sâu mặt nước. Vấn đề: chúng là NĂM ĐƯỜNG KẺ song song, và năm
+           đường kẻ song song thì mắt đọc ra một cái lưới chứ không ra một mặt
+           nước — nhất là khi mỗi đường đều đủ mảnh và đủ đều để trông như nét
+           vẽ. Chiều sâu ở đây đã có sẵn trong dải màu chuyển và trong cỡ vòng
+           sóng to dần về phía dưới; thêm năm vạch nữa chỉ là tả lại một lần
+           nữa bằng thứ ngôn ngữ sai. */
 
         /* ── 2. GIỌT ── rơi tới cùng, chạm mặt nước rồi sinh ra một vòng sóng. */
         for (i = 0; i < giot.length; i++) {
@@ -524,12 +537,12 @@
            nước, còn vòng sóng thì nằm trên mặt. */
         for (i = toe.length - 1; i >= 0; i--) {
           o = toe[i];
-          if (!itMotion) { o.x += o.vx; o.y += o.vy; o.vy += 0.062; }
+          if (!itMotion) { o.x += o.vx; o.y += o.vy; o.vy += 0.032; }
           if (o.y >= o.day) { toe.splice(i, 1); continue; }
           /* Mờ dần theo ĐỘ CAO còn lại: hạt lên cao nhất là lúc mờ nhất, rồi
              rõ lại khi rơi xuống. Giảm đều theo thời gian thì hạt tắt giữa
              không trung và cú toé trông như bốc hơi. */
-          ctx.globalAlpha = o.mo * Math.max(0.15, 1 - (o.day - o.y) / 34);
+          ctx.globalAlpha = o.mo * Math.max(0.1, 1 - (o.day - o.y) / 26);
           /* Cùng lý do với đường nước: hạt TRẮNG trên nền gần trắng là hạt vô
              hình. Dùng đúng màu vòng sóng — hạt bắn lên và vòng sóng loang ra
              là hai nửa của cùng một cú chạm. */

@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V11.00 | 2026-09-16 | 00 | trang Posts thành bảng mục lục gọn: mỗi chuyên mục một danh sách dòng, tối đa 6 mục một trang |
+| V10.09 | 2026-09-16 | 09 | tim · chia sẻ · bình luận gom thành một cụm ở cột phải; thêm nút chia sẻ / chép đường dẫn |
+| V10.08 | 2026-09-16 | 08 | Tĩnh lặng: trả nền về bản cũ, giữ phần mép; bỏ lằn nước, toé mềm hơn, mưa chạm sớm hơn |
 | V10.07 | 2026-09-16 | 07 | theme Tĩnh lặng: hạ nền một bậc, đậm màu trang trí và đường kẻ cho thẻ ra thẻ |
 | V10.06 | 2026-09-16 | 06 | điện thoại: màn đầu giữ trọn một màn sau khi mở danh sách; tên blog chạm để mở, hai dòng thẳng cột |
 | V10.05 | 2026-09-16 | 05 | bộ khung logo: dựng lại tấm lát cắt 14 chặng, đồng bộ trọn thư mục sang zoey-blog-logo |
@@ -126,6 +129,61 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V11.00 — 16-Sep-2026
+
+- **Trang Posts gọn lại gần bốn lần.** Mỗi bài trong một chuyên mục trước đây
+  là một tấm thẻ chở tiêu đề, ngày, tóm tắt và hai tag — chiếm chỗ bằng bốn
+  dòng chữ. Trên một trang mà việc duy nhất là ĐIỂM DANH bài thì tóm tắt và tag
+  không giúp chọn: người ta chọn theo tiêu đề. Nay mỗi bài là một dòng, và mỗi
+  chuyên mục khoe được 5 bài thay vì 3 mà vẫn thấp hơn trước.
+- **Cùng khuôn với ba dòng bài ở màn đầu trang chủ.** Hai chỗ làm cùng một việc
+  thì phải trông như nhau — đi từ trang chủ sang Posts mà gặp hai kiểu danh
+  sách là phải học lại cách đọc một thứ vừa đọc xong.
+- **Tối đa 6 chuyên mục một trang**, cắt bằng chính bộ số trang đang dùng cho
+  danh sách bài. Sáu là con số liếc hết được trong một hai màn.
+- **Hàng chip ở Posts, Notes và Search nay là một thành phần.** Ba nơi từng có
+  ba khoảng cách khác nhau vì mỗi nơi tự khai lấy — nhìn từng trang thì không
+  ai thấy, mà chuyển qua lại giữa ba trang thì thấy hàng chip nhảy một cái.
+  Luật đầy đủ ghi vào docs/DESIGN-SYSTEM.md §17.2b–c, kèm bảng "trang nào cắt
+  gì, mỗi trang bao nhiêu".
+
+## V10.09 — 16-Sep-2026
+
+- **Tim, chia sẻ và bình luận gom thành MỘT cụm ở cột phải.** Chân bài không
+  còn nút nào. Chân bài là chỗ người đọc vừa đọc xong và đang đi tiếp — ai đổi
+  ý lúc đang đọc dở phải cuộn xuống tận cuối mới bấm được, mà phần lớn thì
+  không cuộn. Cột phải đi theo suốt bài, nên cụm có mặt đúng lúc người ta còn
+  đang có cảm xúc về bài.
+- **Khung không có cột phải thì cụm lên ĐẦU bài**, bám ngay dưới hàng ngày
+  tháng và lượt xem — tức là dán vào đúng chỗ con số đếm tim đang hiện. Chỉ
+  khung A có cột bên thật; đặt cụm vào cột bên của khung B và C thì nó lại rơi
+  xuống sau bài, đúng cái chỗ vừa dọn đi.
+- **Nút chia sẻ mới.** Điện thoại mở bảng chia sẻ của hệ điều hành; máy bàn chép
+  đường dẫn rồi báo "đã chép". Một nút chứ không phải một hàng icon mạng xã
+  hội: hàng icon nói rằng trang này quan tâm tới bốn nền tảng cụ thể (nó không),
+  và mỗi icon là một lượt gọi ra miền ngoài, tức một điểm theo dấu người đọc.
+- **Thêm một phép kiểm**: mọi thẻ `script` phải trỏ tới một file có thật. Chính
+  lỗi ấy vừa xảy ra khi thêm file chia sẻ — thẻ có, file không, nút bấm không
+  ra gì, và không có gì báo.
+
+## V10.08 — 16-Sep-2026
+
+- **Nền Tĩnh lặng trở lại bản cũ.** Bản V10.07 hạ nền một bậc cho mọi chênh
+  lệch cấu trúc tăng cùng lúc. Nó chữa đúng con số nhưng đổi luôn CHẤT của
+  theme — thứ làm nên Tĩnh lặng là cái sáng mỏng, gần như trắng ra nước, và hạ
+  một bậc là mất đúng cái ấy để đổi lấy 0,11 điểm tương phản.
+- **Phần mép giữ lại, vì nó không đụng tới độ sáng của trang.** Đường kẻ đậm
+  hơn (1,52 → 1,96), nền lõm tách hẳn khỏi mặt thẻ (1,09 → 1,41), màu trang trí
+  lên đúng bằng Sakura (1,42 → 1,78). Ba thứ ấy đều là màu nhạt nằm trên nền
+  nhạt: chúng làm rõ ranh giới mà không kéo cả trang tối đi.
+- **Bỏ năm lằn nước.** Chúng là năm đường kẻ song song, và năm đường kẻ song
+  song thì mắt đọc ra một cái lưới chứ không ra mặt nước. Chiều sâu đã có sẵn
+  trong dải màu chuyển và trong cỡ vòng sóng to dần xuống dưới.
+- **Nước hắt lên mềm hơn và mưa chạm mặt nước sớm hơn.** Hạt bật chậm lại dưới
+  trọng lực nhẹ hơn một nửa — lên tới độ cao xấp xỉ cũ nhưng mất nhiều khung
+  hình hơn, và đó là chỗ "mềm" nằm. Giọt nay sinh ngay trên mép màn thay vì từ
+  440px phía trên, nên không còn quãng lặng dài lúc mới mở trang.
 
 ## V10.07 — 16-Sep-2026
 

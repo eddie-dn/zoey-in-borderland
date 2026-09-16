@@ -1034,6 +1034,65 @@ thấy, đừng tin thuộc tính**.
 `!important` ở đây là đúng chỗ: `hidden` mang nghĩa "không liên quan lúc này",
 và không có ngoại lệ nào cho nó.
 
+### 17.2b · Một bộ luật, mọi trang danh sách
+
+Đây là bảng đầy đủ. Trang nào cắt gì, mỗi trang bao nhiêu, và cắt bằng cái gì —
+tất cả đi qua **một** hàm (`bocPhanTrang` trong `tools/build.mjs`) và **một**
+file chạy ở trình duyệt (`src/js/trang-so.js`). Không có trang nào tự dựng cơ
+chế riêng.
+
+| Trang | Cắt cái gì | Mỗi trang | Người đọc đổi được? |
+|---|---|---|---|
+| `/posts/` | **khối chuyên mục** | **6** | không — con số này là quyết định trình bày |
+| `/posts/<mục>/` | thẻ bài | `moiTrang` (10) | có: 10 · 20 · 50 · tất cả |
+| `/tags/<tag>/` | thẻ bài | `moiTrang` | có |
+| `/archive/` | dòng bài | `moiTrang` | có |
+| `/notes/` | ghi chú | `moiTrang` | có |
+| `/search/` | — | không cắt | — |
+
+Ba điều rút ra từ bảng:
+
+1. **Trang mục lục cắt theo KHỐI, trang danh sách cắt theo BÀI.** `/posts/` là
+   một bảng mục lục — mỗi mục ở đó là cả một chuyên mục, không phải một bài.
+   Sáu là con số liếc hết được trong một hai màn; quá đó thì nó thành cuộn dài,
+   mà cuộn dài đúng là thứ trang chuyên mục sinh ra để thay thế.
+2. **Con số nào người đọc đổi được, con số nào không.** Số BÀI mỗi trang là
+   chuyện tiện dùng — ai thích cuộn dài thì chọn 50. Số CHUYÊN MỤC mỗi trang là
+   chuyện trình bày, và mở cho đổi thì có lúc mở ra một trang hai mươi khối.
+3. **`/search/` không cắt trang.** Kết quả tìm kiếm đã được chính câu tìm lọc
+   rồi; cắt thêm một lần nữa là bắt người đang tìm phải tìm trong kết quả tìm.
+
+Danh sách ngắn hơn con số của nó thì **không bọc khung phân trang** — thêm một
+lớp div và một ô chọn chẳng để làm gì.
+
+### 17.2c · Chip lọc — một thành phần, ba nơi
+
+`/posts/` lọc theo chuyên mục, `/notes/` lọc theo loại, `/search/` lọc theo chủ
+đề. Ba việc khác nhau, **một** thành phần giao diện.
+
+| | `/posts/` | `/notes/` | `/search/` |
+|---|---|---|---|
+| khối bọc | `.chip-hang` | `.chip-hang .gc-loc` | `.chip-hang .tk-loc` |
+| thẻ HTML | `<a>` | `<button>` | `<button>` |
+| số đếm | `.chip-so` | `.chip-so` | `.chip-so` |
+| đang bật | `.chip--nay` | `.chip--nay` | `.chip--nay` |
+| dựng ở đâu | build | build **và** `ghi-chu.js` | `search.js` |
+
+**Hình dáng do `.chip` và `.chip-hang` quyết định, không nơi nào tự khai.** Ba
+nơi từng có ba khoảng cách khác nhau (5 · 5 · 8px) vì mỗi nơi tự viết lấy — sai
+lệch không ai thấy khi nhìn từng trang, mà chuyển giữa ba trang thì thấy ngay
+hàng chip nhảy một cái. Nay `.gc-loc` và `.tk-loc` chỉ còn giữ phần **lề** của
+riêng mình.
+
+**Thẻ HTML khác nhau là cố ý.** `/posts/` dùng `<a>` vì mỗi chip là một trang
+thật: bấm là đổi đường dẫn, mở tab mới được, máy tìm kiếm đi theo được. Hai nơi
+kia dùng `<button>` vì chúng lọc tại chỗ. Cùng hình dáng, khác hành vi — và
+hành vi phải nói bằng đúng thẻ của nó, không phải bằng CSS.
+
+**Chip "Tất cả" không mang số.** Con số của nó là tổng, mà tổng đã in ở dòng
+dẫn ngay trên (`6 chuyên mục · 9 bài`). Hai lần cùng một con số cách nhau vài
+chục pixel thì cái nào cũng thành thừa.
+
 ### 17.3 · Giãn cách: trang danh sách khác trang bài
 
 | | Trang bài | Trang danh sách |

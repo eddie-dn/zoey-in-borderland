@@ -76,10 +76,25 @@
 .the-bai .meta-row .moc{display:none}
 
 /* ── HÀNG CHIP LỌC ── */
+/* ── MỘT HÀNG CHIP, BA NƠI DÙNG ──
+   `/posts/` lọc theo chuyên mục, `/notes/` lọc theo loại, `/search/` lọc theo
+   chủ đề. Ba việc khác nhau nhưng cùng MỘT thành phần giao diện, nên chúng
+   dùng chung đúng một luật ở đây. Ba nơi từng có ba khoảng cách khác nhau
+   (5px · 5px · 8px) vì mỗi nơi tự khai lấy — sai lệch không ai để ý được khi
+   nhìn từng trang một, mà chuyển giữa ba trang thì thấy ngay hàng chip nhảy.
+
+   Thẻ HTML khác nhau là CỐ Ý: `/posts/` dùng <a> vì mỗi chip là một trang
+   thật (bấm là đổi đường dẫn, mở tab mới được, máy tìm kiếm đi theo được);
+   hai nơi kia dùng <button> vì chúng lọc tại chỗ, không đổi trang. Cùng hình
+   dáng, khác hành vi — và hành vi ấy phải nói bằng đúng thẻ của nó.
+
+   Chi tiết đầy đủ: docs/DESIGN-SYSTEM.md, mục "Chip lọc". */
 .chip-hang{
-  display:flex;flex-wrap:wrap;gap:var(--s2);
-  margin-top:var(--s5);
+  display:flex;flex-wrap:wrap;gap:5px;
 }
+/* Lề chỉ khác nhau ở chỗ hàng chip ĐỨNG: dưới đầu trang thì cần khoảng trên,
+   trên một danh sách lọc tại chỗ thì cần khoảng dưới. */
+.ds-dau .chip-hang{margin-top:var(--s5)}
 /* ── CỠ CHIP: BA THỨ CÙNG PHÓNG TO MỘT LÚC ──
    Bản trước để cỡ chữ --fs-2xs (11px) VÀ giãn chữ --ls-label (.22em) VÀ lề
    trong 13px. Từng con số nghe đều nhỏ, nhưng .22em là gần một phần tư bề
@@ -116,7 +131,8 @@
   font-variant-numeric:tabular-nums;opacity:.55;font-weight:400;
   letter-spacing:0;
 }
-.chip-hang,.gc-loc{gap:5px}
+/* `.gc-loc` và `.tk-loc` nay mang thêm class `.chip-hang` (xem tools/build.mjs),
+   nên chúng chỉ còn giữ phần lề riêng của mình. */
 
 /* ══════════════ MÀN HERO ══════════════
    Khuôn tạp chí / catalogue triển lãm. Xem ghi chú ở hàm trangChu trong
@@ -856,7 +872,7 @@
 
    Ngày nằm ở CỘT RIÊNG bên trái chứ không nằm trên chữ: đọc dọc xuống là thấy
    ngay nhịp ghi (dày hay thưa, gần đây hay lâu rồi) mà không phải đọc chữ nào. */
-.gc-loc{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s7)}
+.gc-loc{margin-bottom:var(--s7)}
 .gc-loc button{font:inherit;cursor:pointer}
 
 .gc-ds{list-style:none;margin:0;padding:0}
@@ -1079,6 +1095,49 @@
    nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này
    có mấy mảng, trước khi phải đọc một tiêu đề bài nào. */
 .muc-khoi + .muc-khoi{margin-top:var(--s9)}
+
+/* ── DANH SÁCH BÀI TRONG MỘT CHUYÊN MỤC ──
+   Cùng khuôn với ba dòng bài ở màn đầu trang chủ (`.hero-ds`): số thứ tự nhỏ
+   bên trái, tiêu đề ở giữa, ngày bên phải, ngăn nhau bằng một sợi kẻ. Hai chỗ
+   làm cùng một việc — điểm danh bài theo thứ tự mới nhất trước — nên chúng
+   phải trông như nhau; người đọc đi từ trang chủ sang /posts/ mà gặp hai kiểu
+   danh sách thì phải học lại cách đọc một thứ mình vừa đọc xong. */
+.mc-ds{list-style:none;margin:var(--s4) 0 0;padding:0}
+.mc-dong{border-bottom:1px solid var(--line)}
+.mc-dong:first-child{border-top:1px solid var(--line)}
+.mc-dong a{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:baseline;gap:var(--s4);
+  padding:11px 2px;color:var(--text);text-decoration:none;background:none;
+  transition:color var(--dur-fast),padding-left var(--dur-fast);
+}
+/* Đẩy nhẹ sang phải khi rê chuột, thay cho đổi nền: một dòng đổi nền thì cả
+   sợi kẻ trên dưới phải đổi theo mới không hở, mà đẩy thì chỉ có một thứ động. */
+.mc-dong a:hover,.mc-dong a:focus-visible{
+  color:var(--accent-ink);padding-left:var(--s2);outline:none;
+}
+.mc-so{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;color:var(--text-faint);font-variant-numeric:tabular-nums;
+}
+.mc-tt{
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:var(--fs-h4);line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mc-ngay{
+  font-family:var(--font-label);font-size:var(--fs-3xs);
+  letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+/* Khổ hẹp: ngày xuống dòng dưới tiêu đề. Giữ ba cột ở 360px thì tiêu đề còn
+   chưa tới 150px và bị cắt sau ba bốn chữ — mà tiêu đề mới là thứ người ta
+   đọc để chọn. */
+@media (max-width:520px){
+  .mc-dong a{grid-template-columns:auto minmax(0,1fr);gap:2px var(--s3)}
+  .mc-tt{white-space:normal}
+  .mc-ngay{grid-column:2;font-size:var(--fs-3xs)}
+}
 .muc-dau{
   display:grid;
   grid-template-columns:auto auto 1fr auto;
@@ -1343,7 +1402,7 @@
 .tk-xoa:hover,.tk-xoa:focus-visible{
   color:var(--accent-ink);background:var(--accent-wash);outline:none;
 }
-.tk-loc{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s5)}
+.tk-loc{margin-bottom:var(--s5)}
 .tk-loc:empty{margin:0}
 .tk-dem{
   margin:0 0 var(--s5);

@@ -390,6 +390,9 @@ const NHAN = {
   /* ── bình luận: khung ── */
   comments    : 'Leave a note',
   blLike      : 'Thích bài này',
+  blShare     : 'Chia sẻ bài này',
+  shareCopied : 'Đã chép đường dẫn',
+  shareFail   : 'Không chép được — chép tay từ thanh địa chỉ nhé',
   yourName    : 'Name',
   yourNote    : 'Your note',
   optional    : 'optional',
@@ -1457,7 +1460,7 @@ function logoHTML(dong) {
     (dong ? bui : '') +
     `</svg>`;
 }
-function tocHTML(headings, docTiep) {
+function tocHTML(headings, docTiep, cum) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
      cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không
      có mục lục vẫn bị giữ chỗ 210px cho một cột trống, và khung chữ nằm lệch
@@ -1497,6 +1500,7 @@ function tocHTML(headings, docTiep) {
      rơi vào dòng chảy — và `order` ở list.css đẩy nó xuống SAU chân bài, tức
      là đúng chỗ cũ. Không có khổ nào mất nó. */
   return `<aside class="ben">
+    ${cum || ''}
     ${headings.length ? `<details class="toc-box" open>
       <summary>${NHAN.contents}</summary>
       <nav class="toc" aria-label="${NHAN.onThisPage}">
@@ -1506,6 +1510,54 @@ function tocHTML(headings, docTiep) {
     </details>` : ''}
     ${docTiep || ''}
   </aside>`;
+}
+
+/* ══════════ CỤM TƯƠNG TÁC: TIM · BÌNH LUẬN · CHIA SẺ ══════════
+
+   ── VÌ SAO KHÔNG CÒN Ở CHÂN BÀI ──
+   Chân bài là chỗ người đọc vừa đọc xong và đang đi tiếp. Đặt nút ở đó nghĩa
+   là ai đổi ý lúc đang đọc dở phải cuộn ngược xuống tận cuối mới bấm được —
+   và phần lớn thì không cuộn, họ chỉ đọc tiếp rồi đóng tab.
+
+   Cột bên đi THEO suốt bài (nó dính khi cuộn), nên cụm nút có mặt đúng lúc
+   người ta đang có cảm xúc về bài, chứ không phải lúc đã đóng bài trong đầu.
+
+   ── BA NÚT, BA MỨC CÔNG SỨC ──
+   Tim là mức rẻ nhất: một cú bấm, không phải nghĩ ra câu nào. Chia sẻ là mức
+   giữa: không tốn chữ, nhưng đưa bài ra ngoài. Bình luận là mức đắt nhất.
+   Xếp theo đúng thứ tự ấy từ trái sang phải — nút rẻ nhất nằm chỗ ngón tay
+   chạm tới trước.
+
+   ── SỐ ĐẾM ẨN KHI BẰNG KHÔNG ──
+   "0 bình luận" là một con số nói rằng chưa ai nói gì — tức là một lời nhắc
+   về sự vắng mặt, ngay cạnh cái nút mời người ta lên tiếng. Không có số thì
+   icon chỉ còn nói "bấm vào đây để viết". Cùng một trạng thái, hai cách kể. */
+function cumTuongTac(bai) {
+  const c = CAU.binhLuan || {};
+  if (c.bat === false) return '';
+  return `<div class="cum-tt">
+    <p class="cum-nhan">${escapeHtml(NHAN.comments)}</p>
+    <div class="cum-nut">
+      <button class="bl-nut bl-tim" type="button"
+              data-thich="${attr(BASE + '/api/thich')}"
+              aria-pressed="false" aria-label="${attr(NHAN.blLike)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
+      </button>
+      <button class="bl-nut bl-chia" type="button"
+              data-chia="${attr(CAU.url + bai.url)}"
+              data-de="${attr(bai.title)}"
+              data-nhan="${attr(JSON.stringify({ copied: NHAN.shareCopied, fail: NHAN.shareFail }))}"
+              aria-label="${attr(NHAN.blShare)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 13.5 14.5 16m0-8L9.5 10.5M7 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm15-5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0 11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/></svg>
+      </button>
+      <button class="bl-nut bl-mo" type="button" aria-expanded="false" aria-controls="bl-than"
+              aria-label="${attr(NHAN.comments)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
+        <span class="bl-dem"></span>
+      </button>
+    </div>
+    <p class="cum-bao" role="status" aria-live="polite"></p>
+  </div>`;
 }
 
 function crumbsHTML(bai) {
@@ -1637,29 +1689,15 @@ function binhLuanHTML(bai) {
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     <div class="eyebrow"><i></i></div>
 
-    ${/* ── HAI CÁI NÚT, KHÔNG PHẢI MỘT KHUNG BÀY SẴN ──
-          Đời trước khối bình luận mở sẵn: nhãn, danh sách, rồi nguyên một cái
-          form ba ô. Cuối mỗi bài là một mảng ô nhập to bằng nửa màn hình — mà
-          chín phần mười người đọc không định gõ gì.
+    ${/* ── HÀNG NÚT ĐÃ RỜI KHỎI ĐÂY ──
+          Tim, chia sẻ và bình luận nay nằm chung một cụm ở CỘT BÊN
+          (cumTuongTac ở trên). Lý do đầy đủ ghi ở đó; tóm lại: cột bên đi theo
+          suốt lúc cuộn, còn chân bài chỉ có mặt khi người đọc đã đọc xong.
 
-          Nay cuối bài chỉ còn hai cái nút nhỏ. Trái tim cho người muốn nói
-          "tôi có đọc" mà không có câu nào để nói — vốn là nhóm đông nhất, và
-          là nhóm mà một cái form ô nhập bỏ sót hoàn toàn. Icon bình luận thì
-          mở khung ra cho ai thật sự muốn viết.
-
-          `aria-expanded` bắt đầu ở "false" vì khung nay ĐÓNG mặc định. */''}
-    <div class="bl-dau">
-      <button class="bl-nut bl-tim" type="button"
-              data-thich="${attr(BASE + '/api/thich')}"
-              aria-pressed="false" aria-label="${attr(NHAN.blLike)}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
-      </button>
-      <button class="bl-nut bl-mo" type="button" aria-expanded="false" aria-controls="bl-than"
-              aria-label="${attr(NHAN.comments)}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
-        <span class="bl-dem"></span>
-      </button>
-    </div>
+          Còn lại ở đây đúng phần việc của khối này: danh sách lời nhắn và ô
+          viết. Chúng vẫn đóng mặc định, và vẫn mở bằng chính cái nút ở cột
+          bên — `aria-controls` trỏ tới #bl-than dù hai bên không còn chung
+          một khối cha. */''}
 
     <div class="bl-than" id="bl-than" hidden>
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
@@ -1708,6 +1746,16 @@ function binhLuanHTML(bai) {
    ấy đi). Mọi trường hợp khác trả về false và khối rơi xuống chân bài. */
 function benGiuDocTiep(bai) {
   return bai.khung === 'a' && bai.headings.length > 0;
+}
+
+/* Cột bên là một CỘT THẬT chỉ ở khung A: chỉ `.post-layout.khung-a` khai lưới
+   hai cột (layout.css, @media min-width:1080px). Khung B và C là một cột, nên
+   ở đó `<aside class="ben">` chỉ là một khối nằm trong dòng chảy SAU bài —
+   tức là vẫn "chân bài", đúng cái chỗ cụm nút vừa được dọn đi khỏi.
+
+   Nên cụm nút đi hai đường: khung A vào cột bên, khung B/C lên đầu bài. */
+function benLaCot(bai) {
+  return bai.khung === 'a';
 }
 
 function readNextHTML(bai, congKhai) {
@@ -1779,7 +1827,9 @@ function trangBai(bai, congKhai) {
        đúng nghĩa đen. Nên ở đó nó về lại dòng chảy, ĐỨNG SAU khối bình luận:
        bấm mở khung bình luận là nó bị đẩy xuống, chứ không phải nó che mất
        chỗ vừa mở ra. */
-    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : ''),
+    cumDau      : benLaCot(bai) ? '' : cumTuongTac(bai),
+    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : '',
+                          benLaCot(bai) ? cumTuongTac(bai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 
@@ -1810,6 +1860,8 @@ function trangBai(bai, congKhai) {
                    ? `<script src="${BASE}/assets/bang-anh.js" defer></script>\n` : '') +
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
+                 ((CAU.binhLuan || {}).bat === false ? ''
+                   : `\n<script src="${BASE}/assets/chia-se.js" defer></script>`) +
                  ((CAU.binhLuan || {}).bat === false ? ''
                      /* khoa.js đứng TRƯỚC comments.js: cả hai mang `defer` nên
                         chúng chạy đúng thứ tự thẻ, và comments.js hỏi
@@ -2369,8 +2421,8 @@ function theBai(b, { hienMuc = true } = {}) {
    Nhãn gửi qua attribute dạng JSON, cùng cách với khung bình luận và ô tìm
    kiếm: chữ hiển thị nằm trong bảng NHAN ở đầu file này, không gõ cứng vào
    file .js. Có phép kiểm canh khối JSON ấy parse được. */
-function bocPhanTrang(than, chonItem, so) {
-  const moiTrang = Math.max(1, Number(CAU.moiTrang) || 10);
+function bocPhanTrang(than, chonItem, so, moi) {
+  const moiTrang = Math.max(1, Number(moi) || Number(CAU.moiTrang) || 10);
   if (so <= moiTrang) return than;
   const nhan = JSON.stringify({
     perPage: NHAN.perPage, all: NHAN.allItems, pages: NHAN.pages,
@@ -2677,7 +2729,23 @@ function cacTrangPosts(bai) {
      màn, còn lưới theo ngày thành một cuộn vô tận. */
   const mucCap1 = muc.filter((x) => !x.sau)
     .sort((a, b) => b.so - a.so || a.ten.localeCompare(b.ten, 'vi'));
-  const MOI_MUC = 3;      /* mỗi mục khoe 3 bài mới nhất, còn lại vào trang mục */
+
+  /* ── SÁU CHUYÊN MỤC MỘT TRANG ──
+     Trang này là một BẢNG MỤC LỤC, và một bảng mục lục phải liếc hết được
+     trong một hai màn. Quá sáu khối thì nó thành một cuộn dài, mà cuộn dài
+     đúng là thứ trang chuyên mục sinh ra để thay thế.
+
+     Cắt trang bằng chính bộ phân trang đang dùng cho danh sách bài (xem
+     bocPhanTrang và src/js/trang-so.js) — không dựng thêm cơ chế thứ hai.
+     Khác duy nhất: ở đây một "mục" là một KHỐI CHUYÊN MỤC, không phải một bài.
+
+     ── VÀ NĂM BÀI MỖI MỤC, KHÔNG PHẢI BA ──
+     Ba là con số của đời trước, hồi mỗi bài là một tấm thẻ có tóm tắt và tag.
+     Thẻ thì ba cái đã chiếm trọn một hàng lưới. Nay mỗi bài là MỘT DÒNG cao
+     chừng 40px, nên năm dòng vẫn thấp hơn một hàng thẻ cũ mà nói được nhiều
+     hơn — và năm bài là đủ để đoán ra một chuyên mục viết về cái gì. */
+  const MOI_TRANG_MUC = 6;
+  const MOI_MUC = 5;
 
   const thuMuc = mucCap1.map((x) => {
     const trong = theoNgay.filter((b) => b.muc.some((y) => y.url === x.url));
@@ -2691,8 +2759,23 @@ function cacTrangPosts(bai) {
         ${trong.length > MOI_MUC
           ? `<a class="ds-them" href="${x.url}">${NHAN.seeAll} →</a>` : ''}
       </div>
-      <div class="ds-luoi">${trong.slice(0, MOI_MUC).map((b) =>
-        theBai(b, { hienMuc: false })).join('')}</div>
+      ${/* ── DÒNG, KHÔNG PHẢI THẺ ──
+            Mỗi tấm thẻ chở một tiêu đề, một ngày, một câu tóm tắt và hai tag —
+            và chiếm chỗ bằng chừng bốn dòng chữ. Trên một trang mà việc duy
+            nhất là ĐIỂM DANH các bài, tóm tắt và tag không giúp chọn: người
+            đọc chọn theo tiêu đề. Đổi sang dòng đơn thì cùng một bề cao chứa
+            được gấp bốn số bài, và cả trang thôi là một bãi thẻ.
+
+            Số thứ tự bên trái không phải trang trí: nó nói "đây là một danh
+            sách có thứ tự", tức là bài mới nhất nằm trên. */''}
+      <ol class="mc-ds">${trong.slice(0, MOI_MUC).map((b, i) => `
+        <li class="mc-dong">
+          <a href="${b.url}">
+            <span class="mc-so">${String(i + 1).padStart(2, '0')}</span>
+            <span class="mc-tt">${noiChu(escapeHtml(b.titleNgan || b.title))}</span>
+            <time class="mc-ngay" datetime="${b.date}">${ngayAnh(b.date).replace(/ \d{4}$/, '')}</time>
+          </a>
+        </li>`).join('')}</ol>
     </section>`;
   }).join('');
 
@@ -2702,7 +2785,9 @@ function cacTrangPosts(bai) {
       tieuDe: NHAN.allPosts,
       dan: `${mucCap1.length} chuyên mục · ${theoNgay.length} bài`,
       chip: hangChip(chipDS, '/posts/'),
-      than: theoNgay.length ? thuMuc : `<p class="ds-trong">${NHAN.noPosts}</p>`,
+      than: theoNgay.length
+        ? bocPhanTrang(thuMuc, '.muc-khoi', mucCap1.length, MOI_TRANG_MUC)
+        : `<p class="ds-trong">${NHAN.noPosts}</p>`,
       duong: '/posts/'
     })
   });
@@ -2831,7 +2916,7 @@ function trangGhiChu() {
      dựng lại hàng nút sau khi chèn ghi chú mới từ mạng (ghi chú mới có thể
      mang một loại chưa từng có nút nào). `hidden` lo phần không bày ra khi
      chưa đủ hai loại; không JavaScript thì nó ở nguyên như build in ra. */
-  const locHTML = `<nav class="gc-loc" data-gc-loc aria-label="${NHAN.filter}"` +
+  const locHTML = `<nav class="chip-hang gc-loc" data-gc-loc aria-label="${NHAN.filter}"` +
     `${loai.length > 1 ? '' : ' hidden'}>` +
     (loai.length > 1
       ? `<button type="button" class="chip chip--nay" data-loai="">${NHAN.allNotes}</button>` +
@@ -3015,7 +3100,7 @@ function trangSearch() {
     <button class="tk-xoa" type="button" aria-label="${attr(NHAN.clear)}" hidden>✕</button>
   </div>
 </form>
-<div class="tk-loc" id="tk-loc" data-nhan="${attr(JSON.stringify({
+<div class="chip-hang tk-loc" id="tk-loc" data-nhan="${attr(JSON.stringify({
       results: NHAN.results, oneResult: NHAN.oneResult,
       noResults: NHAN.noResults, typeMore: NHAN.typeMore
     }))}"></div>
@@ -3153,6 +3238,7 @@ async function chay() {
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',
                      'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
+                     'chia-se.js',
                      'soan.js', 'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng

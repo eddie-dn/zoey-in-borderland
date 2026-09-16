@@ -1339,6 +1339,36 @@ const KIEM = [
     }
   },
   {
+    /* ── MỌI THẺ <script src> PHẢI TRỎ TỚI MỘT FILE CÓ THẬT ──
+       Danh sách file .js được chép sang dist/ nằm RIÊNG một chỗ trong
+       tools/build.mjs, tách khỏi chỗ viết ra thẻ <script>. Thêm một file mới
+       mà quên một trong hai nơi thì trang vẫn dựng sạch, vẫn mở được, và tính
+       năng của file ấy lặng lẽ không tồn tại — trình duyệt chỉ ghi một dòng
+       404 vào bảng điều khiển mà không ai mở ra xem.
+
+       Đã vấp thật khi thêm chia-se.js: thẻ có, file không, nút chia sẻ bấm
+       không ra gì. Phép kiểm này đọc mọi trang đã dựng nên nó bắt được cả
+       trường hợp chỉ MỘT loại trang nạp file đó. */
+    ten: 'Mọi thẻ script trỏ tới một file có thật trong dist/assets/',
+    muc: 'loi',
+    chay: () => {
+      const ra = [];
+      const daBao = new Set();
+      for (const t of ctx.trang) {
+        for (const m of t.html.matchAll(/<script[^>]+src="([^"]+)"/g)) {
+          const u = m[1];
+          if (/^https?:|^\/\//.test(u)) continue;          /* file ngoài: không kiểm */
+          const that = path.join(GOC, 'dist', u.replace(/^\//, '').split('?')[0]);
+          if (fs.existsSync(that) || daBao.has(u)) continue;
+          daBao.add(u);
+          ra.push(`${t.duong} nạp ${u} nhưng không có file ấy trong dist/ — `
+                + `thêm tên file vào danh sách chép ở cuối tools/build.mjs`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
     /* ── Ô BENTO NÀO CŨNG PHẢI CÓ TÊN TRONG LUẬT GỘP CỘT Ở MOBILE ──
        Lưới bento khoá cứng vị trí từng ô bằng `grid-column`. Dưới 860px lưới
        rút về một cột, và có một luật liệt kê tên từng ô để kéo chúng về cột 1.
