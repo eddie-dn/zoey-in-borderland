@@ -60,10 +60,6 @@
     "gioiHan": 0,
     "loiNhac": "Đọc bản đầy đủ tại"
   },
-  "quoteAI": {
-    "bat": true,
-    "api": "/api/quote"
-  },
   "phanTich": {
     "bat": false,
     "token": ""
