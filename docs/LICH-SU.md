@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V12.02 | 2026-09-17 | 02 | rà soát tài liệu: sửa chỗ nói sai, bỏ file thừa, thêm ba phép kiểm chống lệch |
+| V12.01 | 2026-09-17 | 01 | cụm tương tác xuống cột phải dưới Read next; cột bên thôi kẹp cuộn; nội dung bám mép logo |
 | V12.00 | 2026-09-17 | 00 | chip ở Notes và Search về đúng cỡ chip ở Posts |
 | V11.09 | 2026-09-17 | 09 | cột chữ trang bài căng tới mép logo |
 | V11.08 | 2026-09-17 | 08 | Leave a note xuống sau phần gợi ý bài; khung bình luận có nút Back và thôi giữ cú cuộn |
@@ -139,6 +141,39 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V12.02 — 17-Sep-2026
+
+- **Tài liệu nói đúng lại.** `IA.md` còn tả `/posts/` là "tất cả bài, sắp theo
+  ngày" và trang chủ là "hai màn" — cả hai đã đổi từ mấy bản trước. `CAI-DAT.md`
+  còn bảo bấm **Đăng xuất** và **Duyệt**, mà ô quản trị nay nói tiếng Anh.
+  README thì thiếu năm file trong `src/js/` và một cửa API.
+- **Bỏ `DOC-TRUOC.md`.** Nó là tờ ghi chú kèm gói cập nhật V8.03 → V10.00: hàng
+  đợi bốn việc trong đó nay xong cả bốn, và lời khuyên về `GC_ID` đã bị chính
+  `wrangler.jsonc` thay thế. Hàng đợi việc nay sống ở `docs/VIEC-DANG-CHO.md`.
+- **Ba phép kiểm mới** — cả ba đều canh đúng loại lệch vừa xảy ra:
+  · README phải kể đủ mọi file trong `src/js/` và `functions/api/`
+  · mọi đường dẫn file nêu trong tài liệu phải có thật
+  · mỗi trang bài đúng MỘT cụm tương tác, đặt sau khối "đọc tiếp", số bình luận
+  ở hàng meta chứ không trên nút, có nút chia sẻ và nút Back
+- **`quoteAI` thiếu trong `site.config.json` của bản chính** — phần chú thích tả
+  nó đầy đủ mà khoá thật thì không có, nên tính năng im lặng tắt. Đã thêm lại.
+
+## V12.01 — 17-Sep-2026
+
+- **"Leave a note" xuống cột phải, dưới "Read next".** Thứ tự cột bên nay là:
+  mục lục → gợi ý đọc tiếp → cụm tim · chia sẻ · bình luận. Đúng thứ tự câu hỏi
+  trong đầu người đọc.
+- **Cột bên thôi kẹp cú cuộn.** Lúc mở khung bình luận, cột bên từng bị kẹp
+  trong một màn rồi cho cuộn riêng — một hộp cuộn lồng trong trang, ngay cạnh
+  bài đang đọc. Con lăn đi qua nó là cả trang đứng im; kéo thanh cuộn của trang
+  thì nội dung trong hộp không nhúc nhích; cuộn hết hộp mới lan ra trang, tức
+  phải cuộn hai lần cho một quãng. Nay chỉ còn một mặt phẳng cuộn duy nhất.
+- **Nội dung bài bám đúng mép trái của logo.** Bản trước mới đưa Ô LƯỚI về
+  162px, nhưng phần nhìn thấy — tiêu đề, hàng meta, từng đoạn chữ — vẫn nằm
+  giữa ô ấy nên mép trái người ta THẤY vẫn ở 243px. Nay cả khối bắt đầu tại
+  162px, thẳng cột với logo; hai cột đệm dồn hết sang phải làm chỗ cho ảnh
+  `{.wide}` và `{.full}` thò ra một bên.
 
 ## V12.00 — 17-Sep-2026
 

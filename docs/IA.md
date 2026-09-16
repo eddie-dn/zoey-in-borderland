@@ -8,8 +8,10 @@
 ## 1 · SƠ ĐỒ ĐƯỜNG DẪN
 
 ```
-/                                    Trang chủ — bài mới nhất, tag nổi bật
-/posts/                              Tất cả bài, sắp theo ngày
+/                                    Trang chủ — MỘT màn: tên blog, câu trích
+                                     dẫn, ba bài mới nhất
+/posts/                              Thư mục CHUYÊN MỤC (không phải danh sách
+                                     theo ngày) — tối đa 6 mục một trang
 /posts/<mục>/                        Bài trong một chuyên mục
 /posts/<mục>/<mục-con>/              Chuyên mục con — lồng bao nhiêu tầng cũng được
 /posts/<mục>/<slug>/                 ▸ MỘT BÀI VIẾT
@@ -210,9 +212,9 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 
 | Trang | Dựa vào |
 |---|---|
-| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra **3 bài** (`baiTrangChu`) | `trangChu()` |
+| `/` MỘT màn cao trọn màn hình: tên blog · trích dẫn · 3 bài mới nhất. Khổ dọc thì ba bài ấy chờ bấm "Read on" | `trangChu()` · `man-dau.js` |
 | Số trang cho Posts · Tags · Archive, người đọc chọn được số bài mỗi trang | `trang-so.js` |
-| `/posts/` — thư mục theo MỤC, mỗi mục 3 bài rồi "See all →" | `congKhai` + `_muc.json` |
+| `/posts/` — thư mục theo MỤC: mỗi mục **5 bài** dạng dòng đơn rồi "See all →", tối đa **6 mục** một trang | `congKhai` + `_muc.json` |
 | `/posts/<mục>/` — danh sách đầy đủ của một mục | `congKhai` + `_muc.json` |
 | `/notes/` — ghi chú ngắn, lọc theo loại. Thay Tags trên thanh đầu trang | `content/ghi-chu.md` |
 | `/tags/` và `/tags/<tag>/` — vẫn còn, đường vào ở chân trang | `tags.json` |

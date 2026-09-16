@@ -89,6 +89,46 @@ Một nhánh quá hai trả lời thì mấy cái cũ gấp lại sau một dòn
 Một bình luận có 15 trả lời mà bung hết thì đẩy mọi bình luận khác xuống tận
 đáy trang. Bung ra thì chèn **ngược lên đầu**, để thứ tự thời gian vẫn đúng.
 
+### Ba nút ở cột phải, dưới "Read next"
+
+Cuối bài **không có nút nào**. Tim · chia sẻ · bình luận gom thành một cụm ở
+cột bên, đặt sau khối gợi ý đọc tiếp:
+
+```
+cột phải:   ON THIS PAGE  (mục lục)
+            READ NEXT     (gợi ý bài)
+            LEAVE A NOTE  ♡  share  💬
+```
+
+Thứ tự ấy là thứ tự của câu hỏi trong đầu người đọc: đang ở đâu trong bài →
+đọc gì nữa → có gì muốn nói không. Đặt cụm nút lên đầu cột thì nó chen vào
+trước cả hai câu kia, và một lời mời viết bình luận lúc người ta còn chưa đọc
+xong là lời mời sai lúc.
+
+Khung nào **không có cột bên thật** (khung B, C) thì cụm ở lại cuối bài — nhưng
+vẫn đứng sau khối "đọc tiếp", nên thứ tự đọc y hệt.
+
+**Ba con số — lượt xem · lượt thích · bình luận — ở hàng meta ĐẦU bài**, không
+in trên nút. Nút là chỗ bấm, hàng meta là chỗ đọc; và mỗi con số xuất hiện đúng
+một lần thì không có hai bản để trôi lệch nhau.
+
+### Khổ rộng: khung viết chiếm luôn cột phải
+
+Bấm bình luận ở màn ≥1080px (và chỉ ở khung A — khung duy nhất có cột bên
+thật) thì khung viết **dời hẳn** sang cột phải, mục lục và "đọc tiếp" nhường
+chỗ, cột nới 280 → 400px. Vừa đọc bài vừa viết được.
+
+Dời nút DOM chứ không dựng bản sao: chép ra một khung thứ hai thì có hai form,
+hai danh sách, và mọi tham chiếu comments.js đang giữ đều trỏ vào bản cũ.
+
+Cột bên lúc ấy **thôi dính và thôi có thanh cuộn riêng**. Một hộp cuộn lồng
+trong trang, ngay cạnh bài đang đọc, thì con lăn đi qua nó là cả trang đứng im
+— người đọc chỉ thấy trang đơ, không biết mình bị cái gì giữ lại.
+
+Và khung có nút **Back** ở góc trên: khi nó đã chiếm cột bên, cái nút đã mở nó
+có thể nằm ngoài tầm mắt, nên phải có một lối lùi nhìn thấy được. Nút ấy bấm hộ
+chính nút mở — một đường đóng, không phải hai.
+
 ### Một cái form, đem đi chỗ khác
 
 Bấm "Reply" không dựng thêm form mới mà **di chuyển** chính cái form đang có

@@ -89,9 +89,9 @@ nó thuộc bài nào. Duyệt từ điện thoại mà phải mở từng bài 
 
 | Nút | Làm gì |
 |---|---|
-| **Duyệt** | bình luận hiện ra với mọi người |
-| **Bỏ duyệt** | rút xuống, không xoá |
-| **Ẩn** | xoá mềm — biến khỏi trang và khỏi hàng chờ, dòng vẫn còn trong D1 |
+| **Approve** | bình luận hiện ra với mọi người |
+| **Unapprove** | rút xuống, không xoá |
+| **Hide** | xoá mềm — biến khỏi trang và khỏi hàng chờ, dòng vẫn còn trong D1 |
 
 Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, có huy hiệu
 `AUTHOR`, không phải chờ duyệt. Chủ nhà không phải tự duyệt lời của mình.
@@ -110,7 +110,7 @@ Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, c�
 
 ### 1.6 · Đổi khoá, và khi mất khoá
 
-Đổi `GC_KEY` trên Cloudflare rồi bấm **Đăng xuất** ở `/z-admin/` để nhập
+Đổi `GC_KEY` trên Cloudflare rồi bấm **Sign out** ở `/z-admin/` để nhập
 lại. Mọi máy đã nhớ khoá cũ sẽ mất quyền — đó là cách thu hồi.
 
 ## 2 · Trích dẫn Gemini — tuỳ chọn, mặc định TẮT

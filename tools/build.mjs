@@ -1514,7 +1514,6 @@ function tocHTML(headings, docTiep, cum) {
      rơi vào dòng chảy — và `order` ở list.css đẩy nó xuống SAU chân bài, tức
      là đúng chỗ cũ. Không có khổ nào mất nó. */
   return `<aside class="ben">
-    ${cum || ''}
     ${headings.length ? `<details class="toc-box" open>
       <summary>${NHAN.contents}</summary>
       <nav class="toc" aria-label="${NHAN.onThisPage}">
@@ -1523,6 +1522,14 @@ function tocHTML(headings, docTiep, cum) {
       </nav>
     </details>` : ''}
     ${docTiep || ''}
+    ${/* Cụm tim · chia sẻ · bình luận đứng CUỐI cột bên, dưới khối "đọc tiếp".
+          Thứ tự ấy là thứ tự của câu hỏi trong đầu người đọc: đang ở đâu trong
+          bài (mục lục) → đọc gì nữa (gợi ý) → có gì muốn nói không.
+
+          Đặt nó lên đầu cột thì nó chen vào trước cả hai câu kia, và một lời
+          mời viết bình luận lúc người ta còn chưa đọc xong là lời mời sai
+          lúc. */''}
+    ${cum || ''}
   </aside>`;
 }
 
@@ -1702,8 +1709,13 @@ function binhLuanHTML(bai) {
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     ${/* Vạch kẻ có hạt kim cương ở giữa (`.eyebrow`) ĐÃ BỎ khỏi đây: khối "đọc
           tiếp" ngay trên đã có một vạch y hệt, và hai vạch giống nhau cách
-          nhau 80px thì cái nào cũng thôi làm dấu mở đầu. */''}
-    ${cumTuongTac(bai)}
+          nhau 80px thì cái nào cũng thôi làm dấu mở đầu.
+
+          Cụm nút cũng KHÔNG ở đây nữa khi bài có cột bên thật — nó lên cột ấy,
+          dưới khối "đọc tiếp" (xem tocHTML). Chỉ khung không có cột bên mới
+          giữ cụm lại chỗ này, và ở đó nó vẫn đứng sau khối "đọc tiếp" vì
+          post.html xếp readNext trước binhLuan. */''}
+    ${benGiuDocTiep(bai) ? '' : cumTuongTac(bai)}
 
     ${/* ── HÀNG NÚT ĐÃ RỜI KHỎI ĐÂY ──
           Tim, chia sẻ và bình luận nay nằm chung một cụm ở CỘT BÊN
@@ -1860,7 +1872,9 @@ function trangBai(bai, congKhai) {
        Nay cụm luôn ở ngay dưới hàng meta, cùng chỗ với ba con số nó điều khiển.
        Cột bên giữ đúng việc của nó: mục lục, đọc tiếp, và — khi người đọc bấm
        bình luận ở khổ rộng — chính khung bình luận (xem comments.js). */
-    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : ''),
+    toc         : tocHTML(bai.headings,
+                          benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : '',
+                          benGiuDocTiep(bai) ? cumTuongTac(bai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 

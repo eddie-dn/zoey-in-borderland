@@ -845,6 +845,30 @@
   /* Đặt chỗ TƯỜNG MINH, không để lưới tự xếp. Tự xếp thì nó lấp theo hàng:
      đầu bài (1,1) → mục lục (1,2) → thân bài (2,1) → chân bài (2,2), tức là
      chân bài nhảy sang cột mục lục. Đã vấp đúng lỗi này. */
+  /* ── KHỐI NỘI DUNG BÁM MÉP TRÁI CỦA Ô LƯỚI ──
+     V11.09 đưa ô lưới về đúng mép trong của khung (thẳng cột với logo), nhưng
+     phần NHÌN THẤY của bài — tiêu đề, hàng meta, từng đoạn chữ — vẫn nằm giữa
+     ô ấy: `.post-head`/`.post-foot` có `margin-inline:auto`, còn `.prose` thì
+     kẹp cột chữ vào giữa bằng hai cột đệm hai bên. Nên mép trái người ta THẤY
+     vẫn ở 243px, cách logo 81px, và trang vẫn đọc ra là thụt vào.
+
+     Nay hai cột đệm dồn hết sang PHẢI: chữ bắt đầu ngay tại mép ô, còn chỗ dôi
+     ra thành chỗ cho ảnh `{.wide}` và `{.full}` thò ra — về một phía. Bleed
+     một bên nhìn ra là chủ ý (mọi thứ neo vào một cạnh dọc), bleed hai bên thì
+     cần một trục giữa mà bố cục này không còn.
+
+     Cột chữ nới từ 59ch lên 66ch cho hợp bề ngang mới. Khoảng 82 ký tự một
+     dòng — dài hơn 60–75 mà sách vở khuyên; đánh đổi có ý thức, cùng lý do đã
+     ghi ở luật lưới phía trên. */
+  .post-layout.khung-a{--measure:66ch}
+  .khung-a .post-head,
+  .khung-a .post-foot{width:min(var(--measure),100%);margin-inline:0}
+  .khung-a .prose{
+    grid-template-columns:
+      [full-start wide-start text-start] min(var(--measure),100%) [text-end]
+      minmax(0,1fr) [wide-end full-end];
+  }
+
   .khung-a .post-head{grid-column:1;grid-row:1}
   .khung-a .prose    {grid-column:1;grid-row:2}
   .khung-a .post-foot{grid-column:1;grid-row:3}
@@ -903,19 +927,22 @@
   /* Khối dính chỉ trượt được trong ô của nó; danh sách bình luận thì dài bao
      nhiêu cũng được. Kẹp lại trong một màn và cho cuộn riêng, không thì phần
      dưới của khung nằm ngoài màn mà không có cách nào tới. */
-  /* ── KHÔNG `overscroll-behavior:contain` ──
-     Nó chặn cú cuộn LAN từ khung bình luận ra cả trang. Nghe thì gọn, nhưng
-     khung này nằm ngay cạnh bài đang đọc và chiếm gần trọn chiều cao màn: con
-     lăn chuột đi qua nó là cả trang đứng im, và người đọc không biết mình đang
-     bị cái gì giữ lại — họ chỉ thấy trang đơ.
+  /* ── ĐANG BÌNH LUẬN: CỘT BÊN THÔI DÍNH, THÔI CÓ THANH CUỘN RIÊNG ──
+     Bản trước kẹp cột bên trong một màn rồi cho nó cuộn riêng
+     (`max-height` + `overflow-y:auto`, có lúc thêm cả
+     `overscroll-behavior:contain`). Ba thứ ấy cộng lại thành một cái hộp cuộn
+     lồng trong trang, ngay cạnh bài đang đọc — và một hộp cuộn lồng thì:
 
-     Chặn lan là đúng cho một hộp thoại phủ lên trang (ở đó phía sau KHÔNG được
-     cuộn). Ở đây thì ngược lại: phía sau là bài viết, và vừa đọc vừa viết mới
-     là cả lý do khung này được dời sang cột bên. */
-  .ben--bl{
-    max-height:calc(100dvh - var(--header-h) - var(--s9));
-    overflow-y:auto;
-  }
+       · con lăn đi qua nó là cả trang đứng im (trông như trang đơ);
+       · kéo thanh cuộn của trang thì nội dung trong hộp không nhúc nhích;
+       · cuộn hết hộp rồi mới lan ra trang, tức là phải cuộn hai lần cho một
+         quãng đường.
+
+     Bỏ hết. Khung bình luận cứ cao bao nhiêu thì cao, và cả cột trôi theo
+     trang như mọi thứ khác — một mặt phẳng cuộn duy nhất, không có hộp nào
+     giữ chân ai. Mất phần "khung luôn dính trong tầm mắt", nhưng phần ấy chưa
+     bao giờ đáng giá bằng việc cuộn được. */
+  .ben--bl{position:static}
   .toc-box{
     max-height:calc(100dvh - var(--header-h) - var(--s9));overflow-y:auto}
   .toc-box summary{display:none}
