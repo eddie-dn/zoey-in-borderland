@@ -42,7 +42,17 @@ const PUBLIC = path.join(GOC, 'public');
 
    Màn hình 2× thì trình duyệt phóng 1200 lên — với một tấm gradient mềm thì
    không thấy vỡ, khác hẳn ảnh chụp có chi tiết nhỏ. */
-const W = 1200, H = 675;
+/* ── KHỔ ẢNH ──
+   Mặc định 1200×675 (16:9) cho ảnh BÌA: đó là khổ thẻ chia sẻ của Facebook,
+   X và LinkedIn.
+
+   Cờ `--doc` đổi sang 1080×1350, tức 4:5 — khổ ảnh DỌC của Instagram và
+   Facebook, và cũng là khổ hẹp nhất hai nơi ấy nhận trước khi tự cắt. Dùng
+   cho ảnh trong băng ảnh của khung C, nơi khung lấy tỉ lệ theo tấm đầu tiên.
+   Khai ở một chỗ để mọi phép tính bên dưới (gradient, vầng sáng, hạt nhiễu)
+   tự co theo, không phải sửa mười chỗ. */
+const DOC = process.argv.includes('--doc');
+const W = DOC ? 1080 : 1200, H = DOC ? 1350 : 675;
 
 /* ── BIÊN HẠT NHIỄU ──
    Hạt nhiễu chống vệt dải (banding) trên gradient mềm. Nhưng nó cũng là thứ
@@ -253,8 +263,18 @@ function moiBai() {
         return v ? v[1].trim().replace(/^["']|["']$/g, '') : '';
       };
       const ten = path.basename(f, '.md');
+      /* Danh sách `anh:` của khung C — mỗi dòng `- <đường dẫn> | <chú thích>`.
+         Cần nó để cờ --doc biết sinh mấy tấm và lấy chú thích làm hạt giống,
+         nhờ vậy mỗi tấm trong băng ra một hình khác nhau. */
+      const anh = (() => {
+        const k = fm.match(/^anh:[ \t]*\n((?:[ \t]*-[ \t]*.+\n?)+)/m);
+        if (!k) return [];
+        return k[1].split('\n').map((d) => d.replace(/^[ \t]*-[ \t]*/, '').trim())
+          .filter(Boolean).map((d) => d.split('|').slice(1).join('|').trim());
+      })();
       ra.push({
         file: f,
+        anh,
         title: lay('title'),
         date: lay('date'),
         cover: lay('cover'),
@@ -284,7 +304,8 @@ if (!TAT_CA && !chon.length) {
   console.log('  Cách dùng:');
   console.log(mau.mo('    npm run bia -- <slug>        một bài'));
   console.log(mau.mo('    npm run bia -- --tat-ca      mọi bài chưa có bìa'));
-  console.log(mau.mo('    npm run bia -- <slug> --de   ghi đè ảnh đã có\n'));
+  console.log(mau.mo('    npm run bia -- <slug> --de   ghi đè ảnh đã có'));
+  console.log(mau.mo('    npm run bia -- <slug> --doc  ảnh DỌC 4:5 cho băng ảnh khung C\n'));
   console.log('  Các bài đang có:');
   for (const b of bai) {
     console.log(`    ${b.cover ? mau.xanh('có bìa ') : mau.vang('chưa có')}  ` +
@@ -298,8 +319,36 @@ if (!TAT_CA && !lam.length) {
   process.exit(1);
 }
 
-console.log(mau.dam('\n  SINH ẢNH BÌA\n'));
+console.log(mau.dam(DOC ? '\n  SINH ẢNH DỌC CHO BĂNG ẢNH\n' : '\n  SINH ẢNH BÌA\n'));
 let so = 0;
+
+/* ── CỜ --doc: SINH ẢNH CHO BĂNG ẢNH CỦA KHUNG C ──
+   Khác ảnh bìa ở ba chỗ: khổ 4:5 thay vì 16:9, sinh NHIỀU tấm thay vì một, và
+   không đụng tới `cover:` trong front matter. Số tấm lấy theo đúng số dòng
+   trong `anh:`, hạt giống lấy theo CHÚ THÍCH từng dòng — nhờ vậy ba tấm ra ba
+   hình khác nhau chứ không phải ba bản sao. */
+if (DOC) {
+  for (const b of lam) {
+    const nam = (b.date || '').slice(0, 4) || String(new Date().getFullYear());
+    const n = b.anh.length || 3;
+    for (let i = 0; i < n; i++) {
+      const rel = `/media/${nam}/${b.slug}/anh-${i + 1}.png`;
+      const dich = path.join(PUBLIC, rel.replace(/^\//, ''));
+      if (fs.existsSync(dich) && !DE) {
+        console.log(`  ${mau.mo('bỏ qua')}  ${rel} ${mau.mo('— đã có, thêm --de để ghi đè')}`);
+        continue;
+      }
+      fs.mkdirSync(path.dirname(dich), { recursive: true });
+      const buf = png(ve(b.anh[i] || `${b.title} ${i + 1}`));
+      fs.writeFileSync(dich, buf);
+      so++;
+      console.log(`  ${mau.xanh('✓')}  ${mau.mo(rel.padEnd(46))} ${(buf.length / 1024).toFixed(0)}KB`);
+    }
+  }
+  console.log(so ? mau.xanh(`\n  Xong ${so} ảnh dọc.\n`) : mau.mo('\n  Không sinh ảnh nào.\n'));
+  process.exit(0);
+}
+
 for (const b of lam) {
   const nam = (b.date || '').slice(0, 4) || String(new Date().getFullYear());
   const rel = `/media/${nam}/${b.slug}/bia.png`;

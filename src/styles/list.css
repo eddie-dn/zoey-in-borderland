@@ -176,6 +176,16 @@
   position:relative;overflow:hidden;min-width:0;
   container-type:inline-size;
   display:flex;flex-direction:column;justify-content:center;
+  /* Căn giữa theo VÙNG TRỐNG, không theo cả cột. Đáy cột có hàng nút ("Read on"
+     và nút trích dẫn) chiếm khoảng 7% chiều cao màn; căn giữa cả cột thì khối
+     chữ bị đẩy xuống nằm đè lên vùng ấy và mắt đọc ra là "chữ nằm thấp". Chừa
+     đúng dải ấy ra rồi mới căn giữa.
+
+     Chừa dư một chút là cố ý: khối chữ này nặng đáy (dòng dưới dài gấp ba dòng
+     trên), mà chữ nặng đáy thì phải đặt cao hơn tâm hình học một nhịp mới
+     NHÌN ra là ở giữa. Đo ở màn 900px: lệch 20px xuống dưới → chừa 63px là
+     nhấc lên 31px, thành cao hơn tâm 12px. */
+  padding-bottom:clamp(48px,7vh,76px);
   margin:0;z-index:0;pointer-events:none;user-select:none;
   font-family:var(--font-display);font-style:italic;font-weight:600;
   line-height:.78;letter-spacing:-.03em;
@@ -183,7 +193,7 @@
 
   /* 44cqw, không phải 58. Chữ đầu ở 58 cao gấp hai lần rưỡi từ cuối, và ở tỉ lệ
      ấy nó thôi làm một phần của khối chữ mà thành một vật riêng đứng cạnh —
-     đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 19,3 là tỉ lệ 2,3 lần: vẫn rõ
+     đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 20,35 là tỉ lệ 2,2 lần: vẫn rõ
      ai là chính, mà hai dòng còn đọc ra là một khối. */
   /* -.13em: chữ đầu lấn qua đường kẻ trái nhiều hơn, nên nét đứng của nó bị
      xén hẳn một phần. Xén ít quá thì trông như đặt sát mép do vô ý; xén rõ
@@ -197,22 +207,28 @@
      dài nhất và nằm ngang giữa màn, nên nó là thứ quyết định cả khối có cân
      hay không. Giãn ra thì nó trải hết chiều ngang thay vì co về một cục.
 
-     CỠ CHỮ LÀ SỐ TÍNH RA, KHÔNG PHẢI SỐ ƯỚM. Từ này phải vừa ĐÚNG bề ngang
-     cột — hết cột là hết chữ. Đo trong trình duyệt: mười chữ cái của
-     "Borderland" chiếm 4,72 lần cỡ chữ, cộng thêm mười nhịp giãn nữa. Vậy
-     bề ngang cả từ = cỡ × (lùi đầu dòng + 4,72 + 10 × giãn). Cho nó bằng bề
-     ngang cột (100cqw) rồi giải ngược ra cỡ:
+     CỠ CHỮ LÀ SỐ TÍNH RA, KHÔNG PHẢI SỐ ƯỚM.
 
-         cỡ = 100cqw ÷ (.06 + 4.72 + .38) ≈ 19,3cqw
+     Hai đầu dòng đều LẤN qua đường kẻ, và lấn bao nhiêu là có con số:
+       · chữ đầu khuất một PHẦN BA sau đường kẻ trái;
+       · chữ cuối ("d") khuất một NỬA sau đường kẻ phải.
+     Khuất đều hai bên thì cả khối đọc ra là được đặt vào khuôn rồi khuôn xén
+     bớt — cố ý. Khuất một bên thì đọc ra là tràn lề.
 
-     Bản trước để 26cqw: từ dài ra 914px trong cột rộng 712px, tức là thò ra
-     266px và chui xuống dưới khung danh sách bên phải — trên màn hình đọc ra
-     là "Borderl", một chữ bị cắt cụt chứ không phải một bố cục.
+     Đo trong trình duyệt ở cỡ 137px: cả từ chiếm 5,117 lần cỡ chữ (đã gồm
+     mười nhịp giãn), riêng chữ "d" chiếm 0,538 lần. Lùi đầu dòng .06em. Đặt
+     mép phải của từ ra ngoài đường kẻ đúng nửa chữ "d":
 
-     Chữ đầu lấn qua đường kẻ TRÁI thì được, vì bên trái là khoảng trống. Bên
-     phải có khung danh sách, nên lấn sang là đè lên chữ của người ta. Đây là
-     lý do hai bên xử lý khác nhau chứ không phải quên. */
-  --s3:19.3cqw;  --x3:.06em;  --ls3:.038em;
+         339 + .0584·cỡ + 5.1168·cỡ = 1050 + .5381·cỡ ÷ 2
+         → cỡ × 4,906 = 711  →  cỡ ≈ 144,9px  →  20,35cqw
+
+     Số này không phải ướm: đổi phông hay đổi chữ là phải đo lại rồi giải lại.
+
+     Bản trước để 26cqw: từ thò ra 266px, mất hẳn hai chữ cuối — trên màn hình
+     đọc ra là "Borderl", một chữ bị cắt cụt chứ không phải một bố cục. Bản sau
+     đó kéo về 19,3cqw cho vừa khít cột, nhưng vừa khít thì mất luôn trò xén và
+     khối chữ nhỏ hẳn đi. 20,35cqw là chỗ ở giữa: to hơn, mà xén đúng nửa chữ. */
+  --s3:20.35cqw;  --x3:.06em;  --ls3:.038em;
   /* KHOẢNG GIỮA HAI DÒNG, chỉ mở ra lúc hiện đủ.
      line-height .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc.
      Nhưng lúc hiện đủ thì đuôi chữ "y" của dòng trên thò xuống đúng chỗ thân
@@ -255,7 +271,9 @@
   transition:font-size var(--nhip),translate var(--nhip),opacity var(--nhip);
 }
 
-/* Trạng thái HIỆN ĐỦ. Từ cuối chỉ co NHẸ (19,3 → 18,2cqw, tức 6%): cỡ lúc mờ
+/* Trạng thái HIỆN ĐỦ. Từ cuối co vừa đủ để thôi lấn ra ngoài (20,35 → 18,2cqw):
+   lúc mờ nó lấn qua hai đường kẻ là CỐ Ý, nhưng khi chữ đã rõ và đọc được thì nó
+   là chữ ĐỂ ĐỌC, mà chữ để đọc bị xén mất nửa chữ cuối thì đọc ra là lỗi. Cỡ lúc mờ
    đã tính cho vừa cột rồi, co mạnh là vừa mất sức nặng vừa để hở một mảng
    trống bên phải. Từ đầu co nhiều hơn (44 → 25cqw) vì nó phải nhường chỗ cho
    phần chữ vừa chạy vào — và đó mới là chỗ mắt thấy có chuyển động. */

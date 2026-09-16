@@ -420,22 +420,29 @@ body.so-khoa{overflow:hidden}
   scroll-snap-align:start;
   position:relative;
 }
-/* ── KHUNG ẢNH CỐ ĐỊNH, ẢNH VỪA TRỌN TRONG KHUNG ──
-   Khung cao cố định, và ảnh dùng `contain` chứ không `cover`.
+/* ── KHUNG THEO TỈ LỆ TẤM ĐẦU, ẢNH VỪA TRỌN TRONG KHUNG ──
+   `--ba-ti` do build tính: tỉ lệ tấm ảnh ĐẦU TIÊN, kẹp trong khoảng mà
+   Instagram/Facebook cho phép (4:5 … 1.91:1). Cả băng dùng chung một khung —
+   xem chú thích ở `tiLeBang` trong tools/build.mjs. Đo không ra thì rơi về
+   4/5, khung dọc, vì ảnh chụp bằng điện thoại phần lớn là ảnh dọc.
 
-   `cover` (bản trước) phóng ảnh cho lấp kín khung rồi CẮT phần thừa. Với một
-   khung 4:5, tấm ảnh chụp ngang bị cắt mất hai bên — mà ảnh kỉ niệm thì phần
-   bị cắt hay lại là phần có người. `contain` thì ảnh nào cũng vào trọn, dọc hay
-   ngang đều được, đổi lại là có hai dải nền ở hai bên. Dải nền ấy chính là thứ
-   mọi phần mềm xem ảnh đều làm, và nó trung thực: không tự ý bỏ đi phần nào.
+   Bản trước khoá cứng `height:min(52vh,460px)`, tức là một khung NGANG cho mọi
+   bài. Ảnh dọc vẫn vào trọn nhờ `contain`, nhưng vào xong thì bé tí giữa hai
+   dải nền rộng — giữ được ảnh mà mất chỗ trưng ảnh.
 
-   Chiều cao KHOÁ THEO MÀN (`vh`) chứ không theo tỉ lệ ảnh: khối này dính khi
-   cuộn, nên cả cụm ảnh + chú thích + hàng chấm phải lọt trong một màn. Cao theo
-   tỉ lệ ảnh thì một tấm dọc đẩy hàng chấm xuống dưới nếp gấp và người đọc không
-   bao giờ thấy là còn ảnh nữa — đúng lỗi đã gặp. */
+   `contain` chứ không `cover`: `cover` phóng ảnh cho lấp kín rồi CẮT phần thừa,
+   mà ảnh kỉ niệm thì phần bị cắt hay lại là phần có người. Ảnh lệch khỏi khung
+   thì có dải nền ở hai bên — đúng thứ mọi phần mềm xem ảnh đều làm, và nó trung
+   thực: không tự ý bỏ đi phần nào.
+
+   `max-height` vẫn phải còn: khối này DÍNH khi cuộn ở khổ rộng, nên cả cụm ảnh
+   + chú thích + hàng chấm phải lọt trong một màn. Không chặn thì một khung dọc
+   đẩy hàng chấm xuống dưới nếp gấp và người đọc không bao giờ biết là còn ảnh
+   nữa — đúng lỗi đã gặp. */
 .ba-tam img{
   width:100%;display:block;
-  height:min(52vh,460px);
+  aspect-ratio:var(--ba-ti,4/5);
+  max-height:min(64vh,620px);
   object-fit:contain;
   border-radius:var(--r-lg);
   background:var(--accent-wash);

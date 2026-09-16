@@ -10,9 +10,9 @@ tags:
 cover: /media/2026/quan-ca-phe-goc-pho/bia.png
 coverAlt: Thứ bảy, không có gì
 anh:
-  - /media/2026/quan-ca-phe-goc-pho/bia.png | Cái ghế ngoài ban công, chín giờ sáng
-  - /media/2021/chiec-guong/bia.png | Ly trà nguội từ lúc nào không hay
-  - /media/2026/vo-thuc-tap-the/bia.png | Trang sách đọc dở, mở nguyên chỗ cũ suốt buổi
+  - /media/2026/thu-bay-khong-co-gi/anh-1.png | Cái ghế ngoài ban công, chín giờ sáng
+  - /media/2026/thu-bay-khong-co-gi/anh-2.png | Ly trà nguội từ lúc nào không hay
+  - /media/2026/thu-bay-khong-co-gi/anh-3.png | Trang sách đọc dở, mở nguyên chỗ cũ suốt buổi
 ---
 
 Sáng thứ bảy, không hẹn ai, không phải đi đâu.

@@ -573,7 +573,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                    : ''
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
-    logo      : LOGO,
+    logo      : logoHTML(duong === '/'),
     /* LOGO CHỈ Ở TRANG CHỦ VÀ TRANG GIỚI THIỆU, và ở đó nó đứng MỘT MÌNH.
        Mọi trang khác chỉ có dòng chữ tên blog, không logo.
 
@@ -581,7 +581,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        thành lặp, và ở thanh đầu trang — nơi chỗ hẹp nhất — lặp là tốn chỗ của
        mục điều hướng. Hai trang kia là hai trang "giới thiệu mình", nên ở đó
        logo đứng một mình là đủ và đẹp hơn. */
-    lopBrand  : (duong === '/' || duong === '/about/') ? ' brand--logo' : ' brand--chu',
+    /* Trang chủ thêm `brand--dong`: chỉ ở đó logo mới tự kể lại câu chuyện dựng
+       hình theo vòng lặp. Trang giới thiệu vẫn là logo, nhưng vẽ một lần rồi
+       đứng yên — đó là trang nhiều chữ nhất, một hình động lặp mãi ở góc trên
+       là thứ mắt không bỏ qua được. */
+    lopBrand  : duong === '/'        ? ' brand--logo brand--dong'
+              : duong === '/about/'  ? ' brand--logo'
+              :                        ' brand--chu',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
     author    : escapeHtml(CAU.author),
@@ -691,6 +697,32 @@ function doanTruocHTML() {
 
    Mỗi tấm chiếm trọn bề ngang băng và dính mép trái khi dừng, nên không bao
    giờ có cảnh hai nửa tấm ảnh cạnh nhau. */
+/* ── TỈ LỆ KHUNG BĂNG ẢNH ──
+   Instagram và Facebook không cho ảnh tỉ lệ nào cũng được: khung hẹp nhất là
+   4:5 (ảnh dọc, 1080×1350) và rộng nhất là 1.91:1 (ảnh ngang). Ngoài khoảng ấy
+   thì chính hai nền tảng đó tự cắt bớt. Vuông 1:1 nằm giữa.
+
+   Và cả một băng ảnh dùng CHUNG MỘT khung — khung lấy theo tấm ĐẦU TIÊN. Nếu
+   mỗi tấm một khung thì cả khối cao thấp nhảy loạn mỗi lần trượt, chú thích và
+   hàng chấm chạy theo, người đọc mất luôn điểm tựa của mắt.
+
+   Làm đúng như vậy ở đây: đo tấm đầu, kẹp vào khoảng 4:5 … 1.91:1, rồi lấy con
+   số ấy làm khung cho cả băng. Bài toàn ảnh dọc thì được khung dọc; bài ảnh
+   ngang thì được khung ngang. Ảnh nào lệch khỏi khung vẫn vào TRỌN (`contain`,
+   không cắt) — mình không phải Instagram, không có lý do gì cắt ảnh của người
+   ta để cho vừa lưới. */
+const BA_DOC  = 4 / 5;        /* dọc nhất: 1080×1350 */
+const BA_NGANG = 1.91;        /* ngang nhất: 1080×566 */
+
+function tiLeBang(ds) {
+  const dau = ds[0];
+  if (!dau || /^https?:/.test(dau.src)) return null;   /* ảnh ngoài: không đo được */
+  const that = path.join(THU_MUC.public, dau.src.replace(/^\//, ''));
+  const kt = fs.existsSync(that) ? kichThuocAnh(that) : null;
+  if (!kt || !kt.h) return null;
+  return Math.min(BA_NGANG, Math.max(BA_DOC, kt.w / kt.h));
+}
+
 function bangAnhHTML(bai) {
   const ds = bai.anhBang || [];
   if (bai.khung !== 'c' || !ds.length) return '';
@@ -702,7 +734,12 @@ function bangAnhHTML(bai) {
       ${x.alt ? `<figcaption>${escapeHtml(x.alt)}</figcaption>` : ''}
     </figure>`;
   }).join('');
-  return `<div class="bang-anh" data-bang data-nhan="${attr(JSON.stringify({
+  /* Đo không ra thì KHÔNG khai biến — CSS có sẵn giá trị lùi (4:5). Khai
+     `--ba-ti:null` hay để trống là CSS nhận một giá trị hỏng và bỏ luôn cả luật,
+     tệ hơn là không khai. */
+  const ti = tiLeBang(ds);
+  return `<div class="bang-anh" data-bang${ti ? ` style="--ba-ti:${ti.toFixed(4)}"` : ''}
+    data-nhan="${attr(JSON.stringify({
     prev: NHAN.prevPage, next: NHAN.nextPage, of: '{n}/{m}'
   }))}">
     <div class="ba-cuon" tabindex="0" role="group" aria-roledescription="carousel"
@@ -743,12 +780,63 @@ function bangAnhHTML(bai) {
 
    MỖI VÔ CỰC LÀ MỘT ĐƯỜNG RIÊNG, không phải bốn cánh rời. Nhờ vậy nét vẽ ra kể
    đúng trình tự: một dấu vô cực trọn vẹn, rồi dấu thứ hai. */
-const LOGO = `<svg class="logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-  <path class="logo-vc logo-vc--ngang" fill="none" stroke="currentColor"
+const LOGO_NET = `
+  <path class="lg-vc lg-vc--1" fill="none" stroke="currentColor"
         d="M24 24 C32 16 41 18 41 24 C41 30 32 32 24 24 C16 16 7 18 7 24 C7 30 16 32 24 24 Z"/>
-  <path class="logo-vc logo-vc--doc" fill="none" stroke="currentColor"
-        d="M24 24 C16 32 18 41 24 41 C30 41 32 32 24 24 C32 16 30 7 24 7 C18 7 16 16 24 24 Z"/>
-</svg>`;
+  <path class="lg-vc lg-vc--2" fill="none" stroke="currentColor"
+        d="M24 24 C16 32 18 41 24 41 C30 41 32 32 24 24 C32 16 30 7 24 7 C18 7 16 16 24 24 Z"/>`;
+
+/* ── CÁC CHẶNG KỂ CHUYỆN ──
+   Chỉ có ở trang chủ. Trang giới thiệu dùng logo tĩnh, và mấy chữ này ở đó là
+   750 byte nằm không — chưa kể một cái logo tự kể chuyện mãi ở một trang đầy
+   chữ thì đúng là thứ làm người ta không đọc nổi.
+
+   Dùng <text> THẬT chứ không vẽ lại chữ bằng nét: chữ Z, i, B ở đây phải là
+   đúng con chữ trong tên blog, cùng một phông nghiêng — vẽ tay thì nó thành
+   ba hình hao hao chữ, và cả câu chuyện "cái tên co lại thành logo" mất nghĩa
+   ngay ở bước đầu. */
+const LOGO_CHU = `
+  <g class="lg-ke" aria-hidden="true">
+    <text class="lg-chu lg-ten" x="24" y="24">Zoey in Borderland</text>
+    <text class="lg-chu lg-z"   x="24" y="24">Z</text>
+    <text class="lg-chu lg-i"   x="24" y="24">i</text>
+    <text class="lg-chu lg-b"   x="24" y="24">B</text>
+  </g>`;
+
+/* ── LOGO ──
+   Dựng theo đúng trình tự mà cái tên co lại:
+
+     Zoey in Borderland
+        ↓  cả dòng chữ bóp lại còn một điểm
+     Z
+        ↓  chữ Z XOAY NGANG
+     chữ i xoay ngang, nối hai đầu còn lại
+        ↓
+     VÔ CỰC THỨ NHẤT (nằm ngang)
+        ↓  chữ B vặn thành vòng
+     VÔ CỰC THỨ HAI (dựng đứng)
+        ↓
+     bốn cánh hoa — xoay một vòng rồi vỡ ra, và kể lại từ đầu
+
+   ── VÌ SAO KHÔNG PHẢI HÌNH VUÔNG GẠCH CHÉO ─────────────────────────────
+   Bản đầu vẽ đúng như hình mẫu: khung vuông cộng hai đường chéo, hình học thì
+   chuẩn (hai vạch đứng khép dấu ╳ thành vô cực ngang, hai vạch ngang khép nó
+   thành vô cực đứng). Nhưng dựng ra rồi nhìn thì nó đọc thành **biểu tượng
+   "ảnh lỗi"** — ô vuông gạch chéo là ký hiệu phổ biến nhất của "không có gì ở
+   đây". Một logo không được phép trùng với ký hiệu của sự trống rỗng.
+
+   Nên giữ nguyên CÂU CHUYỆN, đổi NÉT: chữ B vặn thành vòng thì hai vô cực thôi
+   vẽ bằng nét thẳng mà vẽ bằng nét cong. Bốn cánh mọc ra từ một tâm — và bốn
+   cánh ấy lại vọng đúng cánh hoa đang rơi ở nền trang. Không cố ý, nhưng giữ.
+
+   MỖI VÔ CỰC LÀ MỘT ĐƯỜNG RIÊNG, không phải bốn cánh rời. Nhờ vậy nét vẽ ra kể
+   đúng trình tự: một dấu vô cực trọn vẹn, rồi dấu thứ hai. */
+function logoHTML(dong) {
+  return `<svg class="logo${dong ? ' logo--dong' : ''}" viewBox="0 0 48 48"` +
+    ` aria-hidden="true" focusable="false">` +
+    (dong ? LOGO_CHU : '') +
+    `<g class="lg-hoa">${LOGO_NET}</g></svg>`;
+}
 function tocHTML(headings) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
      cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không

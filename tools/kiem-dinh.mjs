@@ -790,31 +790,38 @@ const KIEM = [
         .map((m) => `${t.url} — đường dẫn máy cá nhân lọt ra HTML: ${m[0].slice(0, 60)}`))
   },
   {
-    /* ── TỪ "BORDERLAND" PHẢI VỪA BỀ NGANG CỘT ──
+    /* ── TỪ "BORDERLAND" LẤN RA NGOÀI CỘT TỐI ĐA NỬA CHỮ CUỐI ──
        Màn đầu trang chủ đặt cỡ chữ bằng `cqw` — phần trăm bề ngang khung bao.
        Chữ thì không có `overflow` nào chặn, nên đặt cỡ quá tay là từ ấy cứ thò
-       ra ngoài khung, chui xuống dưới khung danh sách bên phải, và trên màn
-       hình đọc ra là "Borderl" — một từ bị cắt cụt. CSS không báo gì, build
-       không báo gì; phải mở trình duyệt nhìn mới thấy.
+       ra ngoài khung và chui xuống dưới khung danh sách bên phải.
 
-       Đã vấp thật: --s3 để 26cqw thì từ dài 914px trong cột rộng 712px.
+       Lấn MỘT CHÚT là cố ý: chữ đầu khuất một phần ba sau đường kẻ trái, chữ
+       cuối khuất một nửa sau đường kẻ phải, khối chữ đọc ra là được đặt vào
+       khuôn rồi khuôn xén bớt. Lấn NHIỀU là lỗi: đã vấp thật với --s3:26cqw —
+       từ dài 914px trong cột rộng 712px, mất hẳn hai chữ cuối, trên màn hình
+       đọc ra là "Borderl". Ranh giới giữa hai thứ đó là NỬA CHỮ CUỐI, và đây
+       là phép kiểm canh đúng ranh giới ấy.
 
-       Bề ngang từ tính được, không phải ước lượng. Đo trong trình duyệt: mười
-       chữ cái của "Borderland" ở phông Cormorant nghiêng chiếm 4,72 lần cỡ
-       chữ. `letter-spacing` cộng thêm một nhịp sau MỖI chữ cái, kể cả chữ
-       cuối, nên là 10 nhịp. Cộng cả phần lùi đầu dòng:
+       Bề ngang tính được, không phải ước lượng. Đo trong trình duyệt ở phông
+       Cormorant nghiêng: cả từ "Borderland" chiếm 4,72 lần cỡ chữ (chưa tính
+       giãn), riêng chữ "d" cuối chiếm 0,538 lần. `letter-spacing` cộng một
+       nhịp sau MỖI chữ cái, kể cả chữ cuối, nên là 10 nhịp.
 
-           bề ngang = cỡ × (lùi + 4,72 + 10 × giãn)
+           lấn ra = lùi + 4,72 + 10 × giãn − 100cqw/cỡ
+           cho phép ≤ nửa chữ "d" = 0,538 ÷ 2
 
-       Cỡ tính theo cqw nên chia 100 là ra tỉ lệ so với cột. Vượt 1 là tràn. */
-    ten: 'Từ cuối ở màn đầu không rộng quá bề ngang cột',
+       Đổi phông thì hai con số đo được kia sai, và phép kiểm này sai theo —
+       nên chúng nằm ngay đây thành hằng có tên chứ không rải trong công thức. */
+    ten: 'Từ cuối ở màn đầu lấn ra ngoài cột không quá nửa chữ',
     muc: 'loi',
     chay: () => {
       const f = path.join(GOC, 'src', 'styles', 'list.css');
       if (!fs.existsSync(f)) return [];
       const css = fs.readFileSync(f, 'utf8');
-      const BE_NGANG_CHU = 4.72;      /* đo thật, xem chú thích trên */
-      const SO_CHU = 10;              /* "Borderland" */
+      const BE_NGANG_TU  = 4.72;    /* "Borderland" / cỡ chữ, đo thật */
+      const BE_NGANG_D   = 0.538;   /* riêng chữ "d" cuối / cỡ chữ */
+      const SO_CHU       = 10;
+      const LAN_TOI_DA   = BE_NGANG_D / 2;
 
       /* Mỗi chỗ khai đủ bộ ba --s3/--x3/--ls3 là MỘT trạng thái (nghỉ, hiện đủ,
          bản cho máy không có chuột). Kiểm hết, không chỉ cái đầu. */
@@ -825,10 +832,14 @@ const KIEM = [
       const ra = [];
       for (const m of bo) {
         const [s3, x3, ls3] = [+m[1], +m[2], +m[3]];
-        const tiLe = (s3 / 100) * (x3 + BE_NGANG_CHU + SO_CHU * ls3);
-        if (tiLe > 1) {
-          ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em → từ rộng ` +
-                  `${Math.round(tiLe * 100)}% bề ngang cột, tràn ra ngoài khung`);
+        /* Quy hết về ĐƠN VỊ CỠ CHỮ: bề ngang cột = 100cqw, mà cỡ chữ = s3 cqw,
+           nên cột rộng 100/s3 lần cỡ chữ. */
+        const cot = 100 / s3;
+        const tu  = x3 + BE_NGANG_TU + SO_CHU * ls3;
+        const lan = tu - cot;
+        if (lan > LAN_TOI_DA + 0.005) {          /* .005 là dung sai làm tròn */
+          ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em → lấn ra ngoài cột ` +
+                  `${Math.round(lan * 100)}% cỡ chữ, quá nửa chữ cuối (${Math.round(LAN_TOI_DA * 100)}%)`);
         }
       }
       return ra;

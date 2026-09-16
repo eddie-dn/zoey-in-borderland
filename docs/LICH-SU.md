@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V5.05 | 2026-09-16 | 05 | băng ảnh lấy tỉ lệ theo tấm đầu, kẹp trong khoảng Instagram cho phép |
+| V5.04 | 2026-09-16 | 04 | màn đầu: Borderland to hơn, xén nửa chữ cuối, nhấc lên giữa khung |
+| V5.03 | 2026-09-16 | 03 | logo tự kể lại trình tự dựng hình, lặp ở trang chủ |
 | V5.02 | 2026-09-15 | 02 | logo đứng một mình to lên; ghi chú có đường vào từ chân trang |
 | V5.01 | 2026-09-15 | 01 | từ Borderland vừa đúng bề ngang cột, thêm phép kiểm canh việc đó |
 | V5.00 | 2026-09-15 | 00 | chân trang khổ dọc canh về cùng một mép trái |
@@ -75,6 +78,46 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V5.05 — 16-Sep-2026
+
+- **Băng ảnh nhận ảnh dọc cho ra hồn.** Khung trước đây cao cố định và nằm
+  ngang, nên ảnh dọc tuy vẫn vào trọn nhưng bé tí giữa hai dải nền. Nay khung
+  lấy tỉ lệ theo **tấm đầu tiên**, kẹp trong khoảng Instagram và Facebook cho
+  phép (4:5 dọc nhất … 1.91:1 ngang nhất) — đúng cách hai nền tảng ấy làm, và
+  cả băng dùng chung một khung nên trượt qua lại không nhảy cao thấp.
+- **Vẫn không cắt ảnh.** `contain` chứ không `cover`: ảnh lệch khỏi khung thì
+  có dải nền ở hai bên, chứ không bị xén mất phần rìa — mà ảnh kỉ niệm thì phần
+  rìa hay lại là phần có người.
+- **`npm run bia -- <slug> --doc`** sinh ảnh dọc 1080×1350 cho băng ảnh, một tấm
+  cho mỗi dòng trong `anh:`, hạt giống lấy theo chú thích nên mỗi tấm một hình.
+
+## V5.04 — 16-Sep-2026
+
+- **Hai đầu dòng chữ đều bị xén, và xén có con số.** Chữ đầu khuất một phần ba
+  sau đường kẻ trái, chữ "d" cuối khuất một nửa sau đường kẻ phải. Xén đều hai
+  bên thì cả khối đọc ra là được đặt vào khuôn rồi khuôn cắt bớt — cố ý. Xén
+  một bên thì đọc ra là tràn lề.
+- **Chữ to hơn.** Cỡ không ướm mà giải ra từ hai con số đo được (cả từ chiếm
+  5,117 lần cỡ chữ, riêng chữ "d" chiếm 0,538) — ra 20,35cqw.
+- **Khối chữ nhấc lên giữa khung.** Đáy cột có hàng nút chiếm một dải; căn giữa
+  cả cột thì khối chữ bị đẩy xuống nằm đè lên dải ấy. Chừa dải ra rồi mới căn,
+  và chừa dư một nhịp vì khối này nặng đáy.
+
+## V5.03 — 16-Sep-2026
+
+- **Logo tự kể lại trình tự dựng hình, và lặp.** Ở trang chủ, cứ 20 giây một
+  vòng: bốn cánh xoay rồi vỡ ra → *Zoey in Borderland* hiện lên → cả dòng bóp
+  lại còn một điểm → chữ Z → Z xoay ngang → chữ i trượt vào, xoay ngang, nối
+  hai đầu → **vô cực thứ nhất** → chữ B → B vặn thành vòng → **vô cực thứ hai**
+  → bốn cánh đủ hình.
+- **Chữ trong logo là chữ THẬT.** Z, i, B lấy đúng con chữ trong tên blog, cùng
+  phông nghiêng — vẽ tay thì thành ba hình hao hao chữ và câu chuyện "cái tên co
+  lại thành logo" mất nghĩa ngay ở bước đầu.
+- **Nghỉ chiếm 42% vòng.** Kể xong thì đứng yên 8 giây. Một hình động lặp liên
+  tục ở thanh đầu trang là thứ mắt không bỏ qua được, mà người ta tới đây để
+  đọc. Trang giới thiệu giữ logo tĩnh, vẽ một lần rồi thôi. Bật "giảm chuyển
+  động" thì dừng hẳn ở hình đủ.
 
 ## V5.02 — 15-Sep-2026
 
