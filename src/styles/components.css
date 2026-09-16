@@ -142,20 +142,31 @@
 /* ── CHIP TAG ──
    Một hình dáng duy nhất cho tag ở mọi nơi: đầu bài, thẻ bài, trang /tags/.
    Khác nhau chỉ ở cỡ, qua biến --chip-fs. */
+/* ── TAG LÀ CHỮ, KHÔNG PHẢI VIÊN THUỐC ──
+   Bản trước mỗi tag là một viên bo tròn có nền và viền. Năm viên xếp cạnh
+   nhau thành một dãy nút to ngang một khối nội dung — trong khi việc chúng
+   làm chỉ là nói "bài này thuộc mấy chủ đề ấy".
+
+   Nay chúng là một hàng chữ bình thường, cách nhau bằng khoảng trắng. Dấu
+   hiệu duy nhất nói "đây là tag" là dấu thăng và MÀU SÁNG HƠN chữ xung quanh
+   — đủ để nhận ra, không đủ để tranh chỗ. Viền và nền bỏ hẳn: một hàng năm
+   cái viền thì cái nào cũng đòi được nhìn.
+
+   Vùng bấm vẫn đủ rộng nhờ lề trong dọc — bỏ viền không có nghĩa là bỏ luôn
+   chỗ để ngón tay chạm. */
 .tag{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 12px 6px;border-radius:var(--r-pill);
-  background:var(--accent-wash);
-  box-shadow:inset 0 0 0 1px var(--line);
-  color:var(--text-muted);font-size:var(--chip-fs,var(--fs-xs));
-  line-height:1.45;white-space:nowrap;
-  transition:color var(--dur-fast),box-shadow var(--dur-fast),
-             background var(--dur-fast),transform .3s var(--spring);
+  display:inline-flex;align-items:baseline;gap:3px;
+  padding:2px 0;
+  color:var(--accent-ink);font-size:var(--chip-fs,var(--fs-sm));
+  line-height:1.45;white-space:nowrap;text-decoration:none;
+  transition:color var(--dur-fast);
 }
-a.tag:active{transform:scale(.94);transition-duration:.09s}
-.tag::before{content:"#";color:var(--accent-ink);opacity:.8}
-a.tag:hover{color:var(--text);box-shadow:inset 0 0 0 1px var(--accent),var(--glass-drop)}
-.tag-row{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.tag::before{content:"#";opacity:.55}
+a.tag:hover{color:var(--accent-ink-hover);text-decoration:underline;
+  text-underline-offset:3px}
+/* Cách nhau bằng một quãng chữ, không bằng lề của một hàng nút: hàng tag nay
+   đọc như một câu, nên khoảng cách cũng phải là khoảng cách giữa các từ. */
+.tag-row{display:flex;flex-wrap:wrap;gap:2px var(--s4)}
 
 /* ── ĐƯỜNG DẪN PHÂN CẤP (folder → sub-folder) ── */
 .crumbs{

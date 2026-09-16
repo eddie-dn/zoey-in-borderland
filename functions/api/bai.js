@@ -191,6 +191,186 @@ async function danhSachMuc(env) {
   return { ma: 200, ds };
 }
 
+/* ══════════ ĐỌC FRONT MATTER Ở PHÍA MÁY CHỦ ══════════
+
+   Bản rút gọn của tools/lib/frontmatter.mjs. Chép lại chứ không import: hàm
+   này chạy trên Cloudflare Workers, không thấy thư mục tools/.
+
+   Nó chỉ cần đọc được đúng những khoá mà ô viết bài SINH RA, cộng mấy khoá
+   người ta gõ tay hay dùng. Khoá lạ vẫn giữ nguyên trong `tho` để lúc ghi lại
+   không làm mất chúng — đây là chỗ dễ đánh rơi dữ liệu nhất trong cả tính năng
+   sửa bài: đọc ra 6 khoá, ghi lại 6 khoá, và khoá thứ 7 người ta gõ tay biến
+   mất không dấu vết. */
+function docFM(van) {
+  const s = String(van || '').replace(/\r\n?/g, '\n');
+  const m = s.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!m) return { fm: {}, tho: {}, than: s.trim() };
+
+  const fm = {}, tho = {};
+  /* Khoá đang mở một mảng nhiều dòng. Bài nhập từ blog cũ viết tag kiểu:
+         tags:
+           - tâm lý
+           - giấc mơ
+     Bản đầu chỉ đọc mảng một dòng `[a, b]`, nên `tags:` đọc ra chuỗi rỗng và
+     mấy dòng gạch đầu dòng bị bỏ qua — tức là MỞ MỘT BÀI RA SỬA LÀ MẤT SẠCH
+     TAG. Lỗi câm nhất trong cả tính năng sửa bài, vì trang vẫn dựng bình
+     thường, chỉ là bài rơi khỏi mọi trang tag. */
+  let dangMang = null;
+  for (const dong of m[1].split('\n')) {
+    const mi = dong.match(/^\s+-\s+(.*)$/);
+    if (mi && dangMang) {
+      const x = mi[1].trim().replace(/^["']|["']$/g, '');
+      if (x) fm[dangMang].push(x);
+      continue;
+    }
+    const k = dong.match(/^([A-Za-z][\w-]*)\s*:\s*(.*)$/);
+    if (!k) continue;
+    dangMang = null;
+    const ten = k[1];
+    let v = k[2].trim();
+    tho[ten] = v;
+    /* Khoá có tên mà không có giá trị = đầu một mảng nhiều dòng. */
+    if (v === '') { fm[ten] = []; dangMang = ten; continue; }
+    if (v === 'true') { fm[ten] = true; continue; }
+    if (v === 'false') { fm[ten] = false; continue; }
+    if (/^\[.*\]$/.test(v)) {
+      fm[ten] = v.slice(1, -1).split(',').map((x) => x.trim()).filter(Boolean);
+      continue;
+    }
+    /* Nháy kép bao ngoài thì bóc — bộ dựng cũng bóc đúng kiểu ấy. Nháy cong
+       (do `chuoiYAML` đổi vào) KHÔNG bóc: chúng là chữ thật trong tiêu đề. */
+    if (v.length > 1 && v[0] === '"' && v[v.length - 1] === '"') v = v.slice(1, -1);
+    fm[ten] = v;
+  }
+  /* Mảng nhiều dòng cất vào `tho` dưới dạng một chuỗi có ký tự canh ở đầu và
+     giữa các mục. `dungFile` nhận ra ký tự ấy rồi trải lại thành từng dòng
+     gạch đầu dòng — nhờ vậy MỌI khoá kiểu mảng nhiều dòng đều đi qua nguyên
+     vẹn, kể cả khoá giao diện không biết tới (một bài trong kho có `anh:` viết
+     kiểu này). */
+  for (const k of Object.keys(fm)) {
+    if (Array.isArray(fm[k]) && tho[k] === '') tho[k] = '\u0000' + fm[k].join('\u0000');
+  }
+  return { fm, tho, than: s.slice(m[0].length).replace(/^\n+/, '') };
+}
+
+/* Trạng thái của một bài, gom về MỘT chữ. Ba trạng thái loại trừ nhau, và thứ
+   tự xét là quan trọng: một bài vừa `hidden` vừa `draft` thì nó ẩn — ẩn là
+   trạng thái mạnh hơn, vì nó có nghĩa "không được xuất hiện ở đâu cả". */
+function trangThai(fm) {
+  if (fm.hidden === true) return 'an';
+  if (fm.draft === true) return 'nhap';
+  return 'hien';
+}
+
+/* ══════════ CÂY FILE TRONG KHO MÃ ══════════
+
+   Một lượt gọi lấy TRỌN cây thư mục, thay vì đi từng cấp một bằng
+   /contents/. Kho bài có bảy tám chuyên mục, mỗi chuyên mục lại có thể có mục
+   con — đi từng cấp là tám chín lượt gọi, mà Cloudflare Workers giới hạn số
+   lượt gọi ra ngoài trong một request. */
+async function cayBai(env) {
+  const { ma, du } = await goiGH(env,
+    `/repos/${env.GH_REPO}/git/trees/${encodeURIComponent(nhanh(env))}?recursive=1`);
+  if (ma !== 200 || !du || !Array.isArray(du.tree)) return { ma, ds: null };
+  const ds = du.tree
+    .filter((x) => x.type === 'blob' &&
+                   x.path.startsWith(THU_MUC_BAI + '/') &&
+                   x.path.endsWith('.md') &&
+                   !x.path.split('/').pop().startsWith('_'))
+    /* Tên file bắt đầu bằng ngày, nên xếp giảm dần theo tên là xếp mới trước.
+       Quan trọng vì danh sách có TRẦN: bài mới luôn phải nằm trong phần được
+       đọc. */
+    .sort((a, b) => (a.path < b.path ? 1 : -1));
+  return { ma: 200, ds, cut: du.truncated === true };
+}
+
+/* Trần số bài đọc front matter trong MỘT lượt. Mỗi bài là một lượt gọi ra
+   GitHub, mà Workers chỉ cho một số lượt hữu hạn trong một request (50 ở gói
+   miễn phí). 40 chừa chỗ cho lượt lấy cây và mấy lượt lặt vặt.
+
+   Vượt trần thì danh sách trả về kèm cờ `cut`, và giao diện nói thẳng ra là
+   đang xem 40 bài mới nhất — im lặng cắt bớt thì có ngày một bài cũ biến mất
+   khỏi bảng mà không ai hiểu vì sao. */
+const TRAN_DS = 40;
+
+/* ══════════ GET ?ds=1 — BẢNG BÀI ══════════ */
+async function danhSachBai(env) {
+  const { ma, ds, cut } = await cayBai(env);
+  if (!ds) {
+    return ra({ ok: false, loi: 'github',
+                chiTiet: `không đọc được cây kho mã (GitHub trả ${ma})` }, 502);
+  }
+
+  const lay = ds.slice(0, TRAN_DS);
+  const bai = await Promise.all(lay.map(async (x) => {
+    const r = await goiGH(env,
+      `/repos/${env.GH_REPO}/contents/${x.path}?ref=${encodeURIComponent(nhanh(env))}`);
+    if (r.ma !== 200 || !r.du || !r.du.content) {
+      return { duong: x.path, loi: true, title: x.path.split('/').pop() };
+    }
+    const van = giaiB64(r.du.content);
+    const { fm } = docFM(van);
+    const ten = x.path.split('/').pop();
+    return {
+      duong  : x.path,
+      sha    : r.du.sha,
+      title  : String(fm.title || ten.replace(/\.md$/, '')),
+      date   : String(fm.date || ten.slice(0, 10)),
+      muc    : x.path.slice(THU_MUC_BAI.length + 1, x.path.length - ten.length - 1),
+      trang  : trangThai(fm)
+    };
+  }));
+
+  return ra({ ok: true, bai, tong: ds.length, cut: cut || ds.length > TRAN_DS,
+              tran: TRAN_DS });
+}
+
+/* ══════════ GET ?doc=… — MỘT BÀI ══════════ */
+async function docMotBai(env, duong) {
+  if (!ANTOAN_DUONG.test(duong)) return ra({ ok: false, loi: 'duong' }, 400);
+
+  const { ma, du } = await goiGH(env,
+    `/repos/${env.GH_REPO}/contents/${duong}?ref=${encodeURIComponent(nhanh(env))}`);
+  if (ma !== 200 || !du || !du.content) {
+    return ra({ ok: false, loi: 'github',
+                chiTiet: `không đọc được ${duong} (GitHub trả ${ma})` }, ma === 404 ? 404 : 502);
+  }
+
+  const van = giaiB64(du.content);
+  const { fm, tho, than } = docFM(van);
+  return ra({
+    ok: true, duong, sha: du.sha,
+    /* `tho` đi kèm để lượt ghi lại giữ nguyên mọi khoá front matter mà giao
+       diện không có ô nào cho — `khung`, `pinned`, `updated`, `lang`… */
+    fm: {
+      title  : String(fm.title || ''),
+      date   : String(fm.date || ''),
+      summary: String(fm.summary || ''),
+      tags   : Array.isArray(fm.tags) ? fm.tags : [],
+      cover  : String(fm.cover || ''),
+      coverAlt: String(fm.coverAlt || ''),
+      draft  : fm.draft === true,
+      hidden : fm.hidden === true
+    },
+    khoaKhac: tho,
+    noiDung: than,
+    trang: trangThai(fm)
+  });
+}
+
+/* Đường dẫn file đi thẳng vào lời gọi GitHub, nên nó là chỗ nguy hiểm nhất
+   trong cả hàm — cùng lý do đã ghi ở phần kiểm `muc`/`slug` bên dưới. Chỉ
+   nhận đúng hình dạng một bài trong kho: content/posts/…/….md, không dấu
+   chấm đôi, không dấu gạch chéo mở đầu. */
+const ANTOAN_DUONG = /^content\/posts\/(?:[a-z0-9][a-z0-9-]*\/)*[a-z0-9][a-z0-9.-]*\.md$/;
+
+function giaiB64(b64) {
+  const tho = atob(String(b64).replace(/\n/g, ''));
+  const byte = new Uint8Array(tho.length);
+  for (let i = 0; i < tho.length; i++) byte[i] = tho.charCodeAt(i);
+  return new TextDecoder().decode(byte);
+}
+
 /* ══════════ ĐỌC: danh sách chuyên mục, để ô viết đổ vào ô chọn ══════════
    Cũng là phép thử khoá của ô viết: mở /z-admin/ rồi gõ khoá, nếu khoá sai thì
    biết ngay ở đây chứ không phải sau khi gõ xong cả bài. */
@@ -200,6 +380,14 @@ export async function onRequestGet({ request, env }) {
 
   const thieu = thieuCauHinh(env);
   if (thieu.length) return ra({ ok: false, loi: 'cauhinh', thieu }, 503);
+
+  /* Ba kiểu đọc trên cùng một đường, phân biệt bằng tham số — chứ không mở
+     thêm hai đường /api mới. Mỗi đường mới là một chỗ nữa phải nhớ canh khoá,
+     và ba việc này dùng chung y hệt bộ canh ở trên. */
+  const u = new URL(request.url);
+  if (u.searchParams.get('ds') === '1') return danhSachBai(env);
+  const mo = u.searchParams.get('doc');
+  if (mo) return docMotBai(env, mo);
 
   const { ma, ds } = await danhSachMuc(env);
   if (!ds) {
@@ -290,24 +478,17 @@ export async function onRequestPost({ request, env }) {
                 chiTiet: `đã có ${duongFile} — đổi tiêu đề hoặc đổi ngày`, duong: duongFile }, 409);
   }
 
-  const dongTag = dsTag.length ? `[${dsTag.join(', ')}]` : '';
-  const summary = String(b.summary || '').trim();
-  const cover = String(b.cover || '').trim();
-
-  const fm = ['---', `title: ${chuoiYAML(title)}`, `date: ${date}`];
-  if (summary) fm.push(`summary: ${chuoiYAML(summary)}`);
-  if (dongTag) fm.push(`tags: ${dongTag}`);
-  if (cover && /^\/[A-Za-z0-9\-._~/]*$/.test(cover)) {
-    fm.push(`cover: ${cover}`);
-    if (b.coverAlt) fm.push(`coverAlt: ${chuoiYAML(b.coverAlt)}`);
-  }
-  if (b.draft === true) fm.push('draft: true');
-  /* Hai chuỗi rỗng ở đây thành MỘT dòng trống sau khối `---`, đúng như mọi bài
-     gõ tay trong content/posts/. Bộ đọc không quan tâm, nhưng người mở file ra
-     đọc thì có — và bài đăng từ điện thoại rồi cũng có ngày được mở ra sửa. */
-  fm.push('---', '', '');
-
-  const file = fm.join('\n') + noiDung.replace(/\r\n/g, '\n') + '\n';
+  /* Cùng một hàm với lượt SỬA — xem `dungFile` ở cuối file. Hai đường phải
+     sinh ra front matter giống hệt nhau, nếu không thì mở một bài vừa đăng ra
+     lưu lại là `git diff` hiện cả khối front matter thay đổi. */
+  const file = dungFile({
+    title, date, noiDung, tags: dsTag,
+    summary : String(b.summary || '').trim(),
+    cover   : String(b.cover || '').trim(),
+    coverAlt: String(b.coverAlt || '').trim(),
+    draft   : b.draft === true,
+    hidden  : false
+  });
 
   const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duongFile}`, {
     method: 'PUT',
@@ -334,4 +515,203 @@ export async function onRequestPost({ request, env }) {
     commit: du && du.commit ? du.commit.html_url : null,
     nhac: 'Cloudflare đang dựng lại. Bài lên sau khoảng một phút.'
   }, 201);
+}
+
+/* ── NHÁY KÉP CHỈ ĐẶT KHI CẦN ──
+   Bộ đọc front matter thật (tools/lib/frontmatter.mjs) nhận giá trị TRẦN cho
+   gần như mọi thứ, và bài trong kho đều viết trần: `title: Chiếc gương`. Bọc
+   nháy cho tất cả thì mở một bài cũ ra lưu lại là mọi dòng tiêu đề đổi — một
+   dòng diff trên mỗi bài, cho một lượt sửa chẳng đụng tới tiêu đề.
+
+   Chỉ năm hình dạng dưới đây mới thật sự cần nháy, và mỗi cái tương ứng một
+   luật của bộ đọc:
+     · mở đầu bằng " hoặc '   → bộ đọc bóc cặp nháy ngoài, mất ký tự đầu/cuối
+     · mở đầu bằng [          → bộ đọc hiểu là mảng
+     · có dấu hai chấm        → không hỏng gì, nhưng bài trong kho vẫn bọc
+                                nháy ở những chỗ ấy, và giống nếp cũ thì lượt
+                                lưu đầu tiên không sinh ra dòng diff nào
+     · có " #" ở giữa         → bộ đọc cắt từ đó đi, coi là chú thích
+     · đúng một từ đúng/sai   → bộ đọc đổi thành boolean
+     · nhìn như một con số    → bộ đọc đổi thành Number
+   Ngoài năm cái đó, trần là an toàn và khớp với nếp viết tay trong kho. */
+const DUNG_SAI = ['true', 'false', 'yes', 'no', 'có', 'không'];
+
+function giaTriYAML(v) {
+  const s = String(v == null ? '' : v).replace(/[\r\n\t]+/g, ' ').trim();
+  const canNhay = s === ''
+    || /^["'\[]/.test(s)
+    || /:/.test(s)
+    || /\s#/.test(s)
+    || DUNG_SAI.indexOf(s.toLowerCase()) >= 0
+    || /^-?\d+(\.\d+)?$/.test(s);
+  return canNhay ? chuoiYAML(s) : s;
+}
+
+/* ══════════ DỰNG LẠI FILE .md ══════════
+
+   Dùng chung cho cả lượt ĐĂNG MỚI và lượt SỬA. Tách ra vì hai đường ấy phải
+   sinh ra front matter giống hệt nhau: khác một khoá hay khác thứ tự khoá thì
+   mở một bài cũ ra lưu lại là `git diff` hiện cả khối front matter thay đổi,
+   dù chẳng sửa gì trong đó.
+
+   ── GIỮ NGUYÊN THỨ TỰ KHOÁ CỦA FILE GỐC ──
+   `khoaKhac` là bảng khoá→giá trị THÔ đọc ra từ file, và thứ tự khoá trong đó
+   chính là thứ tự chúng nằm trong file. Ghi lại theo đúng thứ tự ấy thì phần
+   không sửa không sinh ra dòng diff nào.
+
+   Bản đầu xếp mấy khoá quen trước rồi dồn khoá lạ xuống cuối. Kết quả: một
+   bài có `titleNgan` ngay sau `title`, hay có `updated` ngay sau `date`, thì
+   lượt lưu đầu tiên xáo lại cả khối — và cái xáo ấy trộn lẫn với thay đổi
+   thật, nên đọc diff không còn biết mình vừa sửa gì.
+
+   ── KHOÁ LẠ ĐI QUA NGUYÊN VẸN ──
+   `khung`, `pinned`, `updated`, `lang`, `titleNgan`… giao diện không có ô nào
+   cho chúng. Chúng được đọc ra lúc mở bài và ghi trả lại y nguyên lúc lưu.
+   Không làm thế thì sửa một chữ trong bài là mất sạch mấy khoá ấy — lặng lẽ,
+   và chỉ lộ ra ở lần dựng sau khi bài đổi khung trình bày. */
+const KHOA_CO_O = ['title', 'date', 'summary', 'tags', 'cover', 'coverAlt',
+                   'draft', 'hidden'];
+
+function dungFile(b) {
+  /* Giá trị ĐÃ THÀNH CHỮ cho tám khoá giao diện quản. Chuỗi rỗng nghĩa là
+     "không ghi dòng này" — nhờ vậy bỏ tóm tắt, bỏ ảnh bìa hay bỏ cờ nháp đều
+     chỉ là gán rỗng, không phải một nhánh riêng. */
+  const co = Object.create(null);
+  co.title = giaTriYAML(b.title);
+  co.date  = String(b.date || '').trim();
+  co.summary = b.summary ? giaTriYAML(b.summary) : '';
+  /* Giữ nguyên KIỂU viết mảng của file gốc. Đổi từ nhiều dòng sang một dòng
+     thì nội dung vẫn đúng, nhưng lượt lưu đầu tiên sinh ra một khối diff chẳng
+     liên quan gì tới thứ vừa sửa. */
+  const mangNhieuDong = String((b.khoaKhac || {}).tags || '').charCodeAt(0) === 0;
+  co.tags = (b.tags && b.tags.length)
+    ? (mangNhieuDong ? '\u0000' + b.tags.join('\u0000') : `[${b.tags.join(', ')}]`)
+    : '';
+  co.cover = (b.cover && /^\/[A-Za-z0-9\-._~/]*$/.test(b.cover)) ? b.cover : '';
+  co.coverAlt = (co.cover && b.coverAlt) ? giaTriYAML(b.coverAlt) : '';
+  co.draft  = b.draft === true ? 'true' : '';
+  co.hidden = b.hidden === true ? 'true' : '';
+
+  const khac = b.khoaKhac || {};
+  /* Thứ tự: theo file gốc nếu có, còn không thì theo thứ tự chuẩn của bài mới. */
+  const goc = Object.keys(khac);
+  const thuTu = goc.length ? goc.slice() : KHOA_CO_O.slice();
+  /* Khoá giao diện vừa được BẬT mà file gốc chưa có (ví dụ vừa gắn ảnh bìa,
+     vừa bấm ẩn bài) thì nối vào cuối — không chen vào giữa, vì chen vào giữa
+     là lại xáo thứ tự của phần không đụng tới. */
+  for (const k of KHOA_CO_O) if (thuTu.indexOf(k) < 0) thuTu.push(k);
+
+  const dong = ['---'];
+  const daRa = Object.create(null);
+  for (const k of thuTu) {
+    if (daRa[k]) continue;
+    daRa[k] = 1;
+    const v = (k in co) ? co[k] : String(khac[k]);
+    if (v === '' || (!(k in co) && !/^[A-Za-z][\w-]*$/.test(k))) continue;
+    /* Ký tự canh ở đầu = mảng nhiều dòng. Một nhánh cho cả khoá giao diện lẫn
+       khoá lạ — hai nhánh riêng thì khoá lạ kiểu mảng lọt xuống nhánh dưới và
+       in ra nguyên cả ký tự canh. */
+    if (v.charCodeAt(0) === 0) {
+      dong.push(`${k}:`);
+      v.slice(1).split('\u0000').forEach((x) => dong.push(`  - ${x}`));
+    } else dong.push(`${k}: ${v.replace(/[\r\n]+/g, ' ')}`);
+  }
+
+  /* Hai chuỗi rỗng ở đây thành MỘT dòng trống sau khối `---`, đúng như mọi
+     bài gõ tay trong content/posts/. */
+  dong.push('---', '', '');
+  return dong.join('\n') + String(b.noiDung).replace(/\r\n/g, '\n').trim() + '\n';
+}
+
+/* ══════════ SỬA MỘT BÀI ĐÃ CÓ ══════════
+
+   ── VÌ SAO PHẢI CÓ `sha` ──
+   GitHub đòi mã băm của bản đang có mới cho ghi đè. Đó không phải thủ tục
+   rườm rà mà là KHOÁ CHỐNG GHI ĐÈ NHẦM: mở bài trên điện thoại, sửa dở, rồi
+   mở luôn bài ấy trên máy và sửa xong trước — lúc điện thoại bấm Lưu, `sha`
+   nó cầm đã cũ, và GitHub từ chối thay vì lặng lẽ đè mất bản trên máy.
+
+   Ở đây `sha` cũ được TRẢ LẠI trong câu báo lỗi, để giao diện nói được câu
+   đúng: "bài này vừa đổi ở chỗ khác" chứ không phải "lưu hỏng".
+
+   ── TÊN FILE KHÔNG ĐỔI, KỂ CẢ KHI NGÀY ĐỔI ──
+   Đổi tên file trong Git là xoá một file rồi tạo một file khác — hai lượt
+   ghi, và giữa hai lượt ấy bài không tồn tại. Nó cũng làm gãy mọi link đã
+   chia sẻ, vì đường dẫn tính từ tên file.
+
+   Nên `date` trong front matter sửa được thoải mái (nó quyết định thứ tự bài
+   và ngày hiện trên trang), còn phần ngày trong TÊN FILE thì ở nguyên. Hai
+   con số ấy lệch nhau là chuyện bình thường và không ai ngoài kho mã thấy. */
+export async function onRequestPut({ request, env }) {
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
+  if (!laChuTrang(request, env)) return ra({ ok: false, loi: 'khoa' }, 401);
+
+  const thieu = thieuCauHinh(env);
+  if (thieu.length) return ra({ ok: false, loi: 'cauhinh', thieu }, 503);
+
+  let b;
+  try { b = await request.json(); } catch (e) { return ra({ ok: false, loi: 'json' }, 400); }
+
+  const duong = String(b.duong || '');
+  if (!ANTOAN_DUONG.test(duong)) return ra({ ok: false, loi: 'duong' }, 400);
+  const sha = String(b.sha || '').trim();
+  if (!/^[0-9a-f]{7,64}$/.test(sha)) return ra({ ok: false, loi: 'sha' }, 400);
+
+  const loi = [];
+  const title = String(b.title || '').replace(/[\r\n]+/g, ' ').trim();
+  if (!title) loi.push('thiếu tiêu đề');
+  if (title.length > 200) loi.push('tiêu đề dài quá 200 ký tự');
+
+  const noiDung = String(b.noiDung || '').trim();
+  if (!noiDung) loi.push('bài chưa có chữ nào');
+  if (noiDung.length > 200000) loi.push('bài dài quá 200.000 ký tự');
+
+  const date = String(b.date || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date + 'T00:00:00Z'))) {
+    loi.push(`ngày "${date}" không hợp lệ — cần dạng YYYY-MM-DD`);
+  }
+
+  const dsTag = rangTag(Array.isArray(b.tags) ? b.tags : String(b.tags || '').split(','));
+  if (dsTag.length > 8) loi.push(`${dsTag.length} tag là nhiều quá — tối đa 8`);
+  const tagDai = dsTag.find((t) => t.length > 40);
+  if (tagDai) loi.push(`tag "${tagDai.slice(0, 20)}…" dài quá 40 ký tự`);
+
+  if (loi.length) return ra({ ok: false, loi: 'kiem', chiTiet: loi }, 400);
+
+  const file = dungFile({
+    title, date, noiDung, tags: dsTag,
+    summary : String(b.summary || '').trim(),
+    cover   : String(b.cover || '').trim(),
+    coverAlt: String(b.coverAlt || '').trim(),
+    draft   : b.draft === true,
+    hidden  : b.hidden === true,
+    khoaKhac: b.khoaKhac
+  });
+
+  const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duong}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: (b.hidden === true ? 'ẩn bài: ' : b.draft === true ? 'sửa nháp: ' : 'sửa bài: ') + title,
+      content: b64(file),
+      sha,
+      branch: nhanh(env)
+    })
+  });
+
+  if (ma === 409 || ma === 422) {
+    return ra({ ok: false, loi: 'lechban',
+                chiTiet: 'Bài này vừa đổi ở chỗ khác. Mở lại để lấy bản mới rồi sửa tiếp.' }, 409);
+  }
+  if (ma !== 200 && ma !== 201) {
+    return ra({ ok: false, loi: 'github', maGH: ma,
+                chiTiet: (du && du.message) || 'GitHub từ chối ghi file' }, 502);
+  }
+
+  return ra({
+    ok: true, duong,
+    sha: du && du.content ? du.content.sha : null,
+    commit: du && du.commit ? du.commit.html_url : null,
+    trang: b.hidden === true ? 'an' : b.draft === true ? 'nhap' : 'hien',
+    nhac: 'Cloudflare đang dựng lại. Thay đổi lên sau khoảng một phút.'
+  });
 }

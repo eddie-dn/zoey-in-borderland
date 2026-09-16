@@ -65,9 +65,26 @@
   // Gắn D1 bằng tay trên dashboard rồi đẩy một commit mới là nó biến mất —
   // lặng lẽ, và triệu chứng y hệt lúc chưa gắn bao giờ.
   //
-  // Hai khoá GC_ID và GC_KEY thì NGƯỢC LẠI: chúng là Secret, đặt trên
-  // dashboard và sống sót qua mọi lượt deploy. Đừng đưa chúng vào file này —
-  // file này đi theo repo.
+  // Hai khoá GC_ID và GC_KEY thì NGƯỢC LẠI: chúng phải là **Secret**, đặt
+  // trên dashboard. Đừng đưa chúng vào file này — file này đi theo repo.
+  //
+  // ── ĐỌC KỸ CHỖ NÀY NẾU BIẾN CỨ BIẾN MẤT SAU MỖI LƯỢT DEPLOY ──
+  // Trong bảng "Variables and Secrets" của Cloudflare, mỗi dòng có một ô
+  // **Type** với hai lựa chọn — và hai lựa chọn ấy hành xử NGƯỢC NHAU khi
+  // deploy:
+  //
+  //   Type = Secret  → được giữ lại. Wrangler không đụng tới secret.
+  //   Type = Text    → BỊ XOÁ. Wrangler coi khối `vars` trong file này là
+  //                    nguồn đúng duy nhất, nên mọi biến dạng Text không có
+  //                    tên trong đó đều bị gỡ khỏi Worker sau mỗi lượt deploy.
+  //
+  // Nên: thêm GC_ID mà chọn nhầm **Text** thì cứ mỗi lần đẩy commit là phải
+  // thêm lại — và triệu chứng đúng y như lúc chưa từng thêm. Chọn **Secret**
+  // là xong hẳn.
+  //
+  // (Không muốn dùng Secret cho GC_ID cũng được — nó vốn không phải bí mật,
+  // chỉ là "mã chủ". Nhưng lúc ấy phải khai nó vào khối `vars` bên trên chứ
+  // không phải trên dashboard, và khai ở đó nghĩa là nó nằm trong repo.)
   //
   "d1_databases": [
     {

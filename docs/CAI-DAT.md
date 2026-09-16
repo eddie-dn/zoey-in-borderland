@@ -474,6 +474,28 @@ node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
 
 Thêm cho **cả hai** môi trường (Production và Preview).
 
+> ### ⚠ Chọn **Secret**, không chọn **Text**
+>
+> Ô **Type** trong bảng ấy có hai lựa chọn, và chúng hành xử **ngược nhau** khi
+> deploy:
+>
+> | Type | Sau mỗi lượt deploy |
+> |---|---|
+> | **Secret** | được giữ lại |
+> | **Text** | **bị xoá** |
+>
+> Wrangler coi khối `vars` trong `wrangler.jsonc` là nguồn đúng duy nhất cho
+> biến dạng Text, nên mọi biến Text không có tên trong file ấy đều bị gỡ khỏi
+> Worker sau mỗi lượt dựng.
+>
+> Nên nếu bạn thấy **cứ mỗi lần đẩy commit là GC_ID lại biến mất và phải thêm
+> lại từ đầu** — đó chính xác là chuyện đang xảy ra: dòng ấy đang để Type =
+> Text. Xoá nó đi rồi thêm lại với Type = **Secret** là hết hẳn.
+>
+> Triệu chứng phía người dùng giống y như lúc chưa từng đặt khoá: đăng nhập
+> `/z-admin/` không vào được, và (từ V8.03) màn hình nói "Máy chủ chưa đặt
+> GC_ID và GC_KEY".
+
 > **Thiếu một vế là chặn hết, không phải mở hết.** Hàm coi "chưa đặt đủ khoá"
 > nghĩa là chưa cấu hình và từ chối mọi lượt ghi. Để trống **không** có nghĩa
 > là ai cũng đăng được.

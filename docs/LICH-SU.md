@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V9.04 | 2026-09-16 | 04 | tag thành một hàng chữ thường, bỏ viền và nền |
+| V9.03 | 2026-09-16 | 03 | nền cho sửa bài: trạng thái ẩn trong bộ dựng, và API đọc/ghi bài đã đăng |
 | V9.02 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
 | V9.01 | 2026-09-16 | 01 | trang chủ chỉ còn màn đầu; Read on đi thẳng sang Posts |
 | V9.00 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; vành đứt nét trở lại; xoáy nhoè rồi nổ; nghỉ 6,2 giây |
@@ -111,6 +113,36 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V9.04 — 16-Sep-2026
+
+- **Tag thành một hàng chữ, không còn là dãy viên thuốc.** Năm cái viền bo
+  tròn xếp cạnh nhau thành một dãy nút to ngang một khối nội dung — trong khi
+  việc chúng làm chỉ là nói bài này thuộc mấy chủ đề. Nay chúng cách nhau bằng
+  khoảng trắng như các từ trong một câu; dấu hiệu duy nhất nói "đây là tag" là
+  dấu thăng và màu sáng hơn chữ xung quanh. Khối tag cuối bài cao bớt một nửa.
+
+## V9.03 — 16-Sep-2026
+
+- **Bài ẩn — trạng thái thứ ba, dùng được ngay.** Thêm `hidden: true` vào front
+  matter là bài KHÔNG dựng ra file nào cả: đường dẫn cũ trả 404, không có trong
+  sitemap, không có trong feed, không có trong danh sách nào. Khác `draft` ở
+  chỗ bài nháp vẫn dựng ra trang để xem thử. File `.md` còn nguyên trong kho —
+  bỏ cờ đi là bài trở lại y như cũ, kể cả đường dẫn. Dòng kết quả lúc dựng in
+  ra số bài đang ẩn, để một bài biến mất không bao giờ là chuyện im lặng.
+- **`/api/bai` đọc và ghi được bài đã đăng.** Ba việc mới: liệt kê bài kèm
+  trạng thái, đọc một bài ra, và ghi đè một bài (có `sha` chống ghi đè nhầm —
+  sửa cùng lúc ở hai máy thì máy sau bị từ chối chứ không lặng lẽ đè mất).
+- **Mở một bài ra rồi lưu lại KHÔNG sinh ra diff nào** — thử trên cả chín bài
+  thật: 9/9 giống hệt từng byte. Ba chỗ suýt làm hỏng, bắt được nhờ phép thử
+  ấy: tag viết kiểu nhiều dòng bị đọc rỗng (tức là **mất sạch tag**), thứ tự
+  khoá bị xáo lại, và tiêu đề đang viết trần bị bọc nháy. Khoá front matter
+  giao diện không biết tới (`khung`, `pinned`, `updated`, `titleNgan`…) đi qua
+  nguyên vẹn.
+
+> Giao diện cho ba việc ấy — bảng bài, nút Sửa, nút Ẩn — là bước kế tiếp. Bản
+> này là phần nền, và phần `hidden` thì dùng được ngay bằng cách sửa front
+> matter.
 
 ## V9.02 — 16-Sep-2026
 

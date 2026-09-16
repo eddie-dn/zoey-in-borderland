@@ -612,6 +612,20 @@ function docBai(file) {
     cover      : fm.cover ? String(fm.cover) : null,
     coverAlt   : String(fm.coverAlt || ''),
     draft      : fm.draft === true,
+    /* ── `hidden: true` — CẤT BÀI ĐI, KHÔNG PHẢI XOÁ BÀI ──
+       Khác `draft` ở chỗ quyết định: bài nháp VẪN dựng ra file để xem thử
+       (chỉ không vào feed, sitemap, danh sách, và mang noindex). Bài ẩn thì
+       KHÔNG dựng ra gì cả — đường dẫn cũ trả 404.
+
+       Vì sao cần một trạng thái thứ ba: có bài viết xong, đăng rồi, rồi thấy
+       không muốn để đó nữa — mà cũng không muốn mất. Xoá file là mất; để
+       `draft: true` thì bài vẫn còn một trang sống ở đường dẫn cũ, ai có link
+       vẫn mở được. `hidden` là chỗ ở giữa: file còn nguyên trong kho mã, chữ
+       còn nguyên, nhưng trên mạng thì không còn gì.
+
+       Bỏ cờ đi là bài trở lại y như cũ — kể cả đường dẫn, vì đường dẫn tính
+       từ tên file chứ không từ một cái id nào. */
+    an         : fm.hidden === true,
     pinned     : fm.pinned === true,
     lang       : String(fm.lang || CAU.lang),
     /* Khung trình bày: A (mặc định) · B bìa tràn màn · C lề trái dính.
@@ -2951,7 +2965,12 @@ async function chay() {
   const file = quet(THU_MUC.posts);
   if (!file.length) CANH_BAO.push('content/posts/ chưa có bài nào');
 
-  const bai = file.map(docBai).filter(Boolean);
+  const baiTatCa = file.map(docBai).filter(Boolean);
+  /* Bài ẩn rời khỏi dòng chảy NGAY TẠI ĐÂY, trước mọi thứ khác. Lọc ở từng
+     chỗ dùng thì sớm muộn sót một chỗ — mà chỗ sót ấy có thể là sitemap hoặc
+     feed, tức là đúng hai nơi bài ẩn tuyệt đối không được xuất hiện. */
+  const baiAn = baiTatCa.filter((b) => b.an);
+  const bai = baiTatCa.filter((b) => !b.an);
 
   /* ── MỐC CẬP NHẬT ──
      Đối chiếu vân tay nội dung với sổ `content/.moc.json` để biết bài nào thật
@@ -3118,6 +3137,9 @@ async function chay() {
 
   console.log(mau.xanh(`  ✓ ${congKhai.length} bài công khai` +
     (nhap ? ` · ${nhap} bản nháp` : '') +
+    /* In ra số bài ẩn: một bài biến mất khỏi trang mà dòng kết quả không nhắc
+       gì thì lần sau mở lên chỉ thấy "thiếu một bài" và không biết hỏi ai. */
+    (baiAn.length ? ` · ${baiAn.length} bài đã ẩn` : '') +
     (trangTinhDS.length ? ` · ${trangTinhDS.length} trang tĩnh` : '') +
     (KHO_QUOTE.length ? ` · ${KHO_QUOTE.length} trích dẫn` : '')) +
     mau.mo(`  ·  ${BAN.ten} · ${BAN.ngay}`) +
