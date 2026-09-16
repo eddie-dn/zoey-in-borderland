@@ -1,0 +1,30 @@
+# ══════════════════════════════════════════════════════════════════════
+# _headers — luật HTTP header cho Cloudflare Pages.
+#
+# File này THAY CHO khối "headers" trong vercel.json. Cloudflare không đọc
+# vercel.json; nó đọc đúng một file tên `_headers` nằm ở GỐC THƯ MỤC XUẤT
+# BẢN (tức là trong `dist/`, không phải gốc repo).
+#
+# Nó nằm ở `public/` vì build chép trọn `public/` sang `dist/` — nhờ vậy
+# không phải thêm bước chép riêng, và nó luôn đi cùng bản dựng.
+#
+# Cú pháp: một dòng đường dẫn, rồi các dòng header thụt vào hai dấu cách.
+# Đường dẫn khớp theo tiền tố, `*` là ký tự đại diện.
+# ══════════════════════════════════════════════════════════════════════
+
+# Ảnh và media: tên file không đổi thì nội dung cũng không đổi, giữ một năm.
+/media/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# CSS/JS: tên file KHÔNG có vân tay nội dung, nên phải hỏi lại mỗi lần.
+# Đặt max-age dài ở đây thì sửa giao diện xong người đọc cũ vẫn thấy bản cũ
+# cho tới khi họ tự xoá cache — mà họ thì chẳng bao giờ làm thế.
+/assets/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Vài header an toàn cơ bản cho mọi trang.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  # Chặn trang bị nhúng vào iframe của người khác để giả mạo.
+  X-Frame-Options: SAMEORIGIN
