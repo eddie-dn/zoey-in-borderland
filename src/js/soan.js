@@ -151,13 +151,20 @@
 
       if (the === 'A') {
         var href = c.getAttribute('href') || '';
+        var tiA = c.getAttribute('title');
         var chuA = trong(c);
-        ra += href ? '[' + chuA + '](' + href + ')' : chuA;
+        ra += href
+          ? '[' + chuA + '](' + href + (tiA ? ' "' + tiA + '"' : '') + ')'
+          : chuA;
         continue;
       }
 
       if (the === 'IMG') {
-        ra += '![' + (c.getAttribute('alt') || '') + '](' + (c.getAttribute('src') || '') + ')';
+        var ti = c.getAttribute('data-tieu');
+        var lopA = c.getAttribute('data-lop');
+        ra += '![' + (c.getAttribute('alt') || '') + ']('
+            + (c.getAttribute('src') || '') + (ti ? ' "' + ti + '"' : '') + ')'
+            + (lopA || '');
         continue;
       }
 
@@ -194,7 +201,9 @@
       if (the === 'HR')                 { ra.push(thut + '---'); continue; }
 
       if (the === 'PRE') {
-        ra.push(thut + '```\n' + c.textContent.replace(/\n+$/, '') + '\n' + thut + '```');
+        var ngon = c.getAttribute && c.getAttribute('data-ngon');
+        ra.push(thut + '```' + (ngon || '') + '\n'
+                + c.textContent.replace(/\n+$/, '') + '\n' + thut + '```');
         continue;
       }
 
@@ -256,9 +265,80 @@
          thay vì <p> (Safari vẫn làm thế ở vài chỗ dù đã khai
          defaultParagraphSeparator), nên không phân biệt hai cái ấy. */
       var d = trong(c);
-      if (d.trim()) ra.push(thut + d);
+      /* Chỉ ngắt lại khi đoạn đứng ở cấp NGOÀI CÙNG (`thut` rỗng). Đoạn nằm
+         trong một mục danh sách đã mang lề thụt, mà ngắt thêm ở đó thì dòng
+         tràn ra mất lề và nhảy khỏi mục. */
+      if (d.trim()) ra.push(thut + (thut ? d : xuongDong(d)));
       else if (the === 'P' || the === 'DIV') ra.push('');
     }
+  }
+
+  /* ── NGẮT DÒNG LẠI Ở 80 CỘT ──
+     Bài trong kho mã gõ tay và ngắt dòng quanh cột 80. Khung soạn thảo thì
+     không có khái niệm "dòng" bên trong một đoạn — nó chỉ có đoạn — nên nếu
+     nhả ra nguyên một dòng dài thì mở một bài cũ rồi lưu lại là mọi đoạn trong
+     bài bị gộp lại, và `git diff` hiện ra "cả bài thay đổi" cho một lượt sửa
+     ba chữ. Lịch sử bài viết hỏng theo kiểu không lấy lại được.
+
+     Ngắt lại ở 80 cột thì:
+       · diff đọc được theo từng dòng, đúng như mọi bài gõ tay;
+       · phép này BẤT BIẾN — ngắt một đoạn đã ngắt 80 cột ra đúng chính nó,
+         nên từ lượt lưu thứ hai trở đi không còn xáo trộn nào.
+     Lượt lưu ĐẦU TIÊN của một bài cũ vẫn có thể xê dịch vài chỗ ngắt, vì bài
+     ấy ngắt theo tay người chứ không theo thước. Đó là cái giá một lần.
+
+     ── BA CHỖ KHÔNG ĐƯỢC NGẮT VÀO ──
+     · `mã trong dòng`: bộ dựng bắt nó bằng /`([^`\n]+)`/ — KHÔNG cho xuống
+       dòng ở giữa. Ngắt vào đấy là ô mã vỡ thành hai dấu huyền lạc.
+     · cú ngắt dòng CỨNG người viết tự đặt (Shift+Enter → hai dấu cách cuối
+       dòng): nó phải ở nguyên chỗ cũ, nên đoạn được cắt tại đó rồi mới ngắt
+       từng mảnh một.
+     · TIÊU ĐỀ và MỤC DANH SÁCH: phần chữ tràn xuống dòng dưới sẽ bị đọc thành
+       một đoạn văn mới, hoặc dính vào mục kế tiếp. Nên hàm này chỉ được gọi
+       cho ĐOẠN VĂN — xem chỗ gọi trong `khoi()`.
+
+     Đậm, nghiêng, gạch, tô nền, màu và link thì ngắt thoải mái: bộ dựng bắt
+     chúng bằng [\s\S] nên chúng đi qua được chỗ xuống dòng, và địa chỉ trong
+     link vốn không có dấu cách nào để mà ngắt vào. */
+  var COT = 80;
+
+  function ngatMot(s) {
+    if (!s || s.length <= COT) return s;
+
+    /* ── CẤT Ô MÃ ĐI RỒI MỚI CẮT HẠT ──
+       Bản đầu cắt chuỗi thành ba loại mảnh (trước ô mã · ô mã · sau ô mã) rồi
+       nối lại bằng dấu cách. Sai ở chỗ nối: `` `duong/dan`, `` có dấu phẩy
+       DÍNH ngay sau ô mã, mà cắt kiểu ấy thì dấu phẩy thành một hạt riêng và
+       lúc ghép lại nó mọc thêm một dấu cách — `` `duong/dan` , ``.
+
+       Nay thay mỗi ô mã bằng một ký tự giữ chỗ KHÔNG CÓ DẤU CÁCH, rồi cắt cả
+       chuỗi theo dấu cách như bình thường. Dấu phẩy ở lại đúng chỗ của nó,
+       dính vào hạt chứa ô mã. Bề dài thì đo trên chữ THẬT, không đo trên ký
+       tự giữ chỗ — nếu không thì dòng nào có ô mã sẽ dài quá cột. */
+    var kho = [];
+    var t = s.replace(/`[^`]*`/g, function (m) {
+      kho.push(m); return GIU + (kho.length - 1) + GIU;
+    });
+    var reGiu = new RegExp(GIU + '(\\d+)' + GIU, 'g');
+    function mo(x) { return x.replace(reGiu, function (_, i) { return kho[+i]; }); }
+    function do_(x) { return mo(x).length; }
+
+    var hat = t.split(/\s+/).filter(function (x) { return x !== ''; });
+    var dong = [], nay = '', dai = 0;
+    for (var i = 0; i < hat.length; i++) {
+      var h = hat[i], n = do_(h);
+      if (!nay) { nay = h; dai = n; }
+      else if (dai + 1 + n <= COT) { nay += ' ' + h; dai += 1 + n; }
+      else { dong.push(nay); nay = h; dai = n; }
+    }
+    if (nay) dong.push(nay);
+    return mo(dong.join('\n'));
+  }
+
+  function xuongDong(s) {
+    /* Cắt ở cú ngắt dòng cứng trước, ngắt lại từng mảnh, rồi ghép lại bằng
+       đúng cái dấu hiệu cũ — hai dấu cách rồi xuống dòng. */
+    return String(s).split('  \n').map(ngatMot).join('  \n');
   }
 
   function sangMD(goc) {
@@ -269,6 +349,195 @@
       .replace(/[ \t]+$/gm, function (m) { return m === '  ' ? m : ''; })
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+  }
+
+  /* ══════════════ ĐỌC MARKDOWN VÀO KHUNG ══════════════
+
+     Chiều ngược của `sangMD`. Đầu file này từng ghi "khung đổi ra Markdown
+     được; nó KHÔNG đọc Markdown vào" — đúng cho tới lúc phải SỬA một bài đã
+     đăng. Sửa thì bắt buộc phải nạp được bài cũ vào khung.
+
+     ── NÓ KHÔNG PHẢI BỘ DỰNG THỨ BA ──
+     `tools/lib/markdown.mjs` mới là bộ dựng thật, và nó đầy đủ hơn hẳn: bảng,
+     khung nhấn `:::note`, thư viện ảnh, nhúng video, chú thích. Hàm dưới đây
+     chỉ đọc đúng cái TẬP CON mà `sangMD` sinh ra, cộng vài thứ gõ tay hay gặp.
+
+     Thứ nó không hiểu KHÔNG bị mất: mọi dòng lạ rơi xuống nhánh cuối và thành
+     một đoạn văn giữ nguyên chữ. Sửa một bài có bảng thì cái bảng hiện ra dưới
+     dạng mấy dòng gạch đứng — xấu, nhưng còn nguyên, và lưu lại vẫn ra đúng
+     chừng ấy ký tự. Mất chữ mới là hỏng; hiện xấu thì chỉ là xấu.
+
+     ── VÒNG TRÒN PHẢI KHÉP ──
+     `sangMD(tuMD(x))` phải trả lại đúng `x`. Mở một bài ra rồi lưu lại mà
+     không sửa gì thì commit phải TRỐNG — nếu không, mỗi lần mở bài là một lần
+     kho mã nhận một thay đổi vô nghĩa, và lịch sử bài viết thành rác. */
+
+  function thoatHTML(s) {
+    return String(s).replace(/[&<>]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+    });
+  }
+
+  /* Ký tự giữ chỗ cho mấy mẩu phải miễn nhiễm với các phép thay thế phía sau.
+     Dùng U+0001 vì nó không bao giờ xuất hiện trong bài viết thật — cùng mẹo
+     với `GIU` trong tools/lib/markdown.mjs. */
+  var GIU = String.fromCharCode(1);
+
+  function nhoMD(s) {
+    var kho = [];
+    function cat(html) { kho.push(html); return GIU + (kho.length - 1) + GIU; }
+
+    /* Dấu chéo ngược và mã trong dòng đi TRƯỚC mọi thứ khác — hai thứ này phải
+       không bị các phép dưới đọc phải. */
+    s = String(s).replace(/\\([\\`*\[\]{}])/g, function (_, c) { return cat(thoatHTML(c)); });
+    s = s.replace(/`([^`\n]+)`/g, function (_, m) { return cat('<code>' + thoatHTML(m) + '</code>'); });
+
+    s = thoatHTML(s);
+
+    /* ── ẢNH: PHẢI NUỐT CẢ CHÚ THÍCH VÀ CẢ KHỐI {.lop} ──
+       Dạng đầy đủ trong kho bài là:
+           ![mô tả](/duong/dan.svg "Chú thích có **đậm**"){.wide}
+       Bản đầu chỉ bắt `![x](y)`, nên gặp dạng này là KHÔNG khớp gì cả — dòng
+       ảnh ở lại dạng chữ, rồi `thoat()` bôi dấu chéo ngược lên hai dấu ngoặc
+       vuông, và bài lưu lại có một dòng `!\[…\]` chết giữa trang.
+
+       Hai phần ấy khung soạn thảo không sửa được (không có ô nào cho chúng),
+       nhưng phải ĐI QUA nguyên vẹn — nên chúng được cất vào hai thuộc tính
+       data- rồi nhả lại y như cũ lúc đổi ngược ra Markdown. Sửa được thì tốt;
+       giữ nguyên là bắt buộc. */
+    /* ── THẺ ĐI VÀO KHO, CHỮ Ở LẠI DÒNG ──
+       Mấy phép thay thế bên dưới (đậm, nghiêng, màu…) chạy trên CẢ chuỗi, kể
+       cả phần nằm trong dấu nháy của thuộc tính. Chú thích ảnh thì hay có
+       `**đậm**` — và nếu thẻ <img> đã dựng xong nằm trong dòng lúc ấy, cú
+       thay thế biến nó thành `<strong>` NGAY TRONG thuộc tính. Lưu lại là
+       file .md mang một mẩu HTML lạ giữa chú thích ảnh.
+
+       Nên: thẻ <img> vào kho trọn gói (nó không có chữ bên trong). Còn thẻ
+       <a> thì chỉ cất HAI ĐẦU vào kho, chừa phần chữ ở lại dòng — chữ trong
+       link vẫn phải in đậm/nghiêng được, đúng như bộ dựng thật vẫn làm. */
+    var ANH = /!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)(\{[^}]*\})?/g;
+    s = s.replace(ANH, function (ca, alt, src, tieu, lop) {
+      if (!/^(https?:\/\/|\/)/i.test(src)) return ca;
+      return cat('<img src="' + src.replace(/"/g, '%22') +
+             '" alt="' + String(alt).replace(/"/g, '') + '"' +
+             (tieu ? ' data-tieu="' + tieu.replace(/"/g, '&quot;') + '"' : '') +
+             (lop ? ' data-lop="' + lop.replace(/"/g, '') + '"' : '') + '>');
+    });
+    var LINK = /\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g;
+    s = s.replace(LINK, function (ca, chu, href, tieu) {
+      if (!/^(https?:\/\/|\/|#|mailto:)/i.test(href)) return ca;
+      return cat('<a href="' + href.replace(/"/g, '%22') + '"' +
+                 (tieu ? ' title="' + tieu.replace(/"/g, '&quot;') + '"' : '') + '>')
+             + chu + cat('</a>');
+    });
+
+    /* Màu chạy TRƯỚC đậm/nghiêng, ngược thứ tự với bộ dựng thật: ở đây phần
+       chữ bên trong cụm màu còn phải đi tiếp qua mấy phép dưới, nên cụm phải
+       được mở ra trước cho nội dung nó lộ ra. */
+    var TEN = {};
+    for (var k in TEN_MD) TEN[TEN_MD[k]] = k;
+    s = s.replace(/\{([^:{}]+):\s*([^{}]+?)\}/g, function (ca, ten, chu) {
+      var ma = TEN[String(ten).trim()];
+      return ma ? '<span class="c-' + ma + '">' + chu + '</span>' : ca;
+    });
+
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+    s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+    s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+    s = s.replace(/ {2}\n/g, '<br>');
+    s = s.replace(/\n/g, ' ');
+
+    /* ── TRẢ KHO RA THEO VÒNG, KHÔNG PHẢI MỘT LƯỢT ──
+       Kho lồng nhau được: chú thích của một tấm ảnh có thể chứa `mã trong
+       dòng`, mà ô mã ấy đã vào kho TRƯỚC khi cả thẻ <img> vào kho. Trả một
+       lượt thì lớp ngoài mở ra để lộ ký tự giữ chỗ của lớp trong, và nó nằm
+       lại đó — in ra thành chữ "undefined" giữa chú thích ảnh.
+       Vòng lặp này chắc chắn dừng: mỗi lượt gỡ đúng một tầng, mà số tầng thì
+       hữu hạn. */
+    var reGiu = new RegExp(GIU + '(\\d+)' + GIU, 'g');
+    var truoc;
+    do { truoc = s; s = s.replace(reGiu, function (_, i) { return kho[+i]; }); }
+    while (s !== truoc);
+    return s;
+  }
+
+  function tuMD(md) {
+    var dong = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
+    var ra = [], i = 0;
+    var dsThuong = /^\s*[-*+]\s+/, dsSo = /^\s*\d+[.)]\s+/;
+    var laVach = function (d) { return /^\s{0,3}(---+|\*\*\*+|___+)\s*$/.test(d); };
+
+    while (i < dong.length) {
+      var d = dong[i];
+      if (!d.trim()) { i++; continue; }
+
+      var h = d.match(/^(#{1,4})\s+(.*)$/);
+      if (h) {
+        /* H1 kéo về H2: tiêu đề bài đã là thẻ h1 của trang, và hai h1 trên một
+           trang thì trình đọc màn hình không biết cái nào là tiêu đề thật. */
+        var cap = Math.min(Math.max(h[1].length, 2), 4);
+        ra.push('<h' + cap + '>' + nhoMD(h[2]) + '</h' + cap + '>');
+        i++; continue;
+      }
+
+      if (laVach(d)) { ra.push('<hr>'); i++; continue; }
+
+      if (/^```/.test(d)) {
+        /* Tên ngôn ngữ sau ba dấu huyền quyết định cách tô màu cú pháp ở bài
+           đã dựng. Bản đầu vứt nó đi, nên mở một bài có khối mã ra rồi lưu
+           lại là ```json thành ``` — khối mã mất màu mà không ai thấy ngay. */
+        var ngon = (d.match(/^```\s*(\S+)/) || ['', ''])[1];
+        i++;
+        var ma = [];
+        while (i < dong.length && !/^```/.test(dong[i])) { ma.push(dong[i]); i++; }
+        i++;
+        ra.push('<pre' + (ngon ? ' data-ngon="' + ngon.replace(/"/g, '') + '"' : '') +
+                '>' + thoatHTML(ma.join('\n')) + '</pre>');
+        continue;
+      }
+
+      /* Trích dẫn: gom mọi dòng còn mang dấu `>` rồi đọc lại phần bên trong
+         bằng chính hàm này — nhờ vậy trích dẫn nhiều đoạn tự chạy. */
+      if (/^>\s?/.test(d)) {
+        var than = [];
+        while (i < dong.length && /^>\s?/.test(dong[i])) {
+          than.push(dong[i].replace(/^>\s?/, '')); i++;
+        }
+        ra.push('<blockquote>' + tuMD(than.join('\n')) + '</blockquote>');
+        continue;
+      }
+
+      if (dsThuong.test(d) || dsSo.test(d)) {
+        var co = dsSo.test(d);
+        var dau = co ? dsSo : dsThuong;
+        var muc = [];
+        while (i < dong.length && dau.test(dong[i])) {
+          var chu = dong[i].replace(dau, '');
+          i++;
+          /* Dòng thụt vào ngay dưới một mục là danh sách con của nó. */
+          var con = [];
+          while (i < dong.length && /^\s{2,}\S/.test(dong[i])) {
+            con.push(dong[i].replace(/^\s{2}/, '')); i++;
+          }
+          muc.push('<li>' + nhoMD(chu) + (con.length ? tuMD(con.join('\n')) : '') + '</li>');
+        }
+        ra.push((co ? '<ol>' : '<ul>') + muc.join('') + (co ? '</ol>' : '</ul>'));
+        continue;
+      }
+
+      /* Đoạn: gom tới dòng trống hoặc tới dòng mở một khối khác. Hai dấu cách
+         cuối dòng đã thành <br> trong `nhoMD`, nên nối bằng xuống dòng là đủ. */
+      var doan = [];
+      while (i < dong.length && dong[i].trim()
+             && !/^(#{1,4}\s|>|```)/.test(dong[i])
+             && !dsThuong.test(dong[i]) && !dsSo.test(dong[i]) && !laVach(dong[i])) {
+        doan.push(dong[i]); i++;
+      }
+      if (doan.length) ra.push('<p>' + nhoMD(doan.join('\n')) + '</p>');
+      else i++;
+    }
+    return ra.join('');
   }
 
   /* ══════════════ RỬA HTML DÁN VÀO ══════════════
@@ -300,7 +569,8 @@
       if (the === 'SPAN' && !lopMau(n)) { thayBangChu(n); continue; }
 
       var giu = the === 'A' ? ['href'] : the === 'IMG' ? ['src', 'alt']
-              : the === 'SPAN' ? ['class'] : [];
+              : the === 'SPAN' ? ['class'] : the === 'PRE' ? ['data-ngon'] : [];
+      if (the === 'IMG') giu = ['src', 'alt', 'data-tieu', 'data-lop'];
       for (var j = n.attributes.length - 1; j >= 0; j--) {
         var ten = n.attributes[j].name;
         if (giu.indexOf(ten) < 0) n.removeAttribute(ten);
@@ -712,5 +982,5 @@
   }
 
   window.ZIB = window.ZIB || {};
-  window.ZIB.soan = { gan: gan, sangMD: sangMD };
+  window.ZIB.soan = { gan: gan, sangMD: sangMD, tuMD: tuMD };
 })();

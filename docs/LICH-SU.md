@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.09 | 2026-09-16 | 09 | ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
+| V8.08 | 2026-09-16 | 08 | gỡ hẳn lối #viet và #duyet cũ: trang ngoài thôi bị chèn ô đăng nhập |
 | V8.07 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
 | V8.06 | 2026-09-16 | 06 | màn đầu ở khổ dọc: tên blog cân giữa thay vì bám mép trái |
 | V8.05 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh; dừng hình cuối lâu gấp đôi |
@@ -106,6 +108,33 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V8.09 — 16-Sep-2026
+
+- **Ô soạn thảo nay ĐỌC được Markdown vào**, không chỉ nhả ra. Đây là nền móng
+  cho việc sửa một bài đã đăng: không nạp lại được bài cũ vào khung thì không
+  có cách nào sửa nó bằng chuột.
+- **Vòng tròn khép kín và bền vững.** Thử trên cả chín bài thật trong kho: mở
+  ra rồi lưu lại hai lần thì lần thứ hai ra file y hệt lần thứ nhất, cả chín
+  bài. Nghĩa là sửa một bài không còn làm cả bài xáo trộn trong lịch sử.
+- **Ngắt dòng lại ở 80 cột** như bài gõ tay, để `git diff` đọc được theo từng
+  dòng thay vì hiện "cả đoạn thay đổi" cho một lượt sửa ba chữ. Lượt lưu đầu
+  tiên của một bài cũ vẫn xê dịch vài chỗ ngắt — đó là cái giá một lần.
+- Ba chỗ từng làm hỏng bài lúc thử đã sửa: tên ngôn ngữ của khối mã (```json)
+  không còn bị nuốt; dấu câu ngay sau `ô mã` không còn mọc thêm dấu cách; và
+  chú thích ảnh có `mã` lồng trong không còn biến thành chữ "undefined".
+
+## V8.08 — 16-Sep-2026
+
+- **Gỡ hẳn hai lối tắt cũ `#viet` và `#duyet`.** Chúng cho ô viết ghi chú và
+  bàn duyệt mọc ra ở bất kỳ trang bài nào, và lúc chưa có khoá thì chèn một ô
+  XIN MẬT KHẨU vào giữa một trang người ta đang đọc — đúng hình dạng của một
+  trò lừa, nằm trên chính tên miền thật. Nay chỉ còn một cửa: `/z-admin/`.
+- **Trang bài và `/notes/` nhẹ đi.** Trang bài thôi tải `duyet.js`, `/notes/`
+  thôi tải cả `duyet.js` lẫn `khoa.js` — người đọc thôi phải tải những file mà
+  chỉ một người trên đời dùng tới.
+- Tài liệu (`CAI-DAT.md`, `BINH-LUAN.md`) sửa theo: mọi chỗ còn chỉ đường bằng
+  dấu thăng nay chỉ về `/z-admin/`.
 
 ## V8.07 — 16-Sep-2026
 

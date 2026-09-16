@@ -1,11 +1,15 @@
 /* ============================================================
    BÀN DUYỆT — một khung gom mọi bình luận đang chờ, của CẢ BLOG.
 
-   Mở bằng cách thêm `#duyet` vào địa chỉ BẤT KỲ trang nào có khai
-   `data-duyet-api` (trang bài và /notes/). Nhờ vậy chỉ cần nhớ MỘT lối tắt:
+   Sống ở ĐÚNG MỘT chỗ: ngăn Comment của `/z-admin/`.
 
-       /notes/#viet      viết ghi chú
-       /notes/#duyet     duyệt bình luận
+   ── ĐÃ BỎ: LỐI TẮT `#duyet` ──
+   Đời trước khối này mọc ra ở bất kỳ trang bài nào khi địa chỉ mang `#duyet`,
+   và lúc chưa có khoá thì nó chèn một khung XIN KHOÁ lên đầu bài viết. Nay
+   `/z-admin/` là một trang thật và có cửa đăng nhập riêng, nên lối tắt ấy chỉ
+   còn là cửa thứ hai cho cùng một việc — mà cửa thứ hai là cửa có ngày bị
+   quên khi sửa cửa thứ nhất. Bỏ nó đi cũng gỡ luôn file này khỏi mọi trang
+   bài: người đọc thôi tải một thứ chỉ chủ trang mới dùng tới.
 
    ── VÌ SAO TÁCH KHỎI comments.js ──────────────────────────────────────
    Bản trước để bàn duyệt sống trong `comments.js`, mà file ấy chỉ chạy ở trang
@@ -46,50 +50,17 @@
 
   /* ══════════ DỰNG KHUNG ══════════ */
 
-  /* ── HAI KIỂU MỌC ──
-     MỘT — trang /z-admin/ có sẵn một ô `[data-duyet-host]`. Cắm thẳng vào
-     đó, không cần dấu thăng, không cuộn đi đâu cả: người ta vào trang ấy chính
-     là để làm việc này.
-     HAI — mọi trang khác thì phải gõ `#duyet`, và lúc ấy khối tự chèn lên đầu
-     rồi cuộn tới. */
+  /* Chỗ cắm duy nhất: ô `[data-duyet-host]` của /z-admin/. */
   function oCamSan() { return document.querySelector('[data-duyet-host]'); }
 
-  function mo(tuDong) {
+  function mo() {
     if (hop) return;
+    var o = oCamSan();
+    if (!o) return;
     hop = document.createElement('section');
     hop.className = 'bl-duyet';
-
-    var o = oCamSan();
-    if (o) {
-      o.appendChild(hop);
-      ve();
-      return;
-    }
-
-    /* Chèn ngay sau đầu trang, KHÔNG phải cuối trang: đây là việc đang làm,
-       không phải phần đọc thêm. */
-    hop.classList.add('duyet-noi');
-    var neo = document.querySelector('.post-layout') ||
-              document.querySelector('main .container') ||
-              document.querySelector('main');
-    if (!neo) { hop = null; return; }
-    neo.insertBefore(hop, neo.firstChild);
-
+    o.appendChild(hop);
     ve();
-    if (!tuDong) denNoi();
-  }
-
-  /* Cuộn tới — `#duyet` không phải id của phần tử nào nên trình duyệt không tự
-     đưa tới. Và phải NHẢY THẲNG: trang khai `scroll-behavior:smooth` ở cấp cao
-     nhất, nên cuộn mượt thành một hoạt hình dài mà ảnh tải xong giữa chừng làm
-     trôi đích. Đợi `load` cho bố cục xong hẳn rồi mới tính vị trí. */
-  function denNoi() {
-    function toi() {
-      var y = hop.getBoundingClientRect().top + window.pageYOffset - 72;
-      window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
-    }
-    if (document.readyState === 'complete') toi();
-    else window.addEventListener('load', toi, { once: true });
   }
 
   function ve() {
@@ -109,19 +80,16 @@
      lần nữa ngay trong ngăn là một màn hình có hai ô đăng nhập.
      Ở trang bài hoặc /notes/#duyet thì mượn đúng khung đăng nhập chung — cùng
      một khung, cùng một phép thử khoá, cùng một câu báo lỗi. */
+  /* Chưa vào được thì KHÔNG vẽ khung xin khoá ở đây: cửa chung của /z-admin/
+     đã hỏi rồi, và chưa vào thì cả ngăn này còn chưa được bày ra. Chỉ giữ chỗ
+     in một câu báo khi máy chủ từ chối giữa chừng. */
   function veKhoa(loi) {
     hop.textContent = '';
     dungDongHo();
-
-    if (oCamSan()) {
-      if (loi) { var b = de(loi); b.className = 'bl-duyet-bao bl-duyet-bao--hong'; hop.appendChild(b); }
-      return;
-    }
-
-    hop.appendChild(de(L('queue')));
-    if (!K) return;
-    var cong = K.veCong(hop, ve);
-    if (loi) cong.noi(loi, true);
+    if (!loi) return;
+    var b = de(loi);
+    b.className = 'bl-duyet-bao bl-duyet-bao--hong';
+    hop.appendChild(b);
   }
 
   /* ══════════ XIN HÀNG CHỜ ══════════ */
@@ -202,15 +170,6 @@
     }
     ds.forEach(function (c) { hop.appendChild(veDong(c)); });
 
-    /* Lối ra chỉ mọc ở trang KHÔNG có cửa chung. Ở /z-admin/ nút Đăng xuất
-       nằm dưới cột chọn việc, và hai nút cùng một việc trên một màn hình thì
-       kiểu gì cũng có ngày một cái bị sửa còn cái kia không. */
-    if (K && !oCamSan()) {
-      var oRa = document.createElement('div');
-      oRa.className = 'bl-duyet-ra';
-      K.veChao(oRa, '');
-      hop.appendChild(oRa);
-    }
     batDongHo();
   }
 
@@ -270,11 +229,7 @@
 
   /* ══════════ CHẠY ══════════ */
 
-  if (oCamSan()) mo(true);
-  else if (location.hash === '#duyet') mo();
-  window.addEventListener('hashchange', function () {
-    if (location.hash === '#duyet') mo();
-  });
+  mo();
 
   /* Khoá đổi ở đâu cũng vẽ lại ở đây. Quan trọng nhất là chiều ĐĂNG XUẤT:
      hàng chờ duyệt đang bày đầy tên và nội dung bình luận chưa duyệt ra màn

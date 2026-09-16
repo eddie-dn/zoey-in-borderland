@@ -13,7 +13,7 @@ sao** — mở ra khi cần sửa, không phải khi cần cài.
 người đọc gõ  ──POST──→  /api/binh-luan  ──→  D1  (duyet = 0, chờ)
                                                     │
 chủ trang mở  ──GET ?cho=1─→ hàng chờ  ──PATCH──→  (duyet = 1)
-  #duyet                                            │
+  /z-admin/                                         │
                                                     ↓
 người đọc xem ──GET ?url=─→  chỉ những dòng đã duyệt
 ```
@@ -51,15 +51,13 @@ thì mở Console của D1 chạy `SELECT * FROM binh_luan` rồi tải về.
 
 ---
 
-## Bàn duyệt — `#duyet`
+## Bàn duyệt — ngăn **Comment** ở `/z-admin/`
 
-Thêm `#duyet` vào địa chỉ **bất kỳ bài nào**. Lần đầu nó hỏi mã chủ và khoá;
-nhập xong trình duyệt nhớ trên máy đó.
+Mở `/z-admin/`, đăng nhập một lần, sang ngăn **Comment**.
 
-**Cửa sau là một địa chỉ, không phải một cái nút.** Một cái nút "Duyệt bình
-luận" bày giữa trang thì mọi người đọc đều thấy một thứ họ bấm vào cũng chẳng
-để làm gì. Và đây **không phải lớp bảo mật** — lớp bảo mật là hai vế khoá ở
-phía máy chủ; ai gõ đúng `#duyet` cũng chỉ thấy một cái ô xin khoá.
+**Chỉ có một cửa.** Đời trước còn lối tắt `#duyet` gắn vào địa chỉ bất kỳ bài
+nào; đã bỏ — lý do ở `docs/CAI-DAT.md` §1.4. Và đường dẫn `/z-admin/` **không
+phải lớp bảo mật**: lớp bảo mật là hai vế khoá ở phía máy chủ.
 
 **Hàng chờ là của cả blog, không riêng bài đang mở.** Mỗi dòng ghi rõ nó thuộc
 bài nào. Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì đang chờ thì
@@ -68,7 +66,7 @@ không ai duyệt nữa.
 Dòng **đã duyệt** vẫn ở lại danh sách nhưng mờ đi — để còn bỏ duyệt lại được
 nếu lỡ tay, mà không tranh chỗ với những dòng đang chờ.
 
-Khoá dùng **chung với ô viết ghi chú** ở `/notes/#viet`: cùng hai biến trong
+Khoá dùng **chung với ô viết ghi chú và ô viết bài**: cùng hai biến trong
 localStorage, cùng hai biến bí mật ở phía máy chủ. Nhập ở một chỗ là mở được cả
 hai. Đặt hai cặp riêng chỉ là thêm một thứ để quên.
 
@@ -158,9 +156,9 @@ sau khi khoá đã khớp. Gõ tên "Zoey" vào ô tên thì không có huy hi�
 |---|---|
 | Khung hiện nhưng không có bình luận nào | Chưa gắn D1, hoặc chưa ai được duyệt |
 | Gửi xong báo lỗi mạng | Hàm chưa lên (thử mở `tên-miền/api/binh-luan?url=/`) |
-| `#duyet` báo sai khoá | `GC_ID`/`GC_KEY` chưa đặt, hoặc đặt thiếu một môi trường (nhớ cả Production lẫn Preview) |
+| Đăng nhập ở `/z-admin/` không vào được | `GC_ID`/`GC_KEY` chưa đặt, hoặc đặt thiếu một môi trường (nhớ cả Production lẫn Preview). Chưa đặt thì màn hình nói thẳng ra; gõ sai khoá thì nó không nói gì |
 | Duyệt rồi mà người khác chưa thấy | Cache biên 30 giây. Đợi một chút |
-| Bình luận của mình cũng phải chờ duyệt | Máy đó chưa nhớ khoá — mở `#duyet` nhập một lần |
+| Bình luận của mình cũng phải chờ duyệt | Máy đó chưa nhớ khoá — mở `/z-admin/` đăng nhập một lần |
 
 `npm run kiem` có một phép kiểm canh bộ ba: hàm, địa chỉ trong cấu hình, và
 script trên trang bài. Thiếu mẩu nào là báo đỏ — vì thiếu mẩu nào thì khung vẫn

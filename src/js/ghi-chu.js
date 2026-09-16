@@ -12,7 +12,7 @@
    ── BA PHẦN, THEO ĐÚNG THỨ TỰ NÀY ──────────────────────────────────────
      1. lọc        luôn chạy, chỉ cần có sẵn ghi chú trong HTML
      2. xin thêm   gọi /api/ghi-chu, chèn ghi chú mới vào danh sách
-     3. ô viết     chỉ dựng khi địa chỉ có #viet — xem phần CỬA SAU
+     3. ô viết     CHỈ dựng ở /z-admin/, nơi có sẵn chỗ cắm
 
    Phần 1 không được phép phụ thuộc phần 2: mạng hỏng thì lọc vẫn phải chạy.
    ============================================================ */
@@ -193,17 +193,21 @@
 
   /* ══════════ 3 · Ô VIẾT ══════════
 
-     ── CỬA SAU LÀ #viet, KHÔNG PHẢI MỘT CÁI NÚT ──
-     Ô viết chỉ dành cho một người. Để một cái nút "Viết ghi chú" lộ ra giữa
-     trang thì mọi người đọc đều thấy một thứ họ bấm vào cũng chẳng để làm gì.
-     `/notes/#viet` thì lưu được vào màn hình chính điện thoại, gõ một phát ra
-     ngay — mà người đọc thường không bao giờ gặp.
+     ── ĐÃ BỎ: CỬA SAU `#viet` ──
+     Đời trước ô viết mọc ra ở bất kỳ trang nào có danh sách ghi chú khi địa
+     chỉ mang `#viet`, và lúc chưa có khoá thì nó bày một khung XIN KHOÁ chen
+     thẳng vào giữa trang người đọc đang xem.
 
-     Đây KHÔNG phải lớp bảo mật. Lớp bảo mật là hai vế khoá ở phía máy chủ;
-     ai gõ đúng #viet cũng chỉ thấy một cái ô xin khoá.
+     Bỏ vì ba lẽ, và lẽ thứ ba mới là lẽ chính:
+       · nay đã có `/z-admin/` — một trang thật, lưu được vào màn hình chính,
+         không phải học thuộc một chuỗi dấu thăng;
+       · hai cửa cho cùng một việc thì có ngày một cửa được sửa còn cửa kia
+         không, và cửa bị quên là cửa còn mở;
+       · một ô xin mật khẩu chèn giữa trang đọc là đúng hình dạng của một trò
+         lừa — và nó nằm ngay trên tên miền thật, nên nó dạy người đọc một
+         thói quen rất xấu.
 
-     Khoá giữ trong localStorage của MÁY NÀY. Máy khác, trình duyệt khác, chế
-     độ ẩn danh — đều phải nhập lại. Đó là đúng: khoá không nên đi theo trang. */
+     `/notes/` nay chỉ còn LỌC và XIN GHI CHÚ MỚI — hai việc của người đọc. */
 
   var viet = null;
 
@@ -240,18 +244,14 @@
       o.classList.toggle('gc-noi--hong', !!hong);
     }
 
-    /* ── BA TRẠNG THÁI, KHÔNG PHẢI HAI ──
-       có khoá                → bày ô viết
-       chưa, mà đang ở /z-admin/ → KHÔNG bày gì: trang ấy đã có một cửa chung ở
-                                trên, bày thêm một khung đăng nhập nữa trong
-                                ngăn là hỏi cùng một câu hai lần trên một màn
-       chưa, ở /notes/#viet   → mượn đúng khung đăng nhập chung cắm vào đây */
+    /* Ô viết chỉ sống ở /z-admin/, và trang ấy đã có cửa đăng nhập riêng ở
+       đầu trang — chưa vào được thì cả khối này còn chẳng được dựng. Nên ở
+       đây chỉ còn hai trạng thái, và trạng thái "chưa có khoá" chỉ là lưới an
+       toàn cho lúc khoá bị gỡ ở một tab khác. */
     function veLai() {
-      hop.hidden = false;
-      if (coKhoa()) { hop.innerHTML = khungViet(); gan(); }
-      else if (oVietCamSan()) { hop.innerHTML = ''; hop.hidden = true; }
-      else if (K) { K.veCong(hop, veLai); }
-      else { hop.innerHTML = ''; hop.hidden = true; }
+      hop.hidden = !coKhoa();
+      hop.innerHTML = coKhoa() ? khungViet() : '';
+      if (coKhoa()) gan();
       ganXoa();
     }
 
@@ -424,7 +424,6 @@
 
   dungLoc();
   if (oVietCamSan()) viet = dungOViet(true);
-  else if (location.hash === '#viet') viet = dungOViet();
 
   /* Khoá đổi ở BẤT KỲ đâu — cửa chung ở /z-admin/, nút Đăng xuất ngay trong
      ô này, hay một tab khác — thì ô viết vẽ lại theo. Đây là nửa còn lại của
@@ -433,8 +432,5 @@
   if (window.ZIB && window.ZIB.khoa) {
     window.ZIB.khoa.theoDoi(function () { if (viet) viet.veLai(); });
   }
-  window.addEventListener('hashchange', function () {
-    if (location.hash === '#viet' && !viet) viet = dungOViet();
-  });
   xinVe();
 })();

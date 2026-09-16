@@ -75,20 +75,17 @@ Cửa sau: ở trang giới thiệu, **bấm 5 nhịp vào tiêu đề** cũng t
 > hướng. Nhưng ai gõ đúng đường dẫn vẫn mở được, và chỉ thấy một ô xin khoá.
 > Chỗ giấu đường dẫn **không phải** lớp bảo mật — hai vế khoá ở máy chủ mới là.
 
-### 1.4 · Hoặc mở `#duyet` ở bất kỳ bài nào
+### 1.4 · Chỉ có một cửa, và nó ở `/z-admin/`
 
-Thêm `#duyet` vào địa chỉ một bài bất kỳ:
+Đời trước còn một lối tắt nữa: thêm `#duyet` vào địa chỉ bất kỳ bài nào thì bàn
+duyệt tự chèn lên đầu bài. **Đã bỏ.** Hai cửa cho cùng một việc thì có ngày một
+cửa được sửa còn cửa kia không — và cửa bị quên là cửa còn mở. Thêm nữa, lúc
+chưa có khoá thì lối tắt ấy bày một ô xin mật khẩu chen vào giữa một trang
+người ta đang đọc: đúng hình dạng của một trò lừa, và nó nằm trên tên miền thật.
 
-```
-tên-miền-của-bạn/posts/tan-man/chiec-guong/#duyet
-```
-
-Lần đầu nó hỏi mã chủ và khoá — **cùng một cặp với ô viết ghi chú**, nhập ở đâu
-cũng mở được cả hai. Trình duyệt nhớ trên máy đó.
-
-Hàng chờ là của **CẢ BLOG**, không riêng bài đang mở: mỗi dòng ghi rõ nó thuộc
-bài nào. Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì đang chờ thì
-không ai duyệt nữa.
+Hàng chờ ở `/z-admin/` là của **CẢ BLOG**, không riêng một bài: mỗi dòng ghi rõ
+nó thuộc bài nào. Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì
+đang chờ thì không ai duyệt nữa.
 
 | Nút | Làm gì |
 |---|---|
@@ -428,7 +425,8 @@ chỉ ngắn đi một mục — không có dòng đỏ nào trong console của
 
 Bắt gặp một quyển sách, một bản nhạc, một ý thoáng qua — muốn ghi ngay mà không
 phải mở máy, sửa `content/ghi-chu.md`, chạy build rồi đẩy lên. Mục này mở một
-cửa: vào `/notes/#viet` trên điện thoại, gõ, xong, ghi chú lên trang liền.
+cửa: vào `/z-admin/` trên điện thoại, sang ngăn Note, gõ, xong — ghi chú lên
+trang liền.
 
 > **Đây là chỗ đứng tạm, không phải nhà.** Ghi chú đăng kiểu này chỉ hiện khi
 > trình duyệt chạy JavaScript, không có trong RSS, sitemap hay chỉ mục tìm
@@ -520,17 +518,21 @@ curl -s https://<tên-miền>/api/bai
 
 ### 6.4 · Dùng
 
-Mở **`/notes/#viet`**. Lần đầu nó hỏi mã chủ và khoá; nhập xong thì trình duyệt
-nhớ trên **máy đó** — máy khác, trình duyệt khác, chế độ ẩn danh đều phải nhập
-lại. Lưu địa chỉ ấy vào màn hình chính điện thoại là một chạm ra ô viết.
+Mở **`/z-admin/`** rồi sang ngăn **Note**. Lần đầu nó hỏi mã chủ và khoá;
+nhập xong thì trình duyệt nhớ trên **máy đó** — máy khác, trình duyệt khác, chế
+độ ẩn danh đều phải nhập lại. Lưu `/z-admin/#note` vào màn hình chính điện thoại
+là một chạm ra ô viết.
+
+(Lối cũ `/notes/#viet` **đã bỏ** — lý do ở §1.4.)
 
 Ô viết nhận: ngày (mặc định hôm nay), loại (gõ gì cũng được, trang tự gom thành
 bộ lọc) và nội dung. Nội dung hiểu `**đậm**`, `*nghiêng*`, `` `mã` ``,
 `[chữ](địa-chỉ)` và ngắt đoạn bằng dòng trống — vừa đủ cho mấy dòng ghi nhanh.
 
-> **`#viet` không phải lớp bảo mật**, chỉ là chỗ cất cho khuất mắt. Lớp bảo mật
-> là hai vế khoá ở phía máy chủ: ai gõ đúng `#viet` cũng chỉ thấy một cái ô xin
-> khoá.
+> **Đường dẫn `/z-admin/` không phải lớp bảo mật**, chỉ là chỗ cất cho khuất
+> mắt — nó `noindex`, không nằm trong sitemap, không có trong thanh điều hướng.
+> Lớp bảo mật là hai vế khoá ở phía máy chủ: ai gõ đúng đường dẫn cũng chỉ thấy
+> một cái ô xin khoá, và gõ sai khoá thì màn hình không nói gì cả.
 
 Đăng được bằng dòng lệnh luôn, tiện cho phím tắt trên điện thoại:
 
@@ -653,11 +655,11 @@ này không nên xảy ra; xảy ra thì xem log build trên Cloudflare.
 | `luotXem.bat` = false, hoặc chưa gắn D1 | Hàng meta thiếu mục lượt xem. Không có gì khác đổi. |
 | `phanTich.bat` = false | Không có gì thay đổi với người đọc — chỉ là chủ trang không biết bài nào có người xem. |
 | `binhLuan.bat` = false, hoặc chưa gắn D1 | Khung bình luận ẩn (hoặc rỗng). Bài đọc bình thường. |
-| Sai `GC_ID` / `GC_KEY` | Người đọc gửi bình luận bình thường. Chỉ bàn duyệt `#duyet` báo sai khoá. |
+| Sai `GC_ID` / `GC_KEY` | Người đọc gửi bình luận bình thường. Chỉ `/z-admin/` là không vào được. |
 | Chưa khai `GEMINI_KEY` | Ô trích dẫn dùng kho câu sẵn. Không phân biệt được. |
 | Gemini chậm quá 3 giây | Giữ nguyên câu từ kho sẵn. Không chớp, không nhảy. |
-| `ghiChu.online` = false, hoặc chưa gắn D1 | `/notes/` hiện đúng những ghi chú đã dựng sẵn. Không ai biết là có cửa `#viet`. |
-| Sai `GC_ID` / `GC_KEY` | Người đọc không thấy gì cả. Chủ trang mở `#viet` thì ô viết báo "Không gửi được". |
+| `ghiChu.online` = false, hoặc chưa gắn D1 | `/notes/` hiện đúng những ghi chú đã dựng sẵn, không thiếu gì với người đọc. |
+| Sai `GC_ID` / `GC_KEY` | Người đọc không thấy gì cả. Chủ trang thì không đăng nhập được vào `/z-admin/`. |
 | Tắt JavaScript | `/notes/` mất hàng nút lọc và mất những ghi chú chưa kéo về Markdown. Ghi chú dựng sẵn đọc đủ. |
 | `dangBai.bat` = false | Không có gì thay đổi với người đọc. `/z-admin/` mất ngăn Post. |
 | Chưa khai `GH_TOKEN` | Người đọc không thấy gì. Ngăn Post báo thiếu đúng tên biến. |

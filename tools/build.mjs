@@ -799,17 +799,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                     có danh sách ghi chú nào để mà chèn vào, in ra là mời người
                     ta đi mò một đường API chẳng dùng được ở đó. */
                  /* ── BÀN DUYỆT MỌC ĐƯỢC Ở ĐÂU ──
-                    Trang bài và /notes/. Không phải mọi trang: khai địa chỉ ra
-                    trang nào là nạp thêm một file JS ở trang ấy, mà bàn duyệt
-                    thì chủ trang chỉ mở ở đúng hai chỗ này.
+                    ĐÚNG MỘT chỗ: ngăn Comment của /z-admin/.
 
-                    /notes/ có mặt trong danh sách vì đó là lối tắt NGẮN nhất —
-                    nhớ một đường `/notes/` là vừa viết được ghi chú (#viet) vừa
-                    duyệt được bình luận (#duyet), khỏi phải nhớ đường dẫn của
-                    một bài cụ thể nào. */
-                 ((CAU.binhLuan || {}).bat !== false &&
-                  (duong === '/notes/' || duong === '/z-admin/' ||
-                   /^\/posts\/.+\//.test(duong)))
+                    Đời trước nó mọc được ở trang bài và /notes/ qua dấu thăng
+                    `#duyet`. Bỏ rồi: hai cửa cho cùng một việc thì có ngày một
+                    cửa được sửa còn cửa kia không, và khung xin khoá chèn giữa
+                    một trang đang đọc là đúng hình dạng của một trò lừa. */
+                 ((CAU.binhLuan || {}).bat !== false && duong === '/z-admin/')
                    ? `data-duyet-api="${attr(BASE + ((CAU.binhLuan || {}).api || '/api/binh-luan'))}" ` +
                      `data-duyet-nhan="${attr(JSON.stringify({
                         queue: NHAN.queue, queueEmpty: NHAN.queueEmpty,
@@ -1766,14 +1762,16 @@ function trangBai(bai, congKhai) {
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
-                     /* khoa.js đứng ĐẦU: cả ba file mang `defer` nên chúng chạy
-                        đúng thứ tự thẻ, và hai file sau hỏi window.ZIB.khoa
-                        ngay lúc nạp. Đảo thứ tự là chúng hỏi một thứ chưa tồn
-                        tại — hỏng lặng lẽ, chỉ hiện ra là bàn duyệt không mọc
-                        và bình luận của chủ trang mất huy hiệu. */
+                     /* khoa.js đứng TRƯỚC comments.js: cả hai mang `defer` nên
+                        chúng chạy đúng thứ tự thẻ, và comments.js hỏi
+                        window.ZIB.khoa để biết có gắn huy hiệu chủ trang cho
+                        bình luận không.
+
+                        duyet.js KHÔNG còn ở đây. Bàn duyệt nay chỉ sống trong
+                        ngăn Comment của /z-admin/, nên trang bài thôi phải tải
+                        một file mà chỉ một người trên đời dùng tới. */
                    : `\n<script src="${BASE}/assets/khoa.js" defer></script>` +
-                     `\n<script src="${BASE}/assets/comments.js" defer></script>` +
-                     `\n<script src="${BASE}/assets/duyet.js" defer></script>`) +
+                     `\n<script src="${BASE}/assets/comments.js" defer></script>`) +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
     /* HAI khối dữ liệu có cấu trúc, gộp trong một mảng @graph:
@@ -2795,10 +2793,10 @@ function trangGhiChu() {
     than: thanCoSo,
     duong: '/notes/',
     description: `${NHAN.notesHint} — ${CAU.title}.`,
-    scripts: `<script src="${BASE}/assets/khoa.js" defer></script>` +
-             `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
-             ((CAU.binhLuan || {}).bat !== false
-               ? `\n<script src="${BASE}/assets/duyet.js" defer></script>` : '')
+    /* /notes/ nay chỉ còn hai việc của NGƯỜI ĐỌC: lọc theo loại, và xin về
+       mấy ghi chú đăng thẳng chưa kịp vào bản dựng. Ô viết đã về hẳn
+       /z-admin/, nên trang này thôi tải khoa.js lẫn duyet.js. */
+    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>`
   });
 }
 /* ── /z-admin/ — BÀN LÀM VIỆC CỦA CHỦ TRANG ──
