@@ -142,9 +142,25 @@
   /* 66ch. Khoảng đọc êm nhất là 60–75 ký tự một dòng; 58 là HẸP hơn khoảng đó,
      và cột hẹp cộng khoảng dòng rộng chính là thứ làm trang trông thưa thếch.
      Cột rộng hơn cũng là điều kiện để căn đều hai bên không bị hở. */
-  --measure:66ch;
+  /* ── `ch` KHÔNG PHẢI LÀ MỘT KÝ TỰ ──
+     `1ch` là bề ngang chữ SỐ KHÔNG, mà số không thì rộng hơn hẳn chữ thường.
+     Ở Be Vietnam Pro, một `ch` bằng khoảng 1,3 ký tự thân bài thật. Nên
+     `66ch` đo ra 781px và mỗi dòng chứa TÁM MƯƠI LĂM ký tự — đếm bằng cách
+     đổ một đoạn mẫu vào đúng cột chữ rồi chia số ký tự cho số dòng, chứ
+     không tin vào con số 66.
+
+     Thang đọc quen dùng là 45–75 ký tự một dòng, êm nhất quanh 66: dài hơn
+     thì mắt hết dòng phải quét ngược một quãng dài mới bắt được đầu dòng
+     sau, và đó chính là kiểu mỏi mà người đọc không gọi tên ra được.
+
+     54ch ≈ 639px ≈ 70 ký tự. Muốn đổi thì ĐỔI SỐ NÀY RỒI ĐO LẠI, đừng suy
+     từ chữ "ch" ra số ký tự. */
+  --measure:54ch;
   --measure-wide:82ch;
-  --measure-ui:1180px;
+  /* 1180 → 1100. Ở màn 1100–1200px, khung cũ rộng gần bằng đúng cả cửa sổ
+     nên chữ dính sát mép trái, không còn lề nào để trang thở. 1100 thì mọi
+     màn từ 1200px trở lên đều có lề thật ở hai bên. */
+  --measure-ui:1100px;
 
   /* ── 5. NHỊP — thang 4px ── */
   --s1:4px;   --s2:8px;   --s3:12px;  --s4:16px;  --s5:20px;
@@ -363,56 +379,65 @@
       Nhờ vậy không component nào phải biết theme này có tồn tại.
 
    3. HAI MÀU NHẤN VẪN TÁCH ĐÔI, và ở đây còn GẮT hơn Sakura.
-      --accent #9BD3DA trên nền sáng chỉ đạt 1.45:1 — thấp hơn cả
+      --accent #9FD3EA trên nền sáng chỉ đạt 1.50:1 — thấp hơn cả
       orchid bên Sakura (1.78:1). Aqua pastel là màu sáng nhất trong
       cả ba bảng, nên chữ BẮT BUỘC phải đi bằng --accent-ink.
-      Đo thật, tính bằng công thức WCAG 2.1 trên nền --bg #F1F7F8:
-        --accent      #9BD3DA → 1.45:1   chỉ để trang trí
-        --accent-ink  #0F6B77 → 5.72:1   AA cho cả chữ nhỏ ✓
-        --text        #1F3B42 → 11.01:1  ✓
-        --text-muted  #44646C → 5.91:1   ✓
-        --text-faint  #4E6F77 → 5.02:1   ✓ (và 4.72:1 trên --surface-sunken,
+      Đo thật, tính bằng công thức WCAG 2.1 trên nền --bg #F1F7FB:
+        --accent      #9FD3EA → 1.50:1   chỉ để trang trí
+        --accent-ink  #10637F → 6.24:1   AA cho cả chữ nhỏ ✓
+        --text        #1F3A45 → 11.11:1  ✓
+        --text-muted  #44626E → 6.04:1   ✓
+        --text-faint  #4E6D79 → 5.13:1   ✓ (và 4.79:1 trên --surface-sunken,
                                  nền tối nhất mà nó từng phải nằm lên)
+
+   4. NGẢ SANG XANH TRỜI, VÀ CHỪA LẠI MỘT NỐT LỤC.
+      Bảng cũ đi trọn trên trục lam-lục (suối · rêu · trời), nên nhìn
+      lâu thì nó lạnh và hơi xỉn — cái xanh của nước đứng, không phải
+      của trời. Nay trục chính kéo về phía TRỜI: nền, quầng nền, hai
+      màu nhấn và mọi sắc mực đều cộng thêm phần lam.
+      Giữ nguyên --accent-2 #A8DED6 (rêu). Kéo nốt nó sang lam nữa thì
+      cả bảng còn đúng một màu, và mấy chỗ dùng hai màu nhấn cạnh nhau
+      — gradient nút, chấm phân cách, viền thẻ — mất hẳn chỗ đổi màu.
    ════════════════════════════════════════════════════════════ */
 :root[data-theme="calm"]{
   /* Màu gốc của riêng theme này. Để TRONG khối chứ không lên :root: bảng
      --raw-* ở :root là di sản của hai file HAN, thêm màu lạ vào đó thì mai
      mốt không ai đọc ra màu nào thuộc về đâu. Component vẫn không được phép
      đọc --raw-* — đây thuần tuý là chú thích chạy được. */
-  --raw-suoi:#9BD3DA;   --raw-reu:#A8DED6;   --raw-troi:#C2DCEE;
-  --raw-suong:#E6F1F2;  --raw-da:#1F3B42;    --raw-tham:#0F6B77;
+  --raw-suoi:#9FD3EA;   --raw-reu:#A8DED6;   --raw-troi:#BAD9F4;
+  --raw-suong:#E5F0F8;  --raw-da:#1F3A45;    --raw-tham:#10637F;
 
-  --bg:#F1F7F8;
+  --bg:#F1F7FB;
   /* Ba quầng, đọc từ trên xuống đúng như một cái thác: sương ở đỉnh, khoảng
      trời hở bên phải, rồi vũng nước lắng ở chân màn. Cùng số lớp và cùng kiểu
      dựng với --bg-tint bên Sakura — chỉ thay trục màu. */
   --bg-tint:
-    radial-gradient(120% 70% at 10% -4%, #EDF8F8 0%, rgba(237,248,248,0) 52%),
-    radial-gradient(90% 55% at 94% 2%, #E1EFF7 0%, rgba(225,239,247,0) 58%),
+    radial-gradient(120% 70% at 10% -4%, #ECF6FC 0%, rgba(236,246,252,0) 52%),
+    radial-gradient(90% 55% at 94% 2%, #D8EAFA 0%, rgba(216,234,250,0) 58%),
     radial-gradient(120% 60% at 50% 104%, #DCEFEC 0%, rgba(220,239,236,0) 60%);
   --surface:rgba(255,255,255,.70);
   --surface-solid:#FFFFFF;
-  --surface-sunken:#E6F1F2;
+  --surface-sunken:#E5F0F8;
 
-  --text:#1F3B42;                     /* mực đá ướt — cố ý KHÔNG dùng đen */
-  --text-muted:#44646C;
-  --text-faint:#4E6F77;
+  --text:#1F3A45;                     /* mực đá ướt — cố ý KHÔNG dùng đen */
+  --text-muted:#44626E;
+  --text-faint:#4E6D79;
   --text-invert:#FFFFFF;
   /* Chữ trên nút chính. Nút chính tô bằng --glass-tint, mà ở theme này
      gradient ấy là reu → suoi → troi: ba màu pastel sáng gần bằng nhau.
      Mực đá đạt 7.22:1 trên đoạn tối nhất và 8.38:1 trên đoạn sáng nhất. */
-  --btn-ink:#1F3B42;
+  --btn-ink:#1F3A45;
 
-  --accent:#9BD3DA;                   /* trang trí: viền, chấm, gradient */
-  --accent-ink:#0F6B77;               /* chữ link, nhãn — 5.72:1 trên --bg */
-  --accent-ink-hover:#0B5A66;
-  --accent-2:#A8DED6;
-  --accent-3:#C2DCEE;
-  --accent-wash:rgba(155,211,218,.16);
+  --accent:#9FD3EA;                   /* trang trí: viền, chấm, gradient */
+  --accent-ink:#10637F;               /* chữ link, nhãn — 6.24:1 trên --bg */
+  --accent-ink-hover:#0B566E;
+  --accent-2:#A8DED6;                 /* nốt lục giữ lại — xem mục 4 ở trên */
+  --accent-3:#BAD9F4;
+  --accent-wash:rgba(159,211,234,.16);
 
-  --line:rgba(31,59,66,.16);
-  --line-strong:rgba(31,59,66,.30);
-  --sel-bg:rgba(155,211,218,.38);
+  --line:rgba(31,58,69,.16);
+  --line-strong:rgba(31,58,69,.30);
+  --sel-bg:rgba(159,211,234,.38);
 
   /* Bốn khối callout phải còn ĐỌC RA được là bốn việc khác nhau, nên ba màu
      trạng thái giữ nguyên sắc gốc (lục · hổ phách · đỏ) và chỉ hạ độ tươi cho
@@ -423,25 +448,25 @@
   --warn:#8A5E18; --warn-wash:rgba(138,94,24,.10);
   --bad:#A83B54; --bad-wash:rgba(168,59,84,.10);
 
-  --shadow-sm:0 2px 8px rgba(31,72,82,.07);
-  --shadow-md:0 10px 28px rgba(31,72,82,.12);
-  --shadow-lg:0 24px 60px rgba(31,72,82,.18);
+  --shadow-sm:0 2px 8px rgba(28,68,90,.07);
+  --shadow-md:0 10px 28px rgba(28,68,90,.12);
+  --shadow-lg:0 24px 60px rgba(28,68,90,.18);
 
   /* Kính trên nền sáng: cùng thông số ruột với Sakura (.42 → .17) vì nền hai
      bên sáng ngang nhau. Chỉ viền cấu trúc đổi sang mực đá — để trắng thì tấm
      kính mất đường bao đúng như lỗi đã vấp ở bản Sakura đầu tiên. */
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
-  --glass-edge:rgba(31,72,82,.14);
+  --glass-edge:rgba(28,68,90,.14);
   --glass-ring:rgba(255,255,255,.75);
   --glass-spec:rgba(255,255,255,.95);
   --glass-spec2:rgba(255,255,255,.10);
-  --glass-drop:0 10px 34px rgba(31,72,82,.13);
-  --glass-drop-lift:0 18px 48px rgba(31,72,82,.20);
+  --glass-drop:0 10px 34px rgba(28,68,90,.13);
+  --glass-drop-lift:0 18px 48px rgba(28,68,90,.20);
 
   /* Quầng nước thay quầng tím. Nền đã sáng sẵn nên để rất nhẹ, đúng như
      Sakura — quầng mạnh trên nền sáng chỉ làm bẩn chứ không làm sáng. */
-  --glow:0 10px 24px rgba(52,150,166,.17);
-  --glow-manh:0 16px 40px rgba(52,150,166,.25);
+  --glow:0 10px 24px rgba(52,140,180,.17);
+  --glow-manh:0 16px 40px rgba(52,140,180,.25);
   /* `none`, giống Sakura. Bóng chữ là thứ để tách tiêu đề khỏi nền TỐI; bật
      lên trên nền sáng thì chữ trông như bị nhoè. */
   --chu-bong:none;

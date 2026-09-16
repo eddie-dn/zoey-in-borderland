@@ -802,6 +802,40 @@ const KIEM = [
     }
   },
   {
+    /* ── BẬT GHI CHÚ ĐĂNG THẲNG THÌ PHẢI CÓ ĐỦ BỘ ──
+       Ba mẩu phải đi cùng nhau: hàm ở functions/, địa chỉ API in ra /notes/,
+       và file JS đọc địa chỉ ấy. Thiếu mẩu nào thì /notes/ vẫn đọc được bình
+       thường — đó mới là chỗ nguy: nó hỏng LẶNG LẼ, và cái hỏng chỉ lộ ra vào
+       đúng lúc chủ trang đang đứng ngoài đường muốn ghi vội một dòng. */
+    ten: 'Bật ghi chú đăng thẳng thì phải có đủ hàm, địa chỉ và script',
+    muc: 'loi',
+    chay: ({ cau, goc, trang }) => {
+      if (!(cau.ghiChu || {}).online) return [];
+      const ra = [];
+      if (!fs.existsSync(path.join(goc, 'functions', 'api', 'ghi-chu.js'))) {
+        ra.push('site.config.json bật ghiChu nhưng thiếu functions/api/ghi-chu.js');
+      }
+      const t = trang.find((x) => x.url === '/notes/');
+      if (!t) ra.push('bật ghiChu nhưng không dựng trang /notes/');
+      else {
+        if (!t.html.includes('data-gc-api=')) {
+          ra.push('/notes/ không in ra data-gc-api — ô viết sẽ không bao giờ hiện');
+        }
+        if (!t.html.includes('ghi-chu.js')) {
+          ra.push('/notes/ không nạp ghi-chu.js');
+        }
+      }
+      /* Địa chỉ API phải trỏ vào đúng chỗ Cloudflare đặt hàm. Khai một đường
+         khác thì hàm nằm đó mà không ai gọi tới. */
+      const api = (cau.ghiChu || {}).api || '/api/ghi-chu';
+      if (api !== '/api/ghi-chu') {
+        ra.push(`ghiChu.api = "${api}" nhưng hàm nằm ở /api/ghi-chu ` +
+                '(Cloudflare lấy đường dẫn theo tên file trong functions/)');
+      }
+      return ra;
+    }
+  },
+  {
     /* Bật đếm lượt xem mà thiếu hàm thì trang gọi một địa chỉ không tồn tại:
        mỗi lượt mở bài là một lỗi 404 trong console của NGƯỜI ĐỌC, còn con số
        thì không bao giờ hiện. Trang vẫn đọc được nên không ai báo. */
@@ -844,14 +878,19 @@ const KIEM = [
     }
   },
   {
-    /* ── BÀI NÀO CŨNG PHẢI CÓ MỤC LỤC ──
-       Không phải vì mục lục tiện — vì BỐ CỤC. Lưới trang bài khai sẵn một cột
-       cho mục lục; bài không có tiêu đề mục nào thì cột ấy trống và khung chữ
-       nằm lệch hẳn về trái giữa một khoảng rộng vô chủ.
+    /* ── BÀI DÀI THÌ NÊN CÓ MỤC ──
+       Lý do CŨ của phép kiểm này là bố cục: cột bên chỉ dựng khi có mục lục,
+       nên bài không mục để lại một cột trống. Lý do ấy hết rồi — cột bên nay
+       luôn có ô trích dẫn, có mục lục hay không cũng vậy (xem tocHTML trong
+       build.mjs).
 
-       Cảnh báo chứ không chặn: bài rất ngắn không có mục nào là hợp lý, và
-       chặn thì người viết phải bịa ra tiêu đề mục cho đủ luật. */
-    ten: 'Bài nào cũng có ít nhất một tiêu đề mục (để dựng mục lục)',
+       Giữ lại phép kiểm vì lý do CÒN LẠI, và nó là lý do thật hơn: một bài dài
+       không có mục nào thì người đọc không liếc qua được, phải cuộn hết mới
+       biết trong đó có gì.
+
+       Chỉ hỏi những bài ĐỦ DÀI. Bài vài đoạn không có mục là chuyện bình
+       thường, hỏi nó là bắt người viết bịa tiêu đề cho đủ luật. */
+    ten: 'Bài dài có ít nhất một tiêu đề mục (để liếc qua được)',
     muc: 'canh',
     chay: ({ trang }) => trang
       /* Nhận trang BÀI bằng dấu hiệu của chính nó, không đoán theo đường dẫn.
@@ -863,8 +902,11 @@ const KIEM = [
          cột trống, mà khung C thì không có cột trống nào. */
       .filter((t) => !/class="post-layout[^"]*khung-c/.test(t.html))
       .filter((t) => !/<nav class="toc"|id="muc-luc"|class="[^"]*toc/.test(t.html))
-      .map((t) => `${t.url} — không có tiêu đề mục nào, nên trang bài thiếu ` +
-                  `mục lục và cột bên phải bỏ trống. Thêm vài dòng \`## \` vào bài.`)
+      /* Ngưỡng dài: 6000 ký tự HTML của cả trang, khoảng hơn nghìn chữ thân
+         bài. Dưới ngưỡng ấy thì cuộn một hơi là hết, mục lục không giúp gì. */
+      .filter((t) => t.html.length > 6000)
+      .map((t) => `${t.url} — bài dài mà không có tiêu đề mục nào, người đọc ` +
+                  `không liếc qua được. Thêm vài dòng \`## \` vào bài.`)
   },
   /* ── Thân bài ── */
   {

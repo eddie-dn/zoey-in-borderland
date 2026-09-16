@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V6.02 | 2026-09-16 | 02 | ghi chú đăng thẳng từ điện thoại, không phải dựng lại trang; theme Tĩnh lặng ngả xanh trời |
+| V6.01 | 2026-09-16 | 01 | tên blog đúng phông; cột chữ hẹp lại còn 70 ký tự; bài cũ về cùng một khung |
 | V6.00 | 2026-09-16 | 00 | hoa Sakura nhỏ và mỏng lại, đông hơn; bỏ viền ở cánh xa |
 | V5.09 | 2026-09-16 | 09 | logo: nút thắt vô cực, chữ B vặn bụng, mandala xoay rồi vỡ thành bụi |
 | V5.08 | 2026-09-16 | 08 | theme thứ ba Tĩnh lặng: bảng màu xanh pastel, nền thác nước ở màn đầu |
@@ -83,6 +85,40 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V6.02 — 16-Sep-2026
+
+- **Ghi chú đăng thẳng từ điện thoại.** Bắt gặp một quyển sách hay một ý thoáng
+  qua thì mở `/notes/#viet`, gõ, xong — không phải mở máy, sửa file, dựng lại
+  trang rồi đẩy lên. Bốn bước cho ba dòng chữ là đủ để lần sau người ta không
+  ghi nữa. Khoá gồm hai mẩu, đặt ở phía máy chủ; chỗ viết cất sau dấu `#viet`
+  nên người đọc không bao giờ gặp.
+- **Và có đường về nhà.** Ghi chú đăng kiểu ấy sống trong cơ sở dữ liệu: không
+  vào RSS, không vào tìm kiếm, tắt JavaScript là không thấy. Nên nó chỉ là chỗ
+  đứng tạm — một lệnh kéo chúng về đúng file Markdown, và từ đó chúng thành ghi
+  chú bình thường. Không mở một cái cửa mà quên làm lối quay lại.
+- **Theme Tĩnh lặng ngả sang xanh trời.** Bảng cũ đi trọn trên trục lam-lục nên
+  nhìn lâu thì lạnh và hơi xỉn — cái xanh của nước đứng, không phải của trời.
+  Nay nền, quầng nền và mọi sắc mực đều cộng thêm phần lam, chỉ chừa lại một
+  nốt lục để bảng màu còn chỗ đổi màu. Chữ đọc rõ hơn bản cũ ở cả bốn mức.
+
+## V6.01 — 16-Sep-2026
+
+- **Tên blog ở thanh đầu trang về đúng phông của nó.** Một dấu ngoặc thừa sót
+  lại giữa file kiểu dáng đã nuốt mất cả khối luật ngay sau nó, nên dòng tên
+  rơi về phông thân bài — đứng, đậm, không ăn nhập gì với chữ *Archive* ngay
+  dưới. Một ký tự, và nó im lặng suốt mấy bản.
+- **Cột chữ hẹp lại còn 70 ký tự một dòng.** Trước đó là 85 — quá thang đọc êm
+  (45–75) khá xa, và mỗi lần hết dòng mắt phải quét ngược một quãng dài mới bắt
+  được đầu dòng sau. Khung trang cũng thu lại để hai bên có lề thật, cột bên
+  rộng ra cho mục lục thôi gãy dòng.
+- **Mấy khoảng trống quá cỡ thu lại.** Chỗ giữa câu tóm tắt và ảnh bìa hở gấp
+  đôi ý định vì hai luật cộng dồn lên nhau; vạch đổi cảnh ✦✦✦ chiếm hơn trăm
+  pixel, đủ để người đọc tưởng bài đã hết.
+- **Bài cũ về cùng một khung với bài mới.** Mấy bài từ 2017 dùng tiêu đề mục
+  như cách tô chữ — cả một câu văn nằm ở cỡ chữ tiêu đề, và mục lục thì đầy
+  những dòng không dẫn đi đâu. Nay tiêu đề là tiêu đề, câu văn là câu văn. Bài
+  không có mục nào cũng không còn để trống một khoảng rộng bên phải.
 
 ## V6.00 — 16-Sep-2026
 

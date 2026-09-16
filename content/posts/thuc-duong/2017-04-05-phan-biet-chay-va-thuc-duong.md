@@ -15,19 +15,19 @@ coverAlt: Phân biệt Chay và Thực Dưỡng
 
 Hôm qua mình đi ăn thực dưỡng, tình cờ nghe mọi người bàn luận sôi động về Chay và Thực dưỡng cái nào tốt hơn, ăn tốt cho sức khỏe hơn. Bỗng nhớ ra mọi người hay bị nhầm lẫn vụ ăn Chay và Thực dưỡng. Nên mình viết bài này nhằm ghi chú và hỗ trợ cho những ai muốn theo đuổi con đường ăn uống lành mạnh.
 
-## **Thực dưỡng là ăn chay?!**
+## Thực dưỡng là ăn chay?!
 
 **Hoàn toàn sai lầm!** Đây là hai "danh từ" mang nghĩa hoàn toàn khác xa nhau. Trong đó:
 
--
+### Thực dưỡng
 
-#### *Thực Dưỡng: Có 10 cấp độ ăn từ **-3 -2 -1 1  2 3  4 5  6 7** tùy theo tỉ lệ điều chỉnh mà bạn có thể thêm hàm lượng ngũ cốc các loại, các loại hạt và củ, canh thuần thực vật, sản phẩm từ động vật, rau xanh, tráng miệng và đồ ngọt.*
+Có 10 cấp độ ăn từ **-3 -2 -1 1 2 3 4 5 6 7** tùy theo tỉ lệ điều chỉnh mà bạn có thể thêm hàm lượng ngũ cốc các loại, các loại hạt và củ, canh thuần thực vật, sản phẩm từ động vật, rau xanh, tráng miệng và đồ ngọt.
 
 Nghĩa là bạn hoàn toàn có thể ăn có thịt, cá khi duy trì chế độ ăn thực dưỡng. Tuy nhiên phải tuân theo nguyên tắc phối hợp các tỉ lệ đồ ăn cũng như nguyên liệu nấu ăn: *dầu ép tự nhiên từ các loại hạt, muối biển, đường báng, nước tương lên men tự nhiên ít nhất 8 tháng như Miso hoặc Tamari (không phải xì dầu với dầu ăn mua ngoài siêu thị đâu hen).*
 
 Ngoài ra trong thực dưỡng, vị ngọt khi nấu ăn đến từ củ quả và tự nhiên, không được sử dụng bột nêm mì chính. Tôi nhớ có đọc ở đâu đó nhắc tới một người nổi tiếng (ớ, tôi quên tên người này mất):
 
-#### ** *"Khi ta ăn vị ngọt từ thiên nhiên, ta sẽ thấy vị thanh ngọt ngấm đến tận cuống lưỡi và cổ họng, chứ không phải vị ngọt giả lờ lợ từ mì chính, bột ngọt đã đánh lừa vị giác của ta."***
+> Khi ta ăn vị ngọt từ thiên nhiên, ta sẽ thấy vị thanh ngọt ngấm đến tận cuống lưỡi và cổ họng, chứ không phải vị ngọt giả lờ lợ từ mì chính, bột ngọt đã đánh lừa vị giác của ta.
 
 Còn nhiều nguyên tắc khác nữa mà tôi không nhắc tới ở đây, bạn nào muốn tìm hiểu thì click để đọc thêm quyển: **"Axit và Kiềm", "[Âm Dương và Nguyên Lý Vô Song](http://www.the-glamorous-light.com/am-duong-va-nguyen-ly-vo-song)", ["Làm Thế Nào Để Sống Vui?](http://www.the-glamorous-light.com/lam-the-nao-de-song-vui)", "[Ăn Gạo Lứt Muối Mè](http://www.the-glamorous-light.com/an-gao-lut-muoi-me)",...**
 
@@ -35,9 +35,9 @@ Bắt đầu từ ăn **số 3 đến số 7** là hoàn toàn không có chế 
 
 Nói chung, ăn thực dưỡng cần tìm hiểu để soạn một chế độ ăn hợp lí, cân bằng âm dương và chữa bệnh đúng cách. Có thế ăn mới khỏe và vui được. Chứ cứ ăn ẩu rồi tưởng mình đang ăn thực dưỡng thì còn lâu mới khỏi bệnh và chưa kể là sinh bệnh thêm, khổ hơn lúc chưa ăn nữa T_T!
 
--
+### Ăn chay
 
-#### ***Ăn Chay: Thì đơn giản là ăn chay, không sát sinh: ăn thịt cá, các loại động vật thì ấy là ăn chay rồi chứ không có nguyên tắc nào thêm nữa.***
+Thì đơn giản là ăn chay, không sát sinh: không ăn thịt cá, các loại động vật thì ấy là ăn chay rồi chứ không có nguyên tắc nào thêm nữa.
 
 Ăn chay tương đối dễ hơn vì người ta vẫn chế biến bình thường. **Ăn gạo trắng, dầu mỡ, đồ chiên xào,.**.. chứ không kém cạnh gì đồ ăn mặn bình thường. Đồ chay cũng rất đa dạng phong phú. Tuy nhiên bàn về vấn đề sức khỏe khi ăn chay, tôi không nghĩ là tốt. Bởi chung quy lại, ăn chay làm giảm nghiệp sát sinh nhưng không làm cơ thể khỏe mạnh hơn vì không tuân theo nguyên tắc âm dương hay giúp cơ thể cân bằng gì cả. Ăn chay là không sát sinh khi ăn thôi, nên nhiều người ăn chay rồi vẫn bệnh tật và đau ốm các chứng bệnh mà người ăn thịt mắc phải.
 

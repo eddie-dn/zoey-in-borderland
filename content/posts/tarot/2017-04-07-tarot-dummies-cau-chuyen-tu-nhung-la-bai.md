@@ -13,9 +13,11 @@ cover: /media/2017/tarot-dummies-cau-chuyen-tu-nhung-la-bai/bia.png
 coverAlt: "[Tarot for Dummies] - 10 điều cơ bản về Tarot mà ai cũng nhầm"
 ---
 
-## ***Tarot for Dummies - 10 điều cơ bản thuộc chuỗi series Tự học Tarot cho Người mới bắt đầu***
+*Tarot for Dummies — 10 điều cơ bản, thuộc chuỗi series Tự học Tarot cho người mới bắt đầu.*
 
 ---
+
+## Mười câu hay lải nhải mỗi lần nhận người mới
 
 Có mười câu mình hay lải nhải mỗi lần nhận người mới để dạy, đó là:
 
@@ -31,7 +33,9 @@ Có mười câu mình hay lải nhải mỗi lần nhận người mới để 
 - Dù có ra cùng một trải bài cho hai câu hỏi khác nhau, thì chúng ta vẫn có thể đọc và cảm nhận năng lượng bài theo cách hoàn toàn khác. Không có *câu trả lời chung* cho một trải bài giống nhau.
 - Tarot không dừng ở việc mở ra tương lai, mà còn là lời nhắc của quá trình hiện tại, bài học, kinh nghiệm trong suốt một đoạn thời gian dài của một người. Đó là lí do, nhiều khi Tarot gợi ý và nhắc về xu hướng hành động của một người trong một đoạn thời gian lặp lại và dài.
 
-Một số lưu ý về thuật ngữ sử dụng trong bài này:
+## Một số lưu ý về thuật ngữ
+
+Mấy chữ dùng trong bài này:
 
 - ***Tarot Reader:*** không phải là *"Predictor"* nha, nên cụm này nghĩa là "người đọc Tarot". Như đã nói ở trên, *"đọc"* chứ không phải *"giải"* hay *"bói"* bởi vì một bộ bài Tarot đưa ra các xu thế khác nhau của chính nó khi giải (tôi nói tới tính cách) và câu chuyện người được giải. Tarot là kể chuyện, không phải bói hoàn toàn. Từ "đọc" ở đây theo tôi hiểu là một trải bài hay/dở phụ thuộc vào cách người đọc bài truyền tải cho bạn câu chuyện của lá bài.
 - ***Querent:*** Là mấy bạn đi coi bài, chờ trẹo cổ để được *Tarot Reader* giải bài. Nhiều khi thấy bài nó rớt xuống cũng đoán nghĩa có vẻ đúng một mớ. Ấy mà sao nghe đứa giải bài đọc không liên quan gì nhỉ? Nói vui tí là vì hệ qui chiếu mỗi người khác nhau nên một cây bài ám chỉ vô vàn nghĩa theo mỗi kiểu mỗi người đọc.

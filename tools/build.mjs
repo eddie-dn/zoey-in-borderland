@@ -158,6 +158,26 @@ const NHAN = {
   noNotes     : 'Chưa có ghi chú nào.',
   allNotes    : 'All',
   filter      : 'Filter',
+  /* Ô viết ghi chú — chỉ chủ trang thấy, nên KHÔNG theo lệ tiếng Anh của phần
+     khung. Lệ ấy có lý do là để phần khung không lẫn vào bài tiếng Việt; ô này
+     thì chẳng ai ngoài chủ trang đọc, mà chủ trang thì đọc tiếng Việt nhanh
+     hơn. Xem docs/CAI-DAT.md §6. */
+  gcWrite     : 'Viết ghi chú',
+  gcKeyId     : 'Mã chủ',
+  gcKey       : 'Khoá',
+  gcKeySave   : 'Nhớ khoá trên máy này',
+  gcKeyForget : 'Quên khoá',
+  gcKeyMissing: 'Nhập đủ hai ô.',
+  gcDate      : 'Ngày',
+  gcKind      : 'Loại',
+  gcBody      : 'Nội dung',
+  gcBodyEmpty : 'Chưa có chữ nào.',
+  gcPost      : 'Đăng',
+  gcPosting   : 'Đang gửi…',
+  gcPosted    : 'Xong — ghi chú đã lên trang.',
+  gcPostFail  : 'Không gửi được. Kiểm tra lại khoá hoặc mạng.',
+  gcDel       : 'Xoá ghi chú',
+  gcDelFail   : 'Không xoá được.',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -219,7 +239,9 @@ const NHAN = {
 
   /* ── sổ lịch sử phiên bản ── */
   history     : 'Version history',
-  builds      : '{n} builds · source: docs/LICH-SU.md',
+  /* Chỉ đếm số bản dựng. Chỗ file nguồn là việc của người viết blog, không
+     phải của người đọc — và người viết thì đã biết rồi. */
+  builds      : '{n} builds',
   patches     : '{n} patches recorded in this build',
   noInfo      : 'no info',
   close       : 'Close',
@@ -574,6 +596,23 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  (CAU.luotXem || {}).bat
                    ? `data-xem-api="${attr(BASE + ((CAU.luotXem || {}).api || '/api/xem'))}" ` +
                      `data-xem-nhan="${attr(JSON.stringify({ one: NHAN.view1, many: NHAN.views }))}"`
+                   : '',
+                 /* Ghi chú đăng thẳng. CHỈ in ở /notes/ — mọi trang khác không
+                    có danh sách ghi chú nào để mà chèn vào, in ra là mời người
+                    ta đi mò một đường API chẳng dùng được ở đó. */
+                 (duong === '/notes/' && (CAU.ghiChu || {}).online)
+                   ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
+                     `data-gc-nhan="${attr(JSON.stringify({
+                        all: NHAN.allNotes,    write: NHAN.gcWrite,
+                        keyId: NHAN.gcKeyId,   keySecret: NHAN.gcKey,
+                        keySave: NHAN.gcKeySave, keyForget: NHAN.gcKeyForget,
+                        keyMissing: NHAN.gcKeyMissing,
+                        date: NHAN.gcDate,     kind: NHAN.gcKind,
+                        body: NHAN.gcBody,     bodyMissing: NHAN.gcBodyEmpty,
+                        post: NHAN.gcPost,     posting: NHAN.gcPosting,
+                        posted: NHAN.gcPosted, postFail: NHAN.gcPostFail,
+                        del: NHAN.gcDel,       delFail: NHAN.gcDelFail
+                      }))}"`
                    : ''
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
@@ -852,8 +891,19 @@ const P_ZZ   = 'M35 13C35 20 35 28 35 35C31 31 28 28 24 24C20 20 17 17 13 13C13 
    hình đọc ra là BỤNG DƯỚI ĐANG XOAY: mỗi nút bò tới đúng nút tương ứng của
    nó, nên bụng dưới của chữ B là thứ vòng ra thành thuỳ dưới của vô cực. Xếp
    lệch thứ tự thì hai hình vẫn nội suy được, nhưng các nút bò chéo qua nhau và
-   mắt chỉ đọc ra một mớ nét đang quẫy. */
-const P_B    = 'M16 24C30 26 30 38 16 40C16 35 16 29 16 24C30 22 30 10 16 8C16 13 16 19 16 24';
+   mắt chỉ đọc ra một mớ nét đang quẫy.
+
+   ── VÌ SAO SỐNG LƯNG Ở x=19 CHỨ KHÔNG PHẢI x=16 ──
+   Chữ B chiếm bề ngang từ sống lưng tới chỗ bụng phình xa nhất. Với nút điều
+   khiển ở x=33 thì chỗ phình rơi vào x≈29,5, nên cả chữ nằm trong quãng 19…29,5
+   và tâm của nó là 24,25 — đúng tâm khung. Để sống lưng ở 16 như bản trước thì
+   tâm chữ rơi vào 21,25, lệch trái gần ba đơn vị.
+
+   Lệch ấy không chỉ xấu lúc đứng yên. Chặng sau, chữ B xoay 180° QUANH TÂM
+   KHUNG: hình càng lệch tâm thì cú xoay càng thành một cú văng ngang, và cái
+   đang kể — "bụng dưới vòng ra thành thuỳ dưới của vô cực" — bị cú văng ấy
+   nuốt mất. Canh giữa rồi thì nó xoay tại chỗ. */
+const P_B    = 'M19 24C33 26 33 38 19 40C19 35 19 29 19 24C33 22 33 10 19 8C19 13 19 19 19 24';
 
 /* ── NÉT NỐI — CHỮ i ──
    Nối ĐỈNH PHẢI của chữ Z (35,13) xuống ĐÁY TRÁI của nó (13,35). Đó đúng là
@@ -914,27 +964,73 @@ function logoHTML(dong) {
      hoa có thêm hai nét âm thầm chạy chữ Z ở dưới lớp mờ, tốn việc vẽ mà không
      ai nhìn thấy.
 
-     Hai vành tròn đồng tâm là thứ làm nó đọc ra là MANDALA chứ không phải một
-     bông hoa tám cánh: mandala luôn có đường viền khép vòng ngoài và một tâm
-     rõ ràng. Thiếu chúng thì tám cánh chỉ toả ra rồi hết, không có chỗ dừng. */
+     Ba vành tròn đồng tâm là thứ làm nó đọc ra là MANDALA chứ không phải một
+     bông hoa tám cánh: mandala luôn có đường viền khép vòng ngoài, một vành
+     giữa và một tâm rõ ràng. Thiếu chúng thì tám cánh chỉ toả ra rồi hết,
+     không có chỗ dừng.
+
+     ── VÌ SAO MỖI LỚP MỘT THẺ <g> RIÊNG ──
+     Vòng xoay phải đọc ra là BÁNH XE: mỗi lớp chạy một tốc độ, lớp ngoài vượt
+     lên, lớp giữa tụt lại, lõi thì xoáy nhanh nhất. Muốn vậy thì mỗi lớp phải
+     xoay được RIÊNG, mà phép xoay 45°/135° của hai cánh sao lại là `transform`
+     viết thẳng trên thẻ <path> — CSS mà đặt `transform` lên chính thẻ ấy thì nó
+     ĐÈ mất, không cộng vào. Bọc thêm một lớp <g> là chỗ để CSS xoay mà không
+     đụng tới phép xoay nền của từng cánh.
+
+     ── VÌ SAO VÀNH PHẢI ĐỨT NÉT ──
+     Vành liền trơn xoay quanh tâm nó thì vẫn là chính nó: xoay bao nhiêu cũng
+     không ai thấy. Đứt nét thì mỗi vạch là một cái nan hoa, và bánh xe mới có
+     cái để quay. Bề rộng vạch khai ở layout.css. */
   const mandala = `<g class="lg-man" fill="none" stroke="currentColor">
-      <path class="lg-canh" d="${P_INF1}" transform="rotate(45 24 24)"/>
-      <path class="lg-canh" d="${P_INF1}" transform="rotate(135 24 24)"/>
-      <circle class="lg-vanh" cx="24" cy="24" r="21.5"/>
-      <circle class="lg-vanh" cx="24" cy="24" r="6"/>
+      <g class="lg-vanh-g lg-vanh-g--ngoai"><circle class="lg-vanh lg-vanh--ngoai" cx="24" cy="24" r="21.5"/></g>
+      <g class="lg-vanh-g lg-vanh-g--giua"><circle class="lg-vanh lg-vanh--giua" cx="24" cy="24" r="13.5"/></g>
+      <g class="lg-vanh-g lg-vanh-g--trong"><circle class="lg-vanh lg-vanh--trong" cx="24" cy="24" r="6"/></g>
+      <g class="lg-canh-g">
+        <path class="lg-canh" d="${P_INF1}" transform="rotate(45 24 24)"/>
+        <path class="lg-canh" d="${P_INF1}" transform="rotate(135 24 24)"/>
+      </g>
     </g>`;
 
   /* ── BỤI ──
-     Toạ độ TÍNH RA lúc dựng chứ không gõ tay: mười tám hạt rải đều theo góc,
-     bán kính so le theo một chu kỳ không chia hết cho mười tám nên không hạt
-     nào xếp thành hàng với hạt nào. Gõ tay mười tám cặp số thì kiểu gì cũng
-     lọt ba bốn hạt thẳng hàng, và mắt bắt được ngay cái hàng ấy.
+     Mười tám hạt: rải đều theo GÓC, bán kính so le theo một chu kỳ không chia
+     hết cho mười tám nên không hạt nào xếp thành hàng với hạt nào. Tính ra lúc
+     dựng chứ không gõ tay — gõ tay mười tám cặp số thì kiểu gì cũng lọt ba bốn
+     hạt thẳng hàng, và mắt bắt được ngay cái hàng ấy.
 
-     Mỗi hạt mang sẵn hướng dạt, độ sâu rơi và độ trễ của riêng nó trong ba
-     biến CSS. Nhờ vậy CẢ MƯỜI TÁM dùng chung đúng một @keyframes mà vẫn rơi
-     mỗi hạt một kiểu — viết mười tám bộ keyframes thì cùng một hiệu ứng phải
-     sửa mười tám chỗ. */
-  const bui = `<g class="lg-bui" fill="currentColor"><circle cx="30.6" cy="26.4" r="0.9" style="--bx:-6px;--by:22px;--bt:0.0"/><circle cx="34.7" cy="33.0" r="2.0" style="--bx:5px;--by:35px;--bt:0.214"/><circle cx="28.0" cy="30.9" r="1.56" style="--bx:-1px;--by:29px;--bt:0.428"/><circle cx="26.6" cy="38.8" r="1.12" style="--bx:10px;--by:23px;--bt:0.092"/><circle cx="22.4" cy="32.9" r="2.22" style="--bx:4px;--by:36px;--bt:0.306"/><circle cx="16.0" cy="37.8" r="1.78" style="--bx:-2px;--by:30px;--bt:0.519"/><circle cx="16.3" cy="30.4" r="1.34" style="--bx:9px;--by:24px;--bt:0.183"/><circle cx="8.0" cy="29.8" r="0.9" style="--bx:3px;--by:37px;--bt:0.397"/><circle cx="13.0" cy="24.0" r="2.0" style="--bx:-3px;--by:31px;--bt:0.061"/><circle cx="7.1" cy="17.8" r="1.56" style="--bx:8px;--by:25px;--bt:0.275"/><circle cx="14.8" cy="16.3" r="1.12" style="--bx:2px;--by:38px;--bt:0.489"/><circle cx="14.5" cy="7.5" r="2.22" style="--bx:-4px;--by:32px;--bt:0.153"/><circle cx="21.8" cy="11.2" r="1.78" style="--bx:7px;--by:26px;--bt:0.367"/><circle cx="25.2" cy="17.1" r="1.34" style="--bx:1px;--by:39px;--bt:0.031"/><circle cx="31.0" cy="11.9" r="0.9" style="--bx:-5px;--by:33px;--bt:0.244"/><circle cx="30.1" cy="18.9" r="2.0" style="--bx:6px;--by:27px;--bt:0.458"/><circle cx="38.1" cy="18.9" r="1.56" style="--bx:0px;--by:40px;--bt:0.122"/><circle cx="33.0" cy="24.0" r="1.12" style="--bx:-6px;--by:34px;--bt:0.336"/></g>`;
+     ── BAY RA, KHÔNG RƠI XUỐNG ──
+     Mỗi hạt đi theo ĐÚNG PHƯƠNG BÁN KÍNH của chỗ nó đang đứng, cộng một chút
+     trôi LÊN. Bản trước cho cả mười tám hạt rơi thẳng xuống, và cái ấy đọc ra
+     là mảnh vụn rụng chứ không phải bụi. Mandala cát bị xoá thì bụi toả ra từ
+     tâm rồi trôi đi — hướng bay phải nói được rằng có một cú vỡ ở GIỮA.
+
+     Mỗi hạt mang sẵn hướng bay, quãng bay và độ trễ của riêng nó trong ba biến
+     CSS. Nhờ vậy CẢ MƯỜI TÁM dùng chung đúng một @keyframes mà vẫn bay mỗi hạt
+     một kiểu — viết mười tám bộ keyframes thì cùng một hiệu ứng phải sửa mười
+     tám chỗ.
+
+     Ba con số 5, 7, 3 dưới đây đều nguyên tố cùng nhau với 18: nhờ vậy bán
+     kính, cỡ hạt và quãng bay mỗi thứ chạy hết một vòng riêng của nó trước khi
+     lặp lại, không có hai hạt nào trùng cả ba. */
+  const SO_HAT = 18;
+  const bui = `<g class="lg-bui" fill="currentColor">` +
+    Array.from({ length: SO_HAT }, (_, i) => {
+      const goc = (i / SO_HAT) * Math.PI * 2;
+      const r   = 8 + (i * 5) % 11;            /* chỗ đứng: 8…18 tính từ tâm */
+      const co  = 0.7 + ((i * 7) % 5) * 0.32;  /* cỡ hạt: 0,70…1,98 */
+      /* Quãng bay 11…17, cộng với chỗ đứng 8…18 là hạt dừng ở bán kính 19…35.
+         Khung chỉ rộng 48 nên nửa khung là 24: hạt nào bay quá số ấy thì bị
+         khung CẮT MẤT — svg mặc định không cho vẽ tràn ra ngoài viewBox. Quãng
+         này canh để chúng chỉ ra tới rìa vào lúc đã mờ gần hết, nên cú cắt rơi
+         vào chỗ không ai thấy. Bản trước bay 15…28 và bị cắt ngay giữa lúc còn
+         rõ nét — đó là vì sao cú vỡ trông như bụi biến mất chứ không như bụi bay. */
+      const xa  = 11 + ((i * 3) % 7) * 1.0;    /* quãng bay: 11…17 */
+      const n   = (v) => v.toFixed(1);
+      return `<circle cx="${n(24 + Math.cos(goc) * r)}" cy="${n(24 + Math.sin(goc) * r)}"`
+        + ` r="${co.toFixed(2)}"`
+        + ` style="--bx:${n(Math.cos(goc) * xa)}px`
+        + `;--by:${n(Math.sin(goc) * xa - 5 - (i % 3) * 1.8)}px`
+        + `;--bt:${(((i * 7) % SO_HAT) / SO_HAT).toFixed(3)}"/>`;
+    }).join('') + `</g>`;
 
   return `<svg class="logo${dong ? ' logo--dong' : ''}" viewBox="0 0 48 48"` +
     ` aria-hidden="true" focusable="false">` +
@@ -946,8 +1042,14 @@ function logoHTML(dong) {
     </g>` : '') +
     `<g class="lg-hoa">` +
       (dong ? mandala : '') +
-      net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.38', '.44') : '') +
-      net('lg-vc--2', P_INF2, dong ? bien(P_B, P_INF2, '.50', '.58') : '') +
+      /* Hai vô cực GỐC nằm chung một nhóm để cả cặp mờ/tỏ cùng nhau ở chặng
+         nhấp nháy — bốn cánh gốc nhạt đi đúng lúc bốn cánh mandala đậm lên.
+         Độ mờ của nhóm NHÂN với độ mờ của từng nét, nên lg-n1/lg-n2 vẫn giữ
+         nguyên quyền tắt-bật nét của chúng ở các chặng kể chuyện. */
+      `<g class="lg-goc">` +
+        net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.38', '.44') : '') +
+        net('lg-vc--2', P_INF2, dong ? bien(P_B, P_INF2, '.50', '.58') : '') +
+      `</g>` +
     `</g>` +
     (dong ? bui : '') +
     `</svg>`;
@@ -962,7 +1064,17 @@ function tocHTML(headings) {
      mọi trang bài còn lại — hai khung cho cùng một loại nội dung. Chữa bằng cách
      BÀI NÀO CŨNG CÓ MỤC LỤC thì chỉ còn một khung. Bộ kiểm định canh bài không
      có tiêu đề mục nào. */
-  if (!headings.length) return '';
+  /* ── CỘT BÊN LUÔN CÓ MẶT, MỤC LỤC THÌ KHÔNG ──
+     Bản trước trả về chuỗi rỗng khi bài không có tiêu đề mục nào, và mất theo
+     nó là CẢ cột bên — kể cả ô trích dẫn vốn chẳng liên quan gì tới mục lục.
+     Lưới vẫn giữ chỗ cho cột ấy, nên bài không mục lục hiện ra với một khoảng
+     rộng trống hoác bên phải: đúng hai khung khác nhau cho cùng một loại nội
+     dung, thứ mà cả phần chú thích này vốn dựng ra để tránh.
+
+     Nay cột bên luôn có ô trích dẫn, còn mục lục chỉ thêm vào khi có mục. Mọi
+     trang bài — bài mới dài có mục, bài cũ ngắn không mục — dùng đúng một
+     khung. Bài rất ngắn không có mục nào là chuyện bình thường, không phải lỗi
+     cần người viết bịa tiêu đề ra chữa. */
   const li = headings.map((h) =>
     `<li class="lvl-${h.cap}"><a href="#${h.id}">${escapeHtml(h.chu)}</a></li>`).join('');
   /* Mục lục và ô trích dẫn gói chung trong MỘT khối bên lề. Trước đây mục lục
@@ -970,13 +1082,13 @@ function tocHTML(headings) {
      thêm một ô lưới nữa, và hai khối dính-khi-cuộn riêng lẻ sẽ chồng lên nhau
      lúc cuộn. Gói lại thì chỉ một khối dính, và thứ tự bên trong tự đúng. */
   return `<aside class="ben">
-    <details class="toc-box" open>
+    ${headings.length ? `<details class="toc-box" open>
       <summary>${NHAN.contents}</summary>
       <nav class="toc" aria-label="${NHAN.onThisPage}">
         <div class="toc-title">${NHAN.onThisPage}</div>
         <ol>${li}</ol>
       </nav>
-    </details>
+    </details>` : ''}
     ${oQuote('quote-tab', { nhip: 2 })}
   </aside>`;
 }
@@ -2078,13 +2190,21 @@ function docGhiChu() {
 function trangGhiChu() {
   const ds = docGhiChu();
   const loai = [...new Set(ds.map((x) => x.loai).filter(Boolean))];
+  /* Thẻ <nav> LUÔN in ra, kể cả lúc rỗng — ghi-chu.js cần một cái neo sẵn để
+     dựng lại hàng nút sau khi chèn ghi chú mới từ mạng (ghi chú mới có thể
+     mang một loại chưa từng có nút nào). `hidden` lo phần không bày ra khi
+     chưa đủ hai loại; không JavaScript thì nó ở nguyên như build in ra. */
+  const locHTML = `<nav class="gc-loc" data-gc-loc aria-label="${NHAN.filter}"` +
+    `${loai.length > 1 ? '' : ' hidden'}>` +
+    (loai.length > 1
+      ? `<button type="button" class="chip chip--nay" data-loai="">${NHAN.allNotes}</button>` +
+        loai.map((x) => `<button type="button" class="chip" data-loai="${attr(x)}">` +
+          `${escapeHtml(x)}<span class="chip-so">${ds.filter((y) => y.loai === x).length}</span>` +
+          `</button>`).join('')
+      : '') + `</nav>`;
+
   const than = ds.length ? `
-    ${loai.length > 1 ? `<nav class="gc-loc" data-gc-loc aria-label="${NHAN.filter}">
-      <button type="button" class="chip chip--nay" data-loai="">${NHAN.allNotes}</button>
-      ${loai.map((x) => `<button type="button" class="chip" data-loai="${attr(x)}">` +
-        `${escapeHtml(x)}<span class="chip-so">${ds.filter((y) => y.loai === x).length}</span>` +
-        `</button>`).join('')}
-    </nav>` : ''}
+    ${locHTML}
     <ol class="gc-ds">${ds.map((x) => `
       <li class="gc-mot" data-loai="${attr(x.loai)}">
         <div class="gc-dau">
@@ -2092,7 +2212,7 @@ function trangGhiChu() {
           ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
         </div>
         <div class="gc-chu prose">${x.html}</div>
-      </li>`).join('')}</ol>` : `<p class="ds-trong">${NHAN.noNotes}</p>`;
+      </li>`).join('')}</ol>` : `${locHTML}<p class="ds-trong">${NHAN.noNotes}</p>`;
 
   return trangDanhSach({
     tieuDe: NHAN.notes,

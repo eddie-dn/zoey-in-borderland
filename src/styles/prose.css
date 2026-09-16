@@ -57,7 +57,10 @@
 /* Ảnh và video được nhiều chỗ thở hơn chữ, nhưng 1.9 thì thành một khoảng
    trắng to bằng cả đoạn văn. 1.45 vẫn tách bạch mà không làm đứt bài. */
 .prose > * + figure,.prose > figure + *{margin-top:calc(var(--flow) * 1.45)}
-.prose > * + hr,.prose > hr + *{margin-top:calc(var(--flow) * 1.9)}
+/* 1.9 → 1.5. Vạch ✦✦✦ là chỗ ĐỔI CẢNH, nên nó cần thở — nhưng 1,9 nhịp ở hai
+   phía cộng với chiều cao của chính cái vạch là hơn 100px trống giữa bài, đủ
+   để người đọc tưởng bài đã hết. 1,5 vẫn tách hẳn hai cảnh mà không cắt bài. */
+.prose > * + hr,.prose > hr + *{margin-top:calc(var(--flow) * 1.5)}
 .prose > * + .callout,.prose > .callout + *{margin-top:calc(var(--flow) * 1.5)}
 
 /* ── TIÊU ĐỀ TRONG BÀI ── */
@@ -372,7 +375,11 @@
   padding-left:var(--s4);
   border-left:2px solid var(--line);   /* tách khỏi thân bài, không lẫn vào đoạn đầu */
 }
-.post-cover{margin-bottom:var(--s8)}
+/* Ảnh bìa KHÔNG tự khai khoảng cách dưới nữa. Nó là `<figure>`, nên luật nhịp
+   dọc `.prose > figure + *` đã cho nó 1,45 nhịp rồi; khai thêm 40px ở đây là
+   cộng dồn thành hơn 60px, và đoạn mở bài bị đẩy rời hẳn khỏi tấm ảnh nó đang
+   nói về. Quy tắc của file này — khoảng cách là thuộc tính của CẶP, chỉ dùng
+   margin-top — bị chính dòng cũ ấy phá. */
 
 /* Nút chép mã — do media.js dựng lên, nên style nằm sau khối pre ở trên.
    Mờ sẵn, rõ hẳn khi rê vào khối mã; trên máy cảm ứng thì luôn rõ vì không

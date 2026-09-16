@@ -678,8 +678,14 @@
 .quote-tab .q-ai{font-size:12px}
 .quote-tab .q-nut{bottom:var(--s2);right:var(--s2);width:26px;height:26px}
 .quote-tab .q-nut svg{width:13px;height:13px}
-/* Màn thấp: mục lục được ưu tiên giữ, ô trích dẫn nhường chỗ. */
-@media (max-height:700px){.quote-tab{display:none}}
+/* Màn THẤP mà cột bên đang DÍNH khi cuộn: cả cột phải lọt trong một màn hình,
+   nên mục lục được ưu tiên giữ và ô trích dẫn nhường chỗ.
+
+   Phải kèm điều kiện bề ngang. Thiếu nó thì một cái điện thoại xoay ngang —
+   cao 390px, thừa sức thấp hơn 700 — cũng mất ô trích dẫn, trong khi ở khổ ấy
+   trang đã đổ về MỘT CỘT và ô trích dẫn nằm trong dòng chảy bài, chẳng dính
+   vào đâu mà phải lọt vừa màn nào cả. */
+@media (max-height:700px) and (min-width:1080px){.quote-tab{display:none}}
 /* ══════════ GHI CHÚ NGẮN (/notes/) ══════════
    Không phải danh sách bài. Mỗi ghi chú là một khối chữ ngắn có ngày ở lề
    trái — khuôn của một cuốn sổ tay, không phải của một trang blog.
@@ -719,6 +725,69 @@
   .gc-mot{grid-template-columns:1fr;gap:var(--s3);padding:var(--s5) 0}
   .gc-dau{flex-direction:row;align-items:baseline;gap:var(--s3)}
 }
+
+/* ── Ô VIẾT GHI CHÚ (/notes/#viet) ──
+   Chỉ chủ trang mở tới, nên nó KHÔNG cố hoà vào trang: một tấm nền chìm có
+   viền đứt, đọc ra ngay là "chỗ làm việc", không phải nội dung. Người đọc
+   thường không bao giờ gặp khối này (ghi-chu.js chỉ dựng nó khi địa chỉ có
+   #viet), nên nó được phép trông khác. */
+.gc-viet{
+  margin-bottom:var(--s8);
+  padding:var(--s5) var(--s5) var(--s6);
+  border-radius:var(--r-md);
+  border:1px dashed var(--line-strong);
+  background:var(--surface-sunken);
+  display:flex;flex-direction:column;gap:var(--s4);
+}
+.gc-viet-de{
+  margin:0;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+}
+/* `auto-fit` chứ không phải hai cột cứng: ở màn hẹp hai ô tự xuống dòng mà
+   không cần thêm một câu @media nào. */
+.gc-hang{
+  display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+}
+.gc-o{display:flex;flex-direction:column;gap:6px}
+.gc-o > span{
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+}
+.gc-o :is(input,textarea){
+  font:inherit;font-size:var(--fs-sm);color:var(--text);
+  padding:var(--s2) var(--s3);
+  border:1px solid var(--line-strong);border-radius:var(--r-xs);
+  background:var(--surface-solid);
+  /* Thiếu dòng này thì <textarea> tràn khỏi ô lưới ở màn hẹp: bề ngang mặc
+     định của nó tính theo số cột chữ, không theo khung cha. */
+  width:100%;box-sizing:border-box;
+}
+.gc-o textarea{resize:vertical;line-height:var(--lh-body);font-family:var(--font-body)}
+.gc-o :is(input,textarea):focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);
+}
+.gc-nut{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:center}
+.gc-noi{margin:0;font-size:var(--fs-2xs);color:var(--text-muted);min-height:1em}
+.gc-noi--hong{color:var(--bad)}
+
+/* Nút xoá nằm trong cột ngày, dưới nhãn loại — chỗ trống sẵn có, không phải
+   chen vào giữa chữ. Mờ sẵn, rõ khi rê vào cả khối: nó là việc dọn dẹp, không
+   phải thứ mắt phải thấy mỗi lần đọc. */
+.gc-xoa{
+  align-self:start;margin-top:2px;
+  width:22px;height:22px;padding:0;
+  border:1px solid var(--line-strong);border-radius:50%;
+  background:var(--surface-solid);color:var(--text-faint);
+  font:inherit;font-size:14px;line-height:1;cursor:pointer;
+  opacity:0;transition:opacity var(--dur-fast),color var(--dur-fast);
+}
+.gc-mot:hover .gc-xoa,.gc-xoa:focus-visible{opacity:1}
+.gc-xoa:hover{color:var(--bad);border-color:var(--bad)}
+@media (hover:none){.gc-xoa{opacity:.7}}
 /* ══════════ THƯ MỤC CHUYÊN MỤC (/posts/) ══════════
    Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới
    nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này

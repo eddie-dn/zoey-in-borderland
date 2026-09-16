@@ -12,6 +12,7 @@
     "clean": "rm -rf dist",
     "ver": "node tools/version.mjs",
     "kiem": "node tools/kiem-dinh.mjs",
+    "gc": "node tools/ghi-chu-keo.mjs",
     "anh": "node tools/anh.mjs",
     "bia": "node tools/bia.mjs",
     "nen": "node tools/nen.mjs",

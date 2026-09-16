@@ -230,7 +230,7 @@
   function dungThac() {
     /* Sáu màu lấy thẳng từ bảng Tĩnh lặng trong tokens.css — trắng và suong
        cho phần bọt sáng, suoi/reu/troi cho thân nước. */
-    var MAU = ['#FFFFFF', '#E6F1F2', '#9BD3DA', '#A8DED6', '#C2DCEE', '#7FBECB'];
+    var MAU = ['#FFFFFF', '#E5F0F8', '#9FD3EA', '#A8DED6', '#BAD9F4', '#7FB6D8'];
     var vet = [], giot = [], gon = [], suong = [];
     var mn = 0;          /* y của mặt nước */
 

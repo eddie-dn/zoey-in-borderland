@@ -334,7 +334,113 @@ chỉ ngắn đi một mục — không có dòng đỏ nào trong console của
 
 ---
 
-## 6 · Bảng tra nhanh: cái gì hỏng thì mất gì
+## 6 · Ghi chú đăng thẳng — tuỳ chọn, mặc định TẮT
+
+Bắt gặp một quyển sách, một bản nhạc, một ý thoáng qua — muốn ghi ngay mà không
+phải mở máy, sửa `content/ghi-chu.md`, chạy build rồi đẩy lên. Mục này mở một
+cửa: vào `/notes/#viet` trên điện thoại, gõ, xong, ghi chú lên trang liền.
+
+> **Đây là chỗ đứng tạm, không phải nhà.** Ghi chú đăng kiểu này chỉ hiện khi
+> trình duyệt chạy JavaScript, không có trong RSS, sitemap hay chỉ mục tìm
+> kiếm, và bản sao lưu duy nhất của nó là Cloudflare. Nhà của ghi chú vẫn là
+> `content/ghi-chu.md`. Xem mục **6.5** để kéo chúng về.
+
+### 6.1 · Dùng chung D1 với mục 5
+
+Không cần tạo cơ sở dữ liệu thứ hai — hàm này tìm đúng biến `DB` như hàm đếm
+lượt xem. Chưa làm mục 5 thì làm **5.1** và **5.2** trước, phần tạo bảng `xem`
+bỏ qua cũng được.
+
+Bảng `ghi_chu` **không phải tạo tay**: lượt đăng đầu tiên tự tạo. Chép ra đây
+để biết trong đó có gì:
+
+```sql
+CREATE TABLE IF NOT EXISTS ghi_chu (
+  ma   TEXT PRIMARY KEY,
+  ngay TEXT NOT NULL,
+  loai TEXT NOT NULL DEFAULT '',
+  chu  TEXT NOT NULL,
+  luc  TEXT NOT NULL,
+  xoa  INTEGER NOT NULL DEFAULT 0
+);
+```
+
+`xoa` là **xoá mềm**: bấm × trên trang chỉ đánh dấu `xoa = 1`, dòng vẫn nằm đó.
+Muốn dọn hẳn thì vào Console của D1 mà `DELETE`.
+
+### 6.2 · Đặt hai vế khoá
+
+Pages project → **Settings** → **Variables and Secrets** → **Add**, kiểu
+**Secret** (không phải Plaintext — Plaintext hiện nguyên văn trên dashboard):
+
+| Variable name | Điền |
+|---|---|
+| **`GC_ID`** | mã chủ, ví dụ `zoey`. Biết được cũng chẳng sao |
+| **`GC_KEY`** | chuỗi bí mật, càng dài càng tốt. Đây mới là cái khoá |
+
+Sinh một chuỗi tử tế:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
+```
+
+Thêm cho **cả hai** môi trường (Production và Preview).
+
+> **Thiếu một vế là chặn hết, không phải mở hết.** Hàm coi "chưa đặt đủ khoá"
+> nghĩa là chưa cấu hình và từ chối mọi lượt ghi. Để trống **không** có nghĩa
+> là ai cũng đăng được.
+
+### 6.3 · Bật trong cấu hình
+
+```json
+"ghiChu": { "online": true, "api": "/api/ghi-chu" }
+```
+
+`npm run kiem` có phép kiểm canh: bật mà thiếu hàm, thiếu địa chỉ API trên
+`/notes/`, hoặc khai `api` trỏ đi chỗ khác, là báo đỏ.
+
+### 6.4 · Dùng
+
+Mở **`/notes/#viet`**. Lần đầu nó hỏi mã chủ và khoá; nhập xong thì trình duyệt
+nhớ trên **máy đó** — máy khác, trình duyệt khác, chế độ ẩn danh đều phải nhập
+lại. Lưu địa chỉ ấy vào màn hình chính điện thoại là một chạm ra ô viết.
+
+Ô viết nhận: ngày (mặc định hôm nay), loại (gõ gì cũng được, trang tự gom thành
+bộ lọc) và nội dung. Nội dung hiểu `**đậm**`, `*nghiêng*`, `` `mã` ``,
+`[chữ](địa-chỉ)` và ngắt đoạn bằng dòng trống — vừa đủ cho mấy dòng ghi nhanh.
+
+> **`#viet` không phải lớp bảo mật**, chỉ là chỗ cất cho khuất mắt. Lớp bảo mật
+> là hai vế khoá ở phía máy chủ: ai gõ đúng `#viet` cũng chỉ thấy một cái ô xin
+> khoá.
+
+Đăng được bằng dòng lệnh luôn, tiện cho phím tắt trên điện thoại:
+
+```bash
+curl -X POST https://ten-mien-cua-ban/api/ghi-chu \
+  -H 'x-gc-id: zoey' -H 'x-gc-key: KHOA-CUA-BAN' \
+  -H 'Content-Type: application/json' \
+  -d '{"ngay":"2026-09-16","loai":"sách","chu":"Mấy dòng."}'
+```
+
+### 6.5 · Kéo về nhà — `npm run gc`
+
+Chạy trước mỗi lần dựng. Nó xin ghi chú trên D1 về, ghi vào
+`content/ghi-chu.md`, **rồi mới** xoá bản trên D1 — ghi trước xoá sau, để máy có
+chết giữa chừng thì cùng lắm còn một bản thừa, chứ không mất trắng.
+
+```bash
+GC_ID=zoey GC_KEY=KHOA-CUA-BAN npm run gc
+npm run gc -- --thu     # chỉ xem sẽ kéo về gì, không sửa gì
+```
+
+Kéo về rồi thì ghi chú thành ghi chú bình thường: vào RSS, vào tìm kiếm, đọc
+được khi tắt JavaScript, và nằm trong bản sao lưu của chính thư mục dự án.
+
+Quên khoá lúc chạy thì nó vẫn ghi vào file nhưng **không xoá được trên D1**, và
+nó nói thẳng ra như vậy — bỏ qua dòng cảnh báo ấy thì lần dựng sau `/notes/` sẽ
+hiện ghi chú hai lần.
+
+## 7 · Bảng tra nhanh: cái gì hỏng thì mất gì
 
 | Hỏng | Người đọc thấy gì |
 |---|---|
@@ -344,6 +450,9 @@ chỉ ngắn đi một mục — không có dòng đỏ nào trong console của
 | Apps Script hết hạn quyền | Bình luận cũ không tải được, form vẫn gửi được. Không có thông báo lỗi to. |
 | Chưa khai `GEMINI_KEY` | Ô trích dẫn dùng kho câu sẵn. Không phân biệt được. |
 | Gemini chậm quá 3 giây | Giữ nguyên câu từ kho sẵn. Không chớp, không nhảy. |
+| `ghiChu.online` = false, hoặc chưa gắn D1 | `/notes/` hiện đúng những ghi chú đã dựng sẵn. Không ai biết là có cửa `#viet`. |
+| Sai `GC_ID` / `GC_KEY` | Người đọc không thấy gì cả. Chủ trang mở `#viet` thì ô viết báo "Không gửi được". |
+| Tắt JavaScript | `/notes/` mất hàng nút lọc và mất những ghi chú chưa kéo về Markdown. Ghi chú dựng sẵn đọc đủ. |
 | Mất mạng hoàn toàn | Cả trang vẫn đọc được, trừ bình luận. Ô trích dẫn vẫn chạy. |
 
 Đây là chủ ý xuyên suốt: **không dịch vụ bên ngoài nào được phép làm hỏng việc
