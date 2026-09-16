@@ -50,6 +50,7 @@
   // Token thì NGƯỢC LẠI: GH_TOKEN là Secret, đặt ở Cloudflare →
   // Settings → Runtime → Variables and Secrets. Đừng bao giờ đưa vào file này.
   "vars": {
+    "GC_ID": "zoey",
     "GH_REPO": "eddie-dn/zoey-in-borderland",
     "GH_NHANH": "main"
   },
