@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V9.02 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
+| V9.01 | 2026-09-16 | 01 | trang chủ chỉ còn màn đầu; Read on đi thẳng sang Posts |
+| V9.00 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; vành đứt nét trở lại; xoáy nhoè rồi nổ; nghỉ 6,2 giây |
 | V8.09 | 2026-09-16 | 09 | ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
 | V8.08 | 2026-09-16 | 08 | gỡ hẳn lối #viet và #duyet cũ: trang ngoài thôi bị chèn ô đăng nhập |
 | V8.07 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
@@ -108,6 +111,59 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V9.02 — 16-Sep-2026
+
+- **Chip lọc nhỏ lại đúng cỡ của nó.** Ba thứ cùng phóng to một lúc: cỡ chữ
+  11px, giãn chữ .22em và lề trong 13px. Giãn .22em là gần một phần tư bề
+  ngang mỗi chữ cái — nhãn mười ký tự dôi ra thêm hai ký tự rưỡi chỉ vì khoảng
+  cách. Trên điện thoại sáu chip xếp thành ba hàng cao hơn cả danh sách chúng
+  đang lọc; nay còn một hàng.
+- **"Read next" thành dòng đơn.** Hai tấm thẻ kính to ngang một khối nội dung
+  thật, mà chỉ chở một tiêu đề và một ngày. Nay mỗi gợi ý là một dòng: loại
+  bên trái, tiêu đề ở giữa, ngày bên phải. Cùng chừng ấy chữ, một phần tư chỗ.
+- **Bỏ ô trích dẫn khỏi trang bài.** Một câu trích của người khác đặt cạnh bài
+  của mình thì nó tranh chỗ với chính bài ấy. Ô trích dẫn ở lại đúng hai nơi
+  nó thuộc về: màn đầu trang chủ và trang giới thiệu.
+- **Cột chữ rộng thêm** (54ch → 59ch) để lấp đúng chỗ vừa dôi ra bên phải,
+  thay vì kéo giãn khoảng cách cho đầy.
+- **Thu khoảng trống trên chân trang** từ 168px xuống 112px. Con số cũ là lề
+  dưới của trang CỘNG lề trên của chân trang — hai chỗ cùng chừa một khoảng
+  cho cùng một mối nối.
+- **Điện thoại bỏ nút Profile** ở màn đầu: thanh đầu trang đã có "ABOUT".
+
+## V9.01 — 16-Sep-2026
+
+- **Trang chủ chỉ còn màn đầu.** Dưới hero từng có thêm một khối: bài nổi bật
+  in to, lưới mấy bài còn lại, rồi hai đường dẫn sang Posts và Archive. Bỏ vì
+  nó kể lại thứ vừa nói — cột phải của hero đã liệt kê đúng ba bài ấy kèm
+  ngày. Người đọc không nhận thêm gì, chỉ nhận thêm một màn phải lướt qua.
+- **"Read on" đi thẳng sang /posts/** thay vì cuộn xuống khối vừa bỏ.
+- **Điện thoại nay THẤY ba bài ấy.** Trước đây danh sách bị giấu ở khổ dọc cho
+  hero vừa đúng một màn — được, vì cuộn xuống là gặp khối bài ở dưới. Bỏ khối
+  ấy mà vẫn giấu thì trang chủ trên điện thoại không còn một bài nào. Nay hero
+  cao tối thiểu một màn rồi nở theo nội dung: mở lên vẫn đúng một màn tên
+  blog, cuộn một nhịp là tới ba bài mới nhất.
+
+## V9.00 — 16-Sep-2026
+
+- **Xoay TRƯỚC rồi mới nối.** Bản trước nét nối quét vào lúc chữ Z còn đang
+  đứng, rồi cả cụm mới xoay ngang — thứ tự ấy kể sai: cái nút thắt thành hình
+  ở một tư thế rồi bị xoay đi, nên cú xoay đọc ra là chuyển cảnh chứ không
+  phải một bước dựng hình. Nay chữ Z tự xoay ngang một mình, đứng hở hai đầu
+  một nhịp, rồi nét nối mới tới khép chúng lại.
+- **Tám cánh MỞ RA từ bốn, không phải áp vào.** Cụm cánh sao nay nằm chồng
+  khít lên hai vô cực gốc suốt chặng kể chuyện, tới chặng mandala mới xoay
+  tách ra. Cùng chừng ấy cánh hiện lên, nhưng đường đi của chúng nói câu khác:
+  không phải "có thêm bốn cánh" mà "bốn cánh này vẫn ở đó, giờ mới xoè".
+- **Vành đứt nét trở lại.** Đường sóng thử ở bản trước nhìn riêng thì mượt
+  hơn, nhưng đặt cạnh tám cánh nhọn thì nó mềm quá và kéo mắt ra khỏi bông
+  hoa. Hai vòng đan nhau tuy thô hơn nhưng đứng đúng vai trò một cái nền.
+- **Xoáy nhoè rồi nổ.** Quãng cuối chạy tới 320°/% và thêm một lớp nhoè thật
+  (`filter:blur`) — trình duyệt vẽ từng khung sắc nét nên chỉ tăng tốc thôi
+  thì mắt vẫn bám được từng cánh. Nay cú vỡ đọc ra là bị xé, không phải là
+  một tấm hình quay rồi mờ đi.
+- **Dừng ở hình cuối 6,2 giây** (bản trước 4,3; bản đầu 2,2).
 
 ## V8.09 — 16-Sep-2026
 

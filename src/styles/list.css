@@ -80,13 +80,24 @@
   display:flex;flex-wrap:wrap;gap:var(--s2);
   margin-top:var(--s5);
 }
+/* ── CỠ CHIP: BA THỨ CÙNG PHÓNG TO MỘT LÚC ──
+   Bản trước để cỡ chữ --fs-2xs (11px) VÀ giãn chữ --ls-label (.22em) VÀ lề
+   trong 13px. Từng con số nghe đều nhỏ, nhưng .22em là gần một phần tư bề
+   ngang mỗi chữ cái — một nhãn mười ký tự dôi ra thêm hai ký tự rưỡi chỉ vì
+   khoảng cách. Cộng lề trong nữa thì "HÀ NỘI MƯA" chiếm gần nửa bề ngang màn
+   điện thoại, và sáu cái chip xếp thành ba hàng cao hơn cả danh sách chúng
+   đang lọc.
+
+   Giãn chữ rộng là để dành cho nhãn ĐỨNG MỘT MÌNH (eyebrow, tem chân trang) —
+   ở đó nó tạo nhịp. Trong một hàng chip thì mỗi chip đã có viền riêng làm
+   ranh giới rồi, không cần nhịp nào nữa. */
 .chip{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 13px 7px;border-radius:var(--r-pill);
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px 5px;border-radius:var(--r-pill);
   background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);
   color:var(--text-muted);text-decoration:none;
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:500;
-  letter-spacing:var(--ls-label);text-transform:uppercase;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
   transition:color var(--dur-fast),background var(--dur-fast),
              box-shadow var(--dur-fast);
 }
@@ -102,8 +113,10 @@
 }
 .chip--nay:hover{color:var(--btn-ink);background:var(--glass-tint)}
 .chip-so{
-  font-variant-numeric:tabular-nums;opacity:.6;font-weight:400;
+  font-variant-numeric:tabular-nums;opacity:.55;font-weight:400;
+  letter-spacing:0;
 }
+.chip-hang,.gc-loc{gap:5px}
 
 /* ══════════════ MÀN HERO ══════════════
    Khuôn tạp chí / catalogue triển lãm. Xem ghi chú ở hàm trangChu trong
@@ -607,10 +620,17 @@
    cuộn bám đáy, phần thừa dồn vào giữa. Màn càng cao thì khoảng trống càng
    rộng — đúng chiều ta muốn. */
 @media (max-width:1000px){
-  /* Khoá lại đúng MỘT màn. Bỏ danh sách ba bài rồi thì ba khối còn lại vừa
-     khít, không còn lý do để hero dài hơn màn hình. `min-height` giữ cho màn
-     rất thấp (điện thoại nằm ngang) không bóp chữ tới mức vỡ. */
-  .hero{height:calc(100svh - var(--header-h));min-height:480px}
+  /* ── THÔI KHOÁ ĐÚNG MỘT MÀN ──
+     Trước đây hero khổ dọc bị khoá cao đúng một màn, và danh sách ba bài bị
+     giấu đi cho vừa. Được, vì cuộn xuống là gặp ngay khối bài ở dưới.
+
+     Khối ấy nay đã bỏ (trang chủ chỉ còn màn đầu), nên giấu danh sách nữa thì
+     trang chủ trên điện thoại KHÔNG CÒN MỘT BÀI NÀO — chỉ có tên blog, một
+     câu trích dẫn và một cái nút. Đó không phải "đơn giản", đó là trống.
+
+     Nay hero cao TỐI THIỂU một màn rồi nở theo nội dung: mở lên vẫn thấy đúng
+     một màn tên blog như cũ, cuộn một nhịp là tới ba bài mới nhất, hết. */
+  .hero{min-height:calc(100svh - var(--header-h));height:auto}
   .hero-luoi{
     display:flex;flex-direction:column;justify-content:space-between;
     border-top:none;gap:var(--s4);
@@ -621,10 +641,17 @@
     min-height:0;
   }
 
-  /* Danh sách ba bài: giấu, không xoá. Khổ ngang vẫn cần nó, và giấu bằng CSS
-     thì máy tìm kiếm vẫn đọc được liên kết. */
-  .hero-cot--phai{display:none}
+  /* Ba bài mới nhất xuống dưới cùng, sau nút "Read on" — đúng thứ tự đọc:
+     tên blog → câu trích dẫn → lối đi tiếp → rồi mới tới danh sách. */
+  .hero-cot--phai{order:3;justify-content:flex-start;gap:var(--s4);flex:none;
+    padding-top:var(--s7);padding-bottom:var(--s8);
+    border-top:1px solid var(--line);margin-top:var(--s6)}
 
+  /* Cửa vào trang giới thiệu BIẾN MẤT ở khổ dọc. Ở khổ ngang nó là một dòng
+     nhãn 9px nép góc trái, gần như không tốn chỗ. Trên điện thoại thì nó đứng
+     một mình thành một dòng riêng ngay trên ô trích dẫn, và ở đó nó đọc ra
+     như một mục điều hướng — trong khi thanh đầu trang đã có "ABOUT" rồi. */
+  .hero-hoso{display:none}
   .hero-cot--trai{order:1;justify-content:flex-end;gap:var(--s4);flex:none}
   .hero-cot--giua{order:2;align-items:center;justify-content:flex-end;
     padding-bottom:var(--s7);flex:none}

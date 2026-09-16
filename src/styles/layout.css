@@ -130,7 +130,7 @@
    nó còn bốn cánh quay quanh tâm khác — hai tâm lệch nhau thì cả cụm giật mỗi
    lần đổi chặng. `view-box` cho mọi thứ chung một tâm 24,24. */
 :is(.logo--dong,.logo:not(.logo--dong)) :is(.lg-hoa,.lg-vc,.lg-ten,.lg-noi,
-    .lg-man,.lg-bui,.lg-canh-g,.lg-vanh-g,.lg-song-tho){
+    .lg-man,.lg-bui,.lg-canh-g,.lg-vanh-g){
   transform-box:view-box;transform-origin:50% 50%;
 }
 /* Hạt bụi thì NGƯỢC LẠI: `fill-box` để nó co quanh tâm CỦA CHÍNH NÓ. Lấy
@@ -173,6 +173,7 @@
    không phải một tấm ảnh đang xoay. */
 .logo--dong .lg-canh-g       {animation:lg-canh-g var(--lg-ck) linear infinite}
 .logo--dong .lg-vanh-g--ngoai{animation:lg-vanh-n var(--lg-ck) linear infinite}
+.logo--dong .lg-vanh-g--giua {animation:lg-vanh-g var(--lg-ck) linear infinite}
 .logo--dong .lg-vanh-g--trong{animation:lg-vanh-t var(--lg-ck) linear infinite}
 /* Nhấp nháy ĐỔI PHIÊN — xem @keyframes lg-nhay-goc */
 .logo--dong .lg-goc {animation:lg-nhay-goc  var(--lg-ck) var(--lg-nhip) infinite}
@@ -192,43 +193,37 @@
    `miterlimit` phải đủ lớn: mũi nhọn ở đây mở chừng 50°, và mức mặc định 4 đã
    cắt nó thành đầu vát ngay từ khoảng 29°. */
 .lg-canh{stroke-width:1.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10}
-/* ── VÌ SAO VÀNH NGOÀI THÔI ĐỨT NÉT ──
-   Một vành LIỀN TRƠN xoay quanh tâm nó thì vẫn là chính nó: xoay bao nhiêu
-   cũng không ai thấy. Đó là lý do ba vành cũ đều đứt nét — mỗi vạch thành một
-   cái nan hoa, và bánh xe mới có cái để quay.
+/* ── VÀNH ĐỨT NÉT, VÀ ĐÃ THỬ CÁCH KHÁC RỒI QUAY VỀ ──
+   Vành liền trơn xoay quanh tâm nó thì vẫn là chính nó: xoay bao nhiêu cũng
+   không ai thấy. Đứt ra thì mỗi vạch thành một cái nan hoa, và bánh xe mới có
+   cái để quay.
 
-   Nhưng ở cỡ 36px, hai dãy gạch ngắn lồng nhau đọc ra thô, và chúng tranh chỗ
-   với tám cánh chứ không xếp thành tầng phía sau. Vành ngoài nay là một đường
-   cong khép kín có bán kính dao động — nó vẫn "xoay mà thấy được" vì biên độ
-   không đều, mà nét thì liền. Vành giữa bỏ hẳn: thêm một lớp nữa vào đó là
-   quay lại đúng chỗ vừa đi ra.
+   Ba khoảng đứt khác nhau, và không cái nào chia hết cho cái nào: ba vành quay
+   ba tốc độ mà vạch của chúng vẫn không bao giờ xếp thành một hàng nan chung —
+   xếp được thành hàng thì ba lớp dính lại thành một, mất hết cảm giác tầng.
 
-   Vành trong (r6) giữ nguyên nét đứt — nó nhỏ, nằm ngay tâm, và chính cái
-   lấm tấm ấy nói rằng lõi đang xoáy nhanh nhất. */
+   Đã thử thay hai vành ngoài bằng MỘT đường cong dạng sóng âm, biên độ dao
+   động theo một đường bao, có co dãn nhẹ. Nhìn riêng thì mượt hơn thật; nhưng
+   đặt cạnh tám cánh nhọn thì nó mềm quá, và cái mềm ấy kéo mắt ra khỏi bông
+   hoa. Hai vòng đan nhau tuy "thô" hơn nhưng nó đứng ĐÚNG vai trò của một cái
+   nền: có nhịp, không có hình. Quay về. */
 .lg-vanh{stroke-width:.9;stroke-opacity:.42;stroke-linecap:round}
-.lg-vanh--song {stroke-width:.85;stroke-opacity:.5;stroke-linejoin:round}
+.lg-vanh--ngoai{stroke-dasharray:3 6}
+.lg-vanh--giua {stroke-dasharray:2 5;stroke-width:.7;stroke-opacity:.28}
 .lg-vanh--trong{stroke-dasharray:1.4 3.2}
-/* Co dãn NHẸ — 3,5% là đủ để đọc ra là đang thở, và chưa đủ để thành một cú
-   nảy. Một phần tư vòng kể, nên bốn nhịp thở khớp đúng vào một vòng và không
-   có cú nhảy nào ở mốc lặp. */
-.logo--dong .lg-song-tho{animation:lg-tho calc(var(--lg-ck) / 4) var(--lg-nhip) infinite}
-@keyframes lg-tho{
-  0%,100%{transform:scale(1)}
-  32%    {transform:scale(1.035)}
-  68%    {transform:scale(.985)}
-}
 .lg-man{opacity:0}
 .lg-bui circle{opacity:0}
 
 /* ── CẢ CỤM HOA: BÁNH XE QUAY RỒI VỠ ──
    Góc quay giữa các mốc, tính ra độ trên mỗi phần trăm vòng:
 
-     53 → 58,4%   30°  trong 5,4% →   6 °/%   mới chớm lăn
-     58,4 → 65,5%  96° trong 7,1% →  14 °/%
-     65,5 → 72,7% 208° trong 7,2% →  29 °/%
-     72,7 → 78,1% 276° trong 5,4% →  51 °/%
-     78,1 → 83%   440° trong 4,9% →  90 °/%   nhanh nhất
-     83 → 86,5%   230° trong 3,5% →  66 °/%   đang vỡ, buông dần
+     53 → 58,4%   30°  trong 5,4% →    6 °/%   mới chớm lăn
+     58,4 → 65,5%  96° trong 7,1% →   14 °/%
+     65,5 → 72,7% 208° trong 7,2% →   29 °/%
+     72,7 → 77%   276° trong 4,3% →   64 °/%
+     77 → 80%     440° trong 3%   →  147 °/%   bắt đầu nhoè
+     80 → 81,5%   450° trong 1,5% →  300 °/%   nhanh nhất, rồi nổ
+     81,5 → 83%   480° trong 1,5% →  320 °/%   đang vỡ, nhoè hẳn
 
    Hàm nhịp để `linear`, nên nhanh-chậm HOÀN TOÀN do khoảng cách giữa các mốc
    quyết định. Chia đều góc thì tốc độ không đổi và cú tăng tốc biến mất — đó
@@ -252,21 +247,37 @@
    ấy thì nó nhả từ scale(1,34) về 1 một cách từ từ và người xem thấy một bóng
    mờ co lại giữa lúc chưa tới chặng của nó. */
 @keyframes lg-hoa{
-  0%,6%      {opacity:1;transform:none}
+  0%,8%      {opacity:1;transform:none;filter:blur(0)}
   /* Đứng yên suốt chặng kể chuyện VÀ suốt nấc đanh lại (50→53%). Cú đanh lại
      phải rơi vào lúc bông hoa bất động — nhét nó vào giữa chuyển động thì nó
      trôi mất, mà nó là một nhịp riêng chứ không phải một hiệu ứng phụ. */
-  6.5%,53%   {opacity:1;transform:none}
-  58.4%      {opacity:1;transform:rotate(30deg)   scale(1.02)}
+  8.5%,53%   {opacity:1;transform:none;filter:blur(0)}
+  58.4%      {opacity:1;transform:rotate(30deg)   scale(1.02);filter:blur(0)}
   65.5%      {opacity:1;transform:rotate(126deg)  scale(1.05)}
   72.7%      {opacity:1;transform:rotate(334deg)  scale(1.09)}
-  78.1%      {opacity:1;transform:rotate(610deg)  scale(1.14)}
-  83%        {opacity:1;transform:rotate(1050deg) scale(1.20)}
-  /* Vỡ: xoay tiếp, căng ra, mờ HẲN và mờ NHANH — nhường sân cho đám bụi. */
-  84%        {opacity:.36;transform:rotate(1128deg) scale(1.27)}
-  86.5%      {opacity:0;transform:rotate(1280deg) scale(1.34)}
-  87%        {opacity:0;transform:none}
-  90%,100%   {opacity:1;transform:none}
+  77%        {opacity:1;transform:rotate(610deg)  scale(1.14);filter:blur(0)}
+  /* ── XOÁY MẠNH RỒI NỔ NGAY ──
+     Bản trước quãng cuối chạy 90°/% rồi mới vỡ, và ở tốc độ ấy mắt vẫn BẮT
+     ĐƯỢC từng cánh — nên cú vỡ đọc ra như một tấm hình đang quay thì dừng lại
+     rồi mờ đi, chứ không như một thứ bị xé.
+
+     ── TỐC ĐỘ KHÔNG ĐỦ, PHẢI NHOÈ THẬT ──
+     Đẩy lên 147 °/% rồi mà soi từng khung vẫn thấy rõ tám cánh. Lý do đơn
+     giản: 147 °/% của vòng 27 giây là chừng 10° mỗi khung hình ở 60fps, mà
+     hai cánh cách nhau 45° — mắt thừa sức bám theo. Muốn nhoè bằng tốc độ
+     không thì phải chạy nhanh gấp bốn, và nhanh thế thì cú quay mất luôn cảm
+     giác nặng.
+
+     Nên: tăng tốc VỪA PHẢI (tới 300 °/%) và thêm một lớp nhoè thật bằng
+     `filter:blur`. Trình duyệt không tự làm nhoè chuyển động — nó vẽ từng
+     khung sắc nét — nên đây là cách duy nhất để có cái vệt mà mắt đang chờ.
+     0,7px nghe rất nhỏ, nhưng logo vẽ ra ở 36px nên đó là gần 2% bề ngang.
+     Chỉ bật trong 3,5% cuối của vòng, tức là chưa tới một giây. */
+  80%        {opacity:1;transform:rotate(1050deg) scale(1.20);filter:blur(0)}
+  81.5%      {opacity:.36;transform:rotate(1500deg) scale(1.30);filter:blur(.7px)}
+  83%        {opacity:0;transform:rotate(1980deg) scale(1.38);filter:blur(1.1px)}
+  83.5%      {opacity:0;transform:none;filter:blur(0)}
+  85%,100%   {opacity:1;transform:none;filter:blur(0)}
 }
 
 /* ── NHẤP NHÁY ĐỔI PHIÊN ──
@@ -298,17 +309,17 @@
   78%,100%   {opacity:.85}
 }
 @keyframes lg-nhay-canh{
-  /* Lúc NGHỈ (0–6% và 90–100%) bốn cánh sao nặng gần bằng bốn cánh gốc — đó
+  /* Lúc NGHỈ (0–8% và 85–100%) bốn cánh sao nặng gần bằng bốn cánh gốc — đó
      là lúc hình phải đọc ra là một đoá tám cánh cân đối, không phải bốn cánh
      đậm cộng bốn cái bóng. Chỉ khi vào chặng kể chuyện chúng mới lùi về .5 để
      nhường chỗ cho hai vô cực đang được dựng. */
-  0%,6%      {stroke-opacity:.8;stroke-width:2}
-  6.5%,53%   {stroke-opacity:.5;stroke-width:1.5}
+  0%,8%      {stroke-opacity:.8;stroke-width:2}
+  8.5%,53%   {stroke-opacity:.5;stroke-width:1.5}
   58%        {stroke-opacity:1;stroke-width:2.6}
   63.5%      {stroke-opacity:.5;stroke-width:1.5}
   69%        {stroke-opacity:1;stroke-width:2.6}
   74.5%      {stroke-opacity:.5;stroke-width:1.5}
-  78%,90%    {stroke-opacity:.8;stroke-width:2.1}
+  78%,85%    {stroke-opacity:.8;stroke-width:2.1}
   100%       {stroke-opacity:.8;stroke-width:2}
 }
 
@@ -338,12 +349,27 @@
    nhau 21° gần như chạm nhau, và liếc qua vẫn đọc ra bốn cụm mập. Biên phải
    đo bằng CHỖ HẸP NHẤT giữa hai cánh, không phải bằng khoảng cách tới chỗ
    chồng. */
+/* ── TÁM CÁNH MỞ RA TỪ BỐN, KHÔNG PHẢI ÁP VÀO ──
+   Bản trước bốn cánh sao chỉ mờ dần rồi hiện ra đúng chỗ của chúng, cùng lúc
+   cả cụm phóng từ 0,6 lên 1. Mắt đọc ra là "dán thêm bốn cánh nữa lên hình
+   đang có" — sượng, vì hai vô cực vừa dựng xong không liên quan gì tới bốn
+   cánh mới.
+
+   Nay cụm cánh sao NẰM CHỒNG KHÍT lên hai vô cực gốc suốt chặng kể chuyện
+   (xoay −45°, mà hai bản sao vốn đặt ở 45° và 135°, nên chúng về đúng 0° và
+   90° — tức đúng chỗ hai vô cực). Tới chặng mandala thì cụm xoay về 0: bốn
+   cánh TÁCH KHỎI bốn cánh gốc và mở ra thành tám.
+
+   Cùng một số cánh hiện ra, nhưng đường đi của chúng nói một câu khác: không
+   phải "có thêm bốn cánh" mà là "bốn cánh này vẫn ở đó từ đầu, giờ mới xoè". */
 @keyframes lg-canh-g{
-  0%,53%     {transform:rotate(0deg)}
+  0%,8%      {transform:rotate(0deg)}
+  8.5%,46%   {transform:rotate(-45deg)}
+  50%,53%    {transform:rotate(0deg)}
   61%        {transform:rotate(9deg)}
   68%        {transform:rotate(-11deg)}
   75.5%      {transform:rotate(15deg)}
-  83%,100%   {transform:rotate(0deg)}
+  80%,100%   {transform:rotate(0deg)}
 }
 /* Ba vành: ngoài vượt lên trước, giữa quay NGƯỢC và tụt lại, lõi xoáy nhanh
    nhất. Ba tốc độ khác dấu khác độ lớn là thứ cho ra cảm giác nhiều tầng nan
@@ -354,15 +380,21 @@
   0%,53%     {transform:rotate(0deg)}
   66%        {transform:rotate(20deg)}
   76%        {transform:rotate(96deg)}
-  86.5%,100% {transform:rotate(260deg)}
+  83%,100%   {transform:rotate(260deg)}
 }
-/* `lg-vanh-g` KHÔNG còn ai dùng: vành giữa đã bỏ. Giữ lại bộ keyframes thì
-   lần sau có người thêm một vành nữa lại nhặt nhầm nó — xoá hẳn. */
+/* Vành giữa quay NGƯỢC chiều hai vành kia — đó là thứ làm ba lớp đọc ra là ba
+   tầng chứ không phải một khối. */
+@keyframes lg-vanh-g{
+  0%,53%     {transform:rotate(0deg)}
+  66%        {transform:rotate(-15deg)}
+  76%        {transform:rotate(-74deg)}
+  83%,100%   {transform:rotate(-210deg)}
+}
 @keyframes lg-vanh-t{
   0%,53%     {transform:rotate(0deg)}
   66%        {transform:rotate(32deg)}
   76%        {transform:rotate(160deg)}
-  86.5%,100% {transform:rotate(430deg)}
+  83%,100%   {transform:rotate(430deg)}
 }
 
 /* NÉT THỨ NHẤT — chữ Z → vô cực ngang.
@@ -374,11 +406,22 @@
    55. Ép nó chạy tiếp về 0 trong cùng quãng ấy là nửa sau không có gì để nhìn.
    Phần 52 → 0 đẩy sang lúc đang xoay, chỗ mắt bận nhìn chỗ khác. */
 @keyframes lg-n1{
-  0%,6%      {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
-  6.5%,14%   {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
+  0%,8%      {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  8.5%,14%   {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
   14.8%      {opacity:1;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
-  21%,27%    {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
-  32%,36%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  /* Chữ Z vẽ XONG ở đây, vẫn đang đứng. */
+  21%        {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
+  /* ── XOAY TRƯỚC, NỐI SAU ──
+     Bản trước nét nối quét vào lúc chữ Z còn ĐANG ĐỨNG, rồi cả cụm mới xoay
+     ngang. Thứ tự ấy kể sai: cái nút thắt thành hình ở một tư thế, rồi cả cái
+     nút bị xoay đi — nên cú xoay đọc ra là "chuyển cảnh", không đọc ra là một
+     bước của việc dựng hình.
+     Nay chữ Z tự xoay ngang một mình (21→26%), đứng yên hở hai đầu một nhịp,
+     rồi nét nối mới tới và khép chúng lại (26→31%). Cú xoay thành động tác
+     ĐẶT chữ vào đúng tư thế, và cú nối thành động tác cuối cùng — đúng thứ tự
+     tay người làm. */
+  26%,31%    {opacity:1;transform:none;stroke-dashoffset:52;stroke-opacity:1}
+  36%        {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
   /* Lùi lại còn 30% suốt chặng chữ B: lúc ấy vô cực thứ nhất đã xong và nằm
      ĐÚNG giữa khung, còn chữ B thì cũng vẽ quanh đúng tâm ấy. Để hai nét cùng
      độ đậm chồng lên nhau thì ra một mớ rối, không đọc ra nét nào. Lùi một nét
@@ -391,8 +434,8 @@
    vòng ra". Vô cực đứng đối xứng qua tâm, nên 180° và 0° vẽ ra y hệt nhau —
    nhờ vậy mốc cuối vòng nối lại đầu vòng mà không thấy cú nhảy nào. */
 @keyframes lg-n2{
-  0%,6%      {opacity:1;transform:none;stroke-dashoffset:0}
-  6.5%,35.5% {opacity:0;transform:none;stroke-dashoffset:130}
+  0%,8%      {opacity:1;transform:none;stroke-dashoffset:0}
+  8.5%,35.5% {opacity:0;transform:none;stroke-dashoffset:130}
   36%        {opacity:1;transform:none;stroke-dashoffset:130}
   39.5%,40%  {opacity:1;transform:none;stroke-dashoffset:52}
   46%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
@@ -402,8 +445,8 @@
    không phải thu nhỏ đều: thu nhỏ đều thì dòng chữ chỉ lùi ra xa, bóp ngang
    thì nó dồn về một điểm để nét chữ Z mọc lên từ đó. */
 @keyframes lg-ten{
-  0%,6%      {opacity:0;transform:scaleX(1)}
-  8.5%,11.5% {opacity:.95;transform:scaleX(1)}
+  0%,8%      {opacity:0;transform:scaleX(1)}
+  10%,13%    {opacity:.95;transform:scaleX(1)}
   14.5%      {opacity:0;transform:scaleX(.04)}
   15%,100%   {opacity:0;transform:scaleX(1)}
 }
@@ -419,12 +462,15 @@
 
    Tắt ở 39%, ngay sau khi phép bo góc bắt đầu: để nó nằm lại giữa phép biến
    hình thì thành một gạch thừa vắt ngang cái vô cực đang thành hình. */
+/* Nét nối nay KHÔNG còn xoay theo chữ Z: nó chỉ xuất hiện SAU khi chữ đã nằm
+   ngang, nên nó tới thẳng ở 0°. Bản trước phải khớp phép xoay −90° với chữ Z
+   ở từng mốc một, và lệch một mốc là hai đầu nó rời khỏi hai đầu chữ Z. Bỏ
+   được cả ràng buộc ấy là một chỗ ít đi để hỏng. */
 @keyframes lg-noi{
-  0%,21.5%   {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
-  24.5%,27%  {opacity:.92;transform:rotate(-90deg) translate(0,0) scale(1)}
-  32%        {opacity:.92;transform:rotate(0deg) translate(0,0) scale(1)}
-  32.7%      {opacity:0;transform:rotate(0deg) translate(0,0) scale(1)}
-  33%,100%   {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
+  0%,26%     {opacity:0;transform:translate(16px,-16px) scale(.5)}
+  30%,31%    {opacity:.92;transform:translate(0,0) scale(1)}
+  32.5%      {opacity:0;transform:translate(0,0) scale(1)}
+  33%,100%   {opacity:0;transform:translate(16px,-16px) scale(.5)}
 }
 /* Bốn cánh nở thành tám. Hai cánh thêm và hai vành tròn hiện dần từ tâm ra —
    `scale` từ .6 lên 1 chứ không chỉ đổi độ mờ: chỉ mờ dần thì chúng "bật" ra
@@ -453,16 +499,20 @@
    ba vạch chữ → dựng Z, dựng vô cực, dựng B → nở lại thành mandala → xoay →
    vỡ → tụ lại thành mandala. Bắt đầu và kết thúc ở cùng một chỗ, và chỗ ấy
    đúng là logo. */
+/* Phóng to 0,6 → 1 ĐÃ BỎ. Cú phóng ấy là thứ làm mandala đọc ra như một lớp
+   ảnh bật ra đè lên hình đang có. Nay việc "hình lớn lên" do phép MỞ RA của
+   cụm cánh lo (xem @keyframes lg-canh-g), còn khối này chỉ còn lo mờ/tỏ —
+   một việc, một chỗ. */
 @keyframes lg-man{
-  0%,6%      {opacity:1;transform:scale(1)}
-  6.5%,46%   {opacity:0;transform:scale(.6)}
-  /* Nở xong ở 50%, rồi ĐỨNG YÊN ba phần trăm vòng — đó là chỗ nấc đanh lại
+  0%,8%      {opacity:1;transform:scale(1)}
+  8.5%,46%   {opacity:0;transform:scale(1)}
+  /* Mở xong ở 50%, rồi ĐỨNG YÊN ba phần trăm vòng — đó là chỗ nấc đanh lại
      diễn ra (xem `bien()` trong tools/build.mjs, hai mốc .50 và .53). */
-  50%,83%    {opacity:1;transform:scale(1)}
-  84.5%      {opacity:.35;transform:scale(1.06)}
-  86.5%      {opacity:0;transform:scale(1.1)}
-  87%        {opacity:0;transform:scale(.6)}
-  90%,100%   {opacity:1;transform:scale(1)}
+  50%,80%    {opacity:1;transform:scale(1)}
+  81.5%      {opacity:.35;transform:scale(1.06)}
+  83%        {opacity:0;transform:scale(1.1)}
+  83.5%      {opacity:0;transform:scale(1)}
+  85%,100%   {opacity:1;transform:scale(1)}
 }
 /* ── BỤI ──
    Nhóm bụi chỉ mở cửa trong chặng vỡ; từng hạt rơi bằng @keyframes riêng bên
@@ -470,9 +520,9 @@
    vòng lớn) lẫn "rơi tới đâu rồi" (theo đường rơi của chính nó) — nhét cả hai
    vào một bộ keyframes thì mỗi hạt phải có một bộ riêng. */
 @keyframes lg-bui{
-  0%,82.5%   {opacity:0}
-  82.6%,90%  {opacity:1}
-  90.2%,100% {opacity:0}
+  0%,79.8%   {opacity:0}
+  79.9%,84.5%{opacity:1}
+  84.7%,100% {opacity:0}
 }
 /* Mỗi hạt mang sẵn --bx (dạt ngang), --by (rơi sâu) và --bt (trễ) do build
    tính ra và ghi thẳng vào thuộc tính style của nó. Cùng một bộ keyframes,
@@ -495,11 +545,11 @@
    mắt thì nhỏ đi. Độ mờ tắt sớm hơn quãng bay một chút nên không hạt nào biến
    mất ngay lúc đang còn rõ nét. */
 @keyframes lg-hat{
-  0%,82.6%   {opacity:0;transform:translate(0,0) scale(1)}
-  83.7%      {opacity:.95;transform:translate(0,0) scale(1)}
-  86.5%      {opacity:.72}
-  89.5%      {opacity:0;transform:translate(var(--bx),var(--by)) scale(.35)}
-  89.6%,100% {opacity:0;transform:translate(0,0) scale(1)}
+  0%,79.9%   {opacity:0;transform:translate(0,0) scale(1)}
+  81%        {opacity:.95;transform:translate(0,0) scale(1)}
+  83%        {opacity:.72}
+  84.4%      {opacity:0;transform:translate(var(--bx),var(--by)) scale(.35)}
+  84.5%,100% {opacity:0;transform:translate(0,0) scale(1)}
 }
 /* Tắt máy thì dừng ở hình ĐỦ, không dừng ở một chặng giữa chừng: người bật
    "giảm chuyển động" vẫn phải thấy logo, chỉ là không thấy nó động.
@@ -512,7 +562,7 @@
   .logo--dong .lg-man{opacity:1;transform:none;animation:none}
   /* Đứng yên thì không có lượt nào để đổi phiên: hai nhóm cùng một độ đậm vừa
      phải, bốn cánh gốc vẫn là nét chính nhờ bề dày 2.6 của .lg-vc. */
-  .logo--dong :is(.lg-goc,.lg-canh,.lg-canh-g,.lg-vanh-g,.lg-song-tho){
+  .logo--dong :is(.lg-goc,.lg-canh,.lg-canh-g,.lg-vanh-g){
     animation:none;transform:none;opacity:1;
   }
   .logo--dong .lg-canh{stroke-opacity:.6;stroke-width:1.5}
@@ -557,8 +607,18 @@
 }
 
 /* ── CHÂN TRANG ── */
+/* ── KHOẢNG TRỐNG TRÊN CHÂN TRANG: MỘT CHỖ, KHÔNG PHẢI HAI ──
+   `margin-top:var(--s11)` (96px) CỘNG với lề dưới của chính trang nội dung —
+   trang bài có `padding-block … var(--s10)` là 72px nữa — thành 168px trống
+   giữa dòng cuối và sợi kẻ chân trang. Ở màn laptop đó là gần một phần tư
+   màn hình không chở gì, và mắt đọc ra là trang bị hụt chứ không phải trang
+   được cho thở.
+
+   56px là đủ để chân trang tách khỏi nội dung mà không thành một khoảng hẫng.
+   Phần "thở" thật sự vẫn do lề dưới của từng trang lo — nó biết nội dung của
+   nó kết thúc bằng cái gì, còn chân trang thì không. */
 .site-foot{
-  margin-top:var(--s11);
+  margin-top:var(--s9);
   border-top:1px solid var(--line);
   padding-block:var(--s8) var(--s7);
 }
@@ -832,7 +892,7 @@
      margin của ô lưới CỘNG với gap chứ không nuốt nhau, nên chỗ giữa câu tóm
      tắt và ảnh bìa hở đúng 80px — gấp đôi ý định. Nhịp dọc của trang này do
      margin lo, gap chỉ lo chiều ngang. */
-  .post-layout.khung-a{grid-template-columns:minmax(0,1fr) 260px;column-gap:var(--s8)}
+  .post-layout.khung-a{grid-template-columns:minmax(0,1fr) 280px;column-gap:var(--s9)}
 }
 
 /* ── B · bìa tràn màn, cột đọc nằm giữa ──

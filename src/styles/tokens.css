@@ -186,12 +186,18 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
 
      54ch ≈ 639px ≈ 70 ký tự. Muốn đổi thì ĐỔI SỐ NÀY RỒI ĐO LẠI, đừng suy
      từ chữ "ch" ra số ký tự. */
-  --measure:54ch;
+/* 54ch → 59ch. Ô trích dẫn đã rời trang bài, nên cột phải chỉ còn mục lục và
+     cả khung dôi ra một mảng trống bên phải — chữ nằm lệch về trái giữa chỗ
+     trống ấy. Nới cột chữ là cách lấp đúng chỗ dôi, thay vì kéo giãn khoảng
+     cách cho đầy.
+     59ch ≈ 700px ≈ 76 ký tự, vẫn trong khoảng 45–75 mà sách vở khuyên (mép
+     trên), và vẫn ngắn hơn hẳn --measure-wide. Đo lại khi đổi cỡ chữ. */
+  --measure:59ch;
   --measure-wide:82ch;
   /* 1180 → 1100. Ở màn 1100–1200px, khung cũ rộng gần bằng đúng cả cửa sổ
      nên chữ dính sát mép trái, không còn lề nào để trang thở. 1100 thì mọi
      màn từ 1200px trở lên đều có lề thật ở hai bên. */
-  --measure-ui:1100px;
+  --measure-ui:1180px;
 
   /* ── 5. NHỊP — thang 4px ── */
   --s1:4px;   --s2:8px;   --s3:12px;  --s4:16px;  --s5:20px;

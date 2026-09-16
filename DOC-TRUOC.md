@@ -1,46 +1,38 @@
-# Bản cập nhật V8.03 → V8.09
+# Bản cập nhật V8.03 → V9.02
 
-24 file. **Chép đè lên đúng vị trí cũ** — đường dẫn trong zip đã đúng sẵn, giải
-nén ngay tại gốc dự án là xong. Không file nào bị xoá.
-
-Hai file **mới hoàn toàn**: `src/js/khoa.js` và `src/js/soan.js`.
-
-Bản này **gồm luôn** hai zip gửi trước (V8.04, V8.07) — chỉ cần chép bản này.
+Chép đè lên đúng vị trí cũ. Không file nào bị xoá. Hai file mới:
+`src/js/khoa.js`, `src/js/soan.js`. Gồm luôn mọi zip trước.
 
 ```bash
 npm run build && npm run kiem
 ```
 
-## Bảy bản, bảy việc
-
 | Bản | Việc |
 |---|---|
-| V8.03 | Đăng nhập một cửa · ô soạn thảo gõ như văn bản · màu chữ `{tím: …}` · tách "sai khoá" khỏi "máy chủ chưa có khoá" |
-| V8.04 | Chân trang gọn còn một hàng, chữ khớp đầu trang |
-| V8.05 | Logo: nấc đanh nét trước khi xoay · vành ngoài thành đường sóng · một nhịp cho mọi chuyển cảnh · dừng hình cuối lâu gấp đôi |
+| V8.03 | Đăng nhập một cửa · ô soạn thảo · màu chữ `{tím: …}` |
+| V8.04 | Chân trang một hàng |
+| V8.05 | Logo: nấc đanh nét · một nhịp chuyển cảnh |
 | V8.06 | Màn đầu điện thoại: tên blog cân giữa |
-| V8.07 | "Haluuu, Zoey! — Đăng xuất" · sai khoá thì im lặng · ngăn Note thôi kèm danh sách |
-| V8.08 | Gỡ hẳn lối `#viet` / `#duyet` cũ khỏi trang ngoài |
-| V8.09 | Ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
+| V8.07 | "Haluuu, Zoey! — Đăng xuất" · sai khoá thì im lặng |
+| V8.08 | Gỡ lối `#viet` / `#duyet` khỏi trang ngoài |
+| V8.09 | Ô soạn thảo đọc được Markdown vào |
+| V9.00 | Logo: xoay trước rồi nối · tám cánh mở ra từ bốn · vành đứt nét trở lại · xoáy nhoè rồi nổ · nghỉ 6,2s |
+| V9.01 | Trang chủ chỉ còn màn đầu · Read on sang Posts |
+| V9.02 | Chip nhỏ lại · Read next thành dòng đơn · bỏ trích dẫn khỏi trang bài · cột chữ rộng thêm · thu khoảng trống chân trang · điện thoại bỏ Profile |
 
-## V8.09 đáng chú ý
+## Còn xếp hàng
 
-Thử trên **cả chín bài thật** trong kho: mở ra rồi lưu lại hai lần thì lần thứ
-hai ra file y hệt lần thứ nhất — **9/9**. Nghĩa là sửa một bài không làm cả bài
-xáo trộn trong lịch sử kho mã.
+**Khối admin** (lưu/sửa draft → publish · quyền admin ở trang ngoài · Hide bài)
+— phần nền đã xong ở V8.09, còn `/api/bai` và giao diện.
 
-Lượt lưu **đầu tiên** của một bài cũ vẫn xê dịch vài chỗ ngắt dòng, vì bài ấy
-ngắt theo tay người còn máy ngắt theo thước 80 cột. Chữ không đổi, chỉ chỗ
-xuống dòng đổi. Từ lượt thứ hai trở đi thì đứng yên.
+**Hai việc theme** — ngân hà phủ full màn · mưa + giọt chạm mặt nước.
 
-Ba lỗi bắt được lúc thử và đã sửa: khối mã mất tên ngôn ngữ (```json → ```),
-dấu câu sau `ô mã` mọc thêm dấu cách, và chú thích ảnh có `mã` lồng trong biến
-thành chữ "undefined".
+**Trang Posts** — tab mục lớn, bài liệt kê nhỏ bên trong, tối đa 6 mục một
+trang; kèm bộ rule phân trang dùng chung cho mọi trang danh sách.
 
-## Chưa làm — đang xếp hàng
+**Mục lục trên điện thoại** — nút hamburger mở mục lục như desktop.
 
-1. **Khối admin còn lại**: lưu/sửa draft rồi publish · quyền admin hiện ra ở
-   trang ngoài · Hide bài vào sub-tab riêng. (V8.09 vừa xong phần nền.)
-2. Ngân hà theme tối chưa phủ hết màn · mưa theme Tĩnh lặng + giọt chạm nước.
-3. Khung bài: lấy thêm lề phải cho cột chữ, ô trích dẫn và mục lục dễ thở hơn.
-4. Trang Posts: tab mục lớn, bài liệt kê bên trong, tối đa 6 mục một trang.
+**Màn đầu trên điện thoại** — giữ hiệu ứng chữ → chuyển động → sắp xếp.
+
+**Đổi chữ ↔ logo ở thanh đầu** các trang ngoài Home/About: hover, hoặc tự đổi
+sau 15–30 giây, không chạy lại full animation.
