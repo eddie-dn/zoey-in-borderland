@@ -328,6 +328,7 @@ const NHAN = {
   vbNoConfig  : 'The server is missing',
   vbSeeDoc    : 'xem docs/CAI-DAT.md',
   vbLoading   : 'Loading…',
+  menu        : 'Menu',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -937,6 +938,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        yên, vì đó là trang nhiều chữ nhất và một hình động lặp ở thanh đầu
        trang là thứ mắt không bỏ qua được. Nay cả hai cùng kể — xem ghi chú
        "MỘT VÒNG DÀI HƠN" ở layout.css về cách bù lại chỗ đó. */
+    menuLabel : attr(NHAN.menu),
     logo      : logoHTML(duong === '/' || duong === '/about/'),
     /* LOGO CHỈ Ở TRANG CHỦ VÀ TRANG GIỚI THIỆU, và ở đó nó đứng MỘT MÌNH.
        Mọi trang khác chỉ có dòng chữ tên blog, không logo.
@@ -1004,6 +1006,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                                : `<span class="nav-cho">${t}</span>`).join('\n      '),
     content,
     scripts: `<script src="${BASE}/assets/moc.js" defer></script>\n` +
+             `<script src="${BASE}/assets/menu.js" defer></script>\n` +
              /* Mọi trang: file này lo hai việc của logo — giữ hai đồng hồ cùng
                 nhịp ở hai trang có logo động, và gạt qua lại giữa chữ với logo
                 ở mọi trang còn lại. Nó tự thoát ngay khi trang không có việc
@@ -1711,11 +1714,9 @@ function binhLuanHTML(bai) {
           tiếp" ngay trên đã có một vạch y hệt, và hai vạch giống nhau cách
           nhau 80px thì cái nào cũng thôi làm dấu mở đầu.
 
-          Cụm nút cũng KHÔNG ở đây nữa khi bài có cột bên thật — nó lên cột ấy,
-          dưới khối "đọc tiếp" (xem tocHTML). Chỉ khung không có cột bên mới
-          giữ cụm lại chỗ này, và ở đó nó vẫn đứng sau khối "đọc tiếp" vì
-          post.html xếp readNext trước binhLuan. */''}
-    ${benGiuDocTiep(bai) ? '' : cumTuongTac(bai)}
+          Cụm nút ở đây chỉ còn trong MỘT trường hợp: khung không có cột bên
+          thật VÀ không phải khung ảnh. Ba đường đi đầy đủ ghi ở `cumODau`. */''}
+    ${cumODau(bai) === 'chan' ? cumTuongTac(bai) : ''}
 
     ${/* ── HÀNG NÚT ĐÃ RỜI KHỎI ĐÂY ──
           Tim, chia sẻ và bình luận nay nằm chung một cụm ở CỘT BÊN
@@ -1728,18 +1729,7 @@ function binhLuanHTML(bai) {
           một khối cha. */''}
 
     <div class="bl-than" id="bl-than" hidden>
-    ${/* ── LỐI RA ──
-          Khung này mở ra bằng một cú bấm ở cụm nút ngay trên. Nhưng khi nó đã
-          mở, nhất là lúc đã chiếm cột bên ở khổ rộng, cái nút mở ấy có thể
-          đang nằm ngoài tầm mắt — người đọc đổi ý giữa chừng thì không thấy
-          đường nào lùi lại.
 
-          Một nút "Back" ngay trong khung, ở góc trên: chỗ mắt tìm lối ra. Nó
-          không làm gì mới — nó bấm hộ đúng cái nút đã mở khung. Một đường
-          đóng, không phải hai. */''}
-    <div class="bl-lui">
-      <button type="button" class="vb-nho bl-dong">← ${escapeHtml(NHAN.vbBack)}</button>
-    </div>
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
           định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
           xong vẫn thấy một dòng khác hiện lên, và không có cách nào tắt. */''}
@@ -1770,8 +1760,21 @@ function binhLuanHTML(bai) {
       <input class="bl-hp" name="hp" type="text" tabindex="-1"
              autocomplete="off" aria-hidden="true">
 
+      ${/* ── LỐI RA ĐỨNG CẠNH LỐI VÀO ──
+            Khung mở ra bằng cú bấm ở cụm nút phía trên; nhưng khi nó đã chiếm
+            cột bên, cái nút ấy có thể nằm ngoài tầm mắt — người đổi ý giữa
+            chừng không thấy đường nào lùi.
+
+            "Back" vì thế phải ở TRONG khung. Và nó đứng ngay cạnh "Send", vì
+            hai cái là hai ngã của cùng một quyết định: gửi, hay thôi. Cùng
+            hàng, cùng cỡ, chỉ khác sức nặng — Send tô đầy, Back chỉ có viền.
+
+            Bản trước để nó lẻ một mình ở góc trên khung, dạng chữ trơn không
+            viền: ở đó nó không đọc ra là một cái nút, và nó cũng không ở cạnh
+            thứ nó đối lập. */''}
       <div class="bl-chan">
         <span class="bl-con"></span>
+        <button type="button" class="btn btn--ghost bl-dong">${escapeHtml(NHAN.vbBack)}</button>
         <button class="btn" type="submit">${NHAN.send}</button>
       </div>
     </form>
@@ -1788,11 +1791,28 @@ function benGiuDocTiep(bai) {
   return bai.khung === 'a' && bai.headings.length > 0;
 }
 
-/* `benLaCot()` đã bỏ: cụm nút nay lên đầu bài ở MỌI khung, nên không còn chỗ
-   nào phải hỏi "khung này có cột bên thật không". Câu hỏi ấy vẫn còn sống ở
-   src/js/comments.js — nơi quyết định có dời khung bình luận sang cột bên hay
-   không — và ở đó nó hỏi thẳng DOM (`.khung-a` có mặt hay không) thay vì hỏi
-   một hàm ở phía dựng trang. */
+/* ── CỤM NÚT ĐỨNG ĐÂU: BA ĐƯỜNG, MỘT CHỖ QUYẾT ĐỊNH ──
+     'ben'  cột bên thật, dưới khối "đọc tiếp" — khung A có mục lục
+     'dau'  ngay dưới tiêu đề — khung C, khung ẢNH
+     'chan' cuối bài, sau khối "đọc tiếp" — mọi trường hợp còn lại
+
+   Khung C bày bài như một trang ảnh: băng ảnh chiếm hẳn một cột và là thứ
+   người ta tới để xem. Ở đó thói quen giống mạng ảnh hơn giống blog — xem
+   xong thả tim ngay, không cuộn xuống đáy tìm nút. Nên cụm lên ngay dưới
+   tiêu đề: bấm tim là đếm luôn tại chỗ, bấm bình luận thì nhảy xuống khung
+   viết (comments.js lo cú cuộn ấy).
+
+   Hai khung kia là bài ĐỌC. Ở đó một lời mời viết bình luận trước khi người
+   ta đọc xong là lời mời sai lúc, nên cụm ở cuối — hoặc trong cột bên, nơi nó
+   đi theo suốt bài mà không chắn đường.
+
+   `benLaCot()` đời trước đã bỏ: câu hỏi "khung này có cột bên thật không" nay
+   nằm gọn trong hàm dưới đây, và ở src/js/comments.js — nơi hỏi thẳng DOM. */
+function cumODau(bai) {
+  if (bai.khung === 'c') return 'dau';
+  if (benGiuDocTiep(bai)) return 'ben';
+  return 'chan';
+}
 
 function readNextHTML(bai, congKhai) {
   const ds = goiY(bai, congKhai);
@@ -1892,9 +1912,10 @@ function trangBai(bai, congKhai) {
        Nay cụm luôn ở ngay dưới hàng meta, cùng chỗ với ba con số nó điều khiển.
        Cột bên giữ đúng việc của nó: mục lục, đọc tiếp, và — khi người đọc bấm
        bình luận ở khổ rộng — chính khung bình luận (xem comments.js). */
+    cumDau      : cumODau(bai) === 'dau' ? cumTuongTac(bai) : '',
     toc         : tocHTML(bai.headings,
                           benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : '',
-                          benGiuDocTiep(bai) ? cumTuongTac(bai) : ''),
+                          cumODau(bai) === 'ben' ? cumTuongTac(bai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 
@@ -2834,7 +2855,11 @@ function cacTrangPosts(bai) {
      chừng 40px, nên năm dòng vẫn thấp hơn một hàng thẻ cũ mà nói được nhiều
      hơn — và năm bài là đủ để đoán ra một chuyên mục viết về cái gì. */
   const MOI_TRANG_MUC = 6;
-  const MOI_MUC = 5;
+  /* Ba bài mỗi ô. Ô bento cao bằng nhau mới xếp thành lưới đẹp, mà chuyên mục
+     thì không đều nhau — mục một bài và mục bốn bài cạnh nhau là hai ô lệch
+     hẳn chiều cao. Ba là con số vừa đủ để đoán ra mục này viết về cái gì, và
+     đủ thấp để ô nào cũng gần bằng ô nào. */
+  const MOI_MUC = 3;
 
   const thuMuc = mucCap1.map((x) => {
     const trong = theoNgay.filter((b) => b.muc.some((y) => y.url === x.url));
@@ -2874,8 +2899,17 @@ function cacTrangPosts(bai) {
       tieuDe: NHAN.allPosts,
       dan: `${mucCap1.length} chuyên mục · ${theoNgay.length} bài`,
       chip: hangChip(chipDS, '/posts/'),
+      /* ── LƯỚI BENTO, KHÔNG PHẢI MỘT CHỒNG DỌC ──
+         Xếp dọc thì sáu chuyên mục là một trang phải cuộn ba bốn màn mới hết,
+         và người đọc phải đi qua mục 1 mới thấy mục 4 — trong khi việc của
+         trang này là cho họ CHỌN, mà chọn thì cần thấy hết cùng lúc.
+
+         Lưới tự xếp theo bề ngang: ba cột ở màn rộng, hai ở tablet, một ở
+         điện thoại. Tối đa sáu ô một trang (bộ số trang lo phần cắt) — đúng
+         hai hàng ba, liếc một cái là hết. */
       than: theoNgay.length
-        ? bocPhanTrang(thuMuc, '.muc-khoi', mucCap1.length, MOI_TRANG_MUC)
+        ? bocPhanTrang(`<div class="muc-luoi">${thuMuc}</div>`,
+                       '.muc-khoi', mucCap1.length, MOI_TRANG_MUC)
         : `<p class="ds-trong">${NHAN.noPosts}</p>`,
       duong: '/posts/'
     })
@@ -3246,9 +3280,25 @@ ${u.map((x) => `  <url>\n    <loc>${x.loc}</loc>\n    <lastmod>${x.mod}</lastmod
 </urlset>`;
 }
 
-const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-<rect width="32" height="32" rx="7" fill="#F4E7FB"/>
-<path d="M16 14.6a2.6 2.6 0 1 0 0 1.6 2.6 2.6 0 0 0 0-1.6Zm0-9c1.9 0 3.1 1.8 2.6 3.6-.2.8.6 1.5 1.3 1.1 1.7-.9 3.7.3 3.7 2.2 0 1.9-2 3.1-3.7 2.2-.7-.4-1.5.3-1.3 1.1.5 1.8-.7 3.6-2.6 3.6s-3.1-1.8-2.6-3.6c.2-.8-.6-1.5-1.3-1.1-1.7.9-3.7-.3-3.7-2.2 0-1.9 2-3.1 3.7-2.2.7.4 1.5-.3 1.3-1.1C12.9 7.4 14.1 5.6 16 5.6Z" fill="#E3AADD"/>
+/* ── FAVICON: CHÍNH LÀ LOGO, RÚT GỌN CHO CỠ 16px ──
+   Trước bản này nó là một bông hoa vẽ tay không liên quan gì tới logo thật —
+   di sản từ lúc logo chưa có. Nay dùng đúng hai nét của logo ở trạng thái
+   nghỉ (giống docs/logo/01-nghi.svg).
+
+   BỎ ba vòng nét đứt và hai cánh mờ. Ở 16px — cỡ thật của một favicon trên
+   thanh tab — một nét dày 0,9 đơn vị trong khung 48 là chưa tới một phần ba
+   pixel: nó không mảnh đi, nó thành một vệt bùn xám làm nhoè cả hình. Cùng lý
+   do phải dày nét chính lên 3,4: ở cỡ ấy, thứ duy nhất đọc được là HÌNH DÁNG
+   tám cánh, nên phải cho nó đủ mực.
+
+   Nền bo góc màu lavender: favicon nằm trên nền trắng của trình duyệt lẫn nền
+   tối của thanh tab, nên nó phải mang nền của chính mình. */
+const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<rect width="48" height="48" rx="11" fill="#F4E7FB"/>
+<g fill="none" stroke="#7A52B8" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+<path d="M24 24C32 15 38 17 41 24C38 31 32 33 24 24C16 15 10 17 7 24C10 31 16 33 24 24"/>
+<path d="M24 24C15 32 17 38 24 41C31 38 33 32 24 24C33 16 31 10 24 7C17 10 15 16 24 24"/>
+</g>
 </svg>`;
 
 /* ══════════════ 6. CHẠY ══════════════ */
@@ -3327,7 +3377,7 @@ async function chay() {
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',
                      'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
-                     'chia-se.js', 'logo-nhip.js',
+                     'chia-se.js', 'logo-nhip.js', 'menu.js',
                      'soan.js', 'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng

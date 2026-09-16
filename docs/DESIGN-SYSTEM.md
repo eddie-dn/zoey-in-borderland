@@ -1118,6 +1118,40 @@ hành vi phải nói bằng đúng thẻ của nó, không phải bằng CSS.
 dẫn ngay trên (`6 chuyên mục · 9 bài`). Hai lần cùng một con số cách nhau vài
 chục pixel thì cái nào cũng thành thừa.
 
+### 17.5 · Một khuôn dòng, dùng ở bốn nơi
+
+Bốn chỗ liệt kê bài theo cùng một kiểu — một dòng cho một bài, ngăn nhau bằng
+sợi kẻ:
+
+| Lớp | Ở đâu | Cột trái | Cột phải |
+|---|---|---|---|
+| `.hero-dong` | ba bài mới nhất ở màn đầu | số thứ tự | ngày |
+| `.mc-dong` | bài trong một ô bento ở `/posts/` | số thứ tự | ngày |
+| `.kho-dong` | bài trong một năm ở `/archive/` | ngày | chuyên mục |
+| `.rn-dong` | gợi ý đọc tiếp cuối bài | loại (related/newer/older) | ngày |
+
+**Luật chung.** Ai lệch thì phải có lý do ghi ngay tại chỗ lệch:
+
+- **tiêu đề** — phông tiêu đề, nghiêng, `--fs-h4`, một dòng, tràn thì cắt bằng `…`
+- **nhãn và ngày** — Oswald hoa, `--fs-3xs`, `--text-faint`, số dùng bản đều bề ngang
+- **ngăn cách** — sợi kẻ `--line` ở ĐÁY mỗi dòng; dòng đầu có thêm kẻ trên
+- **rê chuột** — đổi MÀU chữ và đẩy sang phải `var(--s2)`. **Không đổi nền:**
+  đổi nền thì hai sợi kẻ trên dưới phải đổi theo mới không hở, tức là ba thứ
+  động cho một cú rê chuột
+
+**Vì sao phải viết luật này ra.** Trước khi có nó, Archive dùng phông thân bài
+và đổi NỀN khi rê vào, ba chỗ kia dùng phông tiêu đề nghiêng và đổi MÀU. Đi từ
+`/posts/` sang `/archive/` là gặp hai danh sách trông như của hai trang web
+khác nhau — dù chúng nói đúng một chuyện. Không ai thấy khi nhìn từng trang;
+chỉ thấy khi đi qua lại.
+
+**Ngoại lệ đã biết: cột bên.** Trong `.ben`, tiêu đề đổi sang phông thân bài và
+cỡ `--fs-sm`. Cột ấy hẹp (280px), và ở đó danh sách là chỗ **điều hướng** chứ
+không phải chỗ trưng bày — trộn hai phông trong một cột hẹp thì mắt đọc ra hai
+danh sách rời nhau, trong khi chúng chỉ là hai lối đi cạnh nhau.
+
+**Thêm một danh sách mới thì thêm lớp vào bảng trên**, đừng khai lại cỡ chữ.
+
 ### 17.3 · Giãn cách: trang danh sách khác trang bài
 
 | | Trang bài | Trang danh sách |

@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
+| V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
+| V12.04 | 2026-09-17 | 04 | điện thoại: có menu ☰; tên blog thôi kẹt nửa vời ở lần mở thứ hai |
 | V12.03 | 2026-09-17 | 03 | ảnh chia sẻ mới: logo, tên blog, ba theme; sinh bằng npm run og |
 | V12.02 | 2026-09-17 | 02 | rà soát tài liệu: sửa chỗ nói sai, bỏ file thừa, thêm ba phép kiểm chống lệch |
 | V12.01 | 2026-09-17 | 01 | cụm tương tác xuống cột phải dưới Read next; cột bên thôi kẹp cuộn; nội dung bám mép logo |
@@ -142,6 +145,52 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V12.06 — 17-Sep-2026
+
+- **Trang Posts thành lưới bento.** Sáu chuyên mục xếp dọc là một trang phải
+  cuộn ba bốn màn, và phải đi qua mục 1 mới thấy mục 4 — trong khi việc của
+  trang này là cho người đọc CHỌN, mà chọn thì cần thấy hết cùng lúc. Nay mỗi
+  chuyên mục là một ô: tên · số bài · một dòng mô tả · ba bài mới nhất bấm được
+  ngay · "See all". Ba cột ở màn rộng, tối đa sáu ô một trang.
+- **Một khuôn dòng cho bốn danh sách.** Màn đầu, ô bento, Archive và "đọc tiếp"
+  đều liệt kê bài theo cùng một kiểu, nhưng mỗi chỗ tự khai cỡ chữ và kiểu rê
+  chuột lấy: Archive dùng phông thân bài và đổi NỀN, ba chỗ kia dùng phông tiêu
+  đề nghiêng và đổi MÀU. Đi từ Posts sang Archive là gặp hai danh sách trông
+  như của hai trang web khác nhau. Luật chung ghi vào
+  docs/DESIGN-SYSTEM.md §17.5, kèm bảng bốn lớp và ngoại lệ đã biết.
+- **Favicon dùng đúng logo.** Trước đây là một bông hoa vẽ tay không liên quan,
+  di sản từ lúc logo chưa có. Nay là hai nét của logo ở trạng thái nghỉ, bỏ ba
+  vòng nét đứt và hai cánh mờ — ở 16px một nét dày 0,9 đơn vị chưa tới một phần
+  ba pixel, nó không mảnh đi mà thành vệt bùn làm nhoè cả hình.
+
+## V12.05 — 17-Sep-2026
+
+- **Cột bên chỉ còn MỘT thang chữ.** Ba khối trong đó sinh ra ở ba chỗ khác
+  nhau trong mã, nên "ON THIS PAGE" 11px xám, "READ NEXT" 12px TÍM và
+  "LEAVE A NOTE" 10px xám — ba dòng cùng một vai mà mỗi cái một hình. Nay ba
+  bậc, không hơn: tên khối · nhãn dòng · chữ để đọc.
+- **Nút Back đứng cạnh Send, có viền đàng hoàng.** Trước nó lẻ một mình ở góc
+  trên khung, dạng chữ trơn — ở đó nó không đọc ra là một cái nút, và không ở
+  cạnh thứ nó đối lập. Hai cái là hai ngã của một quyết định: gửi, hay thôi.
+  Cùng hàng, cùng cỡ, khác đúng ở sức nặng.
+- **Khung ảnh đưa cụm nút lên đầu bài.** Khung C bày bài như một trang ảnh, và
+  ở đó thói quen giống mạng ảnh hơn giống blog — xem xong thả tim ngay, không
+  cuộn xuống đáy tìm nút. Bấm bình luận thì nhảy xuống khung viết. Hai khung
+  kia là bài ĐỌC nên giữ cụm ở cuối hoặc trong cột bên.
+
+## V12.04 — 17-Sep-2026
+
+- **Điện thoại có menu.** Bốn mục Posts · Notes · Archive · About bị giấu từ
+  lâu để chừa chỗ cho tên blog, còn cái nút mở chúng ra thì chưa bao giờ được
+  dựng — nên trên điện thoại blog này KHÔNG có đường nào tới bốn trang chính
+  ngoài mấy dòng ở chân trang. Nay có nút ☰ thả xuống một tấm nhỏ ngay dưới
+  thanh đầu trang; đóng bằng bấm lại, bấm ra ngoài, hoặc Esc.
+- **Tên blog thôi kẹt nửa vời ở lần mở thứ hai.** Màn cảm ứng cũng nổ `:hover`
+  và nó DÍNH lại sau cú chạm: chạm lần một mở chữ ra, chạm lần hai gỡ lớp mở —
+  nhưng `:hover` còn dính nên "oey" vẫn hiện, trong khi "Borderland" (chỉ nghe
+  theo lớp kia) co lại. Cụm kẹt ở một trạng thái không luật nào tả. Nay khối
+  `:hover` chỉ tồn tại trên máy có con trỏ rê được.
 
 ## V12.03 — 17-Sep-2026
 

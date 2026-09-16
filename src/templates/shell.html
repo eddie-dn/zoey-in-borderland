@@ -66,7 +66,15 @@
       {{logo}}<b aria-hidden="true">{{siteTitle}}</b>
     </a>
     <nav class="nav" aria-label="Main">
-      {{nav}}
+      <!-- Bốn mục điều hướng bọc trong một lớp: ở khổ rộng lớp này tàng hình
+           (`display:contents`) nên lưới thanh đầu trang không biết nó có mặt;
+           ở khổ hẹp nó thành tấm menu thả xuống dưới nút ☰. -->
+      <div class="nav-menu">{{nav}}</div>
+      <button class="ico-btn nav-nut" type="button"
+              aria-expanded="false" aria-controls="nav-menu"
+              aria-label="{{menuLabel}}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       {{napTimKiem}}
       <!-- BA nhãn đi kèm dưới dạng data-*: theme.js xoay vòng giữa chúng mỗi
            lần bấm, nên nó phải có SẴN CẢ BA chứ không tự chế chữ. Gõ cứng

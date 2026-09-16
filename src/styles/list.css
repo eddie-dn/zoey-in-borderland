@@ -134,6 +134,34 @@
 /* `.gc-loc` và `.tk-loc` nay mang thêm class `.chip-hang` (xem tools/build.mjs),
    nên chúng chỉ còn giữ phần lề riêng của mình. */
 
+/* ══════════════ MỘT KHUÔN DÒNG, DÙNG Ở BỐN NƠI ══════════════
+
+   Bốn chỗ trên trang này liệt kê bài theo cùng một kiểu — một dòng cho một
+   bài, ngăn nhau bằng sợi kẻ:
+
+     .hero-dong   ba bài mới nhất ở màn đầu
+     .mc-dong     bài trong một ô bento ở /posts/
+     .kho-dong    bài trong một năm ở /archive/
+     .rn-dong     gợi ý đọc tiếp cuối bài
+
+   Trước bản này mỗi chỗ tự khai cỡ chữ, màu và kiểu rê chuột lấy: Archive dùng
+   phông thân bài và đổi NỀN khi rê vào, ba chỗ kia dùng phông tiêu đề nghiêng
+   và đổi MÀU. Đi từ /posts/ sang /archive/ là gặp hai danh sách trông như của
+   hai trang web khác nhau, dù chúng nói đúng một chuyện.
+
+   Luật chung — ai lệch thì phải có lý do ghi ngay tại chỗ lệch:
+     · tiêu đề   phông tiêu đề, nghiêng, --fs-h4, một dòng, cắt bằng dấu …
+     · nhãn/ngày Oswald hoa, --fs-3xs, --text-faint, số dùng bản đều bề ngang
+     · ngăn cách sợi kẻ --line ở ĐÁY mỗi dòng, dòng đầu có thêm kẻ trên
+     · rê chuột  đổi MÀU chữ + đẩy sang phải var(--s2); KHÔNG đổi nền
+                 (đổi nền thì hai sợi kẻ trên dưới phải đổi theo mới không hở)
+
+   Ngoại lệ đã biết: trong CỘT BÊN (`.ben`), tiêu đề đổi sang phông thân bài và
+   cỡ nhỏ hơn — cột ấy hẹp, và ở đó nó là chỗ điều hướng chứ không phải chỗ
+   trưng bày. Lý do đầy đủ ở prose.css.
+
+   Chi tiết và bảng so sánh: docs/DESIGN-SYSTEM.md §17.5. */
+
 /* ══════════════ MÀN HERO ══════════════
    Khuôn tạp chí / catalogue triển lãm. Xem ghi chú ở hàm trangChu trong
    tools/build.mjs để biết sáu thứ làm nên nó. */
@@ -360,6 +388,17 @@
    đã tính cho vừa cột rồi, co mạnh là vừa mất sức nặng vừa để hở một mảng
    trống bên phải. Từ đầu co nhiều hơn (44 → 25cqw) vì nó phải nhường chỗ cho
    phần chữ vừa chạy vào — và đó mới là chỗ mắt thấy có chuyển động. */
+/* ── CHỈ MÁY CÓ CHUỘT THẬT ──
+   Màn cảm ứng cũng nổ `:hover`, và nó DÍNH LẠI sau cú chạm cho tới khi người
+   ta chạm chỗ khác. Hậu quả trên điện thoại: chạm lần một mở chữ ra (do lớp
+   `.hd-ro`), chạm lần hai gỡ lớp ấy — nhưng `:hover` còn dính nên phần "oey"
+   vẫn hiện, trong khi dòng "Borderland" (chỉ nghe theo `.hd-ro`) thì co lại.
+   Cụm kẹt ở một trạng thái nửa vời không luật nào tả.
+
+   `@media (hover:hover)` hỏi đúng câu cần hỏi: thiết bị này có con trỏ rê được
+   không. Điện thoại trả lời không, nên toàn bộ khối này thôi tồn tại ở đó —
+   và cú chạm chỉ còn MỘT thứ điều khiển. */
+@media (hover:hover){
 .hero:hover .hero-danh,
 .hero:focus-within .hero-danh{
   opacity:.96;
@@ -380,6 +419,7 @@
 }
 .hero:hover .hd-con,
 .hero:focus-within .hd-con{opacity:1;letter-spacing:-.03em}
+}
 
 @media (hover:none) and (min-width:1001px){
   .hero-danh{
@@ -1124,7 +1164,28 @@
    Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới
    nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này
    có mấy mảng, trước khi phải đọc một tiêu đề bài nào. */
-.muc-khoi + .muc-khoi{margin-top:var(--s9)}
+/* ── LƯỚI BENTO CỦA TRANG POSTS ──
+   Mỗi ô là một chuyên mục: tên · số bài · một dòng mô tả · ba bài mới nhất ·
+   "See all". Ô tự co theo bề ngang, tối thiểu 300px — dưới cỡ ấy một dòng bài
+   bị cắt giữa tiêu đề, mà tiêu đề là thứ duy nhất người ta đọc để chọn.
+
+   `align-items:start` để ô thấp KHÔNG bị kéo cao bằng ô cao nhất hàng: chuyên
+   mục một bài mà cao bằng chuyên mục ba bài thì nó có một mảng trống ở đáy,
+   và mảng ấy đọc ra là thiếu chứ không ra là thoáng. */
+.muc-luoi{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:var(--s5);
+  align-items:start;
+}
+.muc-khoi{
+  padding:var(--s5) var(--s5) var(--s4);
+  border-radius:var(--r-md);
+  background:var(--surface);
+  box-shadow:inset 0 0 0 1px var(--line);
+  transition:box-shadow var(--dur-fast);
+}
+.muc-khoi:hover{box-shadow:inset 0 0 0 1px var(--line-strong)}
 
 /* ── DANH SÁCH BÀI TRONG MỘT CHUYÊN MỤC ──
    Cùng khuôn với ba dòng bài ở màn đầu trang chủ (`.hero-ds`): số thứ tự nhỏ
@@ -1358,26 +1419,34 @@
 }
 .kho-ds{list-style:none;margin:0;padding:0;
   display:flex;flex-direction:column;gap:2px}
+/* Archive dùng chung KHUÔN DÒNG với màn đầu, trang Posts và khối "đọc tiếp" —
+   xem khối "MỘT KHUÔN DÒNG" ở đầu file này. Ở đây chỉ còn phần riêng: hàng
+   ngày rộng cố định để cột tên bài thẳng nhau suốt cả năm. */
 .kho-dong{
   display:flex;align-items:baseline;gap:var(--s4);
-  padding:6px var(--s3) 6px 0;border-radius:var(--r-sm);
-  transition:background var(--dur-fast);
+  padding:7px 2px;
+  border-bottom:1px solid var(--line);
+  transition:color var(--dur-fast),padding-left var(--dur-fast);
 }
-.kho-dong:hover{background:var(--accent-wash)}
+.kho-dong:first-child{border-top:1px solid var(--line)}
+.kho-dong:hover{padding-left:var(--s2)}
 .kho-dong time{
   flex:none;width:5.2em;
-  font-family:var(--font-label);font-size:var(--fs-2xs);
-  letter-spacing:.06em;color:var(--text-faint);
-  font-variant-numeric:tabular-nums;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;text-transform:uppercase;
 }
 .kho-dong a{
   flex:1;min-width:0;color:var(--text);text-decoration:none;background:none;
-  font-size:calc(var(--fs-base) * .97);line-height:1.45;
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:var(--fs-h4);line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .kho-dong:hover a{color:var(--accent-ink)}
 .kho-muc{
-  flex:none;font-family:var(--font-label);font-size:var(--fs-2xs);
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+  flex:none;font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+  white-space:nowrap;
 }
 @media (max-width:560px){
   /* Xuống một cột: ngày lên trên, tên bài xuống dưới. Ba thứ trên một dòng ở

@@ -1449,7 +1449,21 @@ const KIEM = [
         if (so !== 1) { ra.push(`${t.url} — có ${so} cụm tương tác, phải đúng 1`); continue; }
         const iCum = t.html.indexOf('class="cum-tt"');
         const iDoc = t.html.indexOf('class="read-next"');
-        if (iDoc >= 0 && iCum < iDoc) {
+        const iDau = t.html.indexOf('class="post-head"');
+        /* Tìm `</header>` SAU đầu bài: thẻ đầu tiên trong trang là của thanh
+           đầu trang (`<header class="site-head">`), không phải của bài. */
+        const iChu = t.html.indexOf('</header>', iDau);
+        /* ── KHUNG ẢNH ĐI ĐƯỜNG KHÁC, VÀ ĐÓ LÀ CỐ Ý ──
+           Khung C bày bài như một trang ảnh: cụm nút lên ngay dưới tiêu đề, vì
+           ở đó người ta thả tim ngay sau khi xem chứ không cuộn xuống đáy tìm
+           nút. Hai khung kia là bài ĐỌC, và ở đó cụm phải đứng sau khối "đọc
+           tiếp". Canh cả hai chiều: đặt nhầm đường nào cũng là một trang cư xử
+           khác hẳn mấy trang anh em mà không ai báo. */
+        if (/post-layout khung-c/.test(t.html)) {
+          if (!(iCum > iDau && iCum < iChu)) {
+            ra.push(`${t.url} — khung ảnh: cụm tương tác phải nằm trong đầu bài`);
+          }
+        } else if (iDoc >= 0 && iCum < iDoc) {
           ra.push(`${t.url} — cụm tương tác đứng TRƯỚC khối "đọc tiếp"`);
         }
         if (!t.html.includes('data-bl-so')) {
@@ -1461,7 +1475,7 @@ const KIEM = [
         if (!/class="bl-nut bl-chia"/.test(t.html)) {
           ra.push(`${t.url} — thiếu nút chia sẻ`);
         }
-        if (!/class="vb-nho bl-dong"/.test(t.html)) {
+        if (!/class="btn btn--ghost bl-dong"/.test(t.html)) {
           ra.push(`${t.url} — khung bình luận thiếu nút Back`);
         }
       }

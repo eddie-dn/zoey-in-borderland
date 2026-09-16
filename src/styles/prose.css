@@ -427,14 +427,45 @@
 
 /* ── Gợi ý đọc tiếp ── */
 .read-next .label{margin:0 0 var(--s5)}
-/* Trong CỘT BÊN thì khối này hẹp hơn hẳn, nên ba cột (loại · tiêu đề · ngày)
-   không còn chỗ — xếp dọc lại thành hai dòng. Luật này đứng TRƯỚC luật chung
-   bên dưới nhưng chọn lọc hơn, nên nó thắng ở đúng chỗ cần. */
-.ben .read-next{margin-top:var(--s7)}
+/* ══════════ MỘT THANG CHỮ CHO CẢ CỘT BÊN ══════════
+
+   Cột bên chở ba khối sinh ra ở ba chỗ khác nhau trong mã — mục lục
+   (layout.css), gợi ý đọc tiếp và cụm nút (file này) — và mỗi chỗ tự khai cỡ
+   chữ lấy. Kết quả đọc ra là ba thứ không liên quan xếp chồng nhau:
+
+     ON THIS PAGE   11px  · xám nhạt
+     READ NEXT      12px  · TÍM
+     LEAVE A NOTE   10px  · xám nhạt
+
+   Ba dòng ấy cùng một VAI — tên của một khối — nên phải cùng một hình dạng.
+   Đầu đề mà mỗi cái một cỡ một màu thì không còn là đầu đề, chỉ là chữ.
+
+   Ba bậc, không hơn:
+     1. TÊN KHỐI    10px Oswald hoa, giãn rộng, xám nhạt
+     2. NHÃN DÒNG   10px Oswald hoa, giãn hẹp hơn, mờ hơn — dưới tên khối
+     3. CHỮ ĐỂ ĐỌC  14px phông thân bài — mục lục và tiêu đề bài dùng CHUNG
+
+   Bậc 3 cố ý bỏ phông tiêu đề nghiêng cho tiêu đề bài: cột này là chỗ ĐIỀU
+   HƯỚNG, không phải chỗ trưng bày. Một cột hẹp mà trộn hai phông thì mắt đọc
+   ra hai danh sách rời nhau, trong khi chúng chỉ là hai lối đi cạnh nhau. */
+.ben :is(.toc-title, .read-next .label, .cum-nhan){
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);margin:0 0 var(--s4);
+}
 .ben .read-next .eyebrow{display:none}
+/* Khoảng cách giữa ba khối do `gap` của chính cột lo (layout.css) — khối nào
+   tự thêm lề trên là khối ấy đứng lệch nhịp so với hai khối kia. */
+.ben .read-next{margin-top:0}
 .ben .rn-dong{grid-template-columns:minmax(0,1fr);gap:2px;padding:var(--s3) 0}
-.ben .rn-title{font-size:var(--fs-sm);line-height:1.35}
-.ben .rn-meta{font-size:var(--fs-3xs)}
+.ben .rn-kind{letter-spacing:.1em;opacity:.72}
+.ben .rn-title{
+  font-family:var(--font-body);font-style:normal;font-weight:500;
+  font-size:var(--fs-sm);line-height:1.4;color:var(--text-muted);
+}
+.ben .rn-meta{font-size:var(--fs-3xs);color:var(--text-faint)}
+.ben .toc{font-size:var(--fs-sm)}
+.ben a.rn-dong:hover .rn-title{color:var(--accent-ink)}
 
 /* Xếp dọc, ngăn nhau bằng sợi kẻ — không còn lưới thẻ. Lý do ở chỗ dựng
    `read-next` trong tools/build.mjs. */
@@ -443,15 +474,16 @@
   display:grid;
   grid-template-columns:7.5rem minmax(0,1fr) auto;
   align-items:baseline;gap:var(--s3) var(--s4);
-  padding:var(--s4) 0;
+  padding:var(--s4) 2px;
   border-top:1px solid var(--line);
   color:var(--text);text-decoration:none;
-  transition:color var(--dur-fast);
+  transition:color var(--dur-fast),padding-left var(--dur-fast);
 }
 .rn-dong:last-child{border-bottom:1px solid var(--line)}
+/* Khuôn dòng chung — xem khối "MỘT KHUÔN DÒNG" ở đầu src/styles/list.css. */
 .rn-kind{
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
   transition:color var(--dur-fast);
 }
 .rn-title{
@@ -459,12 +491,13 @@
   font-size:var(--fs-h4);line-height:1.25;
 }
 .rn-meta{
-  font-size:var(--fs-xs);color:var(--text-faint);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
 /* .prose không bao được chân bài nữa (chân bài là anh em của .prose), nên
    gạch chân link của .prose không chạm tới đây. */
-a.rn-dong:hover{color:var(--accent-ink)}
+a.rn-dong:hover{color:var(--accent-ink);padding-left:var(--s2)}
 a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 @media (max-width:560px){
   /* Ba cột không đủ chỗ: nhãn loại lên trên, tiêu đề và ngày xuống dưới. */
@@ -614,9 +647,12 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
   opacity:0;pointer-events:none;
 }
 
-.bl-chan{display:flex;align-items:center;justify-content:space-between;gap:var(--s4)}
-.bl-con{font-size:var(--fs-sm);color:var(--text-faint);font-variant-numeric:tabular-nums}
-.bl-chan .btn{margin-left:auto}
+/* Bộ đếm ký tự bám mép trái, cặp nút bám mép phải: một khoảng co giãn duy
+   nhất, nằm ở bộ đếm. Trước đây `margin-left:auto` đặt trên `.btn` — với hai
+   nút thì cái đầu nuốt hết khoảng trống và cặp nút tách rời nhau. */
+.bl-chan{display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap}
+.bl-con{font-size:var(--fs-sm);color:var(--text-faint);
+  font-variant-numeric:tabular-nums;margin-right:auto}
 
 .bl-bao{margin:var(--s4) 0 0;font-size:var(--fs-sm);line-height:1.6;min-height:1.2em}
 .bl-bao:empty{margin:0;min-height:0}
@@ -793,11 +829,25 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 .cum-bao{flex:0 0 100%}
 .cum-bao:empty{display:none}
 
-/* Lối ra của khung bình luận: nép góc trên bên phải, cỡ chữ nhãn nhỏ. Nó là
-   đường LÙI, không phải một lựa chọn ngang hàng với việc gửi — nên nó nhẹ hơn
-   mọi thứ khác trong khung. */
-.bl-lui{display:flex;justify-content:flex-end;margin-bottom:var(--s3)}
-.bl-dong{padding:2px 0}
+/* ── NÚT "BACK" PHẢI TRÔNG RA MỘT CÁI NÚT ──
+   `.btn--ghost` vốn là nút kính mỏng: nó dựa vào nền phía sau để lộ mép. Trong
+   khung bình luận, nền phía sau là mặt thẻ gần trắng — nên mép biến mất và
+   "Back" đọc ra như một dòng chữ lạc vào cạnh nút Send.
+
+   Viền rõ, cùng cỡ cùng bo góc với Send, chỉ khác chỗ không tô đầy: hai ngã
+   của một quyết định thì phải cùng hình dạng, và khác nhau đúng ở SỨC NẶNG. */
+.bl-dong{
+  /* Lề trong và bo góc gõ thẳng cho khớp `.btn`: nút này thừa kế từ một luật
+     khác ở đâu đó đặt `padding-inline:0`, nên vòng viền bó sát chữ và cái pill
+     cao hơn Send 9px — hai nút cạnh nhau mà lệch chiều cao thì đọc ra là hỏng. */
+  padding:12px var(--s6);
+  box-shadow:inset 0 0 0 1px var(--line-strong);
+  background:none;color:var(--text-muted);
+}
+.bl-dong:hover{
+  box-shadow:inset 0 0 0 1px var(--accent);
+  color:var(--accent-ink);background:var(--accent-wash);
+}
 
 .bl-nut{
   appearance:none;cursor:pointer;
