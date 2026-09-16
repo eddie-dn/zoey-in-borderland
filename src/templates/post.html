@@ -29,17 +29,6 @@
       {{draftBadge}}
     </div>
 
-    <!-- Cụm tim · chia sẻ · bình luận, CHỈ ở khung B và C. Hai khung ấy không
-         có cột bên thật, nên cụm nút lên đây — bám ngay dưới hàng ngày tháng
-         và lượt xem, tức là dán vào đúng chỗ con số đếm tim đang hiện.
-
-         Trên tóm tắt chứ không dưới: tóm tắt là câu MỞ bài, và chen một hàng
-         nút vào giữa nó với thân bài là cắt ngang đúng lúc người đọc vừa bắt
-         nhịp. Trên thì nó còn thuộc về cụm đầu bài.
-
-         Khung A có cột bên thật, và ở đó cụm nằm trong cột ấy. -->
-    {{cumDau}}
-
     {{summaryBlock}}
   </header>
 
@@ -54,9 +43,22 @@
     {{body}}
   </article>
 
+  <!-- ── THỨ TỰ CUỐI BÀI ──
+       tag → gợi ý đọc tiếp → "Leave a note".
+
+       Cụm nút đứng SAU phần gợi ý bài, không phải trước. Đọc xong một bài thì
+       câu hỏi đầu tiên trong đầu là "đọc gì nữa", không phải "viết gì". Đặt ô
+       viết trước danh sách gợi ý là chen một việc nặng vào giữa lúc người ta
+       đang muốn đi tiếp — và chính vì thế phần lớn sẽ lướt qua nó.
+
+       Sau danh sách thì khác: ai đã đọc hết gợi ý mà vẫn còn ở lại là người
+       thật sự có gì để nói.
+
+       Ba con số (lượt xem · lượt thích · bình luận) vẫn ở hàng meta ĐẦU bài —
+       chúng là thông tin để đọc lướt, không phải việc để làm. -->
   <footer class="post-foot">
     {{tagBlock}}
-    {{binhLuan}}
     {{readNext}}
+    {{binhLuan}}
   </footer>
 </div>

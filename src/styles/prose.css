@@ -477,7 +477,9 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
    ══════════════════════════════════════════════════════════════ */
 
 .binh-luan .label{margin:0 0 var(--s2)}
-.bl-dem{color:var(--text-faint);font-weight:400}
+/* `.bl-dem` — ĐÃ BỎ. Số bình luận từng in ngay trên nút bấm; nay nó về hàng
+   meta đầu bài cùng lượt xem và lượt thích (xem xemHTML trong tools/build.mjs).
+   Nút là chỗ bấm, hàng meta là chỗ đọc. */
 .bl-moi{font-size:var(--fs-sm);color:var(--text-muted);margin:0 0 var(--s5)}
 
 /* ── BÀN DUYỆT (/#duyet) ──
@@ -758,11 +760,19 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
    Trước đây ba nút này ở chân bài trong một khối `.bl-dau` — luật ấy đã bỏ,
    và nó vốn còn trùng tên với `.bl-dau` của MỖI dòng bình luận (tên người +
    giờ gửi). Hai luật cùng tên chồng lên nhau trong cùng một file, cái sau ăn
-   cái trước; may là hai nơi không bao giờ hiện cùng lúc nên chưa ai thấy. */
+   cái trước; may là hai nơi không bao giờ hiện cùng lúc nên chưa ai thấy.
+
+   Rồi có một bản cho cụm đi hai đường: khung A vào cột bên, khung B và C lên
+   đầu bài. Cũng bỏ nốt — cùng một thứ nằm hai chỗ tuỳ khung là người đọc phải
+   đi tìm lại nó mỗi lần mở một bài khác kiểu. Nay đúng MỘT chỗ, mọi khung. */
+/* Nằm NGANG, ngay dưới hàng ngày tháng / lượt xem / lượt thích / bình luận —
+   tức là dán vào đúng ba con số nó điều khiển. Không viền dưới: ngay dưới nó
+   đã là đoạn tóm tắt có viền trái riêng, hai đường kẻ sát nhau thì đọc ra là
+   khung bị vỡ. */
 .cum-tt{
-  display:flex;flex-direction:column;gap:var(--s2);
-  padding-bottom:var(--s5);margin-bottom:var(--s5);
-  border-bottom:1px solid var(--line);
+  display:flex;flex-flow:row wrap;align-items:center;
+  gap:var(--s3) var(--s4);
+  margin:var(--s4) 0 0;
 }
 .cum-nhan{
   margin:0;
@@ -771,37 +781,23 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
   color:var(--text-faint);
 }
 .cum-nut{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
-/* Câu báo "đã chép đường dẫn". Giữ chỗ sẵn một dòng kể cả lúc rỗng: không giữ
-   thì lúc chữ hiện ra cả cột bên nhảy xuống một nhịp, và cú nhảy ấy nhìn như
-   trang bị lỗi chứ không như một lời báo. */
+/* Câu báo "đã chép đường dẫn". */
 .cum-bao{
-  margin:0;min-height:1.2em;
+  margin:0;
   font-size:var(--fs-2xs);color:var(--accent-ink);
 }
 .cum-bao--hong{color:var(--bad)}
 
-/* ── CÙNG MỘT CỤM, HAI CHỖ ĐỨNG ──
-   Khung A có cột bên thật nên cụm xếp DỌC ở đó. Khung B và C không có cột nào,
-   nên cụm lên đầu bài và xếp NGANG — ngay dưới hàng ngày tháng / lượt xem, nơi
-   mắt vừa đi qua. Cùng một khối HTML, đổi hướng bằng đúng một luật.
-
-   Không viền dưới ở đây: ngay dưới nó đã là đoạn tóm tắt có viền trái riêng,
-   hai đường kẻ sát nhau thì đọc ra là khung bị vỡ. */
-.post-head .cum-tt{
-  flex-flow:row wrap;align-items:center;gap:var(--s3) var(--s4);
-  border-bottom:none;padding-bottom:0;margin:var(--s4) 0 0;
-}
 /* Câu báo xuống HÀNG RIÊNG (ép chiếm trọn bề ngang) thay vì chen vào cuối
    hàng nút: chen vào thì lúc nó hiện ra, cả hàng nút bị đẩy sang trái. */
-.post-head .cum-bao{flex:0 0 100%;min-height:0}
-.post-head .cum-bao:empty{display:none}
+.cum-bao{flex:0 0 100%}
+.cum-bao:empty{display:none}
 
-/* Khổ hẹp: `.ben` thành `display:contents` (layout.css), nên cụm của khung A
-   rơi vào dòng chảy. `order:2` đặt nó ngay SAU thân bài và TRƯỚC chân bài —
-   cùng chỗ tương đối với lúc nó còn ở cột bên. */
-@media (max-width:1079px){
-  .cum-tt{order:2}
-}
+/* Lối ra của khung bình luận: nép góc trên bên phải, cỡ chữ nhãn nhỏ. Nó là
+   đường LÙI, không phải một lựa chọn ngang hàng với việc gửi — nên nó nhẹ hơn
+   mọi thứ khác trong khung. */
+.bl-lui{display:flex;justify-content:flex-end;margin-bottom:var(--s3)}
+.bl-dong{padding:2px 0}
 
 .bl-nut{
   appearance:none;cursor:pointer;
@@ -824,7 +820,7 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 .bl-nut:active svg{transform:scale(.88)}
 /* Con số chỉ chiếm chỗ khi CÓ số — nút rỗng thì nó là một nút tròn gọn, không
    phải một viên thuốc dài có khoảng trống bên trong. */
-.bl-so:empty,.bl-dem:empty{display:none}
+.bl-so:empty{display:none}
 /* Đã bấm: tim TÔ ĐẶC. Chỉ đổi màu viền thì ở cỡ 17px mắt không bắt ra, mà đây
    đúng là chỗ phải trả lời ngay "mình bấm rồi hay chưa". */
 .bl-tim--bam{color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}

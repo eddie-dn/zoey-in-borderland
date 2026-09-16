@@ -882,7 +882,17 @@
    Ngày nằm ở CỘT RIÊNG bên trái chứ không nằm trên chữ: đọc dọc xuống là thấy
    ngay nhịp ghi (dày hay thưa, gần đây hay lâu rồi) mà không phải đọc chữ nào. */
 .gc-loc{margin-bottom:var(--s7)}
-.gc-loc button{font:inherit;cursor:pointer}
+/* ── KHÔNG `font:inherit` ──
+   Luật này từng viết `font:inherit;cursor:pointer` để gỡ phông mặc định mà
+   trình duyệt gán cho <button>. Nhưng `font` là một shorthand: nó đặt LẠI cả
+   font-family, font-size và font-weight — và ở đây nó thắng `.chip` (0,1,1 so
+   với 0,1,0), nên chip ở trang Notes lấy phông thân bài 15px thay vì phông
+   nhãn 10px. Chip cùng viền, cùng bo tròn, cùng chữ hoa giãn — mà to gấp rưỡi
+   chip ở trang Posts, và không nhìn hai trang cạnh nhau thì không ai thấy.
+
+   `.chip` đã khai đủ ba thuộc tính ấy rồi, nên phông mặc định của <button>
+   không còn chỗ nào lọt qua. Ở đây chỉ còn đúng thứ <button> thật sự cần. */
+.gc-loc button,.tk-loc button{cursor:pointer}
 
 .gc-ds{list-style:none;margin:0;padding:0}
 /* Bộ lọc theo loại giấu mục bằng class này, còn bộ chia trang giấu bằng

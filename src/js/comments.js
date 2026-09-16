@@ -55,7 +55,12 @@
      khung nào giữ lại hàng nút tại chỗ thì bản trong khối phải thắng — nút
      gần với khối nó điều khiển là nút đúng. */
   function tim1(sel) { return khoi.querySelector(sel) || document.querySelector(sel); }
-  var demEl = tim1('.bl-dem');
+  /* Số bình luận in ở HÀNG META đầu bài, cạnh lượt xem và lượt thích — không
+     in trên chính cái nút. Nút là chỗ BẤM, hàng meta là chỗ ĐỌC; và ba con số
+     của một bài đứng cùng một hàng thì mới so được với nhau. Ô ấy nằm ngoài
+     khối bình luận nên tìm từ `document`. */
+  var demEl = document.querySelector('[data-bl-so]');
+  var demChu = demEl ? demEl.querySelector('.bl-so-chu') : null;
   var nutMo = tim1('.bl-mo');
   var moLuc = Date.now();
 
@@ -214,6 +219,13 @@
       }
     }
 
+    /* Nút "Back" trong khung bấm hộ chính nút đã mở khung: một đường đóng duy
+       nhất, nên trạng thái `aria-expanded`, việc dời chỗ và cú cuộn đều đi qua
+       cùng một chỗ. Dựng riêng một đường đóng thứ hai là sớm muộn có một đường
+       quên cập nhật một thứ. */
+    var nutDong = than.querySelector('.bl-dong');
+    if (nutDong) nutDong.addEventListener('click', function () { nutMo.click(); });
+
     nutMo.addEventListener('click', function () {
       var dangMo = nutMo.getAttribute('aria-expanded') === 'true';
       nutMo.setAttribute('aria-expanded', dangMo ? 'false' : 'true');
@@ -221,11 +233,23 @@
          vừa giấu khỏi trình đọc màn hình, và bấm Tab không lọt vào được. */
       than.hidden = dangMo;
       doiCho(!dangMo && rong.matches);
-      /* Khổ hẹp: khung mở ra ở cuối bài, cách chỗ vừa bấm cả màn hình. Đưa mắt
-         tới đó thay vì để người ta tự đi tìm thứ mình vừa mở. */
-      if (!dangMo && !rong.matches) {
+      /* ── ĐƯA MẮT TỚI CHỖ VỪA MỞ ──
+         Nút nằm ở đầu bài, còn khung — trừ trường hợp vừa dời sang cột bên —
+         mở ra ở CUỐI bài, cách chỗ vừa bấm cả nghìn pixel. Bấm xong mà màn
+         hình không đổi gì thì đọc ra là nút hỏng, không đọc ra là "nó mở ở
+         dưới kia".
+
+         Bản trước chỉ cuộn ở khổ hẹp, vì lúc ấy khổ rộng nào cũng dời được
+         khung sang cột bên. Nhưng chỉ khung A có cột bên thật — khung B và C ở
+         khổ rộng rơi đúng vào cái bẫy ấy: bấm, và không có gì xảy ra. Nay điều
+         kiện hỏi đúng câu cần hỏi: khung có ĐƯỢC DỜI hay không. */
+      if (!dangMo && !(duocDoi && rong.matches)) {
         than.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
+      /* Đóng lại thì đưa mắt VỀ chỗ cái nút — không thì người đọc đóng khung ở
+         cuối bài xong còn đứng nguyên dưới đó, nhìn một khoảng trống vừa co
+         lại mà không rõ mình đang ở đâu. */
+      if (dangMo) nutMo.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
 
     /* Vượt ngưỡng lúc đang mở — xoay điện thoại, kéo rộng cửa sổ — thì khung
@@ -292,7 +316,13 @@
 
   function ve(ds) {
     dsEl.textContent = '';
-    if (demEl) demEl.textContent = ds.length ? '(' + ds.length + ')' : '';
+    if (demEl) {
+      /* Ẩn hẳn khi chưa có bình luận nào — cùng luật với ô lượt thích. Số 0
+         cạnh một cái icon bong bóng đọc ra là "chưa ai nói gì", mà đó là câu
+         không cần nói ra ngay dưới tiêu đề bài. */
+      demEl.hidden = ds.length === 0;
+      if (demChu) demChu.textContent = ds.length ? String(ds.length) : '';
+    }
     if (!ds.length) {
       var trong = document.createElement('li');
       trong.className = 'bl-trong';

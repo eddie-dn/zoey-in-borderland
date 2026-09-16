@@ -1567,7 +1567,6 @@ function cumTuongTac(bai) {
       <button class="bl-nut bl-mo" type="button" aria-expanded="false" aria-controls="bl-than"
               aria-label="${attr(NHAN.comments)}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
-        <span class="bl-dem"></span>
       </button>
     </div>
     <p class="cum-bao" role="status" aria-live="polite"></p>
@@ -1701,7 +1700,10 @@ function binhLuanHTML(bai) {
      functions/api/binh-luan.js về lý do bỏ Apps Script. */
   return `<section class="binh-luan" data-binh-luan="${attr(BASE + (c.api || '/api/binh-luan'))}"
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
-    <div class="eyebrow"><i></i></div>
+    ${/* Vạch kẻ có hạt kim cương ở giữa (`.eyebrow`) ĐÃ BỎ khỏi đây: khối "đọc
+          tiếp" ngay trên đã có một vạch y hệt, và hai vạch giống nhau cách
+          nhau 80px thì cái nào cũng thôi làm dấu mở đầu. */''}
+    ${cumTuongTac(bai)}
 
     ${/* ── HÀNG NÚT ĐÃ RỜI KHỎI ĐÂY ──
           Tim, chia sẻ và bình luận nay nằm chung một cụm ở CỘT BÊN
@@ -1714,6 +1716,18 @@ function binhLuanHTML(bai) {
           một khối cha. */''}
 
     <div class="bl-than" id="bl-than" hidden>
+    ${/* ── LỐI RA ──
+          Khung này mở ra bằng một cú bấm ở cụm nút ngay trên. Nhưng khi nó đã
+          mở, nhất là lúc đã chiếm cột bên ở khổ rộng, cái nút mở ấy có thể
+          đang nằm ngoài tầm mắt — người đọc đổi ý giữa chừng thì không thấy
+          đường nào lùi lại.
+
+          Một nút "Back" ngay trong khung, ở góc trên: chỗ mắt tìm lối ra. Nó
+          không làm gì mới — nó bấm hộ đúng cái nút đã mở khung. Một đường
+          đóng, không phải hai. */''}
+    <div class="bl-lui">
+      <button type="button" class="vb-nho bl-dong">← ${escapeHtml(NHAN.vbBack)}</button>
+    </div>
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
           định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
           xong vẫn thấy một dòng khác hiện lên, và không có cách nào tắt. */''}
@@ -1762,15 +1776,11 @@ function benGiuDocTiep(bai) {
   return bai.khung === 'a' && bai.headings.length > 0;
 }
 
-/* Cột bên là một CỘT THẬT chỉ ở khung A: chỉ `.post-layout.khung-a` khai lưới
-   hai cột (layout.css, @media min-width:1080px). Khung B và C là một cột, nên
-   ở đó `<aside class="ben">` chỉ là một khối nằm trong dòng chảy SAU bài —
-   tức là vẫn "chân bài", đúng cái chỗ cụm nút vừa được dọn đi khỏi.
-
-   Nên cụm nút đi hai đường: khung A vào cột bên, khung B/C lên đầu bài. */
-function benLaCot(bai) {
-  return bai.khung === 'a';
-}
+/* `benLaCot()` đã bỏ: cụm nút nay lên đầu bài ở MỌI khung, nên không còn chỗ
+   nào phải hỏi "khung này có cột bên thật không". Câu hỏi ấy vẫn còn sống ở
+   src/js/comments.js — nơi quyết định có dời khung bình luận sang cột bên hay
+   không — và ở đó nó hỏi thẳng DOM (`.khung-a` có mặt hay không) thay vì hỏi
+   một hàm ở phía dựng trang. */
 
 function readNextHTML(bai, congKhai) {
   const ds = goiY(bai, congKhai);
@@ -1823,7 +1833,7 @@ function trangBai(bai, congKhai) {
     dateISO     : bai.date,
     dateText    : ngayAnh(bai.date),
     mocBlock    : mocHTML(bai),
-    xemBlock    : xemHTML(bai),
+    xemBlock    : xemHTML(bai, true),
     draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
 
     cover       : coverHTML(bai),
@@ -1841,9 +1851,16 @@ function trangBai(bai, congKhai) {
        đúng nghĩa đen. Nên ở đó nó về lại dòng chảy, ĐỨNG SAU khối bình luận:
        bấm mở khung bình luận là nó bị đẩy xuống, chứ không phải nó che mất
        chỗ vừa mở ra. */
-    cumDau      : benLaCot(bai) ? '' : cumTuongTac(bai),
-    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : '',
-                          benLaCot(bai) ? cumTuongTac(bai) : ''),
+    /* ── MỘT CHỖ ĐỨNG DUY NHẤT, MỌI KHUNG ──
+       Bản trước cụm nút đi hai đường: khung A vào cột bên, khung B và C lên đầu
+       bài. Cùng một thứ nằm hai chỗ tuỳ khung là người đọc phải đi tìm lại nó
+       mỗi lần mở một bài khác kiểu — mà ba khung ấy chỉ khác nhau ở cách bày
+       ẢNH, không khác nhau ở chuyện thả tim hay viết một dòng.
+
+       Nay cụm luôn ở ngay dưới hàng meta, cùng chỗ với ba con số nó điều khiển.
+       Cột bên giữ đúng việc của nó: mục lục, đọc tiếp, và — khi người đọc bấm
+       bình luận ở khổ rộng — chính khung bình luận (xem comments.js). */
+    toc         : tocHTML(bai.headings, benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 
@@ -2406,11 +2423,29 @@ function mocHTML(b) {
    Ô thích để RỖNG và `hidden` lúc dựng: con số do src/js/comments.js đổ vào
    sau khi hỏi máy chủ, cùng lượt hỏi mà nút tim cuối bài vẫn phải gọi. Chưa
    gắn D1 thì nó ở nguyên trạng thái ẩn, và hàng meta chỉ ngắn đi một mục. */
-function xemHTML(b) {
+function xemHTML(b, day) {
   const mat = `<svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>`;
   const tim = `<span class="thich" data-thich-so hidden><svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg><span class="thich-so"></span></span>`;
-  if (!(CAU.luotXem || {}).bat) return tim;
-  return `<span class="xem" data-xem="${attr(b.url)}" hidden>${mat}</span>${tim}`;
+  /* ── BA CON SỐ, MỘT KHUÔN ──
+     Lượt xem · lượt thích · số bình luận. Trước bản này chúng ở ba nơi và ba
+     dạng: lượt xem và lượt thích ở hàng meta đầu bài, còn số bình luận thì in
+     ngay trên cái NÚT bình luận — nên hai cái đầu là chữ để đọc, cái thứ ba là
+     một phần của nút bấm, và không cái nào so được với cái nào.
+
+     Nay cả ba ở cùng một hàng, cùng cỡ chữ, cùng kiểu "icon + số". Và nút bấm
+     thôi mang số: nút là chỗ BẤM, hàng meta là chỗ ĐỌC. Một con số xuất hiện
+     đúng một lần thì không có chỗ nào để hai bản trôi lệch nhau. */
+  const bl = (CAU.binhLuan || {}).bat === false ? '' :
+    `<span class="thich" data-bl-so hidden><svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg><span class="bl-so-chu"></span></span>`;
+  /* ── THẺ BÀI CHỈ CÓ LƯỢT XEM ──
+     Ô lượt thích và ô số bình luận do comments.js đổ số vào, mà file ấy chỉ
+     chạy trên TRANG BÀI. Trên một trang danh sách chúng nằm đó rỗng và `hidden`
+     vĩnh viễn — mỗi thẻ hai khối markup không bao giờ hiện, nhân với số bài
+     trên trang. Lượt xem thì khác: xem.js chạy ở mọi trang và đổ số cho từng
+     thẻ, nên nó ở lại. */
+  const so = day ? tim + bl : '';
+  if (!(CAU.luotXem || {}).bat) return so;
+  return `<span class="xem" data-xem="${attr(b.url)}" hidden>${mat}</span>${so}`;
 }
 function theBai(b, { hienMuc = true } = {}) {
   /* HAI tag trên thẻ, không phải ba. Ba cái thì ở bề ngang một cột lưới thường

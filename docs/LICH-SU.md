@@ -27,6 +27,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V12.00 | 2026-09-17 | 00 | chip ở Notes và Search về đúng cỡ chip ở Posts |
+| V11.09 | 2026-09-17 | 09 | cột chữ trang bài căng tới mép logo |
+| V11.08 | 2026-09-17 | 08 | Leave a note xuống sau phần gợi ý bài; khung bình luận có nút Back và thôi giữ cú cuộn |
+| V11.07 | 2026-09-16 | 07 | đồng bộ đầu bài mọi khung: ba con số một hàng, cụm nút một chỗ; bỏ vạch trang trí thừa cuối bài |
 | V11.06 | 2026-09-16 | 06 | dọn: luật CSS chết và trùng, nhãn thừa, script chỉ nạp ở trang cần |
 | V11.05 | 2026-09-16 | 05 | ô quản trị sang tiếng Anh; nút Back đứng cạnh Save |
 | V11.04 | 2026-09-16 | 04 | bình luận nở ra cột phải ở khổ rộng; ô tìm kiếm thôi khựng ở phím gõ đầu |
@@ -135,6 +139,72 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V12.00 — 17-Sep-2026
+
+- **Chip ở Notes và Search về đúng cỡ chip ở Posts.** Chúng đã dùng chung một
+  bộ luật từ V11.00, nhưng trang Notes còn một dòng cũ đặt `font:inherit` cho
+  `<button>` — và `font` là shorthand, nó đặt lại cả phông, cỡ và độ đậm. Dòng
+  ấy thắng luật chung (0,1,1 so với 0,1,0), nên chip ở Notes lấy phông thân bài
+  15px thay vì phông nhãn 10px: cùng viền, cùng bo tròn, cùng chữ hoa giãn —
+  mà to gấp rưỡi. Không đặt hai trang cạnh nhau thì không ai thấy.
+- Dòng ấy vốn để gỡ phông mặc định trình duyệt gán cho `<button>`; nhưng luật
+  chung đã khai đủ cả ba thuộc tính, nên không còn chỗ nào cho phông mặc định
+  lọt qua.
+
+## V11.09 — 17-Sep-2026
+
+- **Cột chữ trang bài căng tới mép logo.** Lưới vốn khoá cột chữ đúng bằng làn
+  chữ rồi đưa cả khối về giữa — đúng về lý thuyết đọc, nhưng nó đẩy mép trái
+  cột chữ vào trong 61px so với logo trên thanh đầu trang, mà mắt thì đọc hai
+  mép ấy chung với nhau. Nay cột chữ bắt đầu đúng tại một cột dọc với logo, với
+  dòng phân cấp, với mọi thứ khác: 223px → 162px, cột rộng 658 → 780px.
+- **Đánh đổi, nói thẳng:** ở màn 1440px một dòng nay chừng 90 ký tự, dài hơn
+  khoảng 60–75 mà sách vở khuyên. Mép thẳng hàng đổi lấy dòng dài hơn — cách
+  quay lại ghi ngay trong chú thích của luật ấy.
+
+## V11.08 — 17-Sep-2026
+
+- **"Leave a note" xuống SAU phần gợi ý bài.** Đọc xong một bài thì câu hỏi đầu
+  tiên là "đọc gì nữa", không phải "viết gì" — đặt ô viết trước danh sách gợi ý
+  là chen một việc nặng vào giữa lúc người ta đang muốn đi tiếp, và vì thế phần
+  lớn sẽ lướt qua nó. Sau danh sách thì ai còn ở lại là người thật sự có gì để
+  nói. Ba con số vẫn ở hàng meta đầu bài: chúng để đọc lướt, không phải việc
+  để làm.
+- **Khung bình luận có nút "Back".** Khung mở bằng cú bấm ở cụm nút; nhưng khi
+  nó đã chiếm cột bên ở khổ rộng thì cái nút ấy có thể nằm ngoài tầm mắt, và
+  người đổi ý giữa chừng không thấy đường nào lùi. Đóng lại thì trang tự đưa
+  mắt về chỗ cái nút.
+- **Thôi giữ cú cuộn của cả trang.** Khung bình luận ở cột bên khai
+  `overscroll-behavior:contain` — chặn cú cuộn lan ra ngoài. Đúng cho một hộp
+  thoại phủ lên trang, sai hẳn ở đây: phía sau là bài đang đọc, và con lăn đi
+  qua khung là cả trang đứng im. Người đọc không biết mình bị cái gì giữ lại,
+  họ chỉ thấy trang đơ.
+
+
+## V11.07 — 16-Sep-2026
+
+- **Ba con số của một bài về cùng một hàng.** Lượt xem và lượt thích vốn ở hàng
+  meta đầu bài, còn số bình luận thì in ngay trên cái NÚT — nên hai cái đầu là
+  chữ để đọc, cái thứ ba là một phần của nút bấm, và không cái nào so được với
+  cái nào. Nay cả ba cùng một hàng, cùng khuôn "icon + số", và nút thôi mang
+  số: nút là chỗ bấm, hàng meta là chỗ đọc. Con số nào cũng chỉ xuất hiện đúng
+  một lần, nên không có hai bản để trôi lệch nhau.
+- **Cụm tim · chia sẻ · bình luận chỉ còn MỘT chỗ đứng, mọi khung.** Bản trước
+  nó đi hai đường: khung A vào cột bên, khung B và C lên đầu bài. Ba khung ấy
+  chỉ khác nhau ở cách bày ẢNH, không khác nhau ở chuyện thả tim hay viết một
+  dòng — mà người đọc thì phải đi tìm lại cái nút mỗi lần mở một bài khác kiểu.
+- **Bấm bình luận ở khổ rộng nay luôn thấy khung mở ra.** Chỉ khung A có cột
+  bên thật để dời khung sang; khung B và C ở khổ rộng thì khung vẫn mở ở cuối
+  bài — cách chỗ vừa bấm cả nghìn pixel, và màn hình không đổi gì. Trông y như
+  nút hỏng. Nay chỗ nào không dời được thì cuộn tới, kể cả ở khổ rộng.
+- **Bỏ hai vạch trang trí thừa ở cuối bài.** Khối bình luận lúc đóng không còn
+  gì để hiện, nên vạch kẻ có hạt kim cương mở đầu nó thành một nét trôi giữa
+  hàng tag và khối "đọc tiếp" — mà khối ấy có vạch của riêng nó. Hai vạch giống
+  hệt nhau cách nhau 80px thì cái nào cũng thôi làm dấu mở đầu.
+- **Thẻ bài trong danh sách thôi mang hai ô số rỗng.** Ô lượt thích và ô số
+  bình luận do comments.js đổ số vào, mà file ấy chỉ chạy trên trang bài — trên
+  trang danh sách chúng nằm đó rỗng và ẩn vĩnh viễn, nhân với số bài mỗi trang.
 
 ## V11.06 — 16-Sep-2026
 

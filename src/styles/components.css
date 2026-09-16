@@ -505,7 +505,7 @@ body.so-khoa{overflow:hidden}
 }
 .ba-nut button:disabled{opacity:.3;cursor:default}
 
-/* ── HAI CON SỐ Ở HÀNG META: LƯỢT XEM · LƯỢT THÍCH ──
+/* ── BA CON SỐ Ở HÀNG META: LƯỢT XEM · LƯỢT THÍCH · BÌNH LUẬN ──
    Ký hiệu nhỏ đứng trước số, cùng cỡ với chữ quanh nó. `--fs-sm` là cỡ của cả
    hàng meta, nên icon lấy `1em` để nó tự co theo và không bao giờ lệch hàng
    chân chữ. */
@@ -520,3 +520,8 @@ body.so-khoa{overflow:hidden}
    một trạng thái thì phải nói giống nhau. */
 .meta-row .thich--bam{color:var(--bad)}
 .meta-row .thich--bam .i-nho{fill:currentColor}
+/* Ô số bình luận dùng chung lớp `.thich` với ô lượt thích — cùng khuôn
+   "icon + số", chỉ khác cái icon. Đặt tên lớp theo VIỆC (một con số ở hàng
+   meta) chứ không theo nội dung, nên thêm con số thứ ba không phải thêm một
+   bộ luật thứ ba. */
+.meta-row [data-bl-so]{color:var(--text-muted)}

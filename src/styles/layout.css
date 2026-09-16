@@ -822,10 +822,24 @@
      chữ. Nay cột rộng đúng bằng làn chữ cộng một quãng thở, và
      `justify-content` đưa cả lưới về giữa — chỗ thừa chuyển hết ra hai bên
      trang, thành lề thật. */
+  /* ── LƯỚI CĂNG HẾT KHUNG, MÉP TRÁI THẲNG VỚI LOGO ──
+     Bản trước khoá cột chữ đúng bằng làn chữ rồi `justify-content:center` đưa
+     cả lưới về giữa. Đúng về lý thuyết đọc, nhưng nó đẩy mép trái cột chữ vào
+     trong 61px so với mép trái của logo trên thanh đầu trang — và mắt thì đọc
+     hai mép ấy chung với nhau, nên trang nhìn ra là bị thụt vào một cách vô cớ.
+
+     Nay cột chữ nhận hết phần dôi ra (`1fr`), và lưới bắt đầu ngay tại mép
+     trong của khung — cùng một cột dọc với logo, với dòng phân cấp, với mọi
+     thứ khác.
+
+     ĐÁNH ĐỔI, nói thẳng: ở màn 1440px cột chữ thành 780px, tức khoảng 90 ký tự
+     một dòng — dài hơn khoảng 60–75 mà sách vở khuyên. Đây là lựa chọn có ý
+     thức: mép thẳng hàng đổi lấy dòng dài hơn. Muốn quay lại thì đặt cột đầu
+     về `minmax(0,calc(var(--measure) + var(--s8)))` và thêm
+     `justify-content:center`. */
   .post-layout.khung-a{
-    grid-template-columns:minmax(0,calc(var(--measure) + var(--s8))) 280px;
+    grid-template-columns:minmax(0,1fr) 280px;
     column-gap:var(--s9);
-    justify-content:center;
     padding-inline:var(--gutter);
   }
   /* Đặt chỗ TƯỜNG MINH, không để lưới tự xếp. Tự xếp thì nó lấp theo hàng:
@@ -846,7 +860,7 @@
      lấy từ lề hai bên (lưới có `justify-content:center`). Bóp cột chữ thì mỗi
      lần mở khung bình luận là cả bài xô dòng lại một lượt. */
   .post-layout.khung-a--bl{
-    grid-template-columns:minmax(0,calc(var(--measure) + var(--s8))) 400px;
+    grid-template-columns:minmax(0,1fr) 400px;
   }
 }
 
@@ -889,9 +903,18 @@
   /* Khối dính chỉ trượt được trong ô của nó; danh sách bình luận thì dài bao
      nhiêu cũng được. Kẹp lại trong một màn và cho cuộn riêng, không thì phần
      dưới của khung nằm ngoài màn mà không có cách nào tới. */
+  /* ── KHÔNG `overscroll-behavior:contain` ──
+     Nó chặn cú cuộn LAN từ khung bình luận ra cả trang. Nghe thì gọn, nhưng
+     khung này nằm ngay cạnh bài đang đọc và chiếm gần trọn chiều cao màn: con
+     lăn chuột đi qua nó là cả trang đứng im, và người đọc không biết mình đang
+     bị cái gì giữ lại — họ chỉ thấy trang đơ.
+
+     Chặn lan là đúng cho một hộp thoại phủ lên trang (ở đó phía sau KHÔNG được
+     cuộn). Ở đây thì ngược lại: phía sau là bài viết, và vừa đọc vừa viết mới
+     là cả lý do khung này được dời sang cột bên. */
   .ben--bl{
     max-height:calc(100dvh - var(--header-h) - var(--s9));
-    overflow-y:auto;overscroll-behavior:contain;
+    overflow-y:auto;
   }
   .toc-box{
     max-height:calc(100dvh - var(--header-h) - var(--s9));overflow-y:auto}
