@@ -206,7 +206,7 @@
         nen = []; sao = []; bui = []; cuc = [];
 
         /* ── 1. NỀN SAO ── toạ độ theo KHUNG, không theo đĩa, và không quay. */
-        var nNen = Math.max(120, Math.min(900, Math.round(W * H / 2600)));
+        var nNen = Math.max(180, Math.min(1400, Math.round(W * H / 1800)));
         for (var i = 0; i < nNen; i++) {
           nen.push({
             x: Math.random() * W, y: Math.random() * H,
@@ -218,7 +218,7 @@
         }
 
         /* ── 2. SAO TRONG NHÁNH ── */
-        var nSao = Math.max(260, Math.min(1700, Math.round(W * H / 950)));
+        var nSao = Math.max(420, Math.min(2600, Math.round(W * H / 620)));
         var t, k, goc;
         for (i = 0; i < nSao; i++) {
           /* t = bán kính chuẩn hoá. Mũ 0.62 dồn sao về phía trong, đúng như đĩa
@@ -247,7 +247,11 @@
             v: 0.00042 + 0.00020 / (0.5 + t),
             s: Math.random() < 0.9 ? 1 : 1.8,
             m: MAU[(Math.random() * MAU.length) | 0],
-            o: 0.34 + Math.random() * 0.66,
+            /* ĐỘ SÁNG GIẢM DẦN RA NGOÀI. Đĩa thật đặc và rực ở tâm rồi loãng
+               dần tới rìa; cho mọi ngôi sáng đều nhau thì được một đám bụi
+               phẳng, không ra cái đĩa có chiều sâu. Hệ số (1 - t*0.5) giữ cho
+               rìa vẫn còn thấy — nhân mạnh hơn thì nhánh ngoài biến mất. */
+            o: (0.42 + Math.random() * 0.58) * (1 - t * 0.5),
             nh: Math.random() * 6.28, ns: 0.008 + Math.random() * 0.026
           });
         }
@@ -256,8 +260,9 @@
            nhánh chứ không trôi lung tung giữa các nhánh. */
         /* 44 mảng, không phải 64. Bụi khí là lớp cho nhánh có khối; quá tay thì
            nó phủ lên chính dải sao và xoá mất cái nét vừa làm ra. */
-        for (i = 0; i < 44; i++) {
-          t = Math.pow(Math.random(), 0.5);
+        for (i = 0; i < 70; i++) {
+          /* Mũ 0.75 dồn mảng sáng về phía TRONG — chỗ khí và bụi thật sự đặc. */
+          t = Math.pow(Math.random(), 0.75);
           k = i % NHANH;
           goc = t * VONG * Math.PI + k * (6.2832 / NHANH) + chuan() * 0.14;
           bui.push({
@@ -265,7 +270,7 @@
             v: 0.00042 + 0.00020 / (0.5 + t),
             rad: R * (0.07 + Math.random() * 0.17),
             m: ['#E3AADD', '#C3C7F3', '#F5BCBA', '#C8A8E9', '#9F7BD8', '#FBE3F0'][i % 6],
-            o: 0.024 + Math.random() * 0.035
+            o: (0.03 + Math.random() * 0.045) * (1 - t * 0.35)
           });
         }
 
@@ -311,11 +316,12 @@
 
         /* Quầng lõi — nhỏ hơn hẳn bản trước. Lõi to thì cả màn thành một quầng
            sáng và nhánh xoắn biến mất sau nó. */
-        var Rl = R * 0.17;
+        var Rl = R * 0.26;
         g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rl);
-        g.addColorStop(0, 'rgba(255,248,253,.6)');
-        g.addColorStop(0.2, 'rgba(251,227,240,.32)');
-        g.addColorStop(0.5, 'rgba(227,170,221,.16)');
+        g.addColorStop(0, 'rgba(255,250,254,.8)');
+        g.addColorStop(0.14, 'rgba(253,236,246,.46)');
+        g.addColorStop(0.38, 'rgba(236,196,234,.22)');
+        g.addColorStop(0.68, 'rgba(206,164,214,.09)');
         g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.globalAlpha = 1; ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(cx, cy, Rl, 0, 6.2832); ctx.fill();

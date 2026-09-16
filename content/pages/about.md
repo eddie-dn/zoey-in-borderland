@@ -2,8 +2,10 @@
 title: Về tôi
 khung: bento
 
-# Nền động: hoa rơi ở theme sáng, thiên hà ở theme tối. Đổi thành tinh để tắt.
-nen: dong
+# Nền động TẮT ở trang này. Trang giới thiệu kín chữ từ trên xuống dưới, và
+# cánh hoa rơi qua sau chữ làm mắt bị kéo đi liên tục — đọc được, nhưng đọc mệt.
+# Đổi thành `dong` nếu muốn bật lại.
+nen: tinh
 summary: Ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ xong.
 
 # ─────────── KHUNG BENTO đọc mấy field dưới đây ───────────

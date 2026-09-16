@@ -33,51 +33,50 @@
    trang không co được, và ở 390px nó cộng với hai nút hình bên phải làm cả
    header rộng hơn màn hình, kéo theo cả trang trượt ngang. Đã đo thấy 473px. */
 /* ══════════ LOGO + TÊN BLOG ══════════
-   Logo là chữ Z xoay ngang rồi nối hai đầu — một hình vô cực vẽ bằng nét thẳng.
-   Xem chú thích ở hằng LOGO trong tools/build.mjs.
-
-   Chữ tên blog nằm CẠNH logo, và mặc định để MỜ. Rê chuột vào vùng ấy thì nó
-   sắp rõ ra. Lý do: logo đã đủ để nhận ra trang, còn cái tên viết đầy đủ thì
-   chỉ cần khi người ta thật sự muốn biết mình đang ở đâu. Để nó mờ sẵn (chứ
-   không ẩn hẳn) nghĩa là nó vẫn ở đó, vẫn bôi đen chép được, vẫn đọc được bằng
-   trình đọc màn hình — chỉ là không tranh chỗ với nội dung.
-
-   Ở TRANG CHỦ thì ẩn hẳn: màn hero ngay dưới đã in cái tên ấy ở cỡ khổng lồ. */
+   Hai thứ này KHÔNG BAO GIỜ đứng cạnh nhau. Trang chủ và trang giới thiệu chỉ
+   có logo; mọi trang khác chỉ có dòng chữ. Đặt cạnh nhau thì thành lặp — chúng
+   nói cùng một điều — và ở thanh đầu trang thì lặp là tốn chỗ của mục điều
+   hướng. Xem chú thích ở hằng LOGO trong tools/build.mjs. */
 .brand{
   display:flex;align-items:center;gap:10px;
   color:var(--text);flex:0 1 auto;min-width:0;
 }
 .brand .logo{
-  flex:none;width:34px;height:21px;overflow:visible;
+  flex:none;width:30px;height:30px;overflow:visible;
   color:var(--accent-ink);
+  transition:color var(--dur-fast);
 }
-.brand:hover .logo{color:var(--accent-ink-hover)}
-.logo-net{
-  /* ~184 đơn vị là chiều dài thật của đường; 190 cho dư một chút. */
-  stroke-dasharray:190;stroke-dashoffset:190;
-  animation:logo-ve 1.1s cubic-bezier(.65,0,.35,1) .15s forwards;
+.brand:hover .logo,.brand:focus-visible .logo{color:var(--accent-ink-hover)}
+
+/* ── NÉT TỰ VẼ, THEO ĐÚNG THỨ TỰ DỰNG HÌNH ──
+   Vô cực NGANG (chữ Z xoay + chữ i) vẽ trước, vô cực ĐỨNG (chữ B vặn) vẽ sau.
+   Mỗi đường là một dấu vô cực TRỌN VẸN, nên người xem thấy đúng trình tự dựng
+   hình chứ không thấy bốn cánh mọc lung tung. Chiều dài mỗi đường khoảng 120
+   đơn vị; lấy 130 cho dư. */
+.logo-vc{
+  stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round;
+  stroke-dasharray:130;stroke-dashoffset:130;
 }
-.logo-cham{opacity:0;animation:logo-hien .5s ease 1.05s forwards}
+.logo-vc--ngang{animation:logo-ve .85s cubic-bezier(.65,0,.35,1) .1s forwards}
+.logo-vc--doc  {animation:logo-ve .85s cubic-bezier(.65,0,.35,1) .8s forwards}
 @keyframes logo-ve{to{stroke-dashoffset:0}}
-@keyframes logo-hien{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){
-  .logo-net{stroke-dashoffset:0;animation:none}
-  .logo-cham{opacity:1;animation:none}
+  .logo-vc{stroke-dashoffset:0;animation:none}
 }
 
 .brand b{
   font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:19px;line-height:1.15;
+  font-size:19px;line-height:1.15;letter-spacing:var(--ls-tight);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  /* Trạng thái NGHỈ: mờ và các chữ nép sát vào nhau. Rê chuột thì nó giãn ra
-     đúng khoảng chữ bình thường và rõ hẳn — đọc ra là chữ đang "sắp lại". */
-  opacity:.26;letter-spacing:-.07em;
-  transition:opacity .45s ease,letter-spacing .45s cubic-bezier(.22,.61,.36,1);
 }
-.brand:hover b,.brand:focus-visible b{opacity:1;letter-spacing:var(--ls-tight)}
-/* Trang chủ: chỉ còn logo. */
+/* Trang chủ và trang giới thiệu: chỉ logo. Mọi trang khác: chỉ chữ. */
 .brand--logo b{display:none}
-
+.brand--chu .logo{display:none}
+/* Bỏ dòng chữ đi thì ô thương hiệu còn trống cả một khoảng, mà 30px là cỡ
+   tính cho lúc logo đứng CẠNH chữ — đứng một mình ở cỡ ấy thì nó thành một
+   chấm nhỏ lạc lõng. Nới lên 36px: vẫn thấp hơn chiều cao thanh đầu trang nên
+   không đẩy gì, mà bốn cánh mới đọc ra được hình. */
+.brand--logo .logo{width:36px;height:36px}
 .nav{display:flex;align-items:center;gap:var(--s1);margin-left:auto;flex:none}
 .nav a{
   padding:var(--s2) var(--s3);border-radius:var(--r-pill);
@@ -111,6 +110,23 @@
 .site-foot .container{
   display:flex;flex-wrap:wrap;gap:var(--s5);
   align-items:flex-end;justify-content:space-between;
+}
+
+/* ── KHỔ DỌC: CẢ CHÂN TRANG VỀ MỘT MÉP ──
+   Ở khổ ngang, hàng liên kết bám mép TRÁI và tem bám mép PHẢI — hai đầu một
+   dòng, cân. Xuống khổ dọc thì `flex-wrap` xếp chúng thành hai hàng, nhưng mỗi
+   hàng vẫn giữ mép cũ: hàng trên dính trái, hàng dưới dính phải. Hai khối lệch
+   nhau đọc ra là xếp hỏng chứ không phải là bất đối xứng có ý.
+
+   Cách chữa KHÔNG phải canh giữa cả hai: canh giữa thì chân trang mất mép,
+   trong khi mọi thứ phía trên nó đều thẳng một mép trái. Cho cả hai về mép
+   trái, thẳng hàng với nội dung. */
+@media (max-width:640px){
+  .site-foot .container{
+    flex-direction:column;align-items:flex-start;gap:var(--s5);
+  }
+  .site-foot .stamp{align-items:flex-start;text-align:left}
+  .stamp-ky{padding-right:0;padding-left:3px}
 }
 /* Tem hai dòng, đúng quy ước §4 của DESIGN-SYSTEM cũ:
    dòng ký tên nằm TRÊN, dòng phiên bản nằm DƯỚI. */

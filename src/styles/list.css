@@ -183,15 +183,36 @@
 
   /* 44cqw, không phải 58. Chữ đầu ở 58 cao gấp hai lần rưỡi từ cuối, và ở tỉ lệ
      ấy nó thôi làm một phần của khối chữ mà thành một vật riêng đứng cạnh —
-     đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 26 là tỉ lệ 1,7 lần: vẫn rõ
+     đúng cái "lớn quá rồi nằm lẻ loi". 44 so với 19,3 là tỉ lệ 2,3 lần: vẫn rõ
      ai là chính, mà hai dòng còn đọc ra là một khối. */
   /* -.13em: chữ đầu lấn qua đường kẻ trái nhiều hơn, nên nét đứng của nó bị
      xén hẳn một phần. Xén ít quá thì trông như đặt sát mép do vô ý; xén rõ
      thì đọc ra là CỐ Ý — chữ được đặt vào khuôn rồi khuôn cắt bớt. */
-  --s1:44cqw;  --x1:-.13em;
+  /* -.22em ≈ một phần ba bề ngang chữ nằm ngoài đường kẻ. Đo ra: chữ rộng
+     khoảng .55em, nên lùi .22em là khuất đúng một phần ba. */
+  --s1:44cqw;  --x1:-.22em;
   /* Từ cuối lùi vào một bậc để nó nằm DƯỚI phần sau của chữ đầu — hai dòng
      cài vào nhau thì đọc ra là một khối, xếp thẳng mép thì thành hai dòng rời. */
-  --s3:26cqw;  --x3:.34em;
+  /* Giãn chữ ở TRẠNG THÁI MỜ luôn, không đợi tới lúc hiện đủ: đây là dòng
+     dài nhất và nằm ngang giữa màn, nên nó là thứ quyết định cả khối có cân
+     hay không. Giãn ra thì nó trải hết chiều ngang thay vì co về một cục.
+
+     CỠ CHỮ LÀ SỐ TÍNH RA, KHÔNG PHẢI SỐ ƯỚM. Từ này phải vừa ĐÚNG bề ngang
+     cột — hết cột là hết chữ. Đo trong trình duyệt: mười chữ cái của
+     "Borderland" chiếm 4,72 lần cỡ chữ, cộng thêm mười nhịp giãn nữa. Vậy
+     bề ngang cả từ = cỡ × (lùi đầu dòng + 4,72 + 10 × giãn). Cho nó bằng bề
+     ngang cột (100cqw) rồi giải ngược ra cỡ:
+
+         cỡ = 100cqw ÷ (.06 + 4.72 + .38) ≈ 19,3cqw
+
+     Bản trước để 26cqw: từ dài ra 914px trong cột rộng 712px, tức là thò ra
+     266px và chui xuống dưới khung danh sách bên phải — trên màn hình đọc ra
+     là "Borderl", một chữ bị cắt cụt chứ không phải một bố cục.
+
+     Chữ đầu lấn qua đường kẻ TRÁI thì được, vì bên trái là khoảng trống. Bên
+     phải có khung danh sách, nên lấn sang là đè lên chữ của người ta. Đây là
+     lý do hai bên xử lý khác nhau chứ không phải quên. */
+  --s3:19.3cqw;  --x3:.06em;  --ls3:.038em;
   /* KHOẢNG GIỮA HAI DÒNG, chỉ mở ra lúc hiện đủ.
      line-height .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc.
      Nhưng lúc hiện đủ thì đuôi chữ "y" của dòng trên thò xuống đúng chỗ thân
@@ -207,7 +228,7 @@
      khoảng một phần ba bề ngang ô, phần còn lại của dòng bỏ không. */
   /* Chữ giữa lại gần chữ đầu: xa quá thì nó trôi lửng lơ giữa khoảng trống,
      không còn nối được chữ đầu với từ cuối. */
-  --in-co:.24em;  --in-x:.42em;  --in-y:.12em;  --in-mo:.62;
+  --in-co:.24em;  --in-x:.08em;  --in-y:.12em;  --in-mo:.62;
 
   --nhip:.62s cubic-bezier(.22,.61,.36,1);
   transition:opacity var(--nhip);
@@ -234,9 +255,10 @@
   transition:font-size var(--nhip),translate var(--nhip),opacity var(--nhip);
 }
 
-/* Trạng thái HIỆN ĐỦ. Từ cuối chỉ co NHẸ (24 → 20cqw): cỡ lúc mờ đã đúng rồi,
-   co mạnh là mất luôn cái sức nặng của nó. Từ đầu co nhiều hơn vì nó phải nhường
-   chỗ cho phần chữ vừa chạy vào. */
+/* Trạng thái HIỆN ĐỦ. Từ cuối chỉ co NHẸ (19,3 → 18,2cqw, tức 6%): cỡ lúc mờ
+   đã tính cho vừa cột rồi, co mạnh là vừa mất sức nặng vừa để hở một mảng
+   trống bên phải. Từ đầu co nhiều hơn (44 → 25cqw) vì nó phải nhường chỗ cho
+   phần chữ vừa chạy vào — và đó mới là chỗ mắt thấy có chuyển động. */
 .hero:hover .hero-danh,
 .hero:focus-within .hero-danh{
   opacity:.96;
@@ -247,7 +269,7 @@
   --s1:25cqw;   --x1:.1em;    --gap1:.13em;
   /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:19cqw;   --x3:.135em;  --ls3:.035em;
+  --s3:18.2cqw; --x3:.135em;  --ls3:.038em;
   --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
 }
 .hero:hover .hd-con,
@@ -263,7 +285,7 @@
   --s1:25cqw;   --x1:.1em;    --gap1:.13em;
     /* Từ cuối co lại thì phải GIÃN chữ ra bù vào: cùng một từ, cỡ nhỏ hơn mà
      khoảng chữ giữ nguyên thì nó co cụm lại và mất hết vẻ dàn trải lúc mờ. */
-  --s3:19cqw;   --x3:.135em;  --ls3:.035em;
+  --s3:18.2cqw; --x3:.135em;  --ls3:.038em;
     --in-co:.34em; --in-x:.42em; --in-y:0em; --in-mo:.72;
   }
   .hd-con{opacity:1;letter-spacing:-.03em}

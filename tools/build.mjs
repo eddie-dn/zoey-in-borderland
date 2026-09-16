@@ -574,10 +574,14 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                 ].filter(Boolean).join(' '),
     title     : escapeHtml(title),
     logo      : LOGO,
-    /* Trang chủ KHÔNG in tên blog ở thanh đầu: màn hero ngay dưới đã là cái tên
-       ấy ở cỡ khổng lồ, in lại lần nữa cách đó 60px là thừa. Trang khác thì giữ,
-       nhưng để mờ — rê chuột vào mới sắp rõ ra. */
-    lopBrand  : duong === '/' ? ' brand--logo' : '',
+    /* LOGO CHỈ Ở TRANG CHỦ VÀ TRANG GIỚI THIỆU, và ở đó nó đứng MỘT MÌNH.
+       Mọi trang khác chỉ có dòng chữ tên blog, không logo.
+
+       Lý do: logo và tên viết đầy đủ nói CÙNG một điều. Đặt cạnh nhau thì
+       thành lặp, và ở thanh đầu trang — nơi chỗ hẹp nhất — lặp là tốn chỗ của
+       mục điều hướng. Hai trang kia là hai trang "giới thiệu mình", nên ở đó
+       logo đứng một mình là đủ và đẹp hơn. */
+    lopBrand  : (duong === '/' || duong === '/about/') ? ' brand--logo' : ' brand--chu',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
     author    : escapeHtml(CAU.author),
@@ -607,8 +611,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
       ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
         `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
         `<path d="M16.2 16.2 21 21"/></svg></a>` : '',
+    /* Ghi chú đã thế chỗ Tags trên thanh đầu trang, nhưng trang tag vẫn còn và
+       vẫn nên có đường vào — chân trang là chỗ của nó. Bỏ hẳn Tags khỏi cả hai
+       nơi thì mấy chục trang tag thành trang mồ côi: Google vẫn giữ trong chỉ
+       mục mà trên trang không còn đường nào bấm tới. */
     footLinks : [
         ['/feed.xml', 'RSS', true],
+        ['/notes/', NHAN.notes, coTrang('/notes/')],
         ['/archive/', 'Archive', coTrang('/archive/')],
         ['/tags/', 'Tags', coTrang('/tags/')]
       ].map(([h, t, co]) => co ? `<a href="${BASE}${h}">${t}</a>`
@@ -701,27 +710,44 @@ function bangAnhHTML(bai) {
   </div>`;
 }
 /* ── LOGO ──
-   Ý gốc: chữ Z xoay ngang thì ba nét của nó (vạch trên · chéo · vạch dưới)
-   thành vạch TRÁI · chéo · vạch PHẢI. Nối hai đầu còn lại bằng một đường chéo
-   nữa là được một tứ giác có hai đường chéo cắt nhau — tức là hình vô cực vẽ
-   bằng nét thẳng. Chấm giữa là dấu chấm của chữ "i" trong "in", đặt đúng chỗ
-   hai đường chéo gặp nhau.
+   Dựng theo đúng trình tự mà cái tên co lại:
 
-   ── VÌ SAO KHÔNG VẼ DÀY NHƯ HÌNH MẪU ──────────────────────────────────
-   Hình mẫu có bốn đường chéo, tạo thêm một hình thoi nhỏ ở giữa. Đẹp ở cỡ
-   512px. Nhưng logo này sống ở thanh đầu trang, cao 26px — ở cỡ đó bốn nét
-   chéo cách nhau vài pixel sẽ dính vào nhau thành một vệt xám. Một logo phải
-   đọc được ở cỡ NHỎ NHẤT nó xuất hiện, không phải ở cỡ đẹp nhất.
+     Zoey in Borderland
+        ↓  thu gọn còn ba chữ đầu
+     Z · i · B
+        ↓  chữ Z XOAY NGANG
+     ba nét của Z (vạch trên · chéo · vạch dưới) thành vạch TRÁI · chéo · vạch PHẢI
+        ↓  chữ i xoay ngang, nối hai đầu còn lại
+     ╳ giữa hai vạch đứng  =  VÔ CỰC THỨ NHẤT (nằm ngang)
+        ↓  chữ B vặn thành vòng, úp lên theo phương kia
+     ╳ giữa hai vạch ngang =  VÔ CỰC THỨ HAI (dựng đứng)
 
-   ── NÉT VẼ DẦN ──
-   `stroke-dasharray` bằng đúng chiều dài đường, `stroke-dashoffset` chạy từ
-   đó về 0: nét tự vẽ ra như đang được viết. Chiều dài ~184 đơn vị, làm tròn
-   lên 190 cho chắc. Người tắt chuyển động thì hiện luôn nét đầy đủ. */
-const LOGO = `<svg class="logo" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
-  <path class="logo-net" d="M5 5 L5 35 L59 5 L59 35 Z" fill="none"
-        stroke="currentColor" stroke-width="3"
-        stroke-linejoin="round" stroke-linecap="round"/>
-  <circle class="logo-cham" cx="32" cy="20" r="3" fill="currentColor"/>
+   Hai dấu vô cực DÙNG CHUNG hai đường chéo. Đó là chỗ hay của hình: cùng một
+   dấu ╳, đọc theo chiều ngang thì hai vạch đứng khép nó lại thành một vô cực,
+   đọc theo chiều dọc thì hai vạch ngang khép nó lại thành một vô cực nữa. Bốn
+   vạch hợp thành khung vuông — đúng hình mẫu.
+
+   Nét vẽ ra THEO THỨ TỰ ẤY: vô cực ngang trước (Z + i), vô cực đứng sau (B).
+   Người xem thấy đúng câu chuyện dựng hình chứ không thấy một hình có sẵn.
+
+   ── VÌ SAO KHÔNG PHẢI HÌNH VUÔNG GẠCH CHÉO ─────────────────────────────
+   Bản đầu vẽ đúng như thế: khung vuông cộng hai đường chéo, hình học thì chuẩn
+   (hai vạch đứng khép dấu ╳ thành vô cực ngang, hai vạch ngang khép nó thành vô
+   cực đứng). Nhưng dựng ra rồi nhìn thì nó đọc thành **biểu tượng "ảnh lỗi"** —
+   ô vuông gạch chéo là ký hiệu phổ biến nhất của "không có gì ở đây". Một logo
+   không được phép trùng với ký hiệu của sự trống rỗng.
+
+   Nên giữ nguyên CÂU CHUYỆN, đổi NÉT: chữ B vặn thành vòng thì hai vô cực thôi
+   vẽ bằng nét thẳng mà vẽ bằng nét cong. Bốn cánh mọc ra từ một tâm — và bốn
+   cánh ấy lại vọng đúng cánh hoa đang rơi ở nền trang. Không cố ý, nhưng giữ.
+
+   MỖI VÔ CỰC LÀ MỘT ĐƯỜNG RIÊNG, không phải bốn cánh rời. Nhờ vậy nét vẽ ra kể
+   đúng trình tự: một dấu vô cực trọn vẹn, rồi dấu thứ hai. */
+const LOGO = `<svg class="logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <path class="logo-vc logo-vc--ngang" fill="none" stroke="currentColor"
+        d="M24 24 C32 16 41 18 41 24 C41 30 32 32 24 24 C16 16 7 18 7 24 C7 30 16 32 24 24 Z"/>
+  <path class="logo-vc logo-vc--doc" fill="none" stroke="currentColor"
+        d="M24 24 C16 32 18 41 24 41 C30 41 32 32 24 24 C32 16 30 7 24 7 C18 7 16 16 24 24 Z"/>
 </svg>`;
 function tocHTML(headings) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở

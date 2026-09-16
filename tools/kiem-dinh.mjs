@@ -790,6 +790,51 @@ const KIEM = [
         .map((m) => `${t.url} — đường dẫn máy cá nhân lọt ra HTML: ${m[0].slice(0, 60)}`))
   },
   {
+    /* ── TỪ "BORDERLAND" PHẢI VỪA BỀ NGANG CỘT ──
+       Màn đầu trang chủ đặt cỡ chữ bằng `cqw` — phần trăm bề ngang khung bao.
+       Chữ thì không có `overflow` nào chặn, nên đặt cỡ quá tay là từ ấy cứ thò
+       ra ngoài khung, chui xuống dưới khung danh sách bên phải, và trên màn
+       hình đọc ra là "Borderl" — một từ bị cắt cụt. CSS không báo gì, build
+       không báo gì; phải mở trình duyệt nhìn mới thấy.
+
+       Đã vấp thật: --s3 để 26cqw thì từ dài 914px trong cột rộng 712px.
+
+       Bề ngang từ tính được, không phải ước lượng. Đo trong trình duyệt: mười
+       chữ cái của "Borderland" ở phông Cormorant nghiêng chiếm 4,72 lần cỡ
+       chữ. `letter-spacing` cộng thêm một nhịp sau MỖI chữ cái, kể cả chữ
+       cuối, nên là 10 nhịp. Cộng cả phần lùi đầu dòng:
+
+           bề ngang = cỡ × (lùi + 4,72 + 10 × giãn)
+
+       Cỡ tính theo cqw nên chia 100 là ra tỉ lệ so với cột. Vượt 1 là tràn. */
+    ten: 'Từ cuối ở màn đầu không rộng quá bề ngang cột',
+    muc: 'loi',
+    chay: () => {
+      const f = path.join(GOC, 'src', 'styles', 'list.css');
+      if (!fs.existsSync(f)) return [];
+      const css = fs.readFileSync(f, 'utf8');
+      const BE_NGANG_CHU = 4.72;      /* đo thật, xem chú thích trên */
+      const SO_CHU = 10;              /* "Borderland" */
+
+      /* Mỗi chỗ khai đủ bộ ba --s3/--x3/--ls3 là MỘT trạng thái (nghỉ, hiện đủ,
+         bản cho máy không có chuột). Kiểm hết, không chỉ cái đầu. */
+      const bo = [...css.matchAll(
+        /--s3:\s*([\d.]+)cqw;\s*--x3:\s*([\d.-]+)em;\s*--ls3:\s*([\d.-]+)em/g)];
+      if (!bo.length) return ['list.css không còn khai --s3/--x3/--ls3 — phép kiểm này hết bám được vào đâu'];
+
+      const ra = [];
+      for (const m of bo) {
+        const [s3, x3, ls3] = [+m[1], +m[2], +m[3]];
+        const tiLe = (s3 / 100) * (x3 + BE_NGANG_CHU + SO_CHU * ls3);
+        if (tiLe > 1) {
+          ra.push(`--s3:${s3}cqw · --x3:${x3}em · --ls3:${ls3}em → từ rộng ` +
+                  `${Math.round(tiLe * 100)}% bề ngang cột, tràn ra ngoài khung`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
     /* ── Ô BENTO NÀO CŨNG PHẢI CÓ TÊN TRONG LUẬT GỘP CỘT Ở MOBILE ──
        Lưới bento khoá cứng vị trí từng ô bằng `grid-column`. Dưới 860px lưới
        rút về một cột, và có một luật liệt kê tên từng ô để kéo chúng về cột 1.

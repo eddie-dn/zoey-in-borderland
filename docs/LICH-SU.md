@@ -27,6 +27,13 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V5.02 | 2026-09-15 | 02 | logo đứng một mình to lên; ghi chú có đường vào từ chân trang |
+| V5.01 | 2026-09-15 | 01 | từ Borderland vừa đúng bề ngang cột, thêm phép kiểm canh việc đó |
+| V5.00 | 2026-09-15 | 00 | chân trang khổ dọc canh về cùng một mép trái |
+| V4.09 | 2026-09-15 | 09 | trang giới thiệu bỏ hiệu ứng nền cho đỡ rối |
+| V4.08 | 2026-09-15 | 08 | màn đầu: chữ Z che đúng một phần ba, in sát lại, Borderland giãn ra |
+| V4.07 | 2026-09-15 | 07 | dải ngân hà dày và sáng hơn, đậm trong loang ra ngoài |
+| V4.06 | 2026-09-15 | 06 | logo hai vòng vô cực; chỉ hiện ở trang chủ và giới thiệu |
 | V4.05 | 2026-09-15 | 05 | trang ghi chú ngắn thay Tags trên thanh điều hướng |
 | V4.04 | 2026-09-15 | 04 | khung xem ảnh cố định · khối chữ lùi vào trong khung |
 | V4.03 | 2026-09-15 | 03 | đếm lượt xem thật bằng cơ sở dữ liệu D1 |
@@ -68,6 +75,66 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V5.02 — 15-Sep-2026
+
+- **Logo đứng một mình thì to lên.** Ở trang chủ và trang giới thiệu, ô thương
+  hiệu không còn dòng chữ nên logo nới từ 30px lên 36px — vẫn thấp hơn thanh
+  đầu trang nên không đẩy gì, mà bốn cánh mới đọc ra được hình.
+- **Ghi chú có đường vào từ chân trang.** Nó đã thế chỗ Tags ở thanh trên; chân
+  trang nay có cả hai, nên mấy chục trang tag không thành trang mồ côi.
+
+## V5.01 — 15-Sep-2026
+
+- **Từ "Borderland" không còn bị cắt cụt.** Cỡ chữ ở màn đầu tính theo bề ngang
+  khung, và bản trước đặt quá tay: từ dài 914px trong cột rộng 712px, thò ra
+  266px rồi chui xuống dưới khung danh sách bên phải — trên màn hình đọc ra là
+  "Borderl". Nay từ trải đúng hết bề ngang cột, mép phải dừng ở đường kẻ.
+  Chữ đầu vẫn lấn qua đường kẻ TRÁI như cũ: bên trái là khoảng trống nên lấn
+  sang là cố ý, bên phải có khung chữ nên lấn sang là đè lên.
+- **Thêm một phép kiểm canh đúng chỗ ấy.** Nó đọc thẳng file CSS, tính bề ngang
+  từ ra rồi so với bề ngang cột — bắt được ngay lúc build thay vì phải mở trình
+  duyệt nhìn. Bộ kiểm định lên 37 phép.
+
+## V5.00 — 15-Sep-2026
+
+- **Chân trang khổ dọc canh về một mép.** Trên điện thoại, khối liên kết và
+  khối tem phiên bản trước đó mỗi khối canh một kiểu — một bên trái, một bên
+  giữa — nên nhìn như hai mảnh rời. Nay cả hai bắt đầu ở đúng cùng một mép
+  trái với cột chữ phía trên. Đo lại: bốn khối đều mở ở x=20px.
+
+## V4.09 — 15-Sep-2026
+
+- **Trang giới thiệu bỏ hiệu ứng nền.** Trang ấy nhiều chữ nhất trong cả blog;
+  thêm một lớp hạt bay phía sau thì mắt phải tự lọc hai thứ cùng lúc. Nền tĩnh,
+  chữ đọc dễ hơn. Muốn bật lại thì sửa một dòng `nen:` trong front matter.
+
+## V4.08 — 15-Sep-2026
+
+- **Chữ Z che đúng một phần ba.** Che ở VIỀN CỘT chứ không phải viền ngoài màn
+  hình — mép trái chữ dừng ở 270px so với mép cột 339px, tức 69/190px = 36%.
+- **Chữ "in" sát lại chữ Z.** Khoảng hở còn 6px thay vì một khoảng trắng lửng
+  lơ; lúc chữ sắp lại thì không đè lên nhau.
+- **"Borderland" giãn thêm.** Dòng dưới nay trải gần hết bề ngang cột, cân với
+  khối chữ Z ở trên thay vì thụt vào giữa.
+
+## V4.07 — 15-Sep-2026
+
+- **Dải ngân hà dày và sáng hơn.** Gấp đôi số sao, thêm một lớp bụi, và quan
+  trọng nhất: độ sáng giảm dần theo bán kính — đậm đặc ở lõi rồi loang nhạt ra
+  ngoài, như ảnh thật. Trước đó sao sáng đều nhau nên nhìn ra một đám chấm chứ
+  không ra một dải. Vẫn quay, vẫn một vòng ~2,5 phút.
+
+## V4.06 — 15-Sep-2026
+
+- **Logo hai vòng vô cực.** Dựng theo đúng thứ tự trong ý tưởng gốc: *Zoey in
+  Borderland* thu lại còn chữ Z, Z xoay ngang, chữ *i* xoay ngang nối hai đầu —
+  ra vòng vô cực thứ nhất; chữ B vặn thành vòng thứ hai. Hai vòng bắt chéo nhau
+  90° thành một hoa thị bốn cánh. Nét vẽ chạy từ từ khi trang mở, kể lại đúng
+  trình tự ấy.
+- **Logo chỉ ở trang chủ và trang giới thiệu.** Các trang khác giữ nguyên dòng
+  chữ *Zoey in Borderland*. Không bao giờ hiện cả hai cùng lúc — logo là chữ
+  ấy viết lại, đặt cạnh nhau thì thành nói hai lần.
 
 ## V4.05 — 15-Sep-2026
 
