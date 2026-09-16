@@ -409,11 +409,14 @@
    Tag chuyển từ đầu bài xuống đây. Ở đầu bài chúng chen giữa tiêu đề và câu
    mở, làm chậm đúng lúc người đọc đang muốn vào bài. Ở chân bài chúng đúng
    vai: đọc xong rồi mới hỏi "còn gì cùng mạch nữa không". */
+/* Bỏ luôn cái khung bao ngoài. Tag đã thôi là mấy viên thuốc (xem `.tag` ở
+   components.css); giữ lại một tấm nền bo tròn quanh chúng thì cả khối vẫn là
+   một mảng đặc cuối bài — chỉ đổi từ năm mảng nhỏ thành một mảng to. Nay nó
+   là một dòng chữ, ngăn với phần trên bằng một sợi kẻ mảnh. */
 .post-tags{
-  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s4);
-  padding:var(--s5);border-radius:var(--r-md);
-  background:var(--accent-wash);
-  box-shadow:inset 0 0 0 1px var(--line);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2) var(--s4);
+  padding-top:var(--s5);
+  border-top:1px solid var(--line);
 }
 .post-tags .label{flex:none;margin:0}
 .post-tags .tag-row{gap:2px var(--s4)}

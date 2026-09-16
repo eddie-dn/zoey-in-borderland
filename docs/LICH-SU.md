@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V10.00 | 2026-09-16 | 00 | cỡ chữ thân bài nhỏ một bậc; khối tag bỏ khung bao |
+| V9.09 | 2026-09-16 | 09 | điện thoại: danh sách bài chờ bấm Read on; tên blog nhỏ một bậc và có hiệu ứng mở màn |
+| V9.08 | 2026-09-16 | 08 | trang chủ: nền phủ trọn trang kể cả chân trang, bỏ tem phiên bản lặp |
 | V9.07 | 2026-09-16 | 07 | bảng bài đã đăng ở ngăn Post: sửa lại bài, ẩn và bỏ ẩn |
 | V9.06 | 2026-09-16 | 06 | logo: giữ hình nơ một nhịp rồi mới bo tròn |
 | V9.05 | 2026-09-16 | 05 | Đọc tiếp chuyển lên cột bên, dưới mục lục |
@@ -116,6 +119,43 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V10.00 — 16-Sep-2026
+
+- **Cỡ chữ thân bài nhỏ một bậc** (16,5 → 15,5px ở màn rộng). Be Vietnam Pro
+  có chiều cao chữ x lớn, nên cùng một con số px nó nhìn to hơn hẳn phông
+  serif quen thuộc — ở cỡ cũ cột chữ đọc ra như cỡ chữ của một trang cài đặt.
+  Không hạ sâu hơn: dưới 14,5px thì dấu tiếng Việt, vốn xếp chồng hai tầng ở
+  ẫ ộ ự, bắt đầu dính vào nhau. Cột chữ tự hẹp theo vì `--measure` đo bằng
+  `ch` — số ký tự mỗi dòng không đổi, và đó mới là thứ quyết định dễ đọc.
+- **Khối tag bỏ khung bao.** Tag đã thôi là mấy viên thuốc từ bản trước; giữ
+  lại một tấm nền bo tròn quanh chúng thì cả khối vẫn là một mảng đặc cuối
+  bài — chỉ đổi từ năm mảng nhỏ thành một mảng to. Nay nó là một dòng chữ,
+  ngăn với phần trên bằng một sợi kẻ.
+
+## V9.09 — 16-Sep-2026
+
+- **Điện thoại: danh sách bài chờ bấm "Read on" mới hiện.** Bày sẵn thì màn
+  đầu thôi là một màn — cuộn một nhịp là gặp ngay danh sách, và khoảng lặng
+  giữa tên blog với nội dung mất hẳn. Lần bấm đầu mở danh sách; từ lần sau nút
+  ấy lại là đường dẫn sang /posts/ như ở khổ ngang.
+- **Tên blog có hiệu ứng mở màn.** Khổ ngang, khối chữ nằm mờ tới khi rê chuột
+  vào thì đậm lên và phần còn lại của "Zoey" đẩy ra từ sau chữ Z. Điện thoại
+  không có cú rê chuột nào, nên bản trước đành bày sẵn trạng thái cuối — mất
+  hẳn cái chuyển động. Nay cùng quãng đường ấy chạy một lần lúc mở trang.
+- **Nhỏ một bậc** (17 → 15,5vw): cân giữa rồi thì cụm chữ tự đầy đặn hơn hẳn
+  so với lúc bám mép trái, và ở cỡ cũ nó chạm gần sát hai lề.
+
+## V9.08 — 16-Sep-2026
+
+- **Nền động phủ TRỌN trang chủ, kể cả chân trang.** Trước đây nó bám vào
+  riêng màn hero, nên cánh hoa rơi dừng đúng ở mép dưới hero. Hồi còn khối bài
+  ở dưới thì mép ấy là ranh giới thật; nay trang chủ chỉ còn hero và chân
+  trang, và cái mép biến thành một đường cắt ngang — hai mảng nền dán lại,
+  đọc ra là hai cục.
+- **Bỏ tem phiên bản ở góc hero.** Chân trang đã in sẵn số ấy, và hai lần cùng
+  một con số cách nhau vài chục pixel thì cái nào cũng thành thừa. Chân trang
+  giữ lại vì ở đó nó còn là cửa vào sổ lịch sử.
 
 ## V9.07 — 16-Sep-2026
 

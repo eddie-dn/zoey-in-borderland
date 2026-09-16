@@ -800,7 +800,7 @@ function boChuThich(html) {
 
 function trang({ title, description, canonical, ogTitle, ogImage, ogType, content,
                  scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/',
-                 epTheme = '' }) {
+                 epTheme = '', shellAttr = '' }) {
   return boChuThich(dienMau(MAU_SHELL, {
     lang,
     /* `data-base` để JS biết gốc trang khi deploy vào thư mục con (GitHub
@@ -809,6 +809,10 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     /* `data-ep` = theme MẶC ĐỊNH của riêng trang này, dùng khi người đọc chưa
        tự chọn gì. Đoạn script trong <head> đọc nó. KHÔNG đặt thẳng data-theme
        ở đây: làm vậy là đè lên lựa chọn của người đọc. */
+    /* Nền động bám vào ĐÂU. Mặc định rỗng — mỗi trang tự khai nếu cần. Trang
+       chủ khai ở đây (chứ không trên riêng màn hero) để canvas phủ TRỌN trang,
+       kể cả chân trang: xem ghi chú ở `trangChu`. */
+    shellAttr,
     htmlAttr  : [BASE ? `data-base="${attr(BASE)}"` : '',
                  epTheme ? `data-ep="${attr(epTheme)}"` : '',
                  /* Bảng chữ cho mốc thời gian tương đối. Đặt trên <html> chứ
@@ -2458,7 +2462,7 @@ function trangChu(bai) {
   const tuGiua = tuDe.slice(1, -1).join(' ');
 
   const hero = `
-<section class="hero" data-nen>
+<section class="hero">
   ${heroAnhHTML()}
 
   <div class="hero-luoi">
@@ -2500,7 +2504,10 @@ function trangChu(bai) {
   <i class="hero-moc hero-moc--tt" aria-hidden="true"></i>
   <i class="hero-moc hero-moc--tp" aria-hidden="true"></i>
   <i class="hero-moc hero-moc--dt" aria-hidden="true"></i>
-  <span class="hero-tem" aria-hidden="true">${BAN.ten}</span>
+  <!-- Tem phiên bản ở góc hero ĐÃ BỎ. Trang chủ nay chỉ còn màn đầu và chân
+       trang, mà chân trang đã in sẵn số phiên bản — hai lần cùng một con số
+       cách nhau vài chục pixel thì cái nào cũng thành thừa. Chân trang giữ
+       lại vì ở đó nó còn là cửa vào sổ lịch sử. -->
 </section>`;
 
   return trang({
@@ -2510,6 +2517,15 @@ function trangChu(bai) {
     duong: '/',
     /* Trang chủ LUÔN theme sáng — xem ghi chú `ep` trong hàm trang(). */
     epTheme: 'light',
+    /* ── NỀN ĐỘNG PHỦ TRỌN TRANG, KHÔNG CHỈ MÀN HERO ──
+       Đời trước `data-nen` nằm trên chính `<section class="hero">`, nên cánh
+       hoa rơi dừng đúng ở mép dưới màn hero. Hồi còn khối bài ở dưới thì
+       không sao — mép ấy là ranh giới giữa hai phần thật. Nay trang chủ chỉ
+       còn hero và chân trang, và cái mép biến thành một đường cắt ngang giữa
+       trang: hai mảng nền khác nhau dán lại, đọc ra là hai cục.
+       Đưa lên `.shell` thì canvas phủ từ thanh đầu trang xuống hết chân
+       trang, và trang đọc ra là MỘT tấm. */
+    shellAttr: ' data-nen',
     headExtra: `<script type="application/ld+json">${JSON.stringify({
       '@context': 'https://schema.org',
       '@graph': [
@@ -2520,6 +2536,7 @@ function trangChu(bai) {
       ]
     })}</script>`,
     scripts: `<script src="${BASE}/assets/nen.js" defer></script>\n` +
+      `<script src="${BASE}/assets/man-dau.js" defer></script>\n` +
       `<script src="${BASE}/assets/quote.js" defer></script>` +
       ((CAU.baoVeChu || {}).bat === false ? ''
         : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
@@ -3073,7 +3090,7 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
-                     'nen.js', 'trang-so.js', 'moc.js',
+                     'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',
                      'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
                      'soan.js', 'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');

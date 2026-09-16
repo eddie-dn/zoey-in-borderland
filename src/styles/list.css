@@ -413,6 +413,15 @@
   position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;z-index:0;opacity:.9;
 }
+/* ── KHI NỀN BÁM VÀO CẢ TRANG (trang chủ) ──
+   `.shell` là ông của mọi thứ: thanh đầu, nội dung, chân trang. Cho canvas
+   phủ trọn nó thì nền liền một mạch, không có cái mép cắt ngang giữa màn hero
+   và chân trang. Ba đứa con phải được nâng lên trên canvas — nếu không thì
+   canvas vẽ đè lên chữ. */
+.shell[data-nen]{position:relative}
+.shell[data-nen] > :is(.site-head,main,.site-foot){position:relative;z-index:1}
+/* Chân trang thôi tô nền riêng ở trang chủ: nền riêng là thứ vẽ ra cái mép. */
+.shell[data-nen] .site-foot{background:none}
 /* Ở TRANG TĨNH thì hạ hẳn xuống. Màn hero chỉ có mấy dòng nhãn nhỏ, nền động là
    nhân vật chính ở đó. Trang giới thiệu thì ngược lại: kín chữ từ trên xuống
    dưới, và cánh hoa rơi qua sau chữ ở độ đậm của màn hero làm mắt bị kéo đi
@@ -689,15 +698,48 @@
        dòng đầu đè lên chữ "in" ngay dưới nó. .88 là chỗ vừa hở. */
     line-height:.88;
   }
-  .hd-hang--1{font-size:clamp(46px,17vw,96px);margin:0;translate:-.05em 0}
+  /* 17 → 15,5vw và 16,5 → 15vw. Cụm chữ cân giữa rồi thì nó tự đầy đặn hơn
+     hẳn so với lúc bám mép trái, và ở cỡ cũ nó chạm gần sát hai lề — đọc ra
+     là chật chứ không ra là lớn. Nhỏ một bậc thì hai bên thở được, mà nó vẫn
+     là thứ to nhất trên màn. */
+  .hd-hang--1{font-size:clamp(42px,15.5vw,88px);margin:0;translate:-.05em 0}
   /* 14vw → 16,5vw. Bỏ lề bậc thang là cụm chữ tự dôi ra gần 30px, và cân giữa
      rồi thì hai bên chia đều chỗ trống — nên dòng này được phép to thêm.
      Có chỗ: cả từ rộng 4,03 × cỡ chữ, nên ở màn 375px là 4,03 × 61,9 ≈ 249px
      trong khung 343px — chiếm 73%, hai bên còn 47px mỗi bên.
      16,5/17 ≈ 0,97: hai dòng gần bằng nhau về cỡ, và vì dòng này dài gấp ba
      nên nó vẫn nặng hơn hẳn. Đó là chỗ muốn tới — dòng dưới là dòng đỡ cả cụm. */
-  .hd-hang--3{font-size:clamp(38px,16.5vw,80px);margin:0;translate:.05em 0}
+  .hd-hang--3{font-size:clamp(35px,15vw,74px);margin:0;translate:.05em 0}
+
+  /* ── HIỆU ỨNG MỞ MÀN, THAY CHO CÚ RÊ CHUỘT ──
+     Ở khổ ngang, khối chữ nằm mờ cho tới khi rê chuột vào: lúc ấy nó đậm lên
+     và phần còn lại của chữ "Zoey" đẩy ra từ sau chữ Z. Điện thoại KHÔNG có
+     cú rê chuột nào, nên bản trước đành bày sẵn trạng thái cuối — tức là mất
+     hẳn cái chuyển động, thứ đáng nhìn nhất của màn đầu.
+
+     Nay cùng một quãng đường ấy chạy MỘT LẦN lúc mở trang: nhạt → đậm, và
+     "oey" trượt ra từ sau chữ "Z". Chạy một lần rồi đứng yên (`forwards`) —
+     lặp lại thì nó thành một thứ nhấp nháy giữa trang.
+
+     Độ trễ .35s chờ phông chữ: chạy ngay lúc chưa có Cormorant thì nửa đầu
+     hoạt hình diễn ra bằng phông dự phòng, và lúc phông thật tới thì chữ nhảy
+     một cái ngay giữa chuyển động. */
   .hd-con{opacity:1;letter-spacing:-.03em}
+  .hero-danh{animation:hd-mo .9s var(--ease-glass) .35s backwards}
+  .hd-con{animation:hd-day 1.1s var(--ease-glass) .35s backwards}
+  @keyframes hd-mo{from{opacity:.3}to{opacity:1}}
+  @keyframes hd-day{
+    from{opacity:0;letter-spacing:-.58em}
+    to  {opacity:1;letter-spacing:-.03em}
+  }
+
+  /* ── DANH SÁCH BÀI: CHỜ BẤM "READ ON" ──
+     Bày sẵn thì màn đầu trên điện thoại không còn là một màn — cuộn xuống là
+     gặp ngay danh sách, và cái khoảng lặng giữa tên blog với nội dung mất
+     hẳn. Giấu đi rồi để chính nút "Read on" mở ra: người đọc chủ động hỏi
+     thì mới có câu trả lời. */
+  .hero-cot--phai{display:none}
+  .hero-cot--phai.hien{display:flex;animation:hd-mo .5s var(--ease-glass)}
   /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng.
      Nó nằm TRONG dòng một (xem markup ở tools/build.mjs), nên `text-align`
      thừa kế từ khối cha đưa nó về giữa chữ "Zoey" — không cần lề nào. Đẩy

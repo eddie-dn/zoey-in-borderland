@@ -131,7 +131,19 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      cỡ chữ của sách điện tử.
      Không phải lo cột chữ: `--measure` tính bằng `ch`, mà `ch` co theo cỡ chữ,
      nên cột hẹp lại đúng tỉ lệ và số ký tự mỗi dòng vẫn đứng nguyên ~70. */
-  --fs-base:clamp(15.5px,.94rem + .2vw,16.5px);   /* thân bài */
+  /* ── 15,5–16,5 → 14,5–15,5px ──
+     Thân bài dùng Be Vietnam Pro, và phông ấy có chiều cao chữ x LỚN — cùng
+     một con số px, nó nhìn to hơn hẳn phông serif quen thuộc. Ở 16,5px trên
+     laptop thì cột chữ đọc ra như cỡ chữ của một trang cài đặt, không như một
+     bài viết.
+
+     Một bậc xuống là đủ. Không hạ sâu hơn: dưới 14,5px thì dấu tiếng Việt —
+     vốn xếp chồng hai tầng ở ẫ ộ ự — bắt đầu dính vào nhau ở màn thường.
+
+     Cột chữ tự hẹp theo, vì `--measure` đo bằng `ch`: 59ch của cỡ mới ≈ 690px
+     thay vì 700px. Số ký tự mỗi dòng không đổi, và đó mới là thứ quyết định
+     dễ đọc hay không. */
+  --fs-base:clamp(14.5px,.88rem + .18vw,15.5px);   /* thân bài */
   --fs-md:clamp(18px,1.06rem + .38vw,20.5px);    /* lead, sapo */
   --fs-h4:clamp(17px,1.02rem + .34vw,19.5px);
   --fs-h3:clamp(20px,1.14rem + .62vw,25px);
