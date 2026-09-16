@@ -51,7 +51,7 @@
   /* ══════════ DỰNG KHUNG ══════════ */
 
   /* ── HAI KIỂU MỌC ──
-     MỘT — trang /chu-trang/ có sẵn một ô `[data-duyet-host]`. Cắm thẳng vào
+     MỘT — trang /z-admin/ có sẵn một ô `[data-duyet-host]`. Cắm thẳng vào
      đó, không cần dấu thăng, không cuộn đi đâu cả: người ta vào trang ấy chính
      là để làm việc này.
      HAI — mọi trang khác thì phải gõ `#duyet`, và lúc ấy khối tự chèn lên đầu

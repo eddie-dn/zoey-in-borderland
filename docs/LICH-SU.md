@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.08 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
 | V7.07 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
 | V7.06 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
 | V7.05 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
@@ -96,6 +97,13 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.08 — 16-Sep-2026
+
+- **Trang quản lý đổi đường dẫn thành `/z-admin/`.** Tên cũ đọc ra là một trang
+  nội dung bình thường; tên mới nói thẳng đó là chỗ làm việc, và gõ nhanh hơn
+  trên bàn phím điện thoại. Cửa sau bấm năm nhịp ở trang giới thiệu vẫn trỏ
+  đúng chỗ.
 
 ## V7.07 — 16-Sep-2026
 

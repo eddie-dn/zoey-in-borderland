@@ -821,7 +821,7 @@
 .gc-mot:hover .gc-xoa,.gc-xoa:focus-visible{opacity:1}
 .gc-xoa:hover{color:var(--bad);border-color:var(--bad)}
 @media (hover:none){.gc-xoa{opacity:.7}}
-/* ══════════ BÀN LÀM VIỆC CỦA CHỦ TRANG (/chu-trang/) ══════════
+/* ══════════ BÀN LÀM VIỆC CỦA CHỦ TRANG (/z-admin/) ══════════
    Hai khối xếp dọc, cách nhau rõ ràng: viết ghi chú ở trên, hàng chờ duyệt ở
    dưới. Tách bằng một đường kẻ chứ không chỉ bằng khoảng trống — hai việc khác
    nhau, và ở một trang chỉ toàn ô nhập thì khoảng trống không đủ nói ra ranh

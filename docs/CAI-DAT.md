@@ -59,7 +59,23 @@ Bảng `binh_luan` **không phải tạo tay**: bình luận đầu tiên tự t
 
 Đã là mặc định. `bat: false` thì tắt hẳn khung bình luận trên mọi bài.
 
-### 1.3 · Duyệt — mở `#duyet` ở bất kỳ bài nào
+### 1.3 · Duyệt — mở trang `/z-admin/`
+
+```
+tên-miền-của-bạn/z-admin/
+```
+
+**Một trang, hai việc:** ô viết ghi chú ở trên, hàng chờ duyệt bình luận ở
+dưới. Lưu vào màn hình chính điện thoại là một chạm vào thẳng.
+
+Cửa sau: ở trang giới thiệu, **bấm 5 nhịp vào tiêu đề** cũng tới đây — tiện khi
+đang đọc mà không muốn gõ địa chỉ.
+
+> Trang này `noindex`, không nằm trong sitemap, không có trong thanh điều
+> hướng. Nhưng ai gõ đúng đường dẫn vẫn mở được, và chỉ thấy một ô xin khoá.
+> Chỗ giấu đường dẫn **không phải** lớp bảo mật — hai vế khoá ở máy chủ mới là.
+
+### 1.3b · Hoặc mở `#duyet` ở bất kỳ bài nào
 
 Thêm `#duyet` vào địa chỉ một bài bất kỳ:
 

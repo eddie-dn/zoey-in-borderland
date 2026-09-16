@@ -180,7 +180,7 @@ const NHAN = {
   gcDelFail   : 'Không xoá được.',
   blUnapproveHint: 'Rút xuống hàng chờ, không xoá',
   blHideHint  : 'Ẩn hẳn khỏi trang',
-  /* ── trang quản lý /chu-trang/ ── */
+  /* ── trang quản lý /z-admin/ ── */
   qlTitle     : 'Chủ trang',
   qlDan       : 'Viết ghi chú và duyệt bình luận. Chỉ mình bạn thấy trang này.',
   qlViet      : 'Viết ghi chú',
@@ -634,7 +634,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                     duyệt được bình luận (#duyet), khỏi phải nhớ đường dẫn của
                     một bài cụ thể nào. */
                  ((CAU.binhLuan || {}).bat !== false &&
-                  (duong === '/notes/' || duong === '/chu-trang/' ||
+                  (duong === '/notes/' || duong === '/z-admin/' ||
                    /^\/posts\/.+\//.test(duong)))
                    ? `data-duyet-api="${attr(BASE + ((CAU.binhLuan || {}).api || '/api/binh-luan'))}" ` +
                      `data-duyet-nhan="${attr(JSON.stringify({
@@ -647,7 +647,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         anon: NHAN.anon
                       }))}"`
                    : '',
-                 ((duong === '/notes/' || duong === '/chu-trang/') &&
+                 ((duong === '/notes/' || duong === '/z-admin/') &&
                   (CAU.ghiChu || {}).online)
                    ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
                      `data-gc-nhan="${attr(JSON.stringify({
@@ -1517,7 +1517,7 @@ function khungBento(t, soBai, soTag) {
      nhịp nằm ở src/js/so-tay.js, chung với cửa vào sổ phiên bản. */
   o.push(`<div class="bo bo--intro card">
     <div class="eyebrow"><i></i></div>
-    <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/chu-trang/')}"` : ''}>${
+    <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/z-admin/')}"` : ''}>${
       noiChu(escapeHtml(t.title))}</h1>
     ${t.gioiThieuDoan.map((d) => `<p class="bo-lead">${escapeHtml(d)}</p>`).join('')}
   </div>`);
@@ -1616,7 +1616,7 @@ function khungChuong(t, soBai, soTag) {
   return `<div class="chuong">
     <header class="ch ch--mo" data-hien>
       <div class="eyebrow"><i></i></div>
-      <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/chu-trang/')}"` : ''}>${
+      <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/z-admin/')}"` : ''}>${
         noiChu(escapeHtml(t.title))}</h1>
       ${t.gioiThieu ? `<p class="ch-lead">${escapeHtml(t.gioiThieu)}</p>` : ''}
       <div class="ch-so">
@@ -2309,7 +2309,7 @@ function trangGhiChu() {
                ? `\n<script src="${BASE}/assets/duyet.js" defer></script>` : '')
   });
 }
-/* ── /chu-trang/ — BÀN LÀM VIỆC CỦA CHỦ TRANG ──
+/* ── /z-admin/ — BÀN LÀM VIỆC CỦA CHỦ TRANG ──
    MỘT đường dẫn, hai việc, không đè lên nhau: ô viết ghi chú ở trên, hàng chờ
    duyệt bình luận ở dưới.
 
@@ -2333,7 +2333,7 @@ function trangChuTrang() {
   return trangDanhSach({
     tieuDe: NHAN.qlTitle,
     dan: NHAN.qlDan,
-    duong: '/chu-trang/',
+    duong: '/z-admin/',
     noindex: true,
     than: `
     <section class="ql-khoi">
@@ -2563,7 +2563,7 @@ async function chay() {
       ...cacTrangTags(canDung, bangTag),
       { duong: '/archive/', html: trangArchive(canDung) },
       { duong: '/notes/',   html: trangGhiChu() },
-      { duong: '/chu-trang/', html: trangChuTrang() },
+      { duong: '/z-admin/', html: trangChuTrang() },
       { duong: '/search/',  html: trangSearch() }
     ];
     for (const t of dsTrang) {
@@ -2577,7 +2577,7 @@ async function chay() {
            sẵn noindex — hai lớp cho cùng một ý, vì bỏ sót một lớp thì lớp kia
            vẫn giữ được. */
         sitemap(congKhai, [...trangTinhDS.map((t) => t.url),
-                           ...dsTrang.filter((t) => t.duong !== '/chu-trang/')
+                           ...dsTrang.filter((t) => t.duong !== '/z-admin/')
                                      .map((t) => `${BASE}${t.duong}`)]));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
         `User-agent: *\nAllow: /\nSitemap: ${CAU.url}${BASE}/sitemap.xml\n`);

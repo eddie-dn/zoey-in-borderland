@@ -31,7 +31,7 @@
 
   var nodeData = document.getElementById('so-tay-data');
   /* ── CỬA THỨ HAI: BẤM 5 NHỊP VÀO TIÊU ĐỀ TRANG GIỚI THIỆU ──
-     Đưa tới bàn làm việc của chủ trang (/chu-trang/). Cùng cơ chế 5 nhịp với
+     Đưa tới bàn làm việc của chủ trang (/z-admin/). Cùng cơ chế 5 nhịp với
      sổ phiên bản, và cùng lý do: một cái nút "Quản lý" bày giữa trang thì mọi
      người đọc đều thấy một thứ chẳng để làm gì, mà lại mời người ta thử.
 

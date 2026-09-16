@@ -205,7 +205,7 @@
 
   var viet = null;
 
-  /* Trang /chu-trang/ dành sẵn một ô `[data-viet-host]`. Có nó thì ô viết cắm
+  /* Trang /z-admin/ dành sẵn một ô `[data-viet-host]`. Có nó thì ô viết cắm
      thẳng vào đó và không cần `#viet`, không cuộn đi đâu — vào trang ấy chính
      là để viết. Không có thì giữ nguyên nếp cũ ở /notes/. */
   function oVietCamSan() { return document.querySelector('[data-viet-host]'); }
