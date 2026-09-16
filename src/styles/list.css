@@ -253,7 +253,30 @@
      Đổi phông hay đổi chữ là phải đo lại rồi giải lại — bộ kiểm định có một
      phép canh việc này, và nay nó canh CẢ HAI chiều: lấn quá nửa chữ, và
      không lấn tới nơi. */
-  --s3:23.74cqw;  --x3:.06em;  --ls3:.038em;
+  /* ── CHỮ "B" CŨNG LẤN QUA ĐƯỜNG KẺ TRÁI ──
+     Cả phần giải ở trên chỉ lo mép PHẢI. Mép trái thì `x3:.06em` đẩy từ cuối
+     vào trong, nên chữ "B" đứng trọn vẹn — trong khi chữ "Z" ở dòng trên bị
+     xén hẳn một mảng. Hai đầu khối chữ hoá ra một bên bị khuôn cắt, một bên
+     thì không: đọc ra là dòng dưới bị thụt vào chứ không phải cả khối được đặt
+     vào khuôn.
+
+     Đo lại trong trình duyệt (cùng cách với số ở trên, phông đã nạp xong):
+         chữ "B"  0,5853 × cỡ chữ
+         chữ "Z"  0,5501 × cỡ chữ   ← khớp với ".55em" ghi ở --x1
+
+     Lùi .15em là khuất ≈ một PHẦN TƯ chữ "B" — ít hơn chữ "Z" (khuất khoảng
+     hai phần năm), và đó là chủ ý: dòng trên là dòng nhấn, nó được phép lấn
+     mạnh hơn. Bằng nhau thì hai dòng tranh nhau chỗ nhấn.
+
+     ── PHẢI GIẢI LẠI s3 ──
+     Dời cả từ sang trái thì mép phải đi theo, và chữ "d" thôi bị xén nửa. Cỡ
+     chữ phải to lên đúng phần bù:
+         s3 = 100 ÷ (x3 + 4,0343 + 9·ls3 − 0,4481/2)
+            = 100 ÷ (−0,15 + 4,0343 + 0,342 − 0,22405) = 24,99cqw
+     Tỉ lệ với dòng trên còn 44/24,99 ≈ 1,76 (trước là 1,85). Vẫn rõ ai là
+     chính, mà dòng dưới nặng thêm một nhịp — hợp với việc nó vừa được cho lấn
+     sang trái. */
+  --s3:24.99cqw;  --x3:-.15em;  --ls3:.038em;
   /* KHOẢNG GIỮA HAI DÒNG, chỉ mở ra lúc hiện đủ.
      line-height .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc.
      Nhưng lúc hiện đủ thì đuôi chữ "y" của dòng trên thò xuống đúng chỗ thân
@@ -626,7 +649,13 @@
     padding:var(--s6) var(--gutter) 0;
   }
   .hd-hang--1{font-size:clamp(46px,17vw,96px);margin-left:0;margin-bottom:0}
-  .hd-hang--3{font-size:clamp(30px,11vw,62px);margin-left:.45em}
+  /* 11vw → 14vw. Dòng một và dòng ba cùng là TÊN, nhưng ở 11vw thì "Borderland"
+     đọc ra như một dòng phụ chú dưới chữ "Zoey" chứ không phải nửa còn lại của
+     cùng cái tên. 14/17 ≈ 0,82 — vẫn nhỏ hơn (nó dài gấp đôi nên phải nhỏ hơn)
+     mà đủ nặng để hai dòng cân nhau.
+     Có chỗ: cả từ rộng 4,03 × cỡ chữ, nên ở màn 375px là 4,03 × 52,5 + lề bậc
+     thang 0,45em ≈ 235px, còn dư gần trăm pixel trong khung 339px. */
+  .hd-hang--3{font-size:clamp(34px,14vw,72px);margin-left:.45em}
   .hd-con{opacity:1;letter-spacing:-.03em}
   /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng và
      lùi vào một bậc — rõ hơn là để nó nép bên cạnh chữ đầu. */

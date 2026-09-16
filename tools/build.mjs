@@ -939,7 +939,7 @@ const P_NOI  = 'M35 13L13 35';
    `dur` của <animate> là attribute của SVG, không phải CSS, nên `var()` ở đây
    không nở ra gì cả; buộc phải ghi số. Hai chỗ ghi cùng một con số là đúng cái
    kiểu sớm muộn cũng lệch nhau, nên bộ kiểm định có một phép canh việc ấy. */
-const LG_CK = '30s';
+const LG_CK = '27s';
 
 function bien(tu, den, t1, t2) {
   return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
@@ -1041,7 +1041,12 @@ function logoHTML(dong) {
       <path class="lg-noi" fill="none" stroke="currentColor" d="${P_NOI}"/>
     </g>` : '') +
     `<g class="lg-hoa">` +
-      (dong ? mandala : '') +
+      /* Mandala có mặt ở CẢ HAI bản, động và tĩnh. Trước đây nó chỉ được dựng
+         khi logo kể chuyện, nên bản tĩnh chỉ còn hai vô cực — tức là hai bản
+         logo khác nhau cho cùng một trang web. Hình ĐỦ của logo này là đoá
+         mandala tám cánh; hai vô cực là một CHẶNG trên đường dựng ra nó, không
+         phải cái đích. */
+      mandala +
       /* Hai vô cực GỐC nằm chung một nhóm để cả cặp mờ/tỏ cùng nhau ở chặng
          nhấp nháy — bốn cánh gốc nhạt đi đúng lúc bốn cánh mandala đậm lên.
          Độ mờ của nhóm NHÂN với độ mờ của từng nét, nên lg-n1/lg-n2 vẫn giữ
@@ -1151,7 +1156,11 @@ function tagBlockHTML(bai) {
    CHƯA xếp theo "được đọc nhiều" được: trang không gắn công cụ đo lượt xem
    nào (xem docs/IA.md §6). Khi nào gắn thì cộng thêm một số hạng vào `diem`
    dưới đây, phần còn lại không phải sửa. */
-function goiY(bai, congKhai, soLuong = 3) {
+/* HAI, không phải ba. Ba thẻ xếp vừa một hàng ở khổ rộng nhưng ở cột chữ 639px
+   thì thẻ thứ ba rớt xuống hàng hai, để lại một hàng lẻ một thẻ — đọc ra là bố
+   cục hỏng chứ không phải chủ ý. Và hết một bài dài thì hai gợi ý đã là nhiều:
+   càng nhiều lựa chọn thì càng dễ không chọn cái nào. */
+function goiY(bai, congKhai, soLuong = 2) {
   const tag = new Set(bai.tags.map((t) => slugify(t)));
   const i = congKhai.findIndex((b) => b.url === bai.url);
 

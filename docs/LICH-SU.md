@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V6.05 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
+| V6.04 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
+| V6.03 | 2026-09-16 | 03 | logo lấy lại đoá mandala làm hình nghỉ; vòng kể ngắn lại, chặng xoay rõ hơn; tên blog ở khổ dọc cân hai dòng |
 | V6.02 | 2026-09-16 | 02 | ghi chú đăng thẳng từ điện thoại, không phải dựng lại trang; theme Tĩnh lặng ngả xanh trời |
 | V6.01 | 2026-09-16 | 01 | tên blog đúng phông; cột chữ hẹp lại còn 70 ký tự; bài cũ về cùng một khung |
 | V6.00 | 2026-09-16 | 00 | hoa Sakura nhỏ và mỏng lại, đông hơn; bỏ viền ở cánh xa |
@@ -85,6 +88,53 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V6.05 — 16-Sep-2026
+
+- **Khối chữ ở màn đầu bị khuôn xén ở CẢ hai đầu.** Chữ "Z" vốn đã lấn qua
+  đường kẻ trái và bị cắt mất một mảng — cố ý, để cả khối đọc ra là được đặt
+  vào khuôn rồi khuôn cắt bớt. Nhưng chữ "B" của dòng dưới thì đứng trọn vẹn,
+  nên một bên bị cắt còn một bên thụt vào, và dòng dưới trông như bị lùi lề chứ
+  không phải cùng một khuôn. Nay "B" khuất khoảng một phần tư — ít hơn "Z" (hai
+  phần năm), vì dòng trên vẫn là dòng nhấn. Cỡ chữ dòng dưới phải giải lại theo
+  để mép phải vẫn cắt đúng giữa chữ "d".
+
+## V6.04 — 16-Sep-2026
+
+- **Mục lục và ô trích dẫn bám theo bài dài.** Chúng vẫn được khai là "dính khi
+  cuộn" từ lâu, nhưng ô lưới chứa chúng bị kéo cao đúng bằng cả bài — đo thật:
+  nội dung 406px, ô 5091px. Một khối dính chỉ trượt được trong ô của chính nó,
+  mà ô đã cao bằng cả trang thì không còn quãng nào để trượt. Đúng cú pháp, và
+  không làm gì cả.
+- **Thanh cuộn thấy được, và theo màu theme.** Trước đó trang nhận thanh cuộn
+  mặc định của máy, mà trên macOS mặc định ấy tự ẩn: muốn biết bài còn dài bao
+  nhiêu thì phải cuộn một nhát cho nó ló ra. Bài dài là chỗ cái thước ấy có ích
+  nhất.
+- **Cỡ chữ thân bài nhỏ lại một nhịp** (17,5 → 16,5px). Cỡ cũ bắt đầu ngả sang
+  cỡ chữ sách điện tử. Số ký tự mỗi dòng giữ nguyên ~70 vì cột chữ đo bằng đơn
+  vị co theo cỡ chữ.
+- **Đọc tiếp còn hai bài, và mưa ở theme Tĩnh lặng chảy chậm lại một phần tư.**
+  Ba thẻ gợi ý rớt xuống hai hàng trong cột chữ hẹp, để lại một hàng lẻ. Và
+  thác chảy xiết thì đọc ra là thác lũ, mà theme này tên là Tĩnh lặng.
+
+## V6.03 — 16-Sep-2026
+
+- **Logo lấy lại đoá mandala làm hình nghỉ.** Trước đó mandala chỉ thoáng qua ở
+  chặng cuối rồi tan, nên chín phần mười thời gian — kể cả lúc vừa mở trang —
+  cái hiện ra là bốn cánh của hai vô cực. Ngược đời: hai vô cực là một CHẶNG
+  trên đường dựng ra đoá hoa, không phải cái đích. Nay vòng lặp mở và đóng bằng
+  mandala, và bản logo đứng yên cũng vẽ đủ tám cánh thay vì bốn.
+- **Vòng kể ngắn lại 30 → 27 giây, riêng chặng xoay thì không.** Mọi chặng khác
+  gọn đi 10%; chặng xoay được nới phần chia nên tính ra giây còn dài hơn bản cũ
+  một chút. Đó là chỗ người xem nhìn lâu nhất.
+- **Chữa chỗ mandala trông như đứng im.** Hai lỗi chồng lên nhau: chặng nhấp
+  nháy ép một nhóm cánh xuống quá sâu nên tám cánh rút còn bốn, mà bốn cánh thì
+  xoay hay không nhìn cũng gần như nhau; và cụm cánh hoa văn đi ngang qua đúng
+  chỗ nó chồng khít lên cụm cánh chính. Nay sàn nhấp nháy nâng lên, còn cụm hoa
+  văn chỉ đảo qua lại quanh chỗ đứng chứ không bao giờ đi tới chỗ chồng.
+- **Tên blog ở khổ dọc cân hai dòng.** "Borderland" từ 11vw lên 14vw — ở cỡ cũ
+  nó đọc ra như dòng phụ chú dưới chữ "Zoey" chứ không phải nửa còn lại của
+  cùng cái tên.
 
 ## V6.02 — 16-Sep-2026
 

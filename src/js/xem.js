@@ -61,13 +61,35 @@
     return;
   }
 
+  /* ── CHIA LÔ 60 ──
+     Hàm ở functions/api/xem.js CẮT danh sách còn 60 khoá (`slice(0, 60)`) để
+     một lượt gọi không quét cả bảng. Gửi nguyên 80 đường dẫn thì 20 cái cuối
+     rơi mất — và rơi LẶNG LẼ: mấy thẻ ấy chỉ đơn giản không hiện con số nào,
+     đúng như thẻ chưa ai xem, nên nhìn không ra là hỏng.
+
+     Chưa cắn ngay: trang danh sách mặc định 10 bài một trang. Nhưng người đọc
+     chọn được "tất cả", và blog thì mỗi ngày một dài thêm — nên đây là cái bẫy
+     nằm chờ chứ không phải cái bẫy không có. Chia lô ở đây rẻ hơn nhiều so với
+     nới giới hạn bên kia. */
+  var LO = 60;
   var ds = [];
   for (i = 0; i < o.length; i++) ds.push(o[i].getAttribute('data-xem'));
-  fetch(api + '?ds=' + encodeURIComponent(ds.join(',')))
-    .then(function (r) { return r.json(); })
-    .then(function (k) {
-      if (!k || k.tat || !k.so) return;
-      for (var j = 0; j < o.length; j++) hien(o[j], k.so[o[j].getAttribute('data-xem')] || 0);
-    })
-    .catch(function () {});
+
+  var gom = {};
+  var cho = [];
+  for (i = 0; i < ds.length; i += LO) {
+    cho.push(fetch(api + '?ds=' + encodeURIComponent(ds.slice(i, i + LO).join(',')))
+      .then(function (r) { return r.json(); })
+      .then(function (k) {
+        if (!k || k.tat || !k.so) return;
+        for (var u in k.so) if (Object.prototype.hasOwnProperty.call(k.so, u)) gom[u] = k.so[u];
+      })
+      /* Một lô hỏng thì mấy lô kia vẫn vẽ được — không để một lượt gọi lỗi
+         kéo theo cả trang mất số. */
+      .catch(function () {}));
+  }
+
+  Promise.all(cho).then(function () {
+    for (var j = 0; j < o.length; j++) hien(o[j], gom[o[j].getAttribute('data-xem')] || 0);
+  });
 })();

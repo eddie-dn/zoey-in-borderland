@@ -31,6 +31,39 @@ html{
     transition-duration:.01ms !important;scroll-behavior:auto !important}
 }
 
+/* ── THANH CUỘN: LUÔN THẤY ĐƯỢC, VÀ THEO THEME ──
+   Trước đây trang không khai gì cả, nên nó nhận thanh cuộn mặc định của hệ
+   điều hành. Trên macOS mặc định ấy là "chỉ hiện khi đang cuộn": người đọc
+   muốn biết bài còn dài bao nhiêu, hay muốn kéo tay tới giữa bài, thì phải
+   cuộn một nhát cho nó ló ra rồi mới với tới được — mà lúc thôi cuộn thì nó
+   lại biến mất.
+
+   Bài dài là chỗ thanh cuộn có ích nhất: nó là thước đo "còn bao nhiêu nữa".
+   Giấu nó đi là bỏ mất cái thước ấy.
+
+   Khai `scrollbar-color` (Firefox) và `::-webkit-scrollbar` (Chrome · Safari)
+   thì thanh cuộn THÔI tự ẩn và chiếm chỗ cố định — cũng có nghĩa là bố cục
+   không nhảy ngang mỗi lần trang đủ dài để sinh ra thanh cuộn.
+
+   Màu lấy từ biến theme, nên nó đổi theo Sakura · Galaxy · Tĩnh lặng thay vì
+   là một vệt xám hệ điều hành dán lên mép trang. */
+:root{
+  scrollbar-width:thin;
+  scrollbar-color:var(--line-strong) transparent;
+}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{
+  background-color:var(--line-strong);
+  border-radius:99px;
+  /* Viền trong suốt + `background-clip` là cách bo cho cái tay kéo mảnh hơn
+     rãnh của nó mà không phải khai thêm một lớp phần tử nào. */
+  border:3px solid transparent;
+  background-clip:content-box;
+}
+::-webkit-scrollbar-thumb:hover{background-color:var(--accent-ink)}
+::-webkit-scrollbar-corner{background:transparent}
+
 body{
   position:relative;
   min-height:100dvh;

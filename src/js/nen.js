@@ -246,9 +246,13 @@
         y: batDau ? Math.random() * mn : -40 - Math.random() * 160,
         /* Vệt càng gần càng DÀI: cùng một khoảng thời gian phơi sáng, vật đi
            nhanh hơn thì để lại vệt dài hơn. Đây là chỗ làm nước có tốc độ. */
-        dai: 26 + lop * 96,
+        /* Chậm lại một phần tư so với bản đầu (vy 3,4+9,5 → 2,6+7,1). Thác
+           chảy xiết đọc ra là thác lũ, mà theme này tên là Tĩnh lặng.
+           Vệt NGẮN lại theo, không giữ nguyên: vệt dài là dấu của vật đi
+           nhanh — giảm tốc mà để nguyên vệt thì nước trông như bị kéo giãn. */
+        dai: 22 + lop * 76,
         rong: 0.7 + lop * 1.9,
-        vy: 3.4 + lop * 9.5,
+        vy: 2.6 + lop * 7.1,
         /* Dạt ngang rất nhẹ và LUÔN cùng một chiều: thác có hướng gió của nó.
            Cho mỗi vệt một chiều riêng thì màn nước loạn như tuyết rơi. */
         vx: 0.06 + lop * 0.16,
@@ -269,7 +273,7 @@
         x: 20 + Math.random() * Math.max(1, W - 40),
         y: batDau ? Math.random() * mn : -20 - Math.random() * 420,
         r: 1.6 + lop * 2.6,
-        vy: 2.2 + lop * 4.2,
+        vy: 1.7 + lop * 3.2,
         mo: 0.3 + lop * 0.5
       };
     }

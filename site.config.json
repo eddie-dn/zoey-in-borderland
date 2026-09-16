@@ -67,11 +67,11 @@
   },
   "doanTruoc": true,
   "ghiChu": {
-    "online": false,
+    "online": true,
     "api": "/api/ghi-chu"
   },
   "luotXem": {
-    "bat": false,
+    "bat": true,
     "api": "/api/xem"
   }
 }

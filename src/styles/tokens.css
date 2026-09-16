@@ -100,7 +100,12 @@
   --fs-2xs:11px;
   --fs-xs:clamp(11.5px,.70rem + .12vw,12.5px);
   --fs-sm:clamp(13px,.79rem + .16vw,14.5px);
-  --fs-base:clamp(16.5px,1rem + .22vw,17.5px);   /* thân bài */
+  /* 17,5 → 16,5px ở đầu trên. Cỡ cũ đọc ra hơi to cho một trang chữ dày:
+     16–16,5px là chỗ quen thuộc của thân bài trên web, 17,5 bắt đầu ngả sang
+     cỡ chữ của sách điện tử.
+     Không phải lo cột chữ: `--measure` tính bằng `ch`, mà `ch` co theo cỡ chữ,
+     nên cột hẹp lại đúng tỉ lệ và số ký tự mỗi dòng vẫn đứng nguyên ~70. */
+  --fs-base:clamp(15.5px,.94rem + .2vw,16.5px);   /* thân bài */
   --fs-md:clamp(18px,1.06rem + .38vw,20.5px);    /* lead, sapo */
   --fs-h4:clamp(17px,1.02rem + .34vw,19.5px);
   --fs-h3:clamp(20px,1.14rem + .62vw,25px);
