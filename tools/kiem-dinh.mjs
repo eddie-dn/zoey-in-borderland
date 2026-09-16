@@ -790,6 +790,122 @@ const KIEM = [
         .map((m) => `${t.url} — đường dẫn máy cá nhân lọt ra HTML: ${m[0].slice(0, 60)}`))
   },
   {
+    /* ── LOGO VÀ DÒNG CHỮ KHÔNG BAO GIỜ CÙNG HIỆN ──
+       Logo và tên viết đầy đủ nói CÙNG một điều; đặt cạnh nhau là lặp, và ở
+       thanh đầu trang thì lặp là tốn chỗ của mục điều hướng. Luật: trang chủ và
+       trang giới thiệu chỉ logo, mọi trang khác chỉ dòng chữ, và chỉ TRANG CHỦ
+       mới cho logo kể chuyện.
+
+       Việc ẩn do CSS lo (`.brand--logo b{display:none}`), nên thêm nhầm một lớp
+       vào HTML thì không có lỗi nào nổ ra — chỉ là một trang nào đó hiện cả hai,
+       hoặc hiện không cái nào. Phép kiểm soi lớp trong HTML đã dựng. */
+    ten: 'Logo và dòng chữ tên blog không cùng hiện trên một trang',
+    muc: 'loi',
+    chay: ({ trang }) => {
+      const ra = [];
+      let soDong = 0;
+      for (const t of trang) {
+        const m = t.html.match(/<[^>]*class="brand([^"]*)"/);
+        if (!m) { ra.push(`${t.url} — không có ô thương hiệu nào ở thanh đầu trang`); continue; }
+        const lop = m[1];
+        const coLogo = lop.includes('brand--logo');
+        const coChu  = lop.includes('brand--chu');
+        const coDong = lop.includes('brand--dong');
+        if (coLogo === coChu) {
+          ra.push(`${t.url} — lớp "brand${lop}": phải có ĐÚNG MỘT trong brand--logo / brand--chu`);
+        }
+        if (coDong) {
+          soDong++;
+          if (t.url !== '/') ra.push(`${t.url} — có brand--dong, nhưng logo chỉ được kể chuyện ở trang chủ`);
+          if (!coLogo) ra.push(`${t.url} — có brand--dong mà không có brand--logo`);
+        }
+        /* Lớp đúng nhưng quên nhả nét vào HTML thì ô thương hiệu rỗng. */
+        if (coLogo && !t.html.includes('class="lg-vc lg-vc--1"')) {
+          ra.push(`${t.url} — khai brand--logo mà trong HTML không có nét logo`);
+        }
+      }
+      if (soDong !== 1) ra.push(`có ${soDong} trang khai brand--dong — phải đúng một (trang chủ)`);
+      return ra;
+    }
+  },
+  {
+    /* ── TỈ LỆ KHUNG BĂNG ẢNH PHẢI NẰM TRONG KHOẢNG INSTAGRAM CHO PHÉP ──
+       Khung lấy tỉ lệ theo tấm đầu tiên, kẹp trong 4:5 … 1.91:1 — ngoài khoảng
+       ấy thì chính Instagram và Facebook cũng tự cắt. Phép kẹp nằm trong
+       `tiLeBang()`; phép kiểm này soi con số ĐÃ IN RA HTML, tức là kiểm cả hàm
+       lẫn đường đi của nó tới trang.
+
+       Một tấm ảnh panorama 3:1 thay vào là lộ ngay: nếu con số in ra thành 3
+       thì phép kẹp đã hỏng ở đâu đó. */
+    ten: 'Tỉ lệ khung băng ảnh nằm trong khoảng 4:5 … 1.91:1',
+    muc: 'loi',
+    chay: ({ trang }) => trang.flatMap((t) =>
+      [...t.html.matchAll(/class="bang-anh"[^>]*style="--ba-ti:([\d.]+)"/g)]
+        .map((m) => +m[1])
+        .filter((v) => !(v >= 0.8 - 1e-6 && v <= 1.91 + 1e-6))
+        .map((v) => `${t.url} — --ba-ti:${v} nằm ngoài khoảng 0.8 … 1.91`))
+  },
+  {
+    /* ── BỐN ĐƯỜNG CỦA LOGO PHẢI CÙNG CẤU TRÚC `M + 4C` ──
+       Logo trang chủ kể chuyện bằng cách BIẾN HÌNH: nét gấp khúc chữ Z cong dần
+       thành vô cực, vòng tròn vặn dần thành vô cực thứ hai. Trình duyệt chỉ nội
+       suy được giữa hai đường khi chúng có CÙNG chuỗi lệnh và cùng số điểm.
+
+       Hỏng kiểu này im lặng đến khó chịu: thêm một khúc cong cho đẹp thì đường
+       vẫn vẽ ra đúng, trang vẫn dựng, không ai báo gì — chỉ là phép biến hình
+       thôi chạy và hình NHẢY từ chữ Z sang vô cực. Muốn biết thì phải mở trình
+       duyệt, đợi đúng giây thứ tám của một vòng hai mươi giây rồi nhìn. */
+    ten: 'Bốn đường của logo cùng cấu trúc M + 4C (để biến hình được)',
+    muc: 'loi',
+    chay: () => {
+      const f = path.join(GOC, 'tools', 'build.mjs');
+      const js = fs.readFileSync(f, 'utf8');
+      const ra = [];
+      const ten = ['P_INF1', 'P_INF2', 'P_ZZ', 'P_VONG'];
+      for (const k of ten) {
+        /* Cắt bằng chỉ số chứ không dựng RegExp từ chuỗi: RegExp dựng động ở đây
+           phải escape hai tầng — một cho chuỗi mẫu, một cho biểu thức — và đã sai
+           đúng vì chuyện ấy một lần. Sai xong thì phép kiểm báo "không tìm thấy"
+           cho cả bốn đường, tức là nó tố cáo chính nó chứ không tố cáo code. */
+        const dau = js.indexOf(`const ${k} `);
+        const n1 = dau < 0 ? -1 : js.indexOf("'", dau);
+        const n2 = n1 < 0 ? -1 : js.indexOf("'", n1 + 1);
+        if (n2 < 0) { ra.push(`build.mjs không còn khai ${k} — phép kiểm hết bám được vào đâu`); continue; }
+        const lenh = js.slice(n1 + 1, n2).match(/[A-Za-z]/g) || [];
+        const soC = lenh.filter((x) => x.toUpperCase() === 'C').length;
+        const dauM = lenh[0] && lenh[0].toUpperCase() === 'M';
+        if (!dauM || soC !== 4 || lenh.length !== 5) {
+          ra.push(`${k} có chuỗi lệnh "${lenh.join('')}" — phải đúng "MCCCC", ` +
+                  `không thì nó thôi biến hình được với ba đường kia`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── HAI CHỖ KHAI THỜI LƯỢNG VÒNG LẶP PHẢI KHỚP NHAU ──
+       Vòng kể chuyện của logo chạy bằng HAI cơ chế: phần mờ/xoay do CSS lo
+       (`--lg-ck` trong layout.css), phần biến hình do thẻ <animate> trong SVG lo
+       (`LG_CK` trong build.mjs). Thuộc tính `dur` của <animate> là attribute của
+       SVG chứ không phải CSS, nên `var(--lg-ck)` ở đó không nở ra gì cả — buộc
+       phải ghi số ở cả hai nơi.
+
+       Lệch nhau thì không ai báo lỗi, chỉ là hai nửa câu chuyện trôi dần khỏi
+       nhau: chữ Z cong ra lúc nó đã xoay xong từ đời nào, hoặc ngược lại. Và vì
+       trôi DẦN nên xem mấy vòng đầu vẫn thấy đúng. */
+    ten: 'Thời lượng vòng lặp logo khai giống nhau ở CSS và ở SVG',
+    muc: 'loi',
+    chay: () => {
+      const js = fs.readFileSync(path.join(GOC, 'tools', 'build.mjs'), 'utf8');
+      const css = fs.readFileSync(path.join(GOC, 'src', 'styles', 'layout.css'), 'utf8');
+      const a = js.match(/const LG_CK\s*=\s*'([^']+)'/);
+      const b = css.match(/--lg-ck:\s*([\w.]+)/);
+      if (!a || !b) return ['không tìm thấy LG_CK (build.mjs) hoặc --lg-ck (layout.css)'];
+      return a[1] === b[1] ? []
+        : [`LG_CK = ${a[1]} nhưng --lg-ck = ${b[1]} — hai nửa hoạt hình logo sẽ trôi lệch nhau`];
+    }
+  },
+  {
     /* ── TỪ "BORDERLAND" LẤN RA NGOÀI CỘT TỐI ĐA NỬA CHỮ CUỐI ──
        Màn đầu trang chủ đặt cỡ chữ bằng `cqw` — phần trăm bề ngang khung bao.
        Chữ thì không có `overflow` nào chặn, nên đặt cỡ quá tay là từ ấy cứ thò

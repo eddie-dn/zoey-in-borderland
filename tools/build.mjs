@@ -780,62 +780,95 @@ function bangAnhHTML(bai) {
 
    MỖI VÔ CỰC LÀ MỘT ĐƯỜNG RIÊNG, không phải bốn cánh rời. Nhờ vậy nét vẽ ra kể
    đúng trình tự: một dấu vô cực trọn vẹn, rồi dấu thứ hai. */
-const LOGO_NET = `
-  <path class="lg-vc lg-vc--1" fill="none" stroke="currentColor"
-        d="M24 24 C32 16 41 18 41 24 C41 30 32 32 24 24 C16 16 7 18 7 24 C7 30 16 32 24 24 Z"/>
-  <path class="lg-vc lg-vc--2" fill="none" stroke="currentColor"
-        d="M24 24 C16 32 18 41 24 41 C30 41 32 32 24 24 C32 16 30 7 24 7 C18 7 16 16 24 24 Z"/>`;
-
-/* ── CÁC CHẶNG KỂ CHUYỆN ──
-   Chỉ có ở trang chủ. Trang giới thiệu dùng logo tĩnh, và mấy chữ này ở đó là
-   750 byte nằm không — chưa kể một cái logo tự kể chuyện mãi ở một trang đầy
-   chữ thì đúng là thứ làm người ta không đọc nổi.
-
-   Dùng <text> THẬT chứ không vẽ lại chữ bằng nét: chữ Z, i, B ở đây phải là
-   đúng con chữ trong tên blog, cùng một phông nghiêng — vẽ tay thì nó thành
-   ba hình hao hao chữ, và cả câu chuyện "cái tên co lại thành logo" mất nghĩa
-   ngay ở bước đầu. */
-const LOGO_CHU = `
-  <g class="lg-ke" aria-hidden="true">
-    <text class="lg-chu lg-ten" x="24" y="24">Zoey in Borderland</text>
-    <text class="lg-chu lg-z"   x="24" y="24">Z</text>
-    <text class="lg-chu lg-i"   x="24" y="24">i</text>
-    <text class="lg-chu lg-b"   x="24" y="24">B</text>
-  </g>`;
-
-/* ── LOGO ──
+/* ══════════════ LOGO ══════════════
    Dựng theo đúng trình tự mà cái tên co lại:
 
      Zoey in Borderland
-        ↓  cả dòng chữ bóp lại còn một điểm
-     Z
-        ↓  chữ Z XOAY NGANG
-     chữ i xoay ngang, nối hai đầu còn lại
+        ↓  cả dòng bóp lại còn một điểm
+     nét gấp khúc hình chữ Z
+        ↓  xoay ngang
+     một nét thẳng quét vào nối hai đầu          ← chữ i
+        ↓  CONG DẦN RA
+     VÔ CỰC THỨ NHẤT
+        ↓  một vòng tròn khép lại rồi VẶN        ← chữ B
+     VÔ CỰC THỨ HAI
         ↓
-     VÔ CỰC THỨ NHẤT (nằm ngang)
-        ↓  chữ B vặn thành vòng
-     VÔ CỰC THỨ HAI (dựng đứng)
-        ↓
-     bốn cánh hoa — xoay một vòng rồi vỡ ra, và kể lại từ đầu
+     bốn cánh — xoay một vòng rồi vỡ ra, và kể lại từ đầu
 
    ── VÌ SAO KHÔNG PHẢI HÌNH VUÔNG GẠCH CHÉO ─────────────────────────────
    Bản đầu vẽ đúng như hình mẫu: khung vuông cộng hai đường chéo, hình học thì
-   chuẩn (hai vạch đứng khép dấu ╳ thành vô cực ngang, hai vạch ngang khép nó
-   thành vô cực đứng). Nhưng dựng ra rồi nhìn thì nó đọc thành **biểu tượng
-   "ảnh lỗi"** — ô vuông gạch chéo là ký hiệu phổ biến nhất của "không có gì ở
-   đây". Một logo không được phép trùng với ký hiệu của sự trống rỗng.
+   chuẩn. Nhưng dựng ra rồi nhìn thì nó đọc thành **biểu tượng "ảnh lỗi"** — ô
+   vuông gạch chéo là ký hiệu phổ biến nhất của "không có gì ở đây". Một logo
+   không được phép trùng với ký hiệu của sự trống rỗng. Nên giữ nguyên CÂU
+   CHUYỆN, đổi NÉT: chữ B vặn thành vòng thì hai vô cực thôi vẽ bằng nét thẳng
+   mà vẽ bằng nét cong. Bốn cánh mọc ra từ một tâm — và bốn cánh ấy lại vọng
+   đúng cánh hoa đang rơi ở nền trang. Không cố ý, nhưng giữ.
 
-   Nên giữ nguyên CÂU CHUYỆN, đổi NÉT: chữ B vặn thành vòng thì hai vô cực thôi
-   vẽ bằng nét thẳng mà vẽ bằng nét cong. Bốn cánh mọc ra từ một tâm — và bốn
-   cánh ấy lại vọng đúng cánh hoa đang rơi ở nền trang. Không cố ý, nhưng giữ.
+   ── BỐN HÌNH, MỘT CẤU TRÚC ĐƯỜNG ───────────────────────────────────────
+   Cả bốn đường dưới đây đều là `M` rồi ĐÚNG BỐN `C`. Không phải trùng hợp:
+   trình duyệt chỉ nội suy được giữa hai đường khi chúng có CÙNG chuỗi lệnh và
+   cùng số điểm. Nhờ vậy nét gấp khúc chữ Z CONG DẦN ra thành vô cực, và vòng
+   tròn VẶN dần thành vô cực thứ hai — hình này biến thành hình kia thật, chứ
+   không phải hình này mờ đi rồi hình kia hiện lên.
 
-   MỖI VÔ CỰC LÀ MỘT ĐƯỜNG RIÊNG, không phải bốn cánh rời. Nhờ vậy nét vẽ ra kể
-   đúng trình tự: một dấu vô cực trọn vẹn, rồi dấu thứ hai. */
+   Hệ quả phải nhớ: sửa một đường thì phải giữ nguyên cấu trúc `M + 4C`. Thêm
+   một khúc cong cho đẹp là phép biến hình gãy ngay, mà nó gãy im lặng — đường
+   vẫn vẽ ra đúng, chỉ là thôi biến. */
+const P_INF1 = 'M24 24C32 16 41 18 41 24C41 30 32 32 24 24C16 16 7 18 7 24C7 30 16 32 24 24';
+const P_INF2 = 'M24 24C16 32 18 41 24 41C30 41 32 32 24 24C32 16 30 7 24 7C18 7 16 16 24 24';
+/* Chữ Z vẽ bằng bốn khúc cong có điểm điều khiển nằm THẲNG HÀNG — tức là bốn
+   đoạn thẳng đội lốt đường cong. Nhìn ra chữ Z, mà cấu trúc thì đã sẵn sàng để
+   cong ra.
+
+   Và nó nằm NGANG sẵn trong file. Lúc chặng chữ Z bắt đầu, cả nét được xoay
+   -90° nên trên màn hình nó đứng thẳng; xoay về 0° chính là cú "Z xoay ngang".
+   Làm ngược lại — vẽ Z đứng rồi xoay +90° — thì cái vô cực nó cong ra cũng bị
+   xoay theo và thành vô cực DỰNG ĐỨNG, sai mất hình cuối. */
+const P_ZZ   = 'M35 13C35 20 35 28 35 35C31 31 28 28 24 24C20 20 17 17 13 13C13 20 13 28 13 35';
+/* Vòng tròn dựng bằng bốn cung phần tư — cách dựng hình tròn kinh điển bằng
+   đường Bézier, hằng số 0.5523 × bán kính. */
+const P_VONG = 'M24 12C30.6 12 36 17.4 36 24C36 30.6 30.6 36 24 36C17.4 36 12 30.6 12 24C12 17.4 17.4 12 24 12';
+
+/* ── PHÉP BIẾN HÌNH CHẠY BẰNG SMIL, KHÔNG PHẢI CSS ──────────────────────
+   CSS có thuộc tính `d` và Chrome/Safari nội suy được nó, nhưng Firefox thì
+   không — ở đó nét sẽ NHẢY từ chữ Z sang vô cực thay vì cong dần, mất đúng
+   cái mình muốn. Thẻ <animate> của SVG chạy được ở cả ba, và nó là cơ chế
+   sinh ra để làm việc này.
+
+   Phần mờ/xoay vẫn để CSS lo. Hai hệ chạy song song nhưng cùng một vòng 20
+   giây và cùng khởi động lúc trang mở, nên chúng không trôi lệch nhau.
+
+   `keyTimes` là PHẦN CỦA VÒNG, không phải giây: 0.12 = 12% của 20s. Hai mốc
+   đầu giữ nguyên hình cuối cho tới lúc bốn cánh vỡ xong, rồi mới nháy sang
+   hình chữ — nháy lúc đang vô hình thì không ai thấy cú nháy ấy. */
+/* 20 giây — PHẢI khớp với `--lg-ck` trong src/styles/layout.css. Thuộc tính
+   `dur` của <animate> là attribute của SVG, không phải CSS, nên `var()` ở đây
+   không nở ra gì cả; buộc phải ghi số. Hai chỗ ghi cùng một con số là đúng cái
+   kiểu sớm muộn cũng lệch nhau, nên bộ kiểm định có một phép canh việc ấy. */
+const LG_CK = '20s';
+
+function bien(tu, den, t1, t2) {
+  return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
+      calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1"
+      keyTimes="0;.08;.12;${t1};${t2};1"
+      values="${den};${den};${tu};${tu};${den};${den}"/>`;
+}
+
 function logoHTML(dong) {
+  const net = (lop, d, smil) =>
+    `<path class="lg-vc ${lop}" fill="none" stroke="currentColor" d="${d}">${smil}</path>`;
   return `<svg class="logo${dong ? ' logo--dong' : ''}" viewBox="0 0 48 48"` +
     ` aria-hidden="true" focusable="false">` +
-    (dong ? LOGO_CHU : '') +
-    `<g class="lg-hoa">${LOGO_NET}</g></svg>`;
+    (dong ? `<g class="lg-ke">
+      <g class="lg-ten" fill="none" stroke="currentColor">
+        <path d="M6 24H17"/><path d="M20 24H24"/><path d="M27 24H42"/>
+      </g>
+      <path class="lg-nhanh" fill="none" stroke="currentColor" d="M24 15V33"/>
+    </g>` : '') +
+    `<g class="lg-hoa">` +
+      net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.37', '.44') : '') +
+      net('lg-vc--2', P_INF2, dong ? bien(P_VONG, P_INF2, '.51', '.58') : '') +
+    `</g></svg>`;
 }
 function tocHTML(headings) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở

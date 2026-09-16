@@ -126,29 +126,31 @@ git add -A && git commit -m "bài: tên bài" && git push
 
 | Field | Dùng khi |
 |---|---|
-| `khung` | Chọn khung trình bày: `A` (mặc định) hoặc `B` — xem §2.4 |
+| `khung` | Chọn khung trình bày: `A` (mặc định), `B` hoặc `C` — xem §2.4 |
 | `slug` | Muốn đường dẫn khác với tiêu đề. Không khai thì lấy tên file (bỏ phần ngày) |
 | `updated` | Sửa bài cũ đáng kể — ngày sửa hiện cạnh ngày đăng |
 | `draft` | Đang viết dở |
 | `pinned` | Ghim bài lên đầu danh sách |
 | `lang` | Bài viết bằng thứ tiếng khác `vi` |
 
-### 2.4 · Hai khung trình bày — chọn khung nào
+### 2.4 · Ba khung trình bày — chọn khung nào
 
-Khai `khung: A` hoặc `khung: B` trong front matter. Không khai thì dùng A.
-Cả hai tự về một cột ở màn dưới 1080px.
+Khai `khung: A`, `B` hoặc `C` trong front matter. Không khai thì dùng A.
+Cả ba tự về một cột ở màn dưới 1080px.
 
 | | Dáng | Hợp với | Ký tự/dòng |
 |---|---|---|---|
 | **A** | cột đọc + mục lục dính bên phải | bài phân tích nhiều mục, bài hướng dẫn | 71 |
 | **B** | ảnh bìa tràn hết màn, tiêu đề căn giữa, không cột phụ | bài kể chuyện, bài nhiều ảnh, bài ngắn | 74 |
+| **C** | băng ảnh dính bên trái, chữ bên phải | vài tấm ảnh kỉ niệm + mấy dòng tản mạn — xem §6b | 66 |
 
 **A** là mặc định vì hợp với đa số bài. Đổi sang **B** khi bài có ảnh bìa đẹp và
-ít mục — mục lục lúc đó chỉ tổ chiếm chỗ.
+ít mục — mục lục lúc đó chỉ tổ chiếm chỗ. **C** là khung ngắn: nó không có mục
+lục, và nếu bài dài hơn một màn thì bạn đang cần khung A chứ không phải C.
 
 :::tip Thử trước khi chốt
 Đổi một chữ trong front matter rồi `npm run dev` là thấy ngay. Không phải sửa
-template gì cả — cả hai khung dùng chung một HTML, chỉ khác cách xếp.
+template gì cả — cả ba khung dùng chung một HTML, chỉ khác cách xếp.
 :::
 
 ### 2.5 · Ba cái bẫy hay vấp
@@ -473,6 +475,38 @@ Sáng thứ bảy, không hẹn ai, không phải đi đâu.
 | `anh:` | mỗi dòng một tấm: `- <đường dẫn> \| <chú thích>` |
 | chú thích | không bắt buộc — bỏ luôn cả dấu `\|` nếu không cần |
 | đường dẫn | ảnh trong `public/media/`, **hoặc** địa chỉ `https://` ngoài |
+
+#### Khung ảnh lấy tỉ lệ theo tấm ĐẦU TIÊN
+
+Cả băng dùng chung một khung, và khung ấy lấy tỉ lệ của tấm đầu — đúng cách
+Instagram và Facebook làm. Mỗi tấm một khung thì cả khối cao thấp nhảy loạn mỗi
+lần trượt, chú thích và hàng chấm chạy theo, mắt mất điểm tựa.
+
+Tỉ lệ bị **kẹp** trong khoảng hai nền tảng ấy cho phép:
+
+| | Tỉ lệ | Cỡ hay dùng |
+|---|---|---|
+| dọc nhất | 4:5 | 1080×1350 |
+| vuông | 1:1 | 1080×1080 |
+| ngang nhất | 1.91:1 | 1080×566 |
+
+Tấm đầu dọc hơn 4:5 (ảnh chụp dọc bằng điện thoại chẳng hạn) thì khung lấy 4:5.
+Ngang hơn 1.91:1 thì lấy 1.91:1. Ảnh nào lệch khỏi khung vẫn vào **trọn** — hai
+bên có dải nền, chứ không bị xén. Đo không ra tỉ lệ (ảnh ở địa chỉ ngoài) thì
+khung về 4:5.
+
+Muốn khung dọc thì để một tấm dọc lên đầu. Đơn giản vậy thôi.
+
+#### Chưa có ảnh thật thì sinh tạm
+
+```bash
+npm run bia -- <slug> --doc
+```
+
+Sinh ảnh dọc 1080×1350 cho đúng số dòng trong `anh:`, đặt vào
+`public/media/<năm>/<slug>/anh-1.png`, `anh-2.png`… Hạt giống lấy theo **chú
+thích** từng dòng nên mỗi tấm ra một hình khác nhau, và cùng một chú thích thì
+luôn ra cùng một tấm. Thêm `--de` để ghi đè ảnh đã có.
 | `cover:` | vẫn khai như thường — nó là ảnh trên thẻ bài và ảnh khi chia sẻ link, **không** in vào thân bài ở khung C |
 
 **Hai đến bốn tấm là vừa.** Một tấm thì không cần băng ảnh (đặt thẳng vào thân

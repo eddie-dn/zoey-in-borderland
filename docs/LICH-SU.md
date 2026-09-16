@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V5.07 | 2026-09-16 | 07 | rà docs: ba khung, trang ghi chú, chương logo; thêm 4 phép kiểm |
+| V5.06 | 2026-09-16 | 06 | logo kể chuyện bằng nét biến hình, bỏ hẳn con chữ |
 | V5.05 | 2026-09-16 | 05 | băng ảnh lấy tỉ lệ theo tấm đầu, kẹp trong khoảng Instagram cho phép |
 | V5.04 | 2026-09-16 | 04 | màn đầu: Borderland to hơn, xén nửa chữ cuối, nhấc lên giữa khung |
 | V5.03 | 2026-09-16 | 03 | logo tự kể lại trình tự dựng hình, lặp ở trang chủ |
@@ -78,6 +80,31 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V5.07 — 16-Sep-2026
+
+- **Rà lại tài liệu.** Ba chỗ đang nói dối: hướng dẫn đăng bài và design system
+  đều ghi "hai khung trình bày" trong khi khung C đã có từ V3.07; bản đồ trang
+  ghi trang chủ hiện "tối đa 6 bài" trong khi cấu hình để 3, và không nhắc trang
+  ghi chú. Sửa hết, thêm chương **§19 · LOGO** vào design system.
+- **Bộ kiểm định lên 41 phép,** thêm bốn phép cho bốn kiểu hỏng-im-lặng mới:
+  bốn đường logo phải cùng cấu trúc `M + 4C` (không thì thôi biến hình được);
+  thời lượng vòng lặp khai ở CSS và ở SVG phải khớp; logo và dòng chữ tên blog
+  không được cùng hiện; tỉ lệ khung băng ảnh phải nằm trong khoảng Instagram
+  cho phép. Cả bốn đều đã thử ngược — cố tình làm sai để xem nó có báo không.
+
+## V5.06 — 16-Sep-2026
+
+- **Bỏ hẳn con chữ khỏi logo.** Bản trước dựng chặng chữ bằng `<text>` thật, lấy
+  đúng con chữ Z, i, B cùng phông nghiêng. Nhìn thì hỏng: một chữ serif có chân,
+  có nét thanh nét đậm, dán vào giữa một hình toàn nét tròn đều đọc ra là *chữ
+  bị dán vào*, không đọc ra là hình đang biến.
+- **Giờ mọi chặng đều vẽ bằng nét,** cùng bề dày, cùng đầu bo tròn như hai vòng
+  vô cực. Và nét **cong dần** ra thành hình chứ không mờ đi rồi hiện cái khác:
+  nét gấp khúc chữ Z cong ra thành vô cực thứ nhất, vòng tròn vặn thành vô cực
+  thứ hai. Cả bốn đường cùng cấu trúc `M + 4C` nên trình duyệt nội suy được.
+- **Không còn phụ thuộc phông chữ** — Google Fonts tải chậm hay hỏng cũng không
+  ảnh hưởng gì tới logo.
 
 ## V5.05 — 16-Sep-2026
 

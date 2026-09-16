@@ -437,17 +437,28 @@ Thứ tự này không đổi được:
 
 ---
 
-## 8 · HAI KHUNG TRÌNH BÀY BÀI
+## 8 · BA KHUNG TRÌNH BÀY BÀI
 
-Chọn bằng `khung: A | B` trong front matter. Cả hai dùng **chung một HTML**,
+Chọn bằng `khung: A | B | C` trong front matter. Cả ba dùng **chung một HTML**,
 chỉ đổi cách xếp bằng grid — nên đổi khung không phải viết lại template nào.
 
 | | Dáng | Hợp với | Ký tự/dòng |
 |---|---|---|---|
 | **A** | cột đọc + mục lục dính phải | bài phân tích nhiều mục | 71 |
 | **B** | bìa tràn màn, tiêu đề giữa, không cột phụ | bài kể chuyện, nhiều ảnh | 74 |
+| **C** | băng ảnh dính trái, chữ phải, không mục lục | vài tấm ảnh + mấy dòng tản mạn | 66 |
 
-Dưới 1080px cả hai về **một cột**.
+Dưới 1080px cả ba về **một cột**.
+
+**Khung C khoá chiều cao băng ảnh theo MÀN, không theo tỉ lệ ảnh.** Băng ảnh
+dính khi cuộn, nên cả cụm ảnh + chú thích + hàng chấm phải lọt trong một màn
+(`max-height:min(64vh,620px)`). Cao theo tỉ lệ ảnh thì một tấm dọc đẩy hàng chấm
+xuống dưới nếp gấp và người đọc không bao giờ biết là còn ảnh nữa.
+
+Tỉ lệ khung thì lấy theo tấm **đầu tiên**, kẹp trong khoảng Instagram và
+Facebook cho phép — 4:5 dọc nhất, 1.91:1 ngang nhất. Cả băng một khung, vì mỗi
+tấm một khung thì khối cao thấp nhảy loạn mỗi lần trượt. Ảnh lệch khỏi khung vẫn
+vào trọn (`contain`): ảnh kỉ niệm thì phần rìa hay lại là phần có người.
 
 ### 8.1 · Bốn khối con, đặt chỗ TƯỜNG MINH
 
@@ -783,10 +794,41 @@ rộng khoảng một nửa cửa sổ, và tỉ lệ ấy còn đổi theo kh�
 
 | | Lúc nghỉ | Lúc rê chuột |
 |---|---|---|
-| chữ đầu | rất lớn, chạm đường kẻ trái, **không bị cắt** | co lại còn khoảng một nửa |
+| chữ đầu | rất lớn, khuất **một phần ba** sau đường kẻ trái | co lại còn khoảng một nửa, lùi hẳn vào trong |
 | phần còn lại của từ đầu | giấu bằng `letter-spacing` âm | chạy vào, hiện đủ |
-| từ giữa | nhỏ, nép bên phải chữ đầu | **về cùng hàng** với từ đầu |
-| từ cuối | tụt xuống một tầng, chạy khỏi đường kẻ phải | co **nhẹ**, nằm trong khung |
+| từ giữa | nhỏ, nép sát bên phải chữ đầu (hở 6px) | **về cùng hàng** với từ đầu |
+| từ cuối | trải hết bề ngang cột, chữ cuối khuất **một nửa** sau đường kẻ phải | co **nhẹ**, nằm trọn trong khung |
+
+### 16.2b · Xén bao nhiêu là con số, không phải là ướm
+
+Hai đầu dòng đều lấn qua đường kẻ, và mức lấn phải **đều nhau về ý**: một phần
+ba ở trái, một nửa chữ cuối ở phải. Xén đều hai bên thì cả khối đọc ra là được
+đặt vào khuôn rồi khuôn cắt bớt — cố ý. Xén một bên thì đọc ra là tràn lề.
+
+Cỡ chữ của dòng dưới **giải ra** từ hai con số đo trong trình duyệt, không ướm:
+
+```
+cả từ "Borderland"  = 5,117 × cỡ chữ   (đã gồm mười nhịp letter-spacing)
+riêng chữ "d" cuối  = 0,538 × cỡ chữ
+
+339 + .0584·cỡ + 5.1168·cỡ = 1050 + .5381·cỡ ÷ 2
+      └ mép trái cột          └ mép phải cột   └ nửa chữ "d" thò ra
+→ cỡ × 4,906 = 711  →  cỡ ≈ 144,9px  →  20,35cqw
+```
+
+Đổi phông hay đổi tên blog là phải đo lại rồi giải lại. Có một phép kiểm canh
+mức lấn không vượt quá nửa chữ cuối — nó từng bắt được bản để 26cqw, lấn 143%
+cỡ chữ, mất hẳn hai chữ cuối và trên màn hình đọc ra là "Borderl".
+
+### 16.2c · Căn giữa theo VÙNG TRỐNG, không theo cả cột
+
+Đáy cột có hàng nút ("Read on" và nút trích dẫn) chiếm khoảng 7% chiều cao màn.
+Căn giữa cả cột thì khối chữ bị đẩy xuống nằm đè lên vùng ấy, và mắt đọc ra là
+"chữ nằm thấp" — dù về hình học thì nó đúng giữa.
+
+Chừa dải ấy ra bằng `padding-bottom` rồi mới căn giữa. Chừa **dư** một nhịp là
+cố ý: khối này nặng đáy (dòng dưới dài gấp ba dòng trên), mà chữ nặng đáy thì
+phải đặt cao hơn tâm hình học một chút mới *nhìn* ra là ở giữa.
 | độ mờ | 17% (sáng) · 22% (tối) | 96% |
 
 Từ cuối chỉ co nhẹ (24 → 20cqw) chứ không co mạnh: cỡ lúc mờ đã đúng rồi, co
@@ -1024,3 +1066,102 @@ Hệ quả cho bài nhập từ nơi khác: bản xuất WordPress hay mở bài
 trích dẫn — chính là câu dẫn. Công cụ nhập lấy nó làm tóm tắt **và bỏ nó khỏi
 thân bài**; giữ cả hai là bắt người đọc đọc một đoạn hai lần, cách nhau chưa
 tới một màn.
+
+---
+
+## 19 · LOGO
+
+Một hình, dựng ra bằng cách kể lại chính cái tên co lại:
+
+```
+Zoey in Borderland
+   ↓  cả dòng bóp lại còn một điểm
+nét gấp khúc hình chữ Z
+   ↓  xoay ngang
+một nét thẳng quét vào nối hai đầu        ← chữ i
+   ↓  cong dần ra
+VÔ CỰC THỨ NHẤT
+   ↓  một vòng tròn khép lại rồi vặn       ← chữ B
+VÔ CỰC THỨ HAI
+   ↓
+bốn cánh
+```
+
+### 19.1 · Vì sao không phải ô vuông gạch chéo
+
+Bản đầu vẽ đúng hình mẫu: khung vuông cộng hai đường chéo. Hình học thì chuẩn —
+hai vạch đứng khép dấu ╳ thành một vô cực nằm ngang, hai vạch ngang khép nó
+thành một vô cực dựng đứng, bốn vạch hợp thành khung vuông.
+
+Dựng ra rồi nhìn thì nó đọc thành **biểu tượng "ảnh lỗi"**. Ô vuông gạch chéo là
+ký hiệu phổ biến nhất của "không có gì ở đây", và một logo không được phép trùng
+với ký hiệu của sự trống rỗng.
+
+Giữ nguyên câu chuyện, đổi nét: chữ B vặn thành vòng thì hai vô cực thôi vẽ bằng
+nét thẳng mà vẽ bằng nét cong. Bốn cánh mọc ra từ một tâm — và bốn cánh ấy lại
+vọng đúng cánh hoa đang rơi ở nền trang.
+
+### 19.2 · Không nhét con chữ vào
+
+Có một bản dựng chặng chữ bằng `<text>` thật: lấy đúng con chữ Z, i, B trong tên
+blog, cùng phông nghiêng. Nghe thì trung thành với ý tưởng, nhìn thì hỏng — một
+chữ serif có chân, có nét thanh nét đậm, dán vào giữa một hình toàn nét tròn đều
+đọc ra là **chữ bị dán vào**, không đọc ra là hình đang biến. Hai thứ khác hẳn
+nhau về chất: một bên là mặt chữ, một bên là nét vẽ.
+
+Nên chặng nào cũng vẽ bằng nét, cùng bề dày, cùng đầu bo tròn. Gợi ra chữ thì
+được, mà gợi bằng chính nét của mình.
+
+Phần thưởng kèm theo: không phụ thuộc phông chữ, nên Google Fonts tải chậm hay
+hỏng cũng không ảnh hưởng gì.
+
+### 19.3 · Bốn đường, một cấu trúc — luật phải giữ
+
+Cả bốn đường (`P_INF1`, `P_INF2`, `P_ZZ`, `P_VONG` trong `tools/build.mjs`) đều
+là `M` rồi **đúng bốn** `C`. Trình duyệt chỉ nội suy được giữa hai đường khi
+chúng cùng chuỗi lệnh và cùng số điểm — nhờ vậy nét chữ Z **cong dần** ra thành
+vô cực chứ không nhảy sang.
+
+Sửa một đường thì phải giữ nguyên cấu trúc ấy. Thêm một khúc cong cho đẹp là
+phép biến hình gãy, mà nó gãy **im lặng**: đường vẫn vẽ đúng, trang vẫn dựng,
+chỉ là hình thôi biến. Bộ kiểm định có một phép canh việc này.
+
+### 19.4 · Hai đồng hồ
+
+| Phần | Chạy bằng | Khai ở |
+|---|---|---|
+| mờ · xoay · vẽ dần | hoạt hình CSS | `--lg-ck` trong `layout.css` |
+| biến hình (`d`) | thẻ `<animate>` trong SVG | `LG_CK` trong `build.mjs` |
+
+Phải dùng `<animate>` chứ không dùng thuộc tính CSS `d`: Chrome và Safari nội
+suy được `d` qua CSS, Firefox thì không, và ở đó nét sẽ nhảy thay vì cong dần.
+
+Hai con số thời lượng phải khớp nhau. Lệch thì không ai báo lỗi, chỉ là hai nửa
+câu chuyện trôi dần khỏi nhau — và vì trôi *dần* nên xem mấy vòng đầu vẫn thấy
+đúng. Có một phép kiểm canh việc đó.
+
+**Đo hoạt hình thì đo bằng Web Animations API.** `element.getAnimations()` rồi
+`pause()` + đặt `currentTime`; SVG thì `pauseAnimations()` + `setCurrentTime()`.
+Không dùng `animation-delay` âm cộng `animation-play-state:paused`: đổi delay
+trên một hoạt hình đang tạm dừng thì Chrome giữ nguyên mốc cũ, không tua lại, và
+ảnh chụp ra là một trạng thái lai — dáng thì đúng mốc, hình thì đúng lúc bấm
+máy. Đã vấp hai lần đúng vì chuyện này, và cả hai lần đều tưởng là logo hỏng.
+
+### 19.5 · Logo xuất hiện ở đâu
+
+| Trang | Thấy gì | Lớp |
+|---|---|---|
+| `/` | logo, tự kể chuyện, vòng 20 giây | `.brand--logo .brand--dong` |
+| `/about/` | logo, vẽ một lần rồi đứng yên | `.brand--logo` |
+| mọi trang khác | dòng chữ *Zoey in Borderland* | `.brand--chu` |
+
+Không bao giờ hiện cả hai cùng lúc: logo và tên viết đầy đủ nói **cùng một
+điều**, đặt cạnh nhau thì thành lặp, và ở thanh đầu trang thì lặp là tốn chỗ của
+mục điều hướng.
+
+Vòng lặp nghỉ 42% thời gian (kể hết 58% rồi đứng yên 8 giây). Một hình động lặp
+liên tục ở thanh đầu trang là thứ mắt không bỏ qua được, mà người ta tới đây để
+đọc. Trang giới thiệu — trang nhiều chữ nhất — không cho nó lặp chút nào.
+
+Bật "giảm chuyển động" thì dừng hẳn ở hình đủ, không dừng ở một chặng giữa
+chừng: người bật tuỳ chọn ấy vẫn phải thấy logo, chỉ là không thấy nó động.

@@ -193,10 +193,12 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 
 | Trang | Dựa vào |
 |---|---|
-| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra **tối đa 6 bài** | `trangChu()` |
+| `/` hai màn: màn đầu cao trọn màn hình, cuộn xuống ra **3 bài** (`baiTrangChu`) | `trangChu()` |
 | Số trang cho Posts · Tags · Archive, người đọc chọn được số bài mỗi trang | `trang-so.js` |
-| `/posts/` và `/posts/<mục>/` | `congKhai` + `_muc.json` |
-| `/tags/` và `/tags/<tag>/` | `tags.json` |
+| `/posts/` — thư mục theo MỤC, mỗi mục 3 bài rồi "See all →" | `congKhai` + `_muc.json` |
+| `/posts/<mục>/` — danh sách đầy đủ của một mục | `congKhai` + `_muc.json` |
+| `/notes/` — ghi chú ngắn, lọc theo loại. Thay Tags trên thanh đầu trang | `content/ghi-chu.md` |
+| `/tags/` và `/tags/<tag>/` — vẫn còn, đường vào ở chân trang | `tags.json` |
 | `/search/` — tìm ngay trên máy người đọc, không gọi máy chủ | `search-index.json` + trường `kd` |
 | `/archive/` gom theo năm | `congKhai` |
 | `/about/` khung bento | `content/pages/` |
