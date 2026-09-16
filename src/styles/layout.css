@@ -516,8 +516,23 @@
   padding-block:var(--s8) var(--s7);
 }
 .site-foot .container{
-  display:flex;flex-wrap:wrap;gap:var(--s5);
-  align-items:flex-end;justify-content:space-between;
+  display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);
+  /* `baseline` chứ không `flex-end`: hai đầu hàng nay là chữ cùng cỡ, và chữ
+     thì phải thẳng ĐƯỜNG CHÂN với nhau. `flex-end` canh theo đáy HỘP, mà hộp
+     bên trái cao hơn vì mấy đường đi có lề trong — canh đáy hộp thì hai bên
+     chữ lệch nhau một hai pixel, đủ để nhìn ra là hỏng mà không đủ để biết
+     hỏng ở đâu. */
+  align-items:baseline;justify-content:space-between;
+}
+
+/* ── NỬA TRÁI: KÝ TÊN ĐỨNG TRƯỚC ĐƯỜNG ĐI ──
+   Một hàng ngang, và ký tên là mục ĐẦU chứ không phải một khối riêng dán vào:
+   người đọc lướt từ trái sang gặp "của ai" trước rồi mới tới "đi đâu được".
+   `min-width:0` cho khối này co lại được khi khổ hẹp, nếu không thì nó giữ
+   nguyên bề ngang và đẩy tem phiên bản tràn ra khỏi mép phải. */
+.foot-trai{
+  display:flex;flex-wrap:wrap;align-items:baseline;
+  gap:var(--s2) var(--s4);min-width:0;
 }
 
 /* ── KHỔ DỌC: CẢ CHÂN TRANG VỀ MỘT MÉP ──
@@ -531,26 +546,42 @@
    trái, thẳng hàng với nội dung. */
 @media (max-width:640px){
   .site-foot .container{
-    flex-direction:column;align-items:flex-start;gap:var(--s5);
+    flex-direction:column;align-items:flex-start;gap:var(--s3);
   }
   .site-foot .stamp{align-items:flex-start;text-align:left}
+  /* Ký tên và mấy đường đi vẫn cố ở CÙNG một hàng cho tới lúc thật sự không
+     đủ chỗ — `flex-wrap` của .foot-trai tự lo phần ấy. Ở đây chỉ bỏ lề trong
+     bù bên phải, vì mép phải không còn là mép của khối này nữa. */
   .stamp-ky{padding-right:0;padding-left:3px}
 }
-/* Tem hai dòng, đúng quy ước §4 của DESIGN-SYSTEM cũ:
-   dòng ký tên nằm TRÊN, dòng phiên bản nằm DƯỚI. */
-/* ── TEM CHÂN TRANG ──
-   Đời trước để 8.5px. Quá nhỏ: chủ trang mở trang lên còn không thấy dòng
-   phiên bản của chính mình, tưởng build chưa in ra. 8.5px cộng letter-spacing
-   .18em cộng chữ hoa cộng màu --text-faint là bốn thứ cùng kéo độ đọc xuống
-   một lúc. Nay 10.5px, giãn chữ nhẹ hơn, và dòng phiên bản đậm hơn dòng ký
-   tên — dòng đó vừa là thông tin vừa là cửa vào sổ lịch sử. */
+/* ── TEM CHÂN TRANG — NAY CHỈ CÒN MỘT DÒNG ──
+   Đời trước xếp dọc hai dòng và để 8.5px. Quá nhỏ: chủ trang mở trang lên còn
+   không thấy dòng phiên bản của chính mình, tưởng build chưa in ra. 8.5px
+   cộng letter-spacing .18em cộng chữ hoa cộng màu --text-faint là bốn thứ
+   cùng kéo độ đọc xuống một lúc.
+
+   Nay còn một dòng, và nó dùng ĐÚNG bộ chữ của thanh đầu trang (xem `.nav a`)
+   thay vì một cỡ riêng 10.5px. Chân trang và đầu trang là hai đầu của cùng
+   một khung; mỗi đầu một cỡ chữ thì chúng đọc ra là hai trang web dán lại. */
 .stamp{
-  display:flex;flex-direction:column;align-items:flex-end;gap:1px;
-  font-family:var(--font-label);font-size:10.5px;font-weight:400;
-  letter-spacing:.12em;text-transform:uppercase;
-  color:var(--text-faint);line-height:1.7;text-align:right;
+  display:flex;align-items:baseline;
+  color:var(--text-faint);line-height:1.6;text-align:right;
 }
-.stamp-ky{padding-right:3px}
+
+/* ── MỘT BỘ CHỮ CHO CẢ HÀNG CHÂN TRANG ──
+   Ký tên, mấy đường đi và dòng phiên bản đều là NHÃN, nên cùng một cách viết:
+   Oswald, chữ hoa, giãn .14em, cỡ --fs-xs — y hệt `.nav a` ở đầu trang.
+
+   Trước bản này hàng đường đi dùng --font-body viết thường cỡ --fs-sm, còn
+   tem dùng Oswald hoa 10.5px. Ba kiểu chữ trong một chân trang cao 40px, mà
+   không kiểu nào khớp với thanh đầu trang. Phân biệt giữa chúng nay nằm ở MÀU
+   chứ không ở bộ chữ: phiên bản mờ nhất, ký tên nhạt, đường đi rõ nhất vì chỉ
+   nó là thứ bấm được. */
+.stamp-ky,.foot-links,.stamp-ban{
+  font-family:var(--font-label);font-size:var(--fs-xs);font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;
+}
+.stamp-ky{padding-right:3px;color:var(--text-faint)}
 .stamp-ban{
   color:var(--text-muted);font-weight:500;
   cursor:default;-webkit-tap-highlight-color:transparent;
@@ -573,8 +604,10 @@
   50%{color:var(--accent-ink);background:var(--accent-wash);transform:scale(1.04)}
 }
 @media (prefers-reduced-motion:reduce){.stamp-ban.go{animation:none}}
-.foot-links{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);
-  font-size:var(--fs-sm);color:var(--text-muted)}
+.foot-links{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s4);
+  color:var(--text-muted)}
+.foot-links a{transition:color var(--dur-fast)}
+.foot-links a:hover{color:var(--accent-ink)}
 
 /* ── TRANG BÀI ──
    Bốn khối con trực tiếp: .post-head · .toc-box · .prose · .post-foot
@@ -721,8 +754,11 @@
   font-family:var(--font-label);font-size:var(--fs-xs);font-weight:500;
   letter-spacing:.14em;text-transform:uppercase;
 }
-.site-foot .nav-cho{font-family:var(--font-body);font-size:var(--fs-sm);
-  letter-spacing:0;text-transform:none;padding:0}
+/* Ở chân trang mục CHƯA DỰNG chỉ bỏ lề trong, còn bộ chữ thì GIỮ NGUYÊN như
+   mọi nhãn khác. Bản trước ép nó về --font-body viết thường để khớp hàng đường
+   đi hồi ấy — mà hàng ấy nay đã về cùng một bộ chữ với đầu trang, nên phép ép
+   này quay ra thành thứ duy nhất trong chân trang viết khác kiểu. */
+.site-foot .nav-cho{padding:0}
 
 /* ══════════════════════════════════════════════════════════════
    HAI KHUNG TRÌNH BÀY BÀI VIẾT

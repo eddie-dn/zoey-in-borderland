@@ -84,6 +84,19 @@ bộ gãy, ảnh mồ côi, tag viết lệch nhau, bản nháp lọt vào RSS, 
 
 ### Bước 5 — Đăng
 
+> **Không mở máy cũng đăng được.** Vào `/z-admin/`, đăng nhập một lần, sang
+> ngăn **Post**. Ô soạn thảo ở đó gõ như gõ văn bản thường — bôi đen rồi bấm
+> nút, không phải nhớ cú pháp — và lúc bấm Đăng nó tự đổi ra Markdown rồi ghi
+> thẳng một file `.md` vào kho mã. Bấm nút `i` trên thanh nút để xem cách
+> dùng, bấm `</>` để xem đúng đoạn Markdown sắp gửi đi.
+>
+> Bài gõ ở đó **tự lưu nháp trên máy**, nên đóng nhầm tab vẫn còn. Nhưng nó
+> chỉ **tạo bài mới**, không sửa được bài cũ — sửa thì vẫn phải mở file ra.
+>
+> Đăng xong đợi khoảng một phút: Cloudflare phải dựng lại trang.
+
+Phần dưới đây là đường **gõ tay ở máy**.
+
 Xoá dòng `draft: true` trong front matter. Nếu lần này có sửa giao diện hay
 công cụ thì ghi một dòng vào sổ phiên bản:
 
@@ -191,6 +204,19 @@ không nằm trong bảng này thì không dùng được.
 | `` `mã` `` | `mã` |
 | `[chữ](https://...)` | link — link ra ngoài tự có mũi tên ↗ và tự mở tab mới |
 | Hai dấu cách cuối dòng | xuống dòng mà không sang đoạn mới |
+| `{tím: chữ}` | chữ đổi màu — xem bảng màu ngay dưới |
+| `\*` `\[` `` \` `` `\{` | in ra đúng ký tự ấy, không coi là cú pháp |
+
+**Tám tên màu**, gõ có dấu hay không dấu đều được (`{tim: …}` = `{tím: …}`):
+
+`tím` · `hồng` · `đỏ` · `cam` · `vàng` · `lục` · `lam` · `xám`
+
+Màu thật khai ở `src/styles/tokens.css` và **có bản riêng cho từng theme**, nên
+một bài tô màu hồi theme Sakura vẫn đọc được khi người đọc bật Galaxy. Đừng gõ
+mã màu thẳng (`<span style="color:#f00">`): bộ dựng thoát hết HTML viết trong
+dòng, nên nó hiện ra thành chữ trần.
+
+> Một bài dùng quá **ba** màu là bài hết nhấn mạnh được gì — nó chỉ còn ồn.
 
 **Đoạn đầu tiên của bài tự thành sapo** — chữ to hơn, màu nhạt hơn. Không muốn
 thì thêm `{.thuong}` vào cuối đoạn đó.

@@ -34,15 +34,11 @@
   catch (e) {}
   function L(k) { return String(N[k] || k); }
 
-  /* Khoá dùng CHUNG với ô viết ghi chú: nhập ở một chỗ là mở được cả hai. */
-  var K_ID = 'zib-gc-id', K_KEY = 'zib-gc-key';
-  function doc(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
-  function coKhoa() { return !!(doc(K_ID) && doc(K_KEY)); }
-  function dauKhoa(them) {
-    var h = them || {};
-    h['x-gc-id'] = doc(K_ID); h['x-gc-key'] = doc(K_KEY);
-    return h;
-  }
+  /* Khoá do src/js/khoa.js giữ — một chỗ cho cả ba ngăn. File này không còn
+     tự đọc localStorage, và cũng không còn khung xin khoá của riêng nó. */
+  var K = (window.ZIB || {}).khoa;
+  function coKhoa() { return !!(K && K.co()); }
+  function dauKhoa(them) { return K ? K.dau(them) : (them || {}); }
 
   var hop = null;
   var dongHo = null;
@@ -108,38 +104,24 @@
     return p;
   }
 
+  /* ── CHƯA VÀO ĐƯỢC ──
+     Ở /z-admin/ thì không vẽ gì: cửa chung của trang đã hỏi khoá rồi, và hỏi
+     lần nữa ngay trong ngăn là một màn hình có hai ô đăng nhập.
+     Ở trang bài hoặc /notes/#duyet thì mượn đúng khung đăng nhập chung — cùng
+     một khung, cùng một phép thử khoá, cùng một câu báo lỗi. */
   function veKhoa(loi) {
     hop.textContent = '';
-    hop.appendChild(de(L('queue')));
-
-    var hang = document.createElement('div');
-    hang.className = 'bl-duyet-hang';
-    var oId = document.createElement('input');
-    oId.type = 'text'; oId.placeholder = L('keyId');
-    oId.autocapitalize = 'off'; oId.spellcheck = false;
-    var oKey = document.createElement('input');
-    oKey.type = 'password'; oKey.placeholder = L('keySecret');
-    var nut = document.createElement('button');
-    nut.type = 'button'; nut.className = 'btn'; nut.textContent = L('keySave');
-    function luu() {
-      if (!oId.value.trim() || !oKey.value.trim()) return;
-      try {
-        localStorage.setItem(K_ID, oId.value.trim());
-        localStorage.setItem(K_KEY, oKey.value.trim());
-      } catch (e) {}
-      ve();
-    }
-    nut.addEventListener('click', luu);
-    oKey.addEventListener('keydown', function (e) { if (e.key === 'Enter') luu(); });
-    hang.appendChild(oId); hang.appendChild(oKey); hang.appendChild(nut);
-    hop.appendChild(hang);
-
-    var bao = document.createElement('p');
-    bao.className = 'bl-duyet-bao';
-    if (loi) bao.classList.add('bl-duyet-bao--hong');
-    bao.textContent = loi || '';
-    hop.appendChild(bao);
     dungDongHo();
+
+    if (oCamSan()) {
+      if (loi) { var b = de(loi); b.className = 'bl-duyet-bao bl-duyet-bao--hong'; hop.appendChild(b); }
+      return;
+    }
+
+    hop.appendChild(de(L('queue')));
+    if (!K) return;
+    var cong = K.veCong(hop, ve);
+    if (loi) cong.noi(loi, true);
   }
 
   /* ══════════ XIN HÀNG CHỜ ══════════ */
@@ -159,7 +141,10 @@
       .then(function (r) { return r.json(); })
       .then(function (kq) {
         dangXin = false;
-        if (!kq.ok) { veKhoa(kq.loi || L('badKey')); return; }
+        /* `chiTiet` là câu NÓI PHẢI LÀM GÌ (thường là lỗi cấu hình máy chủ);
+           `loi` chỉ là mã phân loại — in mã ra thì màn hình hiện chữ
+           "cauhinh" và người đọc không biết đi đâu tiếp. */
+        if (!kq.ok) { veKhoa(kq.chiTiet || kq.loi || L('badKey')); return; }
         veHang(kq.ds || []);
       })
       .catch(function () {
@@ -217,14 +202,15 @@
     }
     ds.forEach(function (c) { hop.appendChild(veDong(c)); });
 
-    var quen = document.createElement('button');
-    quen.type = 'button'; quen.className = 'bl-duyet-quen';
-    quen.textContent = L('keyForget');
-    quen.addEventListener('click', function () {
-      try { localStorage.removeItem(K_ID); localStorage.removeItem(K_KEY); } catch (e) {}
-      ve();
-    });
-    hop.appendChild(quen);
+    /* Lối ra chỉ mọc ở trang KHÔNG có cửa chung. Ở /z-admin/ nút Đăng xuất
+       nằm dưới cột chọn việc, và hai nút cùng một việc trên một màn hình thì
+       kiểu gì cũng có ngày một cái bị sửa còn cái kia không. */
+    if (K && !oCamSan()) {
+      var oRa = document.createElement('div');
+      oRa.className = 'bl-duyet-ra';
+      K.veNutRa(oRa);
+      hop.appendChild(oRa);
+    }
     batDongHo();
   }
 
@@ -289,4 +275,10 @@
   window.addEventListener('hashchange', function () {
     if (location.hash === '#duyet') mo();
   });
+
+  /* Khoá đổi ở đâu cũng vẽ lại ở đây. Quan trọng nhất là chiều ĐĂNG XUẤT:
+     hàng chờ duyệt đang bày đầy tên và nội dung bình luận chưa duyệt ra màn
+     hình, mà bấm Đăng xuất xong nó vẫn nằm đó cho tới nhịp hỏi máy chủ kế
+     tiếp thì "đăng xuất" chỉ là một cái nút không làm gì trong hai mươi giây. */
+  if (K) K.theoDoi(function () { if (hop) ve(); });
 })();

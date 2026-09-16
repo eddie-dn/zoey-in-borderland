@@ -214,10 +214,11 @@
     if (!api) return null;
     if (!oVietCamSan() && !ds && !document.querySelector('.ds-trong')) return null;
 
-    var K_ID = 'zib-gc-id', K_KEY = 'zib-gc-key';
-    function doc(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
-    function ghi(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-    function bo(k) { try { localStorage.removeItem(k); } catch (e) {} }
+    /* Khoá nay do src/js/khoa.js giữ — file này không đọc localStorage nữa.
+       Trước đây nó tự đọc tự ghi, và đó chính là chỗ sinh ra chuyện "đăng
+       xuất ở ngăn này mà ngăn kia vẫn mở": mỗi file một bản sao của cùng một
+       trạng thái thì không bản nào biết bản kia vừa đổi. */
+    var K = (window.ZIB || {}).khoa;
 
     var hop = document.createElement('section');
     hop.className = 'gc-viet';
@@ -228,8 +229,7 @@
       neo.parentNode.insertBefore(hop, neo);
     }
 
-    function khoa() { return { id: doc(K_ID), key: doc(K_KEY) }; }
-    function coKhoa() { var k = khoa(); return !!(k.id && k.key); }
+    function coKhoa() { return !!(K && K.co()); }
 
     function noi(chu, hong) {
       var o = hop.querySelector('.gc-noi');
@@ -238,9 +238,18 @@
       o.classList.toggle('gc-noi--hong', !!hong);
     }
 
+    /* ── BA TRẠNG THÁI, KHÔNG PHẢI HAI ──
+       có khoá                → bày ô viết
+       chưa, mà đang ở /z-admin/ → KHÔNG bày gì: trang ấy đã có một cửa chung ở
+                                trên, bày thêm một khung đăng nhập nữa trong
+                                ngăn là hỏi cùng một câu hai lần trên một màn
+       chưa, ở /notes/#viet   → mượn đúng khung đăng nhập chung cắm vào đây */
     function veLai() {
-      hop.innerHTML = coKhoa() ? khungViet() : khungKhoa();
-      gan();
+      hop.hidden = false;
+      if (coKhoa()) { hop.innerHTML = khungViet(); gan(); }
+      else if (oVietCamSan()) { hop.innerHTML = ''; hop.hidden = true; }
+      else if (K) { K.veCong(hop, veLai); }
+      else { hop.innerHTML = ''; hop.hidden = true; }
       ganXoa();
     }
 
@@ -266,11 +275,10 @@
         b.textContent = '×';
         b.addEventListener('click', function () {
           var li = this.closest('.gc-mot');
-          var k = khoa();
           this.disabled = true;
           fetch(api + '?ma=' + encodeURIComponent(li.getAttribute('data-ma')), {
             method: 'DELETE',
-            headers: { 'x-gc-id': k.id, 'x-gc-key': k.key }
+            headers: K.dau()
           }).then(function (r) {
             if (!r.ok) throw new Error('401');
             li.remove();
@@ -281,19 +289,6 @@
         });
         cac[i].querySelector('.gc-dau').appendChild(b);
       }
-    }
-
-    function khungKhoa() {
-      return '<h2 class="gc-viet-de">' + tho(N.write || 'Viết ghi chú') + '</h2>' +
-        '<div class="gc-hang">' +
-          '<label class="gc-o"><span>' + tho(N.keyId || 'Mã chủ') + '</span>' +
-            '<input type="text" name="id" autocomplete="off" autocapitalize="off" spellcheck="false"></label>' +
-          '<label class="gc-o"><span>' + tho(N.keySecret || 'Khoá') + '</span>' +
-            '<input type="password" name="key" autocomplete="off"></label>' +
-        '</div>' +
-        '<div class="gc-nut"><button type="button" class="btn" data-nho>' +
-          tho(N.keySave || 'Nhớ khoá trên máy này') + '</button></div>' +
-        '<p class="gc-noi"></p>';
     }
 
     function khungViet() {
@@ -314,8 +309,10 @@
         '<div class="gc-nut">' +
           '<button type="button" class="btn btn--chinh" data-dang>' +
             tho(N.post || 'Đăng') + '</button>' +
-          '<button type="button" class="btn" data-quen>' +
-            tho(N.keyForget || 'Quên khoá') + '</button>' +
+          /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ nút ấy đã nằm ở cột
+             trái nên chỗ này để rỗng; chỉ /notes/#viet mới cần một lối ra
+             ngay tại đây. */
+          '<span class="gc-ra" data-khoa-ra-nho></span>' +
         '</div>' +
         '<p class="gc-noi"></p>';
     }
@@ -331,21 +328,11 @@
     }
 
     function gan() {
-      var bNho  = hop.querySelector('[data-nho]');
       var bDang = hop.querySelector('[data-dang]');
-      var bQuen = hop.querySelector('[data-quen]');
+      var oRa   = hop.querySelector('[data-khoa-ra-nho]');
 
-      if (bNho) bNho.addEventListener('click', function () {
-        var id  = (hop.querySelector('[name=id]').value || '').trim();
-        var key = (hop.querySelector('[name=key]').value || '').trim();
-        if (!id || !key) { noi(N.keyMissing || 'Nhập đủ hai ô.', true); return; }
-        ghi(K_ID, id); ghi(K_KEY, key);
-        veLai();
-      });
-
-      if (bQuen) bQuen.addEventListener('click', function () {
-        bo(K_ID); bo(K_KEY); veLai();
-      });
+      /* Nút Đăng xuất chỉ mọc ở /notes/ — ở /z-admin/ nó đã có chỗ riêng. */
+      if (oRa && K && !oVietCamSan()) K.veNutRa(oRa);
 
       if (bDang) bDang.addEventListener('click', function () {
         var chu = (hop.querySelector('[name=chu]').value || '').trim();
@@ -359,20 +346,22 @@
           loai: (hop.querySelector('[name=loai]').value || '').trim(),
           chu : chu
         };
-        var k = khoa();
         bDang.disabled = true;
         noi(N.posting || 'Đang gửi…');
         fetch(api, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json',
-                     'x-gc-id': k.id, 'x-gc-key': k.key },
+          headers: K.dau({ 'Content-Type': 'application/json' }),
           body: JSON.stringify(g)
         }).then(function (r) {
           return r.json().catch(function () { return {}; })
             .then(function (d) { return { ok: r.ok, d: d }; });
         }).then(function (kq) {
           bDang.disabled = false;
-          if (!kq.ok) { noi((kq.d && kq.d.loi) || (N.postFail || 'Không gửi được.'), true); return; }
+          if (!kq.ok) {
+            noi((kq.d && (kq.d.chiTiet || kq.d.loi)) ||
+                (N.postFail || 'Không gửi được.'), true);
+            return;
+          }
           var trong = document.querySelector('.ds-trong');
           if (trong) { trong.remove(); lamOl(); }
           chen(kq.d);
@@ -417,6 +406,14 @@
   dungLoc();
   if (oVietCamSan()) viet = dungOViet(true);
   else if (location.hash === '#viet') viet = dungOViet();
+
+  /* Khoá đổi ở BẤT KỲ đâu — cửa chung ở /z-admin/, nút Đăng xuất ngay trong
+     ô này, hay một tab khác — thì ô viết vẽ lại theo. Đây là nửa còn lại của
+     lời hứa "đăng xuất một lần, ra khỏi cả ba chỗ": khoa.js lo phần báo tin,
+     mỗi ngăn lo phần tự dọn mình. */
+  if (window.ZIB && window.ZIB.khoa) {
+    window.ZIB.khoa.theoDoi(function () { if (viet) viet.veLai(); });
+  }
   window.addEventListener('hashchange', function () {
     if (location.hash === '#viet' && !viet) viet = dungOViet();
   });

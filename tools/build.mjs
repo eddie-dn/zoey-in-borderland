@@ -219,12 +219,10 @@ const NHAN = {
      khung. Lệ ấy có lý do là để phần khung không lẫn vào bài tiếng Việt; ô này
      thì chẳng ai ngoài chủ trang đọc, mà chủ trang thì đọc tiếng Việt nhanh
      hơn. Xem docs/CAI-DAT.md §6. */
+  /* Năm nhãn gcKey* đã xoá cùng bản đưa khung đăng nhập về một chỗ: ô viết
+     ghi chú không còn tự hỏi khoá. Nhãn của khung chung nằm ở nhóm kh* bên
+     dưới. */
   gcWrite     : 'Viết ghi chú',
-  gcKeyId     : 'Mã chủ',
-  gcKey       : 'Khoá',
-  gcKeySave   : 'Nhớ khoá trên máy này',
-  gcKeyForget : 'Quên khoá',
-  gcKeyMissing: 'Nhập đủ hai ô.',
   gcDate      : 'Ngày',
   gcKind      : 'Loại',
   gcBody      : 'Nội dung',
@@ -255,11 +253,51 @@ const NHAN = {
   vbDate      : 'Ngày',
   vbTags      : 'Tag — cách nhau bằng dấu phẩy',
   vbSummary   : 'Tóm tắt',
-  vbBody      : 'Bài — viết bằng Markdown',
+  vbBody      : 'Bài',
   vbWillBe    : 'Sẽ nằm ở',
   vbDraft     : 'Để nháp — dựng ra nhưng chưa công khai',
   vbPublish   : 'Đăng',
-  vbNeedKey   : 'Nhập mã chủ và khoá ở ngăn Note, ô viết bài sẽ hiện ra.',
+  vbCrash     : 'Ô viết bài dựng hỏng — mở bảng điều khiển của trình duyệt để xem lỗi.',
+  vbDraftAsk  : 'Còn một bài gõ dở trên máy này. Mở lại?',
+
+  /* ── NHÃN CỦA KHUNG SOẠN THẢO (src/js/soan.js) ──
+     Đi CHUNG bảng với ô viết bài chứ không tách bảng riêng: soan.js chỉ mọc
+     bên trong ô ấy, và một bảng nhãn thứ tư trên cùng một trang là thêm một
+     chỗ nữa để quên cập nhật. Tám dòng `szH*` là nội dung bảng chỉ dẫn hiện
+     ra khi bấm nút `i` — mỗi dòng ĐÚNG MỘT việc, cố ý ngắn: đây là thứ người
+     ta liếc lúc đang quên, không phải thứ ngồi đọc. */
+  szToolbar   : 'Định dạng',
+  szBold      : 'Đậm',
+  szItalic    : 'Nghiêng',
+  szStrike    : 'Gạch ngang',
+  szCode      : 'Mã',
+  szH2        : 'Tiêu đề lớn',
+  szH3        : 'Tiêu đề nhỏ',
+  szQuote     : 'Trích dẫn',
+  szUl        : 'Danh sách',
+  szOl        : 'Danh sách đánh số',
+  szLink      : 'Link',
+  szImg       : 'Ảnh',
+  szHr        : 'Đường kẻ ngang',
+  szMark      : 'Tô nền',
+  szColor     : 'Màu chữ',
+  szNoColor   : 'Bỏ màu',
+  szClear     : 'Xoá định dạng',
+  szHelp      : 'Cách dùng',
+  szSeeMd     : 'Xem Markdown sắp gửi',
+  szEmpty     : '(chưa có gì)',
+  szLinkAsk   : 'Đường dẫn:',
+  szLinkText  : 'Chữ hiện ra:',
+  szImgAsk    : 'Đường dẫn ảnh (bắt đầu bằng /media/):',
+  szImgAlt    : 'Mô tả ảnh (cho người không xem được ảnh):',
+  szH1t       : 'Bôi đen chữ rồi bấm nút — không phải nhớ cú pháp nào cả.',
+  szH2t       : 'Đậm ⌘B · Nghiêng ⌘I · Link ⌘K (Ctrl trên Windows).',
+  szH3t       : 'Màu: bôi đen → bấm chấm tròn → chọn màu. Bấm lại để bỏ màu.',
+  szH4t       : 'Xuống dòng trong cùng một đoạn: Shift + Enter.',
+  szH5t       : 'Ảnh: bấm nút ảnh rồi dán đường dẫn, dạng /media/2026/ten-bai/anh.png',
+  szH6t       : 'Dán từ nơi khác: giữ đậm/nghiêng/link, bỏ phông và cỡ chữ.',
+  szH7t       : 'Bài tự lưu nháp trên máy này; đóng nhầm tab vẫn còn.',
+  szH8t       : 'Bấm </> để xem đúng đoạn Markdown sắp gửi lên GitHub.',
   vbNeedBoth  : 'Cần cả tiêu đề lẫn nội dung.',
   vbSending   : 'Đang gửi…',
   vbDone      : 'Đã đưa vào kho mã',
@@ -310,10 +348,22 @@ const NHAN = {
   approve     : 'Duyệt',
   unapprove   : 'Bỏ duyệt',
   hide        : 'Ẩn',
+  /* ── KHUNG ĐĂNG NHẬP DÙNG CHUNG (src/js/khoa.js) ──
+     Một bộ nhãn cho MỘT khung. Trước đây mỗi ngăn tự xin khoá nên có ba bộ
+     nhãn gần giống nhau (gcKey*, key*, và câu chờ của ô viết bài); ba bộ ấy
+     rồi cũng trôi lệch chữ nghĩa với nhau. Nay chỉ còn bộ này. */
+  khTitle     : 'Đăng nhập',
+  khLead      : 'Nhập một lần, dùng được cho cả ghi chú, bình luận và bài viết.',
+  khSignIn    : 'Đăng nhập',
+  khSignOut   : 'Đăng xuất',
+  khSignOutTip: 'Quên khoá trên máy này — cả ba ngăn cùng đóng.',
+  khChecking  : 'Đang thử khoá…',
+  khNeedBoth  : 'Nhập đủ hai ô.',
+  khFailed    : 'Máy chủ không nhận khoá này.',
+  khLocked    : 'Đăng nhập ở trên để mở ô này.',
+
   keyId       : 'Mã chủ',
   keySecret   : 'Khoá',
-  keySave     : 'Nhớ khoá',
-  keyForget   : 'Quên khoá trên máy này',
   badKey      : 'Sai khoá.',
   sentOwner   : 'Đã đăng — lời của chủ trang không phải chờ duyệt.',
 
@@ -761,10 +811,35 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         queue: NHAN.queue, queueEmpty: NHAN.queueEmpty,
                         loading: NHAN.loading, approve: NHAN.approve,
                         unapprove: NHAN.unapprove, hide: NHAN.hide,
-                        keyId: NHAN.keyId, keySecret: NHAN.keySecret,
-                        keySave: NHAN.keySave, keyForget: NHAN.keyForget,
+                        /* Bốn nhãn của khung xin khoá (keyId, keySecret,
+                           keySave, keyForget) đã rời khỏi đây: bàn duyệt không
+                           còn tự hỏi khoá, nó mượn khung chung của khoa.js và
+                           khung ấy đọc bảng data-khoa-nhan. Gửi kèm nhãn mà
+                           không ai đọc thì lần sau có người sửa chữ ở đây rồi
+                           ngồi tìm mãi không hiểu vì sao màn hình không đổi. */
                         badKey: NHAN.badKey, netErr: NHAN.netErr,
                         anon: NHAN.anon
+                      }))}"`
+                   : '',
+                 /* ── NHÃN CỦA KHUNG ĐĂNG NHẬP ──
+                    In ở MỌI trang có nạp khoa.js, và điều kiện phải là HỢP
+                    của ba điều kiện dưới chứ không phải một trong số chúng:
+                    thiếu bảng nhãn thì khung đăng nhập vẫn dựng ra được (nó
+                    có chữ dự phòng viết cứng trong file) nhưng lại nói một
+                    thứ tiếng khác với phần còn lại của trang. */
+                 ((CAU.binhLuan || {}).bat !== false &&
+                  (duong === '/notes/' || duong === '/z-admin/' ||
+                   /^\/posts\/.+\//.test(duong))) ||
+                 (duong === '/z-admin/') ||
+                 (duong === '/notes/' && (CAU.ghiChu || {}).online)
+                   ? `data-khoa-nhan="${attr(JSON.stringify({
+                        title: NHAN.khTitle, lead: NHAN.khLead,
+                        signIn: NHAN.khSignIn, signOut: NHAN.khSignOut,
+                        signOutTip: NHAN.khSignOutTip, checking: NHAN.khChecking,
+                        needBoth: NHAN.khNeedBoth, failed: NHAN.khFailed,
+                        locked: NHAN.khLocked,
+                        keyId: NHAN.keyId, keySecret: NHAN.keySecret,
+                        badKey: NHAN.badKey, netErr: NHAN.netErr
                       }))}"`
                    : '',
                  /* Ô viết BÀI chỉ có ở /z-admin/. Khác ghi chú và bàn duyệt —
@@ -776,12 +851,27 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         title: NHAN.vbTitle, muc: NHAN.vbMuc, date: NHAN.vbDate,
                         tags: NHAN.vbTags, summary: NHAN.vbSummary, body: NHAN.vbBody,
                         willBe: NHAN.vbWillBe, draft: NHAN.vbDraft, publish: NHAN.vbPublish,
-                        needKey: NHAN.vbNeedKey, needBoth: NHAN.vbNeedBoth,
+                        needBoth: NHAN.vbNeedBoth,
                         sending: NHAN.vbSending, done: NHAN.vbDone,
                         building: NHAN.vbBuilding, seeCommit: NHAN.vbSeeCommit,
                         another: NHAN.vbAnother, failed: NHAN.vbFailed,
                         noConfig: NHAN.vbNoConfig, seeDoc: NHAN.vbSeeDoc,
-                        loading: NHAN.vbLoading, badKey: NHAN.badKey, netErr: NHAN.netErr
+                        loading: NHAN.vbLoading, badKey: NHAN.badKey, netErr: NHAN.netErr,
+                        locked: NHAN.khLocked, draftAsk: NHAN.vbDraftAsk,
+                        crash: NHAN.vbCrash,
+                        toolbar: NHAN.szToolbar, bold: NHAN.szBold,
+                        italic: NHAN.szItalic, strike: NHAN.szStrike,
+                        code: NHAN.szCode, h2: NHAN.szH2, h3: NHAN.szH3,
+                        quote: NHAN.szQuote, ul: NHAN.szUl, ol: NHAN.szOl,
+                        link: NHAN.szLink, img: NHAN.szImg, hr: NHAN.szHr,
+                        mark: NHAN.szMark, color: NHAN.szColor,
+                        noColor: NHAN.szNoColor, clear: NHAN.szClear,
+                        help: NHAN.szHelp, seeMd: NHAN.szSeeMd, empty: NHAN.szEmpty,
+                        linkAsk: NHAN.szLinkAsk, linkText: NHAN.szLinkText,
+                        imgAsk: NHAN.szImgAsk, imgAlt: NHAN.szImgAlt,
+                        h1: NHAN.szH1t, h2t: NHAN.szH2t, h3t: NHAN.szH3t,
+                        h4t: NHAN.szH4t, h5t: NHAN.szH5t, h6t: NHAN.szH6t,
+                        h7t: NHAN.szH7t, h8t: NHAN.szH8t
                       }))}"`
                    : '',
                  ((duong === '/notes/' || duong === '/z-admin/') &&
@@ -789,9 +879,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                    ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
                      `data-gc-nhan="${attr(JSON.stringify({
                         all: NHAN.allNotes,    write: NHAN.gcWrite,
-                        keyId: NHAN.gcKeyId,   keySecret: NHAN.gcKey,
-                        keySave: NHAN.gcKeySave, keyForget: NHAN.gcKeyForget,
-                        keyMissing: NHAN.gcKeyMissing,
+                        /* Năm nhãn của khung xin khoá đã rời khỏi đây, cùng
+                           lý do như bảng của bàn duyệt ở trên. */
                         date: NHAN.gcDate,     kind: NHAN.gcKind,
                         body: NHAN.gcBody,     bodyMissing: NHAN.gcBodyEmpty,
                         post: NHAN.gcPost,     posting: NHAN.gcPosting,
@@ -1405,8 +1494,10 @@ function binhLuanHTML(bai) {
     charsLeft: NHAN.charsLeft,
     queue: NHAN.queue, queueEmpty: NHAN.queueEmpty, loading: NHAN.loading,
     approve: NHAN.approve, unapprove: NHAN.unapprove, hide: NHAN.hide,
-    keyId: NHAN.keyId, keySecret: NHAN.keySecret, keySave: NHAN.keySave,
-    keyForget: NHAN.keyForget, badKey: NHAN.badKey, sentOwner: NHAN.sentOwner,
+    /* comments.js KHÔNG dựng khung xin khoá — nó chỉ đọc khoá đã lưu để bình
+       luận của chủ trang vào thẳng, có huy hiệu. Bốn nhãn của khung ấy từng
+       nằm ở đây và chưa từng được ai đọc. */
+    badKey: NHAN.badKey, sentOwner: NHAN.sentOwner,
     unapproveHint: NHAN.blUnapproveHint, hideHint: NHAN.blHideHint
   }));
 
@@ -1544,7 +1635,13 @@ function trangBai(bai, congKhai) {
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
-                   : `\n<script src="${BASE}/assets/comments.js" defer></script>` +
+                     /* khoa.js đứng ĐẦU: cả ba file mang `defer` nên chúng chạy
+                        đúng thứ tự thẻ, và hai file sau hỏi window.ZIB.khoa
+                        ngay lúc nạp. Đảo thứ tự là chúng hỏi một thứ chưa tồn
+                        tại — hỏng lặng lẽ, chỉ hiện ra là bàn duyệt không mọc
+                        và bình luận của chủ trang mất huy hiệu. */
+                   : `\n<script src="${BASE}/assets/khoa.js" defer></script>` +
+                     `\n<script src="${BASE}/assets/comments.js" defer></script>` +
                      `\n<script src="${BASE}/assets/duyet.js" defer></script>`) +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
@@ -2567,7 +2664,8 @@ function trangGhiChu() {
     than: thanCoSo,
     duong: '/notes/',
     description: `${NHAN.notesHint} — ${CAU.title}.`,
-    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
+    scripts: `<script src="${BASE}/assets/khoa.js" defer></script>` +
+             `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
              ((CAU.binhLuan || {}).bat !== false
                ? `\n<script src="${BASE}/assets/duyet.js" defer></script>` : '')
   });
@@ -2635,15 +2733,31 @@ function trangChuTrang() {
     duong: '/z-admin/',
     noindex: true,
     than: `
-    <div class="ad-khung" data-admin>
+    <!-- MỘT CỬA cho cả ba ngăn. Trước bản này mỗi ngăn tự xin khoá, nên trang
+         hỏi cùng một câu ba lần và "đăng xuất" ở ngăn này không đóng hai ngăn
+         kia. Nay khoa.js dựng đúng một khung vào đây, và cả ba ngăn chỉ đứng
+         sau nó. Lý do đầy đủ ở đầu src/js/khoa.js. -->
+    <div class="ad-cong" data-khoa-cong></div>
+    <!-- Thuộc tính hidden đặt ngay trong HTML tĩnh (viết trần, KHÔNG bọc dấu
+         huyền: cả khối này nằm trong một template literal, một dấu huyền lọt
+         vào là chuỗi đóng sớm và build chết ở một dòng chú thích). Khối này
+         chứa ô soạn thảo và hàng chờ duyệt, tức là chỗ làm việc — bày ra rồi
+         mới giấu đi bằng JavaScript thì có một nhịp người ta thấy nguyên cái
+         bàn làm việc nhấp nháy trước khi bị đẩy về màn đăng nhập. -->
+    <div class="ad-khung" data-admin hidden>
       <nav class="ad-menu" role="tablist" aria-label="${attr(NHAN.qlMenu)}">${menu}
       </nav>
       <div class="ad-than">${than}
       </div>
+      <!-- Nút Đăng xuất ĐỨNG CUỐI, không nằm trong dải thẻ: nó không phải một
+           việc để chọn, và lọt vào dải thẻ thì mũi tên trái/phải chạy qua nó. -->
+      <div class="ad-ra" data-khoa-ra></div>
     </div>`,
-    scripts: `<script src="${BASE}/assets/admin.js" defer></script>` +
+    scripts: `<script src="${BASE}/assets/khoa.js" defer></script>` +
+             `\n<script src="${BASE}/assets/admin.js" defer></script>` +
              `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
              `\n<script src="${BASE}/assets/duyet.js" defer></script>` +
+             `\n<script src="${BASE}/assets/soan.js" defer></script>` +
              `\n<script src="${BASE}/assets/viet-bai.js" defer></script>`
   });
 }
@@ -2830,8 +2944,8 @@ async function chay() {
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js',
-                     'bang-anh.js', 'xem.js', 'ghi-chu.js', 'duyet.js',
-                     'viet-bai.js', 'admin.js']) {
+                     'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
+                     'soan.js', 'viet-bai.js', 'admin.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng
          đúng bộ phân tích cú pháp của V8, nên nó bắt được mọi chỗ bộ đọc token

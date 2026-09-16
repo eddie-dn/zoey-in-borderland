@@ -113,7 +113,7 @@ Bình luận **của chính bạn** (gửi lúc máy có khoá) lên thẳng, c�
 
 ### 1.6 · Đổi khoá, và khi mất khoá
 
-Đổi `GC_KEY` trên Cloudflare rồi bấm **Quên khoá** ở cuối bàn duyệt để nhập
+Đổi `GC_KEY` trên Cloudflare rồi bấm **Đăng xuất** ở `/z-admin/` để nhập
 lại. Mọi máy đã nhớ khoá cũ sẽ mất quyền — đó là cách thu hồi.
 
 ## 2 · Trích dẫn Gemini — tuỳ chọn, mặc định TẮT
@@ -479,6 +479,35 @@ Thêm cho **cả hai** môi trường (Production và Preview).
 > **Thiếu một vế là chặn hết, không phải mở hết.** Hàm coi "chưa đặt đủ khoá"
 > nghĩa là chưa cấu hình và từ chối mọi lượt ghi. Để trống **không** có nghĩa
 > là ai cũng đăng được.
+
+#### Nhập khoá rồi mà vẫn không đăng được — đọc phần này trước
+
+Đây là chỗ mất thời gian nhất của cả bộ cài đặt, vì một khoá **chưa đặt** và
+một khoá **gõ sai** từng ra cùng một câu báo lỗi. Nay chúng nói hai câu khác
+nhau — nếu màn hình hiện *"Máy chủ chưa đặt GC_ID và GC_KEY"* thì lỗi **không
+nằm ở chỗ bạn vừa gõ**, và gõ lại bao nhiêu lần cũng thế.
+
+Ba chỗ hay sai, theo thứ tự hay gặp:
+
+1. **Đặt nhầm vào mục Builds.** Ô "Environment variables" trong mục **Builds**
+   là biến lúc *dựng*; hàm chạy lúc *người ta bấm* không thấy chúng. Phải là
+   **Settings → Runtime → Variables and Secrets**.
+2. **Chỉ đặt cho Preview, không đặt cho Production.** Tên miền thật chạy bằng
+   Production. Thêm cho cả hai.
+3. **Dán khoá kèm khoảng trắng hoặc xuống dòng ở cuối.** Chép từ trình quản lý
+   mật khẩu rất hay dính. Máy chủ so *từng ký tự một*, nên một dấu cách thừa
+   là sai khoá.
+
+Thử nhanh xem máy chủ có khoá chưa — lệnh này **không cần** khoá:
+
+```bash
+curl -s https://<tên-miền>/api/bai
+```
+
+- `{"ok":false,"loi":"khoa"}` → máy chủ **có** khoá, và nó đang đợi đúng khoá.
+  Vấn đề nằm ở chuỗi bạn gõ.
+- `{"ok":false,"loi":"cauhinh",...}` → máy chủ **chưa** có khoá. Quay lại ba
+  điểm trên.
 
 ### 6.3 · Bật trong cấu hình
 

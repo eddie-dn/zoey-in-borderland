@@ -22,6 +22,12 @@
    4 · BÀN PHÍM.
        Mũi tên chạy giữa ba nút theo đúng lệ của một dải thẻ (tablist): chỉ nút
        đang chọn nằm trong luồng Tab, mũi tên đi tiếp trong dải.
+
+   5 · MỘT CỬA VÀO, KHÔNG PHẢI BA.
+       File này cũng là chỗ đóng/mở cả trang theo khoá. Ba ngăn bên trong
+       KHÔNG còn tự hỏi khoá nữa — chúng chỉ dựng nội dung khi đã vào được.
+       Nhờ vậy bấm Đăng xuất một lần là cả ba cùng đóng, chứ không phải đóng
+       lần lượt từng ngăn theo lúc nó tình cờ hỏi lại máy chủ.
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -73,6 +79,49 @@
       nut[j].focus();
     });
   });
+
+  /* ══════════ CỬA VÀO ══════════
+     Đổi qua đổi lại giữa khung đăng nhập và bàn làm việc. Gọi lại mỗi lần
+     khoá đổi — kể cả khi khoá đổi ở MỘT TAB KHÁC, vì khoa.js nghe `storage`
+     rồi phát cùng một sự kiện ấy sang đây. */
+  var K = (window.ZIB || {}).khoa;
+  var oCong = document.querySelector('[data-khoa-cong]');
+  var oRa   = document.querySelector('[data-khoa-ra]');
+  var congDaVe = null;
+  /* Đã vào được lần nào trong lượt mở trang này chưa. Dùng để phân biệt "mới
+     mở trang" với "vừa bấm Đăng xuất" — hai lúc ấy cần hai hành vi con trỏ
+     khác nhau, xem cuối veCua(). */
+  var daTungVao = K ? K.co() : false;
+
+  function veCua() {
+    /* Thiếu khoa.js thì mở thẳng bàn làm việc: ba ngăn bên trong tự báo lỗi
+       khi gọi máy chủ. Khoá một trang lại vì một file JS không tải được thì
+       hỏng thêm chứ không an toàn thêm — lớp canh thật nằm ở máy chủ. */
+    if (!K || !oCong) { khung.hidden = false; return; }
+
+    var vao = K.co();
+    khung.hidden = !vao;
+    oCong.hidden = vao;
+
+    if (vao) {
+      oCong.textContent = '';
+      congDaVe = null;
+      if (oRa && !oRa.firstChild) K.veNutRa(oRa);
+      return;
+    }
+    if (oRa) oRa.textContent = '';
+    /* Dựng lại khung đăng nhập MỖI LẦN đăng xuất, không giữ lại khung cũ: ô
+       khoá cũ còn nguyên chữ vừa gõ, và để nguyên nó là để lại mật khẩu nằm
+       trong DOM của một trang đã đăng xuất. */
+    congDaVe = K.veCong(oCong, veCua);
+    /* Chỉ kéo con trỏ vào ô khi người ta VỪA đăng xuất — lúc mới mở trang thì
+       không, vì bàn phím điện thoại bật lên che mất nửa màn hình trước khi họ
+       kịp nhìn thấy đây là trang gì. */
+    if (daTungVao) congDaVe.tap();
+  }
+
+  if (K) K.theoDoi(function (vao) { if (vao) daTungVao = true; veCua(); });
+  veCua();
 
   var tuDia = (location.hash || '').replace(/^#/, '');
   var daNho = '';

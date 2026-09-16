@@ -94,8 +94,17 @@ function bang(a, b) {
 }
 
 /* Thiếu một vế khoá ở phía máy chủ là CHẶN hết, không phải mở hết. */
+function chuaDatKhoa(env) { return !env.GC_ID || !env.GC_KEY; }
+
+/* Chưa đặt khoá ở Cloudflare KHÁC với gõ sai khoá — xem chú thích cùng tên
+   trong bai.js. Bàn duyệt phải phân biệt được hai câu ấy, không thì chủ trang
+   ngồi gõ lại khoá cả buổi cho một thứ không nằm ở chỗ mình gõ. */
+const LOI_CHUA_DAT = { ok: false, loi: 'cauhinh',
+  chiTiet: 'Máy chủ chưa đặt GC_ID và GC_KEY. Cloudflare → Settings → Runtime '
+         + '→ Variables and Secrets (KHÔNG phải mục Builds).' };
+
 function laChuTrang(request, env) {
-  if (!env.GC_ID || !env.GC_KEY) return false;
+  if (chuaDatKhoa(env)) return false;
   return bang(request.headers.get('x-gc-id'), env.GC_ID)
       && bang(request.headers.get('x-gc-key'), env.GC_KEY);
 }
@@ -132,7 +141,8 @@ export async function onRequestGet({ request, env }) {
      riêng một bài. Duyệt từ điện thoại thì không ai muốn mở từng bài một để
      xem bài nào có gì đang chờ. */
   if (cho) {
-    if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
+    if (chuaDatKhoa(env)) return traLoi(LOI_CHUA_DAT, 503);
+  if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
     try {
       const kq = await env.DB.prepare(
         `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, luc FROM binh_luan
@@ -212,6 +222,7 @@ export async function onRequestPost({ request, env }) {
    thành hai đường thì phía trình duyệt phải nhớ gọi đường nào cho việc nào. */
 export async function onRequestPatch({ request, env }) {
   if (!env.DB) return traLoi({ ok: false, loi: 'chưa gắn D1' }, 503);
+  if (chuaDatKhoa(env)) return traLoi(LOI_CHUA_DAT, 503);
   if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
 
   let than;
@@ -236,6 +247,7 @@ export async function onRequestPatch({ request, env }) {
    đã xảy ra, còn xoá cứng thì không. Dọn hẳn thì vào Console của D1 mà DELETE. */
 export async function onRequestDelete({ request, env }) {
   if (!env.DB) return traLoi({ ok: false, loi: 'chưa gắn D1' }, 503);
+  if (chuaDatKhoa(env)) return traLoi(LOI_CHUA_DAT, 503);
   if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
 
   const ma = locMa(new URL(request.url).searchParams.get('ma'));

@@ -94,17 +94,25 @@
 
 <footer class="site-foot">
   <div class="container">
-    <!-- Hàng này chỉ còn là ĐƯỜNG ĐI. Dòng "© năm tác giả" đã dời sang tem
-         bên phải: hai dấu ký tên ở hai đầu cùng một chân trang thì cái nào
-         cũng yếu đi, mà bên phải vốn đã là chỗ của chữ ký rồi. -->
-    <div class="foot-links">
-      {{footLinks}}
-    </div>
-    <!-- Tem hai dòng: ký tên TRÊN, phiên bản DƯỚI — đúng §4 của DESIGN-SYSTEM.
-         Dòng DƯỚI là cửa vào sổ lịch sử: bấm 5 nhịp thì mở. Cửa là chính dòng
-         chữ, không phải một cái nút — xem đầu src/js/so-tay.js. -->
-    <div class="stamp">
+    <!-- MỘT HÀNG, HAI ĐẦU — không phải hai hàng chồng nhau.
+         Trước đây tem bên phải xếp DỌC: ký tên trên, phiên bản dưới. Hai dòng
+         ấy làm chân trang cao thêm hẳn một hàng để nói hai mẩu chữ ngắn, mà
+         chúng cũng chẳng dính nhau — một cái là chủ sở hữu, một cái là bản
+         dựng. Nay ký tên về đứng ĐẦU hàng trái, ngay trước mấy đường đi: nó là
+         chủ của mấy đường ấy, đứng trước là đúng thứ tự đọc. Phiên bản ở lại
+         mép phải một mình, và cả chân trang gói gọn trong một hàng. -->
+    <div class="foot-trai">
       <span class="stamp-ky">© {{year}} {{author}}</span>
+      <div class="foot-links">
+        {{footLinks}}
+      </div>
+    </div>
+    <!-- Dòng phiên bản là cửa vào sổ lịch sử: bấm 5 nhịp thì mở. Cửa là chính
+         dòng chữ, không phải một cái nút — xem đầu src/js/so-tay.js. `.stamp`
+         giữ nguyên tên lớp dù nay chỉ còn một dòng: components.css đang nhờ nó
+         tắt bôi đen chữ, và so-tay.js thì tìm theo [data-so-tay] nên không
+         dính gì tới chỗ này. -->
+    <div class="stamp">
       <span class="stamp-ban" data-so-tay tabindex="0" role="button"
             aria-label="Last updated {{buildDate}}, {{version}}">Last updated {{buildDate}} · {{version}}</span>
     </div>

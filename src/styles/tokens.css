@@ -78,6 +78,23 @@
   --ok:#2F7D62;  --ok-wash:rgba(47,125,98,.10);
   --warn:#9A6520; --warn-wash:rgba(154,101,32,.10);
   --bad:#B2415F; --bad-wash:rgba(178,65,95,.10);
+/* ── MÀU CHỮ CHO NGƯỜI VIẾT BÀI ──
+Ô soạn thảo ở /z-admin/ cho tô màu một đoạn chữ; cú pháp trong file .md là
+`{tím: chữ}` và bộ dựng đổi nó thành <span class="c-tim">.
+
+VÌ SAO LÀ MỘT BẢNG ĐẶT TÊN CHỨ KHÔNG PHẢI MÃ MÀU TỰ GÕ.
+Gõ thẳng #ff0000 vào bài thì màu ấy đóng đinh vào bài mãi mãi: đổi theme
+là nó chọi với nền, và trang này có BA theme — một màu chọn lúc nền hồng
+nhạt thì trên nền Galaxy đen là không đọc nổi. Tên màu thì đi qua bảng
+này, nên mỗi theme tự có bản của nó.
+
+Tám màu, không hơn. Bảng màu dài thì bài viết thành ra sặc sỡ, mà một bài
+dùng quá ba màu là bài không còn nhấn mạnh được gì nữa.
+
+Mọi giá trị ở đây đo được ít nhất 4.5:1 trên nền của chính theme ấy —
+màu chữ mà không đọc được thì nó là màu trang trí, không phải màu chữ. */
+  --c-tim:#7A52B8;  --c-hong:#B33D74; --c-do:#B2415F;  --c-cam:#9A5518;
+  --c-vang:#7D6410; --c-luc:#2F7D62;  --c-lam:#25608F; --c-xam:#6A587F;
 
   --shadow-sm:0 2px 8px rgba(94,72,133,.07);
   --shadow-md:0 10px 28px rgba(94,72,133,.12);
@@ -97,6 +114,15 @@
   /* Thang cỡ chữ co giãn theo bề ngang — KHÔNG có media query nào cho cỡ chữ.
      clamp() lo hết từ 320px tới 1440px, nên không có "điểm gãy" nào mà chữ
      nhảy cỡ đột ngột giữa chừng. */
+  /* Cỡ nhỏ nhất của giao diện: nhãn trong ô soạn thảo, tem đơn vị. KHÔNG
+     dùng cho chữ người đọc phải đọc — chỉ cho nhãn viết hoa ngắn, nơi hình
+     dáng từ đủ để nhận ra mà không cần đọc từng chữ.
+
+     Biến này ĐÃ ĐƯỢC DÙNG ở sáu chỗ trong list.css trước khi nó tồn tại: khai
+     một biến chưa định nghĩa thì CSS bỏ cả dòng khai báo ấy đi, im lặng, nên
+     sáu chỗ kia lâu nay lấy cỡ chữ thừa kế từ cha. Nhìn không ra là hỏng —
+     chỉ ra là mấy cái nhãn to hơn ý muốn một chút. */
+  --fs-3xs:10px;
   --fs-2xs:11px;
   --fs-xs:clamp(11.5px,.70rem + .12vw,12.5px);
   --fs-sm:clamp(13px,.79rem + .16vw,14.5px);
@@ -262,6 +288,9 @@
     --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
     --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
     --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
+    /* Bảng màu chữ của theme này — giải thích ở khối :root. */
+    --c-tim:#D7B6F5;  --c-hong:#F3A8CE; --c-do:#F5A8B8;  --c-cam:#F0B07A;
+    --c-vang:#E8CE7A; --c-luc:#7FD3B0;  --c-lam:#8FC4EE; --c-xam:rgba(246,239,251,.62);
 
     /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
        --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
@@ -333,6 +362,9 @@
   --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
   --warn:#E7BE7E; --warn-wash:rgba(231,190,126,.11);
   --bad:#F5A8B8; --bad-wash:rgba(245,168,184,.11);
+  /* Bảng màu chữ của theme này — giải thích ở khối :root. */
+  --c-tim:#D7B6F5;  --c-hong:#F3A8CE; --c-do:#F5A8B8;  --c-cam:#F0B07A;
+  --c-vang:#E8CE7A; --c-luc:#7FD3B0;  --c-lam:#8FC4EE; --c-xam:rgba(246,239,251,.62);
 
     /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
      --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
@@ -478,6 +510,9 @@
   --ok:#1F6B57;  --ok-wash:rgba(31,107,87,.10);
   --warn:#8A5E18; --warn-wash:rgba(138,94,24,.10);
   --bad:#A83B54; --bad-wash:rgba(168,59,84,.10);
+  /* Bảng màu chữ của theme này — giải thích ở khối :root. */
+  --c-tim:#6B4BA8;  --c-hong:#A93B6C; --c-do:#A83B54;  --c-cam:#8A4C14;
+  --c-vang:#6E5A0E; --c-luc:#1F6B57;  --c-lam:#0B5A78; --c-xam:#41616F;
 
   --shadow-sm:0 2px 8px rgba(28,68,90,.07);
   --shadow-md:0 10px 28px rgba(28,68,90,.12);

@@ -69,13 +69,15 @@
      Có khoá thì bình luận của chủ trang vào thẳng, có huy hiệu, khỏi chờ duyệt;
      và mở /#duyet là ra bàn duyệt. Không có khoá thì mọi thứ ở đây chạy đúng
      như với một người ghé ngang. */
-  var K_ID = 'zib-gc-id', K_KEY = 'zib-gc-key';
-  function docKhoa(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
-  function coKhoa() { return !!(docKhoa(K_ID) && docKhoa(K_KEY)); }
+  /* Khoá do src/js/khoa.js giữ. Tra window.ZIB MỖI LẦN GỌI chứ không giữ lại
+     một tham chiếu lúc nạp: file này còn chạy ở trang không có khoa.js, và
+     thứ tự thẻ <script> thì cách đây ba lớp hàm — bắt nó phải đúng mới chạy
+     được là một ràng buộc không nhìn thấy từ trong file này. */
+  function kho() { return (window.ZIB || {}).khoa; }
+  function coKhoa() { var k = kho(); return !!(k && k.co()); }
   function dauKhoa(them) {
     var h = them || {};
-    if (coKhoa()) { h['x-gc-id'] = docKhoa(K_ID); h['x-gc-key'] = docKhoa(K_KEY); }
-    return h;
+    return coKhoa() ? kho().dau(h) : h;
   }
 
   function noi(t, loai) {

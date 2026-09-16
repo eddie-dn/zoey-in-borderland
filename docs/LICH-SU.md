@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.04 | 2026-09-16 | 04 | chân trang gọn còn một hàng; chữ chân trang khớp chữ đầu trang |
+| V8.03 | 2026-09-16 | 03 | đăng nhập gom về một cửa; ô soạn thảo gõ như văn bản; màu chữ trong bài |
 | V8.02 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
 | V8.01 | 2026-09-16 | 01 | trang quản lý gom thành ba ngăn; đăng bài thẳng từ đó; núm vặn gom về một chỗ |
 | V8.00 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
@@ -102,6 +104,37 @@
 
 ---
 
+## V8.04 — 16-Sep-2026
+
+- **Chân trang còn một hàng.** Dòng ký tên `© 2026 Zoey` rời khỏi tem bên phải
+  về đứng đầu hàng trái, ngay trước RSS — nó là chủ của mấy đường ấy, đứng
+  trước là đúng thứ tự đọc. Tem bên phải còn một dòng, và cả chân trang cao
+  bớt đúng một hàng.
+- **Chữ chân trang khớp chữ đầu trang.** Trước đây hàng đường đi viết thường
+  bằng phông thân bài, còn tem viết hoa bằng phông nhãn cỡ riêng 10.5px — ba
+  kiểu chữ trong một dải cao 40px, mà không kiểu nào khớp thanh đầu trang. Nay
+  cả hàng dùng đúng một bộ; phân biệt giữa chúng nằm ở màu, không ở phông.
+
+## V8.03 — 16-Sep-2026
+
+- **Một cửa đăng nhập cho cả ba ngăn, và một nút ra.** Trước đây mỗi ngăn tự
+  hỏi khoá, nên trang hỏi cùng một câu ba lần — và bấm "Quên khoá" ở ngăn này
+  thì hai ngăn kia vẫn bày việc ra đó cho tới lúc chúng tình cờ hỏi lại máy
+  chủ. Nay `/z-admin/` hỏi đúng một lần ở cửa vào, thử khoá thật với máy chủ
+  trước khi nhận, và bấm **Đăng xuất** là cả ba cùng đóng ngay — kể cả ở tab
+  khác đang mở.
+- **Ô viết bài gõ như gõ văn bản.** Bôi đen rồi bấm nút: đậm, nghiêng, gạch,
+  tiêu đề, trích dẫn, danh sách, link, ảnh, tô nền, **màu chữ**. Lúc bấm Đăng
+  nó tự đổi ra Markdown — thứ đi lên GitHub vẫn là file `.md` đọc được bằng
+  mắt, y hệt bản gõ tay. Nút `i` mở bảng chỉ dẫn, nút `</>` xem trước đúng
+  đoạn Markdown sắp gửi. Bài tự lưu nháp trên máy.
+- **Màu chữ trong bài:** `{tím: chữ}`, tám tên màu, mỗi theme một bảng màu
+  riêng nên bài tô màu hồi Sakura vẫn đọc được trên Galaxy. Kèm theo đó bộ
+  dựng nay hiểu dấu chéo ngược (`\*` ra dấu sao thật) — trước bản này nó in ra
+  nguyên cả dấu chéo.
+- **"Sai khoá" và "máy chủ chưa có khoá" nay là hai câu khác nhau.** Chúng
+  từng ra cùng một dòng chữ, và đó là cách nhanh nhất để mất một buổi đi tìm
+  lỗi ở chỗ không có lỗi.
 ## V8.02 — 16-Sep-2026
 
 - **Điền kho mã thật vào cấu hình Worker**, thay chỗ trống mẫu. Không có nó thì

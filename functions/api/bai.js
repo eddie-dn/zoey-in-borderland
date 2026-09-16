@@ -62,9 +62,24 @@ function bang(a, b) {
 
 /* Thiếu một vế khoá ở phía máy chủ là CHẶN hết, không phải mở hết. */
 function laChuTrang(request, env) {
-  if (!env.GC_ID || !env.GC_KEY) return false;
+  if (chuaDatKhoa(env)) return false;
   return bang(request.headers.get('x-gc-id'), env.GC_ID)
       && bang(request.headers.get('x-gc-key'), env.GC_KEY);
+}
+
+
+/* ── "SAI KHOÁ" VÀ "CHƯA CÓ KHOÁ" PHẢI NÓI RA HAI CÂU KHÁC NHAU ──
+   Chưa đặt GC_ID/GC_KEY ở Cloudflare thì không ai vào được, kể cả người gõ
+   đúng. Trả về "sai khoá" lúc ấy đẩy người ta đi tìm lỗi ở chỗ mình vừa gõ —
+   gõ lại, đổi khoá, gõ lại nữa — trong khi chỗ phải sửa nằm ở bảng điều khiển.
+   Nói thẳng không lộ gì: cửa chưa lắp khoá thì cũng chưa có gì để canh. */
+function chuaDatKhoa(env) { return !env.GC_ID || !env.GC_KEY; }
+
+function loiChuaDatKhoa() {
+  return ra({ ok: false, loi: 'cauhinh', thieu: ['GC_ID', 'GC_KEY'],
+              chiTiet: 'Máy chủ chưa đặt GC_ID và GC_KEY. Cloudflare → '
+                     + 'Settings → Runtime → Variables and Secrets (KHÔNG phải '
+                     + 'mục Builds). Xem docs/CAI-DAT.md §6.' }, 503);
 }
 
 function ra(du, ma = 200) {
@@ -180,6 +195,7 @@ async function danhSachMuc(env) {
    Cũng là phép thử khoá của ô viết: mở /z-admin/ rồi gõ khoá, nếu khoá sai thì
    biết ngay ở đây chứ không phải sau khi gõ xong cả bài. */
 export async function onRequestGet({ request, env }) {
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
   if (!laChuTrang(request, env)) return ra({ ok: false, loi: 'khoa' }, 401);
 
   const thieu = thieuCauHinh(env);
@@ -195,6 +211,7 @@ export async function onRequestGet({ request, env }) {
 
 /* ══════════ GHI: đặt một file .md vào kho mã ══════════ */
 export async function onRequestPost({ request, env }) {
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
   if (!laChuTrang(request, env)) return ra({ ok: false, loi: 'khoa' }, 401);
 
   const thieu = thieuCauHinh(env);

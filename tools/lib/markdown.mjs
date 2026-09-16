@@ -38,6 +38,41 @@ function tachLop(s) {
   return { lop, con: s.slice(0, m.index), them };
 }
 
+/* ══════════ MÀU CHỮ ══════════
+   Cú pháp `{tím: chữ}` → <span class="c-tim">chữ</span>.
+
+   ── VÌ SAO KHÔNG CHO VIẾT THẲNG HTML ──
+   `inline()` thoát HẾT ký tự HTML trong dòng (xem `escapeHtml` ở cuối hàm),
+   nên <span style="color:red"> gõ trong bài sẽ hiện ra thành chữ trần. Nới
+   chỗ thoát ấy ra là mở cho MỌI thẻ đi thẳng vào trang, kể cả <script> — một
+   cái cửa rất rộng, mở ra chỉ để tô màu được mấy chữ.
+
+   Bảng tên màu thì hẹp đúng bằng nhu cầu: tám tên, ra tám tên lớp, không thứ
+   gì khác lọt qua. Và vì màu thật nằm ở biến CSS (tokens.css), một bài viết
+   hồi theme Sakura vẫn đọc được khi người đọc bật theme Galaxy — mã màu gõ
+   tay thì không có cách nào làm được điều đó.
+
+   ── TÊN TIẾNG VIỆT, VÀ CÓ CẢ BẢN KHÔNG DẤU ──
+   Gõ trên điện thoại thì dấu là thứ rơi rụng đầu tiên. `{tim: …}` và
+   `{tím: …}` cùng ra một kết quả; không nhận bản không dấu thì người ta gõ
+   xong thấy nguyên cụm `{tim: chữ}` nằm giữa bài mà không hiểu vì sao. */
+const MAU = {
+  'tím':'tim',   'tim':'tim',
+  'hồng':'hong', 'hong':'hong',
+  'đỏ':'do',     'do':'do',
+  'cam':'cam',
+  'vàng':'vang', 'vang':'vang',
+  'lục':'luc',   'luc':'luc',
+  'lam':'lam',
+  'xám':'xam',   'xam':'xam'
+};
+
+/* Chỉ khớp khi tên NẰM TRONG bảng: `{note: xem thêm}` là chữ bình thường và
+   phải giữ nguyên, không được biến thành thẻ rỗng. `[^{}]` chặn phần nội dung
+   nuốt sang cụm kế tiếp khi trong một dòng có hai cụm màu. */
+const RE_MAU = new RegExp(
+  '\\{(' + Object.keys(MAU).join('|') + ')\\s*:\\s*([^{}]+?)\\}', 'g');
+
 function nhanManh(s) {
   return s
     .replace(/\*\*\*(?=\S)([\s\S]*?\S)\*\*\*/g, '<strong><em>$1</em></strong>')
@@ -48,6 +83,10 @@ function nhanManh(s) {
     .replace(/(^|[\s(])_(?=\S)([^_]*?\S)_(?=$|[\s).,;:!?])/g, '$1<em>$2</em>')
     .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>')
     .replace(/==(?=\S)([\s\S]*?\S)==/g, '<mark>$1</mark>')
+    /* Màu chạy SAU đậm/nghiêng: nhờ vậy `{tím: **chữ**}` ra chữ vừa tím vừa
+       đậm. Chạy trước thì phần **…** nằm gọn trong thẻ span và không còn ai
+       xử nó nữa. */
+    .replace(RE_MAU, (_, ten, chu) => '<span class="c-' + MAU[ten] + '">' + chu + '</span>')
     .replace(/ {2,}\n/g, '<br>\n');
 }
 
@@ -57,6 +96,24 @@ function nhanManh(s) {
 export function inline(s, ctx = {}) {
   const kho = [];
   const cat = (html) => { kho.push(html); return GIU + (kho.length - 1) + GIU; };
+
+  /* ── DẤU CHÉO NGƯỢC: MỘT KÝ TỰ CÚ PHÁP VIẾT THÀNH CHỮ THƯỜNG ──
+     `5 \* 3` ra dấu sao, không mở phần in nghiêng.
+
+     Phải chạy TRƯỚC mọi phép khác, kể cả mã trong dòng: `\`` mà xử sau thì
+     bộ bắt mã trong dòng đã coi dấu huyền ấy là một đầu ô mã rồi, và cái ra
+     là nửa thẻ <code> kèm một dấu chéo ngược lạc giữa câu.
+
+     ── VÌ SAO GIỜ MỚI CÓ ──
+     Trước bản này bộ dựng KHÔNG hiểu dấu chéo ngược: `\*` in ra nguyên cả
+     dấu chéo. Gõ tay thì hiếm khi vấp — người ta tự tránh. Nhưng ô soạn thảo
+     ở /z-admin/ thì phải tự đổi chữ người ta gõ ra Markdown, và lúc ấy nó
+     BẮT BUỘC cần một cách nói "dấu sao này là dấu sao thật". Không có đường
+     ấy thì mỗi dấu sao trong bài thành một lệnh in nghiêng hụt.
+
+     Ký tự vào danh sách đều là ký tự CÓ NGHĨA ở đâu đó trong bộ dựng này —
+     kể cả `{` `}`, vì cú pháp màu `{tím: …}` đọc chúng. */
+  s = s.replace(/\\([\\`*_{}\[\]()#+\-.!~=>|])/g, (_, c) => cat(escapeHtml(c)));
 
   /* mã trong dòng */
   s = s.replace(/`([^`\n]+)`/g, (_, c) => cat('<code>' + escapeHtml(c) + '</code>'));
@@ -92,10 +149,18 @@ export function inline(s, ctx = {}) {
 /* Bản chỉ lấy chữ trần — dùng cho ô tìm kiếm và đếm phút đọc */
 function tran(s) {
   return String(s)
+    /* Nhả dấu chéo ngược ra TRƯỚC: `5 \* 3` phải vào ô tìm kiếm thành "5 * 3",
+       không phải "5 \* 3". Chạy sau mấy phép dưới thì dấu chéo còn lại một
+       mình giữa câu. */
+    .replace(/\\(.)/g, '$1')
     .replace(/`[^`]*`/g, ' ')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/[*_~=#>|]/g, ' ')
+    /* Cụm màu phải nhả CHỮ ra chứ không bị xoá cả cụm: `{tím: điều quan
+       trọng}` mà rơi mất thì đúng cái câu người viết nhấn mạnh lại là câu duy
+       nhất ô tìm kiếm không tìm thấy. Chạy TRƯỚC phép xoá `{…}` chung. */
+    .replace(RE_MAU, (_, ten, chu) => chu)
     .replace(/\{[^}]*\}/g, ' ');
 }
 

@@ -707,3 +707,30 @@ a.rn-card:hover{color:var(--text)}
    thuộc về bình luận đó. Chỉ áp cho form đang nằm ở gốc — lùi xuống dưới một
    bình luận rồi thì đã có margin riêng ở luật trên. */
 .bl-than > .bl-form{margin-top:var(--s7)}
+
+/* ══════════════════════════════════════════════════════════════
+   MÀU CHỮ — sinh ra từ cú pháp `{tím: chữ}` trong file .md.
+   Bảng màu thật nằm ở tokens.css và có bản riêng cho từng theme; ở đây chỉ
+   nối tên lớp với biến.
+
+   Tám dòng gần giống nhau, và cố ý KHÔNG rút gọn bằng một biến chung kiểu
+   `.c-*{color:var(--c-N)}` — CSS không có cách nào ghép tên biến từ tên lớp.
+   Viết tay tám dòng thì đọc một cái là biết có đúng tám màu, không hơn.
+
+   Chỉ đặt `color`, không đặt nền, không đậm lên, không đổi cỡ: người viết
+   muốn nhấn thêm thì đã có `**đậm**` và `==tô nền==` nằm sẵn cạnh đó, và
+   chồng ba thứ nhấn mạnh lên cùng một cụm chữ thì cụm ấy hết nhấn mạnh được
+   gì — nó chỉ còn ồn. */
+.prose :is(.c-tim,.c-hong,.c-do,.c-cam,.c-vang,.c-luc,.c-lam,.c-xam){
+  /* Màu đi theo chữ chứ không theo khối, nên link nằm trong cụm màu vẫn giữ
+     màu link của nó — `color` ở đây không với tới thẻ <a> con. */
+  transition:color var(--dur-fast);
+}
+.prose .c-tim {color:var(--c-tim)}
+.prose .c-hong{color:var(--c-hong)}
+.prose .c-do  {color:var(--c-do)}
+.prose .c-cam {color:var(--c-cam)}
+.prose .c-vang{color:var(--c-vang)}
+.prose .c-luc {color:var(--c-luc)}
+.prose .c-lam {color:var(--c-lam)}
+.prose .c-xam {color:var(--c-xam)}

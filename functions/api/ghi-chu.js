@@ -91,8 +91,27 @@ function bang(a, b) {
 /* Cả hai vế khoá phải được ĐẶT ở phía máy chủ. Thiếu một vế thì coi như khoá
    chưa cấu hình và chặn hết lượt ghi — chứ không phải "để trống nghĩa là ai
    cũng ghi được". Đây là chỗ một cái sơ ý thành cửa mở cho cả internet. */
+function chuaDatKhoa(env) { return !env.GC_ID || !env.GC_KEY; }
+
+/* ── MÁY CHỦ CHƯA CÓ KHOÁ LÀ MỘT CHUYỆN KHÁC HẲN VỚI GÕ SAI KHOÁ ──
+   Hai vế khoá chưa đặt ở Cloudflare thì KHÔNG AI vào được — kể cả người gõ
+   đúng. Báo "sai khoá" lúc ấy là chỉ sai hướng: người ta đi tìm lỗi ở chỗ
+   mình vừa gõ, gõ lại, đổi khoá, gõ lại nữa, mà vấn đề nằm ở bảng điều khiển
+   Cloudflare. Đây là cái bẫy đã ngốn hẳn một buổi.
+
+   Nói thẳng ra KHÔNG lộ gì: chưa có khoá thì cũng chẳng có gì để canh, và
+   người lạ biết "cửa này chưa lắp khoá" cũng không vào được — mọi lượt ghi
+   vẫn chặn hết. Cái lộ ra là một câu cho CHỦ TRANG, không phải cho kẻ dò. */
+function loiChuaDatKhoa() {
+  return traLoi({ loi: 'cauhinh', thieu: ['GC_ID', 'GC_KEY'],
+                  chiTiet: 'Máy chủ chưa đặt GC_ID và GC_KEY. Cloudflare → '
+                         + 'Settings → Runtime → Variables and Secrets (KHÔNG '
+                         + 'phải mục Builds). Xem docs/CAI-DAT.md §6.' },
+                503, 'no-store', false);
+}
+
 function duocGhi(request, env) {
-  if (!env.GC_ID || !env.GC_KEY) return false;
+  if (chuaDatKhoa(env)) return false;
   return bang(request.headers.get('x-gc-id'), env.GC_ID)
       && bang(request.headers.get('x-gc-key'), env.GC_KEY);
 }
@@ -131,6 +150,7 @@ export async function onRequestGet({ env }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env.DB) return traLoi({ loi: 'chưa gắn D1' }, 503, 'no-store', false);
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
   if (!duocGhi(request, env)) return traLoi({ loi: 'sai khoá' }, 401, 'no-store', false);
 
   let than;
@@ -172,6 +192,7 @@ export async function onRequestPost({ request, env }) {
    được, và `tools/ghi-chu-keo.mjs` biết mà bỏ qua. */
 export async function onRequestDelete({ request, env }) {
   if (!env.DB) return traLoi({ loi: 'chưa gắn D1' }, 503, 'no-store', false);
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
   if (!duocGhi(request, env)) return traLoi({ loi: 'sai khoá' }, 401, 'no-store', false);
 
   const ma = locMa(new URL(request.url).searchParams.get('ma'));
