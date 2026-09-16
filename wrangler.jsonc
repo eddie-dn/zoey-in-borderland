@@ -54,7 +54,7 @@
     "GH_NHANH": "main"
   },
 
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
 
   // ── CƠ SỞ DỮ LIỆU D1 ────────────────────────────────────────────────
   // Bỏ dấu chú thích khối dưới đây SAU KHI tạo D1, và dán `database_id` lấy
@@ -69,11 +69,11 @@
   // dashboard và sống sót qua mọi lượt deploy. Đừng đưa chúng vào file này —
   // file này đi theo repo.
   //
-  // "d1_databases": [
-  //   {
-  //     "binding": "DB",
-  //     "database_name": "zoey-blog",
-  //     "database_id": "f14f79f7-3876-41e3-9756-7b69745fdb86"
-  //   }
-  // ]
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zoey-blog",
+      "database_id": "f14f79f7-3876-41e3-9756-7b69745fdb86"
+    }
+  ]
 }
