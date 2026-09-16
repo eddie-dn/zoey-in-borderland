@@ -30,6 +30,30 @@
   var NGUNG = 900;    /* ngưng bấy nhiêu ms là đếm lại từ đầu */
 
   var nodeData = document.getElementById('so-tay-data');
+  /* ── CỬA THỨ HAI: BẤM 5 NHỊP VÀO TIÊU ĐỀ TRANG GIỚI THIỆU ──
+     Đưa tới bàn làm việc của chủ trang (/chu-trang/). Cùng cơ chế 5 nhịp với
+     sổ phiên bản, và cùng lý do: một cái nút "Quản lý" bày giữa trang thì mọi
+     người đọc đều thấy một thứ chẳng để làm gì, mà lại mời người ta thử.
+
+     Không phải lớp bảo mật — ai bấm đủ 5 nhịp cũng chỉ tới một trang xin khoá.
+     Nó chỉ để chủ trang khỏi phải nhớ đường dẫn: đang ở trang giới thiệu, bấm
+     mấy cái vào tiêu đề là vào.
+
+     Dùng `pointerdown` chứ không `click`: trên điện thoại, bấm nhanh liên tiếp
+     vào một dòng chữ thì trình duyệt hay nuốt mất mấy cú `click` cuối để đoán
+     xem có phải cú bấm-hai-lần-để-phóng-to hay không. */
+  (function () {
+    var de = document.querySelector('[data-cua-ql]');
+    if (!de) return;
+    var d = 0, h = null;
+    de.addEventListener('pointerdown', function () {
+      d++;
+      if (h) clearTimeout(h);
+      if (d >= 5) { d = 0; location.href = de.getAttribute('data-cua-ql'); return; }
+      h = setTimeout(function () { d = 0; }, 900);
+    });
+  })();
+
   var cua = document.querySelector('[data-so-tay]');
   if (!nodeData || !cua) return;
 

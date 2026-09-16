@@ -29,7 +29,7 @@
   /* Màu thanh trạng thái của trình duyệt điện thoại. Bảng này lặp lại ở đoạn
      script trong <head> — cố ý, vì đoạn đó phải chạy trước khi file này kịp
      tải. Sửa màu nền của theme nào thì sửa CẢ HAI chỗ. */
-  var MAU_THANH = { light:'#FAF6FD', dark:'#120C22', calm:'#F1F7FB' };
+  var MAU_THANH = { light:'#FAF6FD', dark:'#120C22', calm:'#E9F1FA' };
 
   /* Nhãn lấy từ data-* mà build gắn sẵn, không gõ cứng ở đây — cả bộ chữ
      giao diện nằm ở bảng NHAN trong tools/build.mjs. Nhãn nói theme SẮP

@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.07 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
 | V7.06 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
 | V7.05 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
 | V7.04 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
@@ -95,6 +96,30 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.07 — 16-Sep-2026
+
+- **Có một trang riêng để chủ trang làm việc.** Trước đó phải nhớ hai địa chỉ
+  có dấu thăng — cái đó không phải đăng nhập, nó là bắt người ta học thuộc
+  đường đi. Nay một trang thật, lưu được vào màn hình chính điện thoại: viết
+  ghi chú ở trên, hàng chờ duyệt bình luận ở dưới, không tranh chỗ nhau. Vào
+  được bằng đường dẫn, hoặc bấm năm nhịp vào tiêu đề trang giới thiệu.
+- **Theme Tĩnh lặng sâu màu hơn, và lý do đáng ghi lại.** Đo ra thì cả 36 chỗ
+  chữ đều đạt chuẩn tương phản, chỗ thấp nhất vẫn trên ngưỡng — trên giấy là
+  xong, nhìn thật vẫn nhạt. Vì ngưỡng ấy là SÀN chứ không phải đích, mà cả một
+  tầng chữ phụ đều nằm sát sàn thì trang mất tầng bậc; vì nhãn chữ hoa nhỏ và
+  giãn rộng thì mắt đọc ra nhạt hơn con số đo được; và vì thẻ trắng trên nền
+  gần trắng gần như không còn mép, mất luôn phần tương phản của cấu trúc. Nay
+  nền đậm thêm một nhịp cho ra xanh thật, mực sâu hơn ở cả ba mức, thẻ đục hơn
+  và đường kẻ rõ hơn.
+- **Trang ghi chú có phân trang.** Bộ chia trang vốn đã có nhưng chưa dùng cho
+  trang này. Và chia trang với lọc theo loại từng giành nhau một cách giấu mục,
+  nên lọc xong là mấy mục vừa bị giấu lại bật ra — nay mỗi bên một cách.
+- **Bộ ảnh lưu mười hai trạng thái của logo**, cộng một file chạy được trọn
+  vòng, đứng một mình không cần trang web. Trích từ chính hoạt hình đang chạy
+  chứ không vẽ lại, nên bản lưu khớp đúng cái người đọc thấy.
+- **Dải sáng của theme Galaxy dày gấp đôi**, và mưa ở theme Tĩnh lặng chậm
+  thêm một nhịp nữa.
 
 ## V7.06 — 16-Sep-2026
 

@@ -725,6 +725,10 @@
 .gc-loc button{font:inherit;cursor:pointer}
 
 .gc-ds{list-style:none;margin:0;padding:0}
+/* Bộ lọc theo loại giấu mục bằng class này, còn bộ chia trang giấu bằng
+   thuộc tính `hidden` — hai cách khác nhau cho hai việc khác nhau, để chúng
+   không giành nhau một chỗ. */
+.gc-mot.gc-khac-loai{display:none}
 .gc-mot{
   display:grid;
   grid-template-columns:8.5rem minmax(0,1fr);
@@ -817,6 +821,25 @@
 .gc-mot:hover .gc-xoa,.gc-xoa:focus-visible{opacity:1}
 .gc-xoa:hover{color:var(--bad);border-color:var(--bad)}
 @media (hover:none){.gc-xoa{opacity:.7}}
+/* ══════════ BÀN LÀM VIỆC CỦA CHỦ TRANG (/chu-trang/) ══════════
+   Hai khối xếp dọc, cách nhau rõ ràng: viết ghi chú ở trên, hàng chờ duyệt ở
+   dưới. Tách bằng một đường kẻ chứ không chỉ bằng khoảng trống — hai việc khác
+   nhau, và ở một trang chỉ toàn ô nhập thì khoảng trống không đủ nói ra ranh
+   giới. */
+.ql-khoi + .ql-khoi{
+  margin-top:var(--s9);
+  padding-top:var(--s8);
+  border-top:1px solid var(--line);
+}
+.ql-de{
+  margin:0 0 var(--s5);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+/* Ở trang này ô viết và bàn duyệt là NỘI DUNG chính, không phải khối lạc vào
+   một trang đọc — nên bỏ lề ngoài và cho chúng rộng hết khung. */
+.ql-khoi .gc-viet,.ql-khoi .bl-duyet{margin:0;width:100%}
+
 /* ══════════ THƯ MỤC CHUYÊN MỤC (/posts/) ══════════
    Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới
    nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này

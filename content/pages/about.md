@@ -1,5 +1,5 @@
 ---
-title: Về tôi
+title: About me
 khung: bento
 
 # Nền động TẮT ở trang này. Trang giới thiệu kín chữ từ trên xuống dưới, và

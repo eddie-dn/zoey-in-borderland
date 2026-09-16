@@ -50,22 +50,37 @@
 
   /* ══════════ DỰNG KHUNG ══════════ */
 
-  function mo() {
+  /* ── HAI KIỂU MỌC ──
+     MỘT — trang /chu-trang/ có sẵn một ô `[data-duyet-host]`. Cắm thẳng vào
+     đó, không cần dấu thăng, không cuộn đi đâu cả: người ta vào trang ấy chính
+     là để làm việc này.
+     HAI — mọi trang khác thì phải gõ `#duyet`, và lúc ấy khối tự chèn lên đầu
+     rồi cuộn tới. */
+  function oCamSan() { return document.querySelector('[data-duyet-host]'); }
+
+  function mo(tuDong) {
     if (hop) return;
     hop = document.createElement('section');
-    hop.className = 'bl-duyet duyet-noi';
+    hop.className = 'bl-duyet';
+
+    var o = oCamSan();
+    if (o) {
+      o.appendChild(hop);
+      ve();
+      return;
+    }
 
     /* Chèn ngay sau đầu trang, KHÔNG phải cuối trang: đây là việc đang làm,
-       không phải phần đọc thêm. Trang bài thì nhét vào đầu thân bài; trang
-       nào không có thân bài thì nhét lên đầu <main>. */
+       không phải phần đọc thêm. */
+    hop.classList.add('duyet-noi');
     var neo = document.querySelector('.post-layout') ||
               document.querySelector('main .container') ||
               document.querySelector('main');
-    if (!neo) return;
+    if (!neo) { hop = null; return; }
     neo.insertBefore(hop, neo.firstChild);
 
     ve();
-    denNoi();
+    if (!tuDong) denNoi();
   }
 
   /* Cuộn tới — `#duyet` không phải id của phần tử nào nên trình duyệt không tự
@@ -252,7 +267,8 @@
 
   /* ══════════ CHẠY ══════════ */
 
-  if (location.hash === '#duyet') mo();
+  if (oCamSan()) mo(true);
+  else if (location.hash === '#duyet') mo();
   window.addEventListener('hashchange', function () {
     if (location.hash === '#duyet') mo();
   });

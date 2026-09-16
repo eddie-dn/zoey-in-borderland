@@ -180,6 +180,11 @@ const NHAN = {
   gcDelFail   : 'Không xoá được.',
   blUnapproveHint: 'Rút xuống hàng chờ, không xoá',
   blHideHint  : 'Ẩn hẳn khỏi trang',
+  /* ── trang quản lý /chu-trang/ ── */
+  qlTitle     : 'Chủ trang',
+  qlDan       : 'Viết ghi chú và duyệt bình luận. Chỉ mình bạn thấy trang này.',
+  qlViet      : 'Viết ghi chú',
+  qlDuyet     : 'Bình luận',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -629,7 +634,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                     duyệt được bình luận (#duyet), khỏi phải nhớ đường dẫn của
                     một bài cụ thể nào. */
                  ((CAU.binhLuan || {}).bat !== false &&
-                  (duong === '/notes/' || /^\/posts\/.+\//.test(duong)))
+                  (duong === '/notes/' || duong === '/chu-trang/' ||
+                   /^\/posts\/.+\//.test(duong)))
                    ? `data-duyet-api="${attr(BASE + ((CAU.binhLuan || {}).api || '/api/binh-luan'))}" ` +
                      `data-duyet-nhan="${attr(JSON.stringify({
                         queue: NHAN.queue, queueEmpty: NHAN.queueEmpty,
@@ -641,7 +647,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         anon: NHAN.anon
                       }))}"`
                    : '',
-                 (duong === '/notes/' && (CAU.ghiChu || {}).online)
+                 ((duong === '/notes/' || duong === '/chu-trang/') &&
+                  (CAU.ghiChu || {}).online)
                    ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
                      `data-gc-nhan="${attr(JSON.stringify({
                         all: NHAN.allNotes,    write: NHAN.gcWrite,
@@ -1504,9 +1511,14 @@ function khungBento(t, soBai, soTag) {
 
   if (coAnh) o.push(anhBento(t));
 
+  /* `data-cua-ql` — bấm 5 nhịp vào tiêu đề là tới bàn làm việc của chủ trang.
+     Chỉ gắn ở trang giới thiệu: đó là trang chủ trang hay mở nhất mà không
+     phải trang bài, nên nó là chỗ tự nhiên để giấu một cái cửa. Cơ chế đếm
+     nhịp nằm ở src/js/so-tay.js, chung với cửa vào sổ phiên bản. */
   o.push(`<div class="bo bo--intro card">
     <div class="eyebrow"><i></i></div>
-    <h1>${noiChu(escapeHtml(t.title))}</h1>
+    <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/chu-trang/')}"` : ''}>${
+      noiChu(escapeHtml(t.title))}</h1>
     ${t.gioiThieuDoan.map((d) => `<p class="bo-lead">${escapeHtml(d)}</p>`).join('')}
   </div>`);
 
@@ -1604,7 +1616,8 @@ function khungChuong(t, soBai, soTag) {
   return `<div class="chuong">
     <header class="ch ch--mo" data-hien>
       <div class="eyebrow"><i></i></div>
-      <h1>${noiChu(escapeHtml(t.title))}</h1>
+      <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/chu-trang/')}"` : ''}>${
+        noiChu(escapeHtml(t.title))}</h1>
       ${t.gioiThieu ? `<p class="ch-lead">${escapeHtml(t.gioiThieu)}</p>` : ''}
       <div class="ch-so">
         ${[t.viTri && `${escapeHtml(t.viTri)}`,
@@ -1831,8 +1844,9 @@ function hangChip(ds, nay) {
 
 /* Khuôn chung của mọi trang danh sách. */
 function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, description,
-                        scripts = '' }) {
+                        scripts = '', noindex = false }) {
   return trang({
+    noindex,
     title: title || `${tieuDe} · ${CAU.title}`,
     description: description || CAU.description,
     canonical: canonical || `${CAU.url}${BASE}${duong}`,
@@ -2276,10 +2290,18 @@ function trangGhiChu() {
         <div class="gc-chu prose">${x.html}</div>
       </li>`).join('')}</ol>` : `${locHTML}<p class="ds-trong">${NHAN.noNotes}</p>`;
 
+  /* Bọc phân trang, KHÔNG để danh sách dài vô tận. Chọn `.gc-mot:not(.gc-khac-loai)`
+     chứ không phải `.gc-mot` trơn: lọc theo loại giấu mục bằng class ấy, và bộ
+     chia trang phải đếm trên danh sách CÒN LẠI sau khi lọc — không thì lọc còn
+     hai ghi chú mà bộ số vẫn ghi ba trang. */
+  const thanCoSo = ds.length
+    ? bocPhanTrang(than, '.gc-mot:not(.gc-khac-loai)', ds.length)
+    : than;
+
   return trangDanhSach({
     tieuDe: NHAN.notes,
     dan: NHAN.notesHint,
-    than,
+    than: thanCoSo,
     duong: '/notes/',
     description: `${NHAN.notesHint} — ${CAU.title}.`,
     scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
@@ -2287,6 +2309,46 @@ function trangGhiChu() {
                ? `\n<script src="${BASE}/assets/duyet.js" defer></script>` : '')
   });
 }
+/* ── /chu-trang/ — BÀN LÀM VIỆC CỦA CHỦ TRANG ──
+   MỘT đường dẫn, hai việc, không đè lên nhau: ô viết ghi chú ở trên, hàng chờ
+   duyệt bình luận ở dưới.
+
+   ── VÌ SAO LÀ MỘT TRANG THẬT, KHÔNG PHẢI DẤU THĂNG ──
+   Bản trước bắt chủ trang nhớ hai địa chỉ `/notes/#viet` và `/notes/#duyet`.
+   Cái đó không phải đăng nhập — nó là bắt người ta học thuộc đường đi, và mỗi
+   lần muốn làm gì lại phải gõ đúng chuỗi ấy. Một trang thật thì lưu được vào
+   màn hình chính điện thoại, bấm một phát là vào, và hai việc nằm cạnh nhau
+   chứ không tranh chỗ.
+
+   ── NÓ KHÔNG PHẢI BÍ MẬT, VÀ KHÔNG CẦN PHẢI BÍ MẬT ──
+   `noindex` để Google không đưa nó vào kết quả tìm kiếm, và nó không nằm trong
+   sitemap, không có trong thanh điều hướng. Nhưng ai gõ đúng đường dẫn vẫn mở
+   được — và mở ra thì chỉ thấy một ô xin khoá. Lớp bảo mật là hai vế khoá ở
+   phía máy chủ, không phải chỗ giấu đường dẫn.
+
+   Hai khối bên trong đều RỖNG lúc dựng; ghi-chu.js và duyet.js đổ nội dung vào
+   khi trang chạy, sau khi khoá đã khớp. Nhờ vậy HTML tĩnh của trang này không
+   chứa gì đáng giấu — kể cả lúc ai đó xem mã nguồn. */
+function trangChuTrang() {
+  return trangDanhSach({
+    tieuDe: NHAN.qlTitle,
+    dan: NHAN.qlDan,
+    duong: '/chu-trang/',
+    noindex: true,
+    than: `
+    <section class="ql-khoi">
+      <h2 class="ql-de">${NHAN.qlViet}</h2>
+      <div data-viet-host></div>
+    </section>
+    <section class="ql-khoi">
+      <h2 class="ql-de">${NHAN.qlDuyet}</h2>
+      <div data-duyet-host></div>
+    </section>`,
+    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
+             `\n<script src="${BASE}/assets/duyet.js" defer></script>`
+  });
+}
+
 function trangArchive(bai) {
   const theoNam = new Map();
   for (const b of [...bai].sort((a, b) => (a.date < b.date ? 1 : -1))) {
@@ -2501,6 +2563,7 @@ async function chay() {
       ...cacTrangTags(canDung, bangTag),
       { duong: '/archive/', html: trangArchive(canDung) },
       { duong: '/notes/',   html: trangGhiChu() },
+      { duong: '/chu-trang/', html: trangChuTrang() },
       { duong: '/search/',  html: trangSearch() }
     ];
     for (const t of dsTrang) {
@@ -2509,8 +2572,13 @@ async function chay() {
 
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'),
+        /* Bàn làm việc của chủ trang KHÔNG vào sitemap: sitemap là lời mời
+           Google ghé xem, mà trang ấy chẳng có gì cho người đọc. Nó cũng mang
+           sẵn noindex — hai lớp cho cùng một ý, vì bỏ sót một lớp thì lớp kia
+           vẫn giữ được. */
         sitemap(congKhai, [...trangTinhDS.map((t) => t.url),
-                           ...dsTrang.map((t) => `${BASE}${t.duong}`)]));
+                           ...dsTrang.filter((t) => t.duong !== '/chu-trang/')
+                                     .map((t) => `${BASE}${t.duong}`)]));
     ghi(path.join(THU_MUC.dist, 'robots.txt'),
         `User-agent: *\nAllow: /\nSitemap: ${CAU.url}${BASE}/sitemap.xml\n`);
     ghi(path.join(THU_MUC.dist, 'version.json'), JSON.stringify({

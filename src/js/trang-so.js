@@ -33,6 +33,21 @@
     var mon  = [].slice.call(hop.querySelectorAll(chon));
     if (!mon.length) return;
 
+    /* ── DỰNG LẠI KHI DANH SÁCH ĐỔI ──
+       Trang ghi chú vừa phân trang vừa lọc theo loại. Hai thứ ấy đều giấu bớt
+       mục, mà `mon` thì chỉ quét MỘT LẦN lúc dựng — nên lọc xong là bộ số
+       trang đếm theo danh sách cũ, và có lúc trang 2 rỗng trơn trong khi số
+       vẫn ghi là còn.
+
+       Nghe một sự kiện riêng thay vì để ghi-chu.js thò tay vào bên trong: file
+       này vẫn là chỗ duy nhất biết cách chia trang, còn bên kia chỉ nói "danh
+       sách đổi rồi". */
+    hop.addEventListener('trang-so:dung-lai', function () {
+      mon = [].slice.call(hop.querySelectorAll(chon));
+      trang = 1;
+      ve();
+    });
+
     var nhan = {};
     try { nhan = JSON.parse(hop.getAttribute('data-nhan') || '{}'); } catch (e) {}
 

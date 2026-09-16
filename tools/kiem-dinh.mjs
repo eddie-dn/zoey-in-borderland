@@ -692,7 +692,13 @@ const KIEM = [
       const doc = (f) => fs.existsSync(path.join(dist, f))
         ? fs.readFileSync(path.join(dist, f), 'utf8') : '';
       const sm = doc('sitemap.xml'), rss = doc('feed.xml');
-      return trang.filter((t) => t.noindex).map((t) => {
+      /* `noindex` LÀ DẤU HIỆU, KHÔNG PHẢI ĐỊNH NGHĨA của bản nháp.
+         Bàn làm việc của chủ trang (/chu-trang/) cũng mang noindex, nhưng nó
+         là trang CỐ Ý dựng ra và cố ý không cho Google lập chỉ mục — hai việc
+         khác hẳn nhau. Không chừa nó ra thì mỗi lần dựng lại báo một dòng đỏ
+         giả, mà dòng đỏ giả lặp mãi thì sớm muộn người ta thôi đọc dòng đỏ. */
+      const CO_Y = ['/chu-trang/'];
+      return trang.filter((t) => t.noindex && !CO_Y.includes(t.url)).map((t) => {
         const them = [sm.includes(t.url) && 'sitemap.xml',
                       rss.includes(t.url) && 'feed.xml'].filter(Boolean);
         return `${t.url} là bản nháp nhưng vẫn có file trong dist/` +

@@ -80,9 +80,16 @@
   var nut = [];
 
   function chon(loai) {
+    /* Giấu bằng CLASS chứ không bằng `hidden`. Bộ chia trang cũng dùng
+       `hidden`, nên hai bên cùng giành một thuộc tính: lọc xong thì mấy mục
+       trang-so vừa giấu lại bật ra, và ngược lại. Mỗi bên một cách giấu thì ai
+       giấu cái gì vẫn còn nguyên. */
     for (var i = 0; i < mon.length; i++) {
-      mon[i].hidden = !!loai && mon[i].getAttribute('data-loai') !== loai;
+      mon[i].classList.toggle('gc-khac-loai',
+        !!loai && mon[i].getAttribute('data-loai') !== loai);
     }
+    var hop = document.querySelector('[data-phan-trang]');
+    if (hop) hop.dispatchEvent(new CustomEvent('trang-so:dung-lai'));
     for (i = 0; i < nut.length; i++) {
       var la = nut[i].getAttribute('data-loai') === loai;
       nut[i].classList.toggle('chip--nay', la);
@@ -198,8 +205,14 @@
 
   var viet = null;
 
-  function dungOViet() {
-    if (!api || (!ds && !document.querySelector('.ds-trong'))) return null;
+  /* Trang /chu-trang/ dành sẵn một ô `[data-viet-host]`. Có nó thì ô viết cắm
+     thẳng vào đó và không cần `#viet`, không cuộn đi đâu — vào trang ấy chính
+     là để viết. Không có thì giữ nguyên nếp cũ ở /notes/. */
+  function oVietCamSan() { return document.querySelector('[data-viet-host]'); }
+
+  function dungOViet(tuDong) {
+    if (!api) return null;
+    if (!oVietCamSan() && !ds && !document.querySelector('.ds-trong')) return null;
 
     var K_ID = 'zib-gc-id', K_KEY = 'zib-gc-key';
     function doc(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
@@ -208,8 +221,12 @@
 
     var hop = document.createElement('section');
     hop.className = 'gc-viet';
-    var neo = document.querySelector('.gc-loc') || ds || document.querySelector('.ds-trong');
-    neo.parentNode.insertBefore(hop, neo);
+    var oSan = oVietCamSan();
+    if (oSan) oSan.appendChild(hop);
+    else {
+      var neo = document.querySelector('.gc-loc') || ds || document.querySelector('.ds-trong');
+      neo.parentNode.insertBefore(hop, neo);
+    }
 
     function khoa() { return { id: doc(K_ID), key: doc(K_KEY) }; }
     function coKhoa() { var k = khoa(); return !!(k.id && k.key); }
@@ -381,13 +398,16 @@
     lamOl();
     veLai();
 
-    /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. */
-    function denNoi() {
-      var y = hop.getBoundingClientRect().top + window.pageYOffset - 72;
-      window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
+    /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. Cắm vào
+       chỗ dành sẵn thì thôi, vì nó đã nằm ngay đầu trang rồi. */
+    if (!tuDong) {
+      var denNoi = function () {
+        var y = hop.getBoundingClientRect().top + window.pageYOffset - 72;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
+      };
+      if (document.readyState === 'complete') denNoi();
+      else window.addEventListener('load', denNoi, { once: true });
     }
-    if (document.readyState === 'complete') denNoi();
-    else window.addEventListener('load', denNoi, { once: true });
 
     return { veLai: veLai };
   }
@@ -395,7 +415,8 @@
   /* ══════════ CHẠY ══════════ */
 
   dungLoc();
-  if (location.hash === '#viet') viet = dungOViet();
+  if (oVietCamSan()) viet = dungOViet(true);
+  else if (location.hash === '#viet') viet = dungOViet();
   window.addEventListener('hashchange', function () {
     if (location.hash === '#viet' && !viet) viet = dungOViet();
   });

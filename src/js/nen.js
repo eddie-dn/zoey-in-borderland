@@ -230,7 +230,7 @@
   function dungThac() {
     /* Sáu màu lấy thẳng từ bảng Tĩnh lặng trong tokens.css — trắng và suong
        cho phần bọt sáng, suoi/reu/troi cho thân nước. */
-    var MAU = ['#FFFFFF', '#E5F0F8', '#9FD3EA', '#A8DED6', '#BAD9F4', '#7FB6D8'];
+    var MAU = ['#FFFFFF', '#DAE8F5', '#9FD3EA', '#A8DED6', '#BAD9F4', '#7FB6D8'];
     var vet = [], giot = [], gon = [], suong = [];
     var mn = 0;          /* y của mặt nước */
 
@@ -250,9 +250,12 @@
            chảy xiết đọc ra là thác lũ, mà theme này tên là Tĩnh lặng.
            Vệt NGẮN lại theo, không giữ nguyên: vệt dài là dấu của vật đi
            nhanh — giảm tốc mà để nguyên vệt thì nước trông như bị kéo giãn. */
-        dai: 22 + lop * 76,
+        /* Chậm thêm một nhịp nữa (2,6+7,1 → 1,9+5,2, tức còn khoảng 55% tốc độ
+           bản đầu). Vệt ngắn lại theo cùng tỉ lệ — vệt dài là dấu của vật đi
+           nhanh, giảm tốc mà giữ nguyên vệt thì nước trông như bị kéo giãn. */
+        dai: 17 + lop * 56,
         rong: 0.7 + lop * 1.9,
-        vy: 2.6 + lop * 7.1,
+        vy: 1.9 + lop * 5.2,
         /* Dạt ngang rất nhẹ và LUÔN cùng một chiều: thác có hướng gió của nó.
            Cho mỗi vệt một chiều riêng thì màn nước loạn như tuyết rơi. */
         vx: 0.06 + lop * 0.16,
@@ -273,7 +276,7 @@
         x: 20 + Math.random() * Math.max(1, W - 40),
         y: batDau ? Math.random() * mn : -20 - Math.random() * 420,
         r: 1.6 + lop * 2.6,
-        vy: 1.7 + lop * 3.2,
+        vy: 1.25 + lop * 2.35,
         mo: 0.3 + lop * 0.5
       };
     }
@@ -538,8 +541,16 @@
              cố định `w` ứng với góc `w/r`, nên chia cho t. Công thức trước nhân
              thêm một hệ số theo t nữa, thành ra ở vòng trong góc tãi tới gần
              một phần ba vòng tròn và cả đĩa trong bị xoá nhoè thành sương.
-             Kẹp trần 0.5 rad cho vùng sát tâm, nơi mọi thứ vốn đã chen chúc. */
-          goc += chuan() * Math.min(0.5, 0.075 / Math.max(0.1, t));
+             Kẹp trần cho vùng sát tâm, nơi mọi thứ vốn đã chen chúc.
+
+             0.075 → 0.15: DÀY GẤP ĐÔI. Ở bề dày cũ, hai nhánh đọc ra là hai
+             đường kẻ có sao rải lên — mảnh và sắc nét như nét vẽ. Ngân hà thật
+             thì nhánh là một DẢI có chiều ngang thật, mép nó tãi dần ra chứ
+             không có đường bao. Dày lên thì cái tãi ấy mới thấy được, và cả
+             đĩa đọc ra là một khối sáng chứ không phải một hình vẽ.
+             Trần nới 0.5 → 0.85 theo cùng tỉ lệ; giữ nguyên 0.5 thì vùng trong
+             bị kẹp lại và nhánh thắt eo ở giữa. */
+          goc += chuan() * Math.min(0.85, 0.15 / Math.max(0.1, t));
           sao.push({
             r: R * t * (1 + chuan() * 0.04), g: goc,
             /* TỐC ĐỘ QUAY. Đủ chậm để không ai thấy chóng mặt, đủ nhanh để mở
@@ -569,7 +580,10 @@
           /* Mũ 0.75 dồn mảng sáng về phía TRONG — chỗ khí và bụi thật sự đặc. */
           t = Math.pow(Math.random(), 0.75);
           k = i % NHANH;
-          goc = t * VONG * Math.PI + k * (6.2832 / NHANH) + chuan() * 0.14;
+          /* 0.14 → 0.28, đi đôi với bề dày dải sao ở trên. Lệch nhau thì mảng
+             sáng thành một lõi đặc nằm giữa một dải sao rộng — đọc ra là hai
+             tầng rời nhau chứ không phải một nhánh có khối. */
+          goc = t * VONG * Math.PI + k * (6.2832 / NHANH) + chuan() * 0.28;
           bui.push({
             r: R * t, g: goc,
             v: 0.00042 + 0.00020 / (0.5 + t),
