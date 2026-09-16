@@ -630,31 +630,53 @@
     padding-bottom:var(--s7);flex:none}
 
   /* ── TÊN BLOG Ở KHỔ DỌC ──
-     Ở đây nó THÔI làm hoa văn mờ và trở lại làm tiêu đề thật: đọc được, xuống
-     thang ba bậc. Khổ dọc không có hai đường kẻ dọc để xén chữ, nên trò xén
-     không còn nghĩa gì — giữ lại chỉ ra một vệt chữ mờ đè lên nội dung.
+     Ở đây nó THÔI làm hoa văn mờ và trở lại làm tiêu đề thật: đọc được và
+     CÂN GIỮA. Khổ dọc không có hai đường kẻ dọc để xén chữ, nên trò xén không
+     còn nghĩa gì — giữ lại chỉ ra một vệt chữ mờ đè lên nội dung.
 
-     Ba dòng xếp bình thường; bậc thang làm bằng `margin-left` tính theo `em`
-     nên nó co giãn cùng cỡ chữ. */
+     ── VÌ SAO BỎ BẬC THANG BÁM MÉP TRÁI ──
+     Bản trước xếp ba dòng bám mép trái rồi đẩy dần sang phải bằng
+     `margin-left`. Ở khổ ngang cách ấy đúng: hai đường kẻ dọc của lưới làm
+     khung, và cụm chữ neo vào đường kẻ trái.
+
+     Khổ dọc thì KHÔNG có đường kẻ nào. Mà dòng đầu ("Zoey") chỉ dài chừng một
+     phần ba dòng dưới ("Borderland"), nên bám trái là bên phải dòng đầu bỏ
+     trống hẳn một mảng bằng hai phần ba bề ngang màn. Mắt đọc ra một cụm chữ
+     bị dồn về góc trái, không đọc ra một tiêu đề.
+
+     Cân giữa thì dòng ngắn tự nằm giữa dòng dài — đó là cách mọi tiêu đề nhiều
+     dòng vẫn cân, và nó không cần một đường kẻ nào để neo vào.
+
+     Bậc thang KHÔNG mất hẳn: nó còn lại dưới dạng hai cú nghiêng ±.05em quanh
+     trục giữa, làm bằng `translate` nên chỗ NẰM của chữ không đổi và cụm vẫn
+     cân. Đủ để đọc ra là có nhịp, chưa đủ để thành lệch. */
   .hero-danh{
     order:0;overflow:visible;
     container-type:normal;opacity:1;
     display:flex;flex-direction:column;justify-content:center;
+    align-items:center;text-align:center;
     flex:1;min-height:0;
     padding:var(--s6) var(--gutter) 0;
+    /* .78 là để lúc mờ hai dòng chồng khít nhau thành một khối đặc — trò ấy
+       chỉ có ở khổ ngang. Ở đây chữ hiện đủ, và ở .78 thì đuôi chữ "y" của
+       dòng đầu đè lên chữ "in" ngay dưới nó. .88 là chỗ vừa hở. */
+    line-height:.88;
   }
-  .hd-hang--1{font-size:clamp(46px,17vw,96px);margin-left:0;margin-bottom:0}
-  /* 11vw → 14vw. Dòng một và dòng ba cùng là TÊN, nhưng ở 11vw thì "Borderland"
-     đọc ra như một dòng phụ chú dưới chữ "Zoey" chứ không phải nửa còn lại của
-     cùng cái tên. 14/17 ≈ 0,82 — vẫn nhỏ hơn (nó dài gấp đôi nên phải nhỏ hơn)
-     mà đủ nặng để hai dòng cân nhau.
-     Có chỗ: cả từ rộng 4,03 × cỡ chữ, nên ở màn 375px là 4,03 × 52,5 + lề bậc
-     thang 0,45em ≈ 235px, còn dư gần trăm pixel trong khung 339px. */
-  .hd-hang--3{font-size:clamp(34px,14vw,72px);margin-left:.45em}
+  .hd-hang--1{font-size:clamp(46px,17vw,96px);margin:0;translate:-.05em 0}
+  /* 14vw → 16,5vw. Bỏ lề bậc thang là cụm chữ tự dôi ra gần 30px, và cân giữa
+     rồi thì hai bên chia đều chỗ trống — nên dòng này được phép to thêm.
+     Có chỗ: cả từ rộng 4,03 × cỡ chữ, nên ở màn 375px là 4,03 × 61,9 ≈ 249px
+     trong khung 343px — chiếm 73%, hai bên còn 47px mỗi bên.
+     16,5/17 ≈ 0,97: hai dòng gần bằng nhau về cỡ, và vì dòng này dài gấp ba
+     nên nó vẫn nặng hơn hẳn. Đó là chỗ muốn tới — dòng dưới là dòng đỡ cả cụm. */
+  .hd-hang--3{font-size:clamp(38px,16.5vw,80px);margin:0;translate:.05em 0}
   .hd-con{opacity:1;letter-spacing:-.03em}
-  /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng và
-     lùi vào một bậc — rõ hơn là để nó nép bên cạnh chữ đầu. */
-  .hd-in{display:block;translate:none;font-size:.33em;margin-left:1.15em;opacity:.7}
+  /* Khổ dọc có chiều cao thoải mái, nên "in" tách hẳn thành một dòng riêng.
+     Nó nằm TRONG dòng một (xem markup ở tools/build.mjs), nên `text-align`
+     thừa kế từ khối cha đưa nó về giữa chữ "Zoey" — không cần lề nào. Đẩy
+     nhẹ sang phải để nó không thẳng cột với cả hai dòng kia: ba thứ thẳng
+     một cột thì cụm chữ đứng im như một danh sách. */
+  .hd-in{display:block;translate:.9em 0;font-size:.33em;margin:.25em 0 0;opacity:.7}
 
   .hero-quote{width:100%}
   .hero-moc,.hero-tem{display:none}
@@ -1262,26 +1284,31 @@
 .kh-bao{margin:0;min-height:1.2em;font-size:var(--fs-xs);color:var(--text-faint)}
 .kh-bao--hong{color:var(--bad)}
 
-/* Nút ra. Nhạt và nhỏ: đây không phải việc người ta vào trang để làm, và một
-   nút Đăng xuất to đặt cạnh ô soạn thảo là một cái bẫy bấm nhầm. */
-.kh-ra{
-  appearance:none;border:1px solid transparent;background:none;cursor:pointer;
-  padding:var(--s2) var(--s3);border-radius:var(--r-sm);
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;
-  color:var(--text-faint);
-  transition:color var(--dur-fast),border-color var(--dur-fast);
-}
-.kh-ra:hover{color:var(--bad);border-color:var(--line-strong)}
-.kh-ra:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.ad-ra{grid-column:1;margin-top:var(--s5);display:flex}
-.bl-duyet-ra{margin-top:var(--s5);display:flex}
+/* ── LỐI RA LÀ CHỮ, KHÔNG PHẢI NÚT ──
+   Nó nằm giữa một câu ("Haluuu, Zoey! — Đăng xuất"), nên nó phải mặc bộ đồ
+   của chữ trong câu ấy: cùng phông, cùng cỡ, chỉ khác ở chỗ gạch chân mờ nói
+   rằng bấm được. Một cái nút có viền đặt vào đấy thì câu chào gãy làm đôi.
 
-@media (max-width:719px){
-  /* Khổ dọc thì cột trái đã thành một hàng nút ngang, nên lối ra rơi xuống
-     dưới cùng — chỗ cuối trang, đúng thứ tự làm việc: xong rồi mới đi ra. */
-  .ad-ra{grid-column:auto;justify-content:flex-end;margin-top:var(--s6)}
+   Vẫn là <button> chứ không phải <a>: nó làm một việc tại chỗ, không dẫn tới
+   địa chỉ nào. Thẻ <a> không có href thì bàn phím không tới được, mà có href
+   giả thì chuột phải "mở tab mới" ra một trang trắng. */
+.ad-chao{
+  margin:0 0 var(--s7);
+  font-size:var(--fs-sm);color:var(--text-muted);
 }
+.kh-ra{
+  appearance:none;border:0;background:none;cursor:pointer;padding:0;
+  font:inherit;color:var(--text-muted);
+  text-decoration:underline;text-decoration-color:var(--line-strong);
+  text-underline-offset:3px;
+  transition:color var(--dur-fast),text-decoration-color var(--dur-fast);
+}
+.kh-ra:hover{color:var(--accent-ink);text-decoration-color:var(--accent)}
+.kh-ra:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+/* Ở /notes/ lối ra nằm trong hàng nút của ô viết, cạnh nút Đăng — chừa cho nó
+   một quãng thở để nó không đọc ra như nút thứ hai của cùng một việc. */
+.gc-ra{margin-left:var(--s3)}
+.bl-duyet-ra{margin-top:var(--s5)}
 
 /* ══════════════════════════════════════════════════════════════
    Ô SOẠN THẢO (src/js/soan.js)

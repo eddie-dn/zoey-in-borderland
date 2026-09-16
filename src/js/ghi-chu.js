@@ -172,6 +172,8 @@
   }
 
   function xinVe() {
+    /* Không có chỗ để chèn thì cũng không việc gì phải hỏi — /z-admin/ thôi
+       dựng danh sách nên nó thôi luôn cả lượt gọi này. */
     if (!api || !ds) return Promise.resolve();
     return fetch(api, { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -291,11 +293,20 @@
       }
     }
 
+    /* Chỗ cắm sẵn ở /z-admin/ đã có tiêu đề ngăn ("Viết ghi chú") in ngay
+       trên nó, nên một tiêu đề thứ hai bên trong khung là chữ lặp — hai dòng
+       giống hệt nhau cách nhau hai chục pixel. Chỉ /notes/ mới cần nó, vì ở
+       đó khung này chen vào giữa một trang đang đọc và phải tự giới thiệu. */
+    function de2() {
+      return oVietCamSan() ? ''
+        : '<h2 class="gc-viet-de">' + tho(N.write || 'Viết ghi chú') + '</h2>';
+    }
+
     function khungViet() {
       var homNay = new Date();
       var iso = new Date(homNay.getTime() - homNay.getTimezoneOffset() * 60000)
                   .toISOString().slice(0, 10);
-      return '<h2 class="gc-viet-de">' + tho(N.write || 'Viết ghi chú') + '</h2>' +
+      return de2() +
         '<div class="gc-hang">' +
           '<label class="gc-o gc-o--ngay"><span>' + tho(N.date || 'Ngày') + '</span>' +
             '<input type="date" name="ngay" value="' + iso + '"></label>' +
@@ -332,7 +343,7 @@
       var oRa   = hop.querySelector('[data-khoa-ra-nho]');
 
       /* Nút Đăng xuất chỉ mọc ở /notes/ — ở /z-admin/ nó đã có chỗ riêng. */
-      if (oRa && K && !oVietCamSan()) K.veNutRa(oRa);
+      if (oRa && K && !oVietCamSan()) K.veChao(oRa, '');
 
       if (bDang) bDang.addEventListener('click', function () {
         var chu = (hop.querySelector('[name=chu]').value || '').trim();
@@ -384,7 +395,15 @@
       hop.parentNode.insertBefore(ds, hop.nextSibling);
     }
 
-    lamOl();
+    /* ── Ở /z-admin/ KHÔNG DỰNG DANH SÁCH ──
+       Ngăn Note của bàn làm việc là chỗ VIẾT. Bản trước nó tự dựng thêm một
+       thẻ <ol> rỗng rồi đổ toàn bộ ghi chú vào đấy, nên đăng xong là dưới ô
+       viết mọc ra một khối dài — và khối ấy chẳng để làm gì: nó chỉ chép lại
+       thứ /notes/ đã bày đầy đủ hơn.
+
+       Sửa và xoá ghi chú nay làm ngay tại /notes/ khi đã đăng nhập, đúng chỗ
+       nhìn thấy nó trong ngữ cảnh của nó. */
+    if (!oVietCamSan()) lamOl();
     veLai();
 
     /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. Cắm vào

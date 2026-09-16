@@ -130,20 +130,42 @@
    nó còn bốn cánh quay quanh tâm khác — hai tâm lệch nhau thì cả cụm giật mỗi
    lần đổi chặng. `view-box` cho mọi thứ chung một tâm 24,24. */
 :is(.logo--dong,.logo:not(.logo--dong)) :is(.lg-hoa,.lg-vc,.lg-ten,.lg-noi,
-    .lg-man,.lg-bui,.lg-canh-g,.lg-vanh-g){
+    .lg-man,.lg-bui,.lg-canh-g,.lg-vanh-g,.lg-song-tho){
   transform-box:view-box;transform-origin:50% 50%;
 }
 /* Hạt bụi thì NGƯỢC LẠI: `fill-box` để nó co quanh tâm CỦA CHÍNH NÓ. Lấy
    view-box thì scale(.3) kéo hạt về tâm khung — mười tám hạt vừa bay ra đã bị
    hút ngược vào giữa, đúng cái ngược với thứ đang kể. */
 .logo--dong .lg-bui circle{transform-box:fill-box;transform-origin:50% 50%}
-.logo--dong .lg-hoa  {animation:lg-hoa   var(--lg-ck) linear      infinite}
-.logo--dong .lg-vc--1{animation:lg-n1    var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-vc--2{animation:lg-n2    var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-ten  {animation:lg-ten   var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-noi  {animation:lg-noi   var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-man  {animation:lg-man   var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-bui  {animation:lg-bui   var(--lg-ck) linear      infinite}
+/* ── MỘT ĐƯỜNG CONG CHO MỌI CÚ CHUYỂN CẢNH ──
+   Trước bản này trên cùng một khung hình có tới BỐN nhịp chạy song song:
+
+     linear                        xoay, ba vành, nhóm bụi
+     ease-in-out                   mờ/tỏ, nét vẽ dần, phóng to của mandala
+     .4 0 .2 1                     phép biến hình <animate> trong SVG
+     cubic-bezier(.12,.62,.28,1)   từng hạt bụi
+
+   Hai cái giữa chạy trên CÙNG MỘT NÉT ở cùng một lúc: `lg-vc--1` đổi độ mờ và
+   nét vẽ theo `ease-in-out` trong khi HÌNH của chính nó biến theo `.4 0 .2 1`.
+   Hai đường cong ấy khác nhau — ease-in-out đối xứng, còn .4 0 .2 1 thì rời đi
+   nhanh và hạ xuống chậm — nên mắt đọc ra hai cú chuyển chồng lên nhau, lệch
+   pha. Xem một vòng thì không rõ; xem tới vòng thứ ba thì thành cái gợn.
+
+   Nay mọi cú CHUYỂN CẢNH dùng đúng `.4 0 .2 1`, khớp với keySplines của thẻ
+   <animate>. Hai thứ vẫn giữ nhịp riêng, và có lý do:
+     · `linear` cho phép xoay và ba vành — tốc độ ở đó do KHOẢNG CÁCH giữa các
+       mốc quyết định (xem bảng độ/phần trăm dưới @keyframes lg-hoa); thêm một
+       đường cong nữa vào đấy là cộng hai lớp gia tốc lên nhau;
+     · hạt bụi giữ đường cong riêng của nó — đó là một cú văng ra, không phải
+       một cú chuyển cảnh. */
+.logo--dong{--lg-nhip:cubic-bezier(.4,0,.2,1)}
+.logo--dong .lg-hoa  {animation:lg-hoa   var(--lg-ck) linear infinite}
+.logo--dong .lg-vc--1{animation:lg-n1    var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-vc--2{animation:lg-n2    var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-ten  {animation:lg-ten   var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-noi  {animation:lg-noi   var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-man  {animation:lg-man   var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-bui  {animation:lg-bui   var(--lg-ck) linear infinite}
 /* Ba vành + cụm cánh mandala quay RIÊNG, mỗi lớp một tốc độ. Chúng nằm trong
    .lg-hoa nên phép xoay ở đây CỘNG vào phép xoay của cả cụm: con số trong mấy
    bộ keyframes ấy là tốc độ TƯƠNG ĐỐI so với bông hoa, không phải tốc độ nhìn
@@ -151,38 +173,62 @@
    không phải một tấm ảnh đang xoay. */
 .logo--dong .lg-canh-g       {animation:lg-canh-g var(--lg-ck) linear infinite}
 .logo--dong .lg-vanh-g--ngoai{animation:lg-vanh-n var(--lg-ck) linear infinite}
-.logo--dong .lg-vanh-g--giua {animation:lg-vanh-g var(--lg-ck) linear infinite}
 .logo--dong .lg-vanh-g--trong{animation:lg-vanh-t var(--lg-ck) linear infinite}
 /* Nhấp nháy ĐỔI PHIÊN — xem @keyframes lg-nhay-goc */
-.logo--dong .lg-goc {animation:lg-nhay-goc  var(--lg-ck) ease-in-out infinite}
-.logo--dong .lg-canh{animation:lg-nhay-canh var(--lg-ck) ease-in-out infinite}
+.logo--dong .lg-goc {animation:lg-nhay-goc  var(--lg-ck) var(--lg-nhip) infinite}
+.logo--dong .lg-canh{animation:lg-nhay-canh var(--lg-ck) var(--lg-nhip) infinite}
 .lg-ten,.lg-noi{opacity:0}
 
 /* Bốn cánh mandala KHÔNG còn mảnh cố định nữa — bề dày và độ đậm của chúng do
    @keyframes lg-nhay-canh lo, vì đó chính là thứ phải đổi phiên. Hai dòng dưới
    chỉ là hình dáng đầu nét và giá trị lúc chưa có hoạt hình nào chạy. */
-.lg-canh{stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-/* Vành ĐỨT NÉT: vành liền trơn xoay quanh tâm nó thì vẫn là chính nó, xoay bao
-   nhiêu cũng không ai thấy. Đứt ra thì mỗi vạch thành một cái nan hoa.
-   Ba khoảng đứt khác nhau, và không cái nào chia hết cho cái nào: ba vành quay
-   ba tốc độ mà vạch của chúng vẫn không bao giờ xếp thành một hàng nan chung —
-   xếp được thành hàng thì ba lớp dính lại thành một, mất hết cảm giác tầng. */
+/* ── `miter` CHỨ KHÔNG `round`, VÀ NÓ KHÔNG ĐỔI GÌ Ở BẢN TRÒN ──
+   Đầu cánh của bản tròn trơn về mặt hình học — không có góc nào ở đó — nên
+   `miter` hay `round` vẽ ra y hệt. Chỉ khi hình đã đanh lại thành bản nhọn
+   (xem P_NHON1 trong tools/build.mjs) thì mới có góc thật, và lúc ấy `miter`
+   kéo nó thành mũi nhọn còn `round` bo cụt mất đúng cái vừa dựng ra.
+   Khai sẵn `miter` thì không phải hoạt hoá một thuộc tính rời rạc — thứ mà
+   trình duyệt lật đột ngột giữa chừng khoảng, rất khó canh.
+   `miterlimit` phải đủ lớn: mũi nhọn ở đây mở chừng 50°, và mức mặc định 4 đã
+   cắt nó thành đầu vát ngay từ khoảng 29°. */
+.lg-canh{stroke-width:1.5;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:10}
+/* ── VÌ SAO VÀNH NGOÀI THÔI ĐỨT NÉT ──
+   Một vành LIỀN TRƠN xoay quanh tâm nó thì vẫn là chính nó: xoay bao nhiêu
+   cũng không ai thấy. Đó là lý do ba vành cũ đều đứt nét — mỗi vạch thành một
+   cái nan hoa, và bánh xe mới có cái để quay.
+
+   Nhưng ở cỡ 36px, hai dãy gạch ngắn lồng nhau đọc ra thô, và chúng tranh chỗ
+   với tám cánh chứ không xếp thành tầng phía sau. Vành ngoài nay là một đường
+   cong khép kín có bán kính dao động — nó vẫn "xoay mà thấy được" vì biên độ
+   không đều, mà nét thì liền. Vành giữa bỏ hẳn: thêm một lớp nữa vào đó là
+   quay lại đúng chỗ vừa đi ra.
+
+   Vành trong (r6) giữ nguyên nét đứt — nó nhỏ, nằm ngay tâm, và chính cái
+   lấm tấm ấy nói rằng lõi đang xoáy nhanh nhất. */
 .lg-vanh{stroke-width:.9;stroke-opacity:.42;stroke-linecap:round}
-.lg-vanh--ngoai{stroke-dasharray:3 6}
-.lg-vanh--giua {stroke-dasharray:2 5;stroke-width:.7;stroke-opacity:.28}
+.lg-vanh--song {stroke-width:.85;stroke-opacity:.5;stroke-linejoin:round}
 .lg-vanh--trong{stroke-dasharray:1.4 3.2}
+/* Co dãn NHẸ — 3,5% là đủ để đọc ra là đang thở, và chưa đủ để thành một cú
+   nảy. Một phần tư vòng kể, nên bốn nhịp thở khớp đúng vào một vòng và không
+   có cú nhảy nào ở mốc lặp. */
+.logo--dong .lg-song-tho{animation:lg-tho calc(var(--lg-ck) / 4) var(--lg-nhip) infinite}
+@keyframes lg-tho{
+  0%,100%{transform:scale(1)}
+  32%    {transform:scale(1.035)}
+  68%    {transform:scale(.985)}
+}
 .lg-man{opacity:0}
 .lg-bui circle{opacity:0}
 
 /* ── CẢ CỤM HOA: BÁNH XE QUAY RỒI VỠ ──
    Góc quay giữa các mốc, tính ra độ trên mỗi phần trăm vòng:
 
-     57 → 63%     30°  trong 6%   →   5 °/%   mới chớm lăn, hoa còn đang nở
-     63 → 71%     96°  trong 8%   →  12 °/%
-     71 → 79%    208°  trong 8%   →  26 °/%
-     79 → 85%    276°  trong 6%   →  46 °/%
-     85 → 90,5%  440°  trong 5,5% →  80 °/%   nhanh nhất
-     90,5 → 93,5% 230° trong 3%   →  77 °/%   đang vỡ, buông dần
+     53 → 58,4%   30°  trong 5,4% →   6 °/%   mới chớm lăn
+     58,4 → 65,5%  96° trong 7,1% →  14 °/%
+     65,5 → 72,7% 208° trong 7,2% →  29 °/%
+     72,7 → 78,1% 276° trong 5,4% →  51 °/%
+     78,1 → 83%   440° trong 4,9% →  90 °/%   nhanh nhất
+     83 → 86,5%   230° trong 3,5% →  66 °/%   đang vỡ, buông dần
 
    Hàm nhịp để `linear`, nên nhanh-chậm HOÀN TOÀN do khoảng cách giữa các mốc
    quyết định. Chia đều góc thì tốc độ không đổi và cú tăng tốc biến mất — đó
@@ -206,18 +252,21 @@
    ấy thì nó nhả từ scale(1,34) về 1 một cách từ từ và người xem thấy một bóng
    mờ co lại giữa lúc chưa tới chặng của nó. */
 @keyframes lg-hoa{
-  0%,5%      {opacity:1;transform:none}
-  5.5%,57%   {opacity:1;transform:none}
-  63%        {opacity:1;transform:rotate(30deg)   scale(1.02)}
-  71%        {opacity:1;transform:rotate(126deg)  scale(1.05)}
-  79%        {opacity:1;transform:rotate(334deg)  scale(1.09)}
-  85%        {opacity:1;transform:rotate(610deg)  scale(1.14)}
-  90.5%      {opacity:1;transform:rotate(1050deg) scale(1.20)}
+  0%,6%      {opacity:1;transform:none}
+  /* Đứng yên suốt chặng kể chuyện VÀ suốt nấc đanh lại (50→53%). Cú đanh lại
+     phải rơi vào lúc bông hoa bất động — nhét nó vào giữa chuyển động thì nó
+     trôi mất, mà nó là một nhịp riêng chứ không phải một hiệu ứng phụ. */
+  6.5%,53%   {opacity:1;transform:none}
+  58.4%      {opacity:1;transform:rotate(30deg)   scale(1.02)}
+  65.5%      {opacity:1;transform:rotate(126deg)  scale(1.05)}
+  72.7%      {opacity:1;transform:rotate(334deg)  scale(1.09)}
+  78.1%      {opacity:1;transform:rotate(610deg)  scale(1.14)}
+  83%        {opacity:1;transform:rotate(1050deg) scale(1.20)}
   /* Vỡ: xoay tiếp, căng ra, mờ HẲN và mờ NHANH — nhường sân cho đám bụi. */
-  91.5%      {opacity:.36;transform:rotate(1128deg) scale(1.27)}
-  93.5%      {opacity:0;transform:rotate(1280deg) scale(1.34)}
-  94%        {opacity:0;transform:none}
-  97%,100%   {opacity:1;transform:none}
+  84%        {opacity:.36;transform:rotate(1128deg) scale(1.27)}
+  86.5%      {opacity:0;transform:rotate(1280deg) scale(1.34)}
+  87%        {opacity:0;transform:none}
+  90%,100%   {opacity:1;transform:none}
 }
 
 /* ── NHẤP NHÁY ĐỔI PHIÊN ──
@@ -241,25 +290,25 @@
    Mốc 88% khép lại ở giữa — hai nhóm gần bằng nhau — để lúc vỡ không có nhóm
    nào đang nổi hơn nhóm nào. */
 @keyframes lg-nhay-goc{
-  0%,61%     {opacity:1}
-  67%        {opacity:.55}
-  73%        {opacity:1}
-  79%        {opacity:.55}
-  85%        {opacity:1}
-  88%,100%   {opacity:.85}
+  0%,53%     {opacity:1}
+  58%        {opacity:.55}
+  63.5%      {opacity:1}
+  69%        {opacity:.55}
+  74.5%      {opacity:1}
+  78%,100%   {opacity:.85}
 }
 @keyframes lg-nhay-canh{
-  /* Lúc NGHỈ (0–5% và 97–100%) bốn cánh sao nặng gần bằng bốn cánh gốc — đó
+  /* Lúc NGHỈ (0–6% và 90–100%) bốn cánh sao nặng gần bằng bốn cánh gốc — đó
      là lúc hình phải đọc ra là một đoá tám cánh cân đối, không phải bốn cánh
      đậm cộng bốn cái bóng. Chỉ khi vào chặng kể chuyện chúng mới lùi về .5 để
      nhường chỗ cho hai vô cực đang được dựng. */
-  0%,5%      {stroke-opacity:.8;stroke-width:2}
-  5.5%,61%   {stroke-opacity:.5;stroke-width:1.5}
-  67%        {stroke-opacity:1;stroke-width:2.6}
-  73%        {stroke-opacity:.5;stroke-width:1.5}
-  79%        {stroke-opacity:1;stroke-width:2.6}
-  85%        {stroke-opacity:.5;stroke-width:1.5}
-  88%,97%    {stroke-opacity:.8;stroke-width:2.1}
+  0%,6%      {stroke-opacity:.8;stroke-width:2}
+  6.5%,53%   {stroke-opacity:.5;stroke-width:1.5}
+  58%        {stroke-opacity:1;stroke-width:2.6}
+  63.5%      {stroke-opacity:.5;stroke-width:1.5}
+  69%        {stroke-opacity:1;stroke-width:2.6}
+  74.5%      {stroke-opacity:.5;stroke-width:1.5}
+  78%,90%    {stroke-opacity:.8;stroke-width:2.1}
   100%       {stroke-opacity:.8;stroke-width:2}
 }
 
@@ -290,11 +339,11 @@
    đo bằng CHỖ HẸP NHẤT giữa hai cánh, không phải bằng khoảng cách tới chỗ
    chồng. */
 @keyframes lg-canh-g{
-  0%,58%     {transform:rotate(0deg)}
-  67%        {transform:rotate(9deg)}
-  75%        {transform:rotate(-11deg)}
-  83%        {transform:rotate(15deg)}
-  90.5%,100% {transform:rotate(0deg)}
+  0%,53%     {transform:rotate(0deg)}
+  61%        {transform:rotate(9deg)}
+  68%        {transform:rotate(-11deg)}
+  75.5%      {transform:rotate(15deg)}
+  83%,100%   {transform:rotate(0deg)}
 }
 /* Ba vành: ngoài vượt lên trước, giữa quay NGƯỢC và tụt lại, lõi xoáy nhanh
    nhất. Ba tốc độ khác dấu khác độ lớn là thứ cho ra cảm giác nhiều tầng nan
@@ -302,22 +351,18 @@
    Mốc cuối giữ nguyên tới 100% rồi nhảy về 0 ở đầu vòng: cú nhảy ấy rơi đúng
    lúc mandala đã mờ hẳn nên không ai thấy. */
 @keyframes lg-vanh-n{
-  0%,58%     {transform:rotate(0deg)}
-  73%        {transform:rotate(20deg)}
-  84%        {transform:rotate(96deg)}
-  93.5%,100% {transform:rotate(260deg)}
+  0%,53%     {transform:rotate(0deg)}
+  66%        {transform:rotate(20deg)}
+  76%        {transform:rotate(96deg)}
+  86.5%,100% {transform:rotate(260deg)}
 }
-@keyframes lg-vanh-g{
-  0%,58%     {transform:rotate(0deg)}
-  73%        {transform:rotate(-15deg)}
-  84%        {transform:rotate(-74deg)}
-  93.5%,100% {transform:rotate(-210deg)}
-}
+/* `lg-vanh-g` KHÔNG còn ai dùng: vành giữa đã bỏ. Giữ lại bộ keyframes thì
+   lần sau có người thêm một vành nữa lại nhặt nhầm nó — xoá hẳn. */
 @keyframes lg-vanh-t{
-  0%,58%     {transform:rotate(0deg)}
-  73%        {transform:rotate(32deg)}
-  84%        {transform:rotate(160deg)}
-  93.5%,100% {transform:rotate(430deg)}
+  0%,53%     {transform:rotate(0deg)}
+  66%        {transform:rotate(32deg)}
+  76%        {transform:rotate(160deg)}
+  86.5%,100% {transform:rotate(430deg)}
 }
 
 /* NÉT THỨ NHẤT — chữ Z → vô cực ngang.
@@ -329,38 +374,38 @@
    55. Ép nó chạy tiếp về 0 trong cùng quãng ấy là nửa sau không có gì để nhìn.
    Phần 52 → 0 đẩy sang lúc đang xoay, chỗ mắt bận nhìn chỗ khác. */
 @keyframes lg-n1{
-  0%,5%      {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
-  5.5%,15%   {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
-  16%        {opacity:1;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
-  24%,32%    {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
-  38%,44%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  0%,6%      {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  6.5%,14%   {opacity:0;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
+  14.8%      {opacity:1;transform:rotate(-90deg);stroke-dashoffset:130;stroke-opacity:1}
+  21%,27%    {opacity:1;transform:rotate(-90deg);stroke-dashoffset:52;stroke-opacity:1}
+  32%,36%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
   /* Lùi lại còn 30% suốt chặng chữ B: lúc ấy vô cực thứ nhất đã xong và nằm
      ĐÚNG giữa khung, còn chữ B thì cũng vẽ quanh đúng tâm ấy. Để hai nét cùng
      độ đậm chồng lên nhau thì ra một mớ rối, không đọc ra nét nào. Lùi một nét
      xuống là đủ tách lớp, mà vẫn thấy nó còn đó chờ nét thứ hai. */
-  47%,56%    {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
-  60%,100%   {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
+  37.8%,44.5%{opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:.3}
+  47.5%,100% {opacity:1;transform:none;stroke-dashoffset:0;stroke-opacity:1}
 }
 /* NÉT THỨ HAI — chữ B → vô cực đứng.
    Xoay 180° trong lúc <animate> vặn chữ B thành vô cực: đó là cú "bụng dưới
    vòng ra". Vô cực đứng đối xứng qua tâm, nên 180° và 0° vẽ ra y hệt nhau —
    nhờ vậy mốc cuối vòng nối lại đầu vòng mà không thấy cú nhảy nào. */
 @keyframes lg-n2{
-  0%,5%      {opacity:1;transform:none;stroke-dashoffset:0}
-  5.5%,43%   {opacity:0;transform:none;stroke-dashoffset:130}
-  44%        {opacity:1;transform:none;stroke-dashoffset:130}
-  49%,50%    {opacity:1;transform:none;stroke-dashoffset:52}
-  58%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
+  0%,6%      {opacity:1;transform:none;stroke-dashoffset:0}
+  6.5%,35.5% {opacity:0;transform:none;stroke-dashoffset:130}
+  36%        {opacity:1;transform:none;stroke-dashoffset:130}
+  39.5%,40%  {opacity:1;transform:none;stroke-dashoffset:52}
+  46%,100%   {opacity:1;transform:rotate(180deg);stroke-dashoffset:0}
 }
 /* Ba vạch dài ngắn khác nhau = một dòng chữ nhìn từ xa. Chúng bóp lại theo BỀ
    NGANG rồi tắt — đó là "thu gọn" trong ý tưởng gốc, và phải là bóp ngang chứ
    không phải thu nhỏ đều: thu nhỏ đều thì dòng chữ chỉ lùi ra xa, bóp ngang
    thì nó dồn về một điểm để nét chữ Z mọc lên từ đó. */
 @keyframes lg-ten{
-  0%,5%      {opacity:0;transform:scaleX(1)}
-  8%,12%     {opacity:.95;transform:scaleX(1)}
-  16%        {opacity:0;transform:scaleX(.04)}
-  16.5%,100% {opacity:0;transform:scaleX(1)}
+  0%,6%      {opacity:0;transform:scaleX(1)}
+  8.5%,11.5% {opacity:.95;transform:scaleX(1)}
+  14.5%      {opacity:0;transform:scaleX(.04)}
+  15%,100%   {opacity:0;transform:scaleX(1)}
 }
 /* NÉT NỐI — chữ i.
    Nó quét từ ngoài vào rồi nằm đúng vào chỗ nối hai đầu tự do của chữ Z, nên
@@ -375,11 +420,11 @@
    Tắt ở 39%, ngay sau khi phép bo góc bắt đầu: để nó nằm lại giữa phép biến
    hình thì thành một gạch thừa vắt ngang cái vô cực đang thành hình. */
 @keyframes lg-noi{
-  0%,25%     {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
-  29%,32%    {opacity:.92;transform:rotate(-90deg) translate(0,0) scale(1)}
-  38%        {opacity:.92;transform:rotate(0deg) translate(0,0) scale(1)}
-  39%        {opacity:0;transform:rotate(0deg) translate(0,0) scale(1)}
-  39.5%,100% {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
+  0%,21.5%   {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
+  24.5%,27%  {opacity:.92;transform:rotate(-90deg) translate(0,0) scale(1)}
+  32%        {opacity:.92;transform:rotate(0deg) translate(0,0) scale(1)}
+  32.7%      {opacity:0;transform:rotate(0deg) translate(0,0) scale(1)}
+  33%,100%   {opacity:0;transform:rotate(-90deg) translate(16px,-16px) scale(.5)}
 }
 /* Bốn cánh nở thành tám. Hai cánh thêm và hai vành tròn hiện dần từ tâm ra —
    `scale` từ .6 lên 1 chứ không chỉ đổi độ mờ: chỉ mờ dần thì chúng "bật" ra
@@ -409,13 +454,15 @@
    vỡ → tụ lại thành mandala. Bắt đầu và kết thúc ở cùng một chỗ, và chỗ ấy
    đúng là logo. */
 @keyframes lg-man{
-  0%,5%      {opacity:1;transform:scale(1)}
-  5.5%,57%   {opacity:0;transform:scale(.6)}
-  63%,90.5%  {opacity:1;transform:scale(1)}
-  92%        {opacity:.35;transform:scale(1.06)}
-  93.5%      {opacity:0;transform:scale(1.1)}
-  94%        {opacity:0;transform:scale(.6)}
-  97%,100%   {opacity:1;transform:scale(1)}
+  0%,6%      {opacity:1;transform:scale(1)}
+  6.5%,46%   {opacity:0;transform:scale(.6)}
+  /* Nở xong ở 50%, rồi ĐỨNG YÊN ba phần trăm vòng — đó là chỗ nấc đanh lại
+     diễn ra (xem `bien()` trong tools/build.mjs, hai mốc .50 và .53). */
+  50%,83%    {opacity:1;transform:scale(1)}
+  84.5%      {opacity:.35;transform:scale(1.06)}
+  86.5%      {opacity:0;transform:scale(1.1)}
+  87%        {opacity:0;transform:scale(.6)}
+  90%,100%   {opacity:1;transform:scale(1)}
 }
 /* ── BỤI ──
    Nhóm bụi chỉ mở cửa trong chặng vỡ; từng hạt rơi bằng @keyframes riêng bên
@@ -423,9 +470,9 @@
    vòng lớn) lẫn "rơi tới đâu rồi" (theo đường rơi của chính nó) — nhét cả hai
    vào một bộ keyframes thì mỗi hạt phải có một bộ riêng. */
 @keyframes lg-bui{
-  0%,89.4%   {opacity:0}
-  89.5%,97.5%{opacity:1}
-  97.6%,100% {opacity:0}
+  0%,82.5%   {opacity:0}
+  82.6%,90%  {opacity:1}
+  90.2%,100% {opacity:0}
 }
 /* Mỗi hạt mang sẵn --bx (dạt ngang), --by (rơi sâu) và --bt (trễ) do build
    tính ra và ghi thẳng vào thuộc tính style của nó. Cùng một bộ keyframes,
@@ -448,11 +495,11 @@
    mắt thì nhỏ đi. Độ mờ tắt sớm hơn quãng bay một chút nên không hạt nào biến
    mất ngay lúc đang còn rõ nét. */
 @keyframes lg-hat{
-  0%,89.5%   {opacity:0;transform:translate(0,0) scale(1)}
-  90.5%      {opacity:.95;transform:translate(0,0) scale(1)}
-  93.5%      {opacity:.72}
-  96.5%      {opacity:0;transform:translate(var(--bx),var(--by)) scale(.35)}
-  96.6%,100% {opacity:0;transform:translate(0,0) scale(1)}
+  0%,82.6%   {opacity:0;transform:translate(0,0) scale(1)}
+  83.7%      {opacity:.95;transform:translate(0,0) scale(1)}
+  86.5%      {opacity:.72}
+  89.5%      {opacity:0;transform:translate(var(--bx),var(--by)) scale(.35)}
+  89.6%,100% {opacity:0;transform:translate(0,0) scale(1)}
 }
 /* Tắt máy thì dừng ở hình ĐỦ, không dừng ở một chặng giữa chừng: người bật
    "giảm chuyển động" vẫn phải thấy logo, chỉ là không thấy nó động.
@@ -465,7 +512,7 @@
   .logo--dong .lg-man{opacity:1;transform:none;animation:none}
   /* Đứng yên thì không có lượt nào để đổi phiên: hai nhóm cùng một độ đậm vừa
      phải, bốn cánh gốc vẫn là nét chính nhờ bề dày 2.6 của .lg-vc. */
-  .logo--dong :is(.lg-goc,.lg-canh,.lg-canh-g,.lg-vanh-g){
+  .logo--dong :is(.lg-goc,.lg-canh,.lg-canh-g,.lg-vanh-g,.lg-song-tho){
     animation:none;transform:none;opacity:1;
   }
   .logo--dong .lg-canh{stroke-opacity:.6;stroke-width:1.5}

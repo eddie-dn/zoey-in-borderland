@@ -110,10 +110,26 @@
         .then(function (d) { return { ma: r.status, d: d || {} }; });
     }).then(function (kq) {
       if (kq.ma === 200 && kq.d.ok !== false) return { ok: true };
-      /* Máy chủ gửi `chiTiet` cho lỗi cấu hình — đó là câu nói phải bấm vào
-         đâu để sửa, và nó luôn đúng hơn câu đoán sẵn ở đây. */
-      if (kq.d.chiTiet) return { ok: false, chu: String(kq.d.chiTiet) };
-      if (kq.ma === 401) return { ok: false, chu: L('badKey', 'Mã chủ hoặc khoá sai.') };
+
+      /* ── KHOÁ SAI THÌ KHÔNG NÓI GÌ ──
+         Trang này ai gõ đúng đường dẫn cũng mở được, nên màn đăng nhập là thứ
+         người lạ nhìn thấy. Một câu "mã chủ hoặc khoá sai" nói với họ đúng hai
+         điều: cửa này có thật, và họ đã sai ở vế nào — hai mẩu ấy cộng lại là
+         lời mời dò tiếp.
+
+         Chủ trang mất gì? Gần như không: ô khoá tự xoá trắng và con trỏ nhảy
+         về đó, nên "gõ lại đi" vẫn được nói ra, chỉ là bằng hành vi chứ không
+         bằng chữ.
+
+         `cauhinh` thì NGƯỢC LẠI — vẫn nói. Máy chủ chưa đặt khoá thì không ai
+         vào được, kể cả người gõ đúng: không có gì để giấu, mà có một buổi
+         của chủ trang để cứu. */
+      if (kq.d.loi === 'cauhinh' && kq.d.chiTiet) {
+        return { ok: false, chu: String(kq.d.chiTiet) };
+      }
+      if (kq.ma === 401) return { ok: false, chu: '' };
+      /* Mạng hỏng hay máy chủ đổ thì vẫn báo: đó không phải chuyện khoá, và
+         im lặng ở đây chỉ làm người ta bấm lại mười lần. */
       return { ok: false, chu: L('failed', 'Máy chủ không nhận.') };
     }).catch(function () {
       return { ok: false, chu: L('netErr', 'Mạng trục trặc. Thử lại một lát nữa.') };
@@ -194,7 +210,16 @@
       noi(L('checking', 'Đang thử khoá…'));
       thu(id, key).then(function (kq) {
         nut.disabled = false;
-        if (!kq.ok) { noi(kq.chu, true); oKey.select(); return; }
+        if (!kq.ok) {
+          noi(kq.chu, !!kq.chu);
+          /* Xoá trắng ô khoá chứ không bôi đen: bôi đen thì chuỗi cũ còn đó và
+             gõ tiếp là chèn vào giữa. Xoá rồi thì lần gõ sau là một lần gõ
+             sạch — và đó cũng là dấu hiệu duy nhất nói rằng vừa có gì đó
+             không xong. */
+          oKey.value = '';
+          oKey.focus();
+          return;
+        }
         /* Lưu SAU khi máy chủ đã nhận. Lưu trước rồi sửa sau thì có một
            quãng mà máy nhớ một khoá sai, và ngăn nào tình cờ hỏi đúng lúc ấy
            sẽ nhận 401 mà không ai giải thích được vì sao. */
@@ -217,13 +242,25 @@
     return { tap: function () { oId.focus(); }, noi: noi };
   }
 
-  /* Nút ĐĂNG XUẤT. Một chỗ bấm, cả ba ngăn cùng đóng — nhờ `bao()` ở trên. */
-  function veNutRa(hop) {
+  /* ── LỜI CHÀO KIÊM LỐI RA ──
+     Một dòng chữ thường, không phải một cái nút có viền: chỗ này trước đây là
+     dòng phụ đề của trang ("Ghi chú, bình luận và bài viết…") — một câu tả
+     lại thứ người ta đang nhìn thấy, tức là một câu không nói thêm gì.
+
+     Nay nó nói đúng hai điều đáng nói: ĐANG LÀ AI, và ĐI RA LỐI NÀO. Lối ra
+     là một <button> (nó làm một việc, không dẫn tới địa chỉ nào) nhưng mặc
+     đúng bộ đồ của chữ trong dòng — xem `.kh-ra` ở list.css. */
+  function veChao(hop, ten) {
+    hop.textContent = '';
+    var chu = document.createElement('span');
+    chu.textContent = (L('hello', 'Haluuu, {ten}!')).replace('{ten}', ten || '');
+    hop.appendChild(chu);
+    hop.appendChild(document.createTextNode(' \u2014 '));
+
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'kh-ra';
     b.textContent = L('signOut', 'Đăng xuất');
-    b.title = L('signOutTip', 'Quên khoá trên máy này — cả ba ngăn cùng đóng.');
     b.addEventListener('click', function () { xoa(); });
     hop.appendChild(b);
     return b;
@@ -232,6 +269,6 @@
   window.ZIB = window.ZIB || {};
   window.ZIB.khoa = {
     co: co, lay: lay, dau: dau, dat: dat, xoa: xoa,
-    theoDoi: theoDoi, thu: thu, veCong: veCong, veNutRa: veNutRa
+    theoDoi: theoDoi, thu: thu, veCong: veCong, veChao: veChao
   };
 })();

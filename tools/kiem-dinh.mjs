@@ -1206,7 +1206,10 @@ const KIEM = [
          nó chỉ vẽ dần ra rồi tắt, nên nó được phép là một đoạn thẳng `M…L…`.
          Bốn đường dưới đây thì phải cùng cấu trúc, vì chúng nội suy vào nhau
          theo từng cặp: P_ZZ→P_INF1 và P_B→P_INF2. */
-      const ten = ['P_INF1', 'P_INF2', 'P_ZZ', 'P_B'];
+      /* P_NHON1/P_NHON2 là bản đầu cánh nhọn; chúng nội suy vào chính bản
+         tròn của mình ở nấc "đanh lại" trước chặng xoay, nên phải cùng cấu
+         trúc y như hai cặp kia. */
+      const ten = ['P_INF1', 'P_INF2', 'P_ZZ', 'P_B', 'P_NHON1', 'P_NHON2'];
       for (const k of ten) {
         /* Cắt bằng chỉ số chứ không dựng RegExp từ chuỗi: RegExp dựng động ở đây
            phải escape hai tầng — một cho chuỗi mẫu, một cho biểu thức — và đã sai

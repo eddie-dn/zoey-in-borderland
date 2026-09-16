@@ -86,7 +86,8 @@
      rồi phát cùng một sự kiện ấy sang đây. */
   var K = (window.ZIB || {}).khoa;
   var oCong = document.querySelector('[data-khoa-cong]');
-  var oRa   = document.querySelector('[data-khoa-ra]');
+  var oChao = document.querySelector('[data-khoa-chao]');
+  var TEN   = (oChao && oChao.getAttribute('data-ten')) || '';
   var congDaVe = null;
   /* Đã vào được lần nào trong lượt mở trang này chưa. Dùng để phân biệt "mới
      mở trang" với "vừa bấm Đăng xuất" — hai lúc ấy cần hai hành vi con trỏ
@@ -103,13 +104,15 @@
     khung.hidden = !vao;
     oCong.hidden = vao;
 
+    if (oChao) oChao.hidden = !vao;
+
     if (vao) {
       oCong.textContent = '';
       congDaVe = null;
-      if (oRa && !oRa.firstChild) K.veNutRa(oRa);
+      if (oChao) K.veChao(oChao, TEN);
       return;
     }
-    if (oRa) oRa.textContent = '';
+    if (oChao) oChao.textContent = '';
     /* Dựng lại khung đăng nhập MỖI LẦN đăng xuất, không giữ lại khung cũ: ô
        khoá cũ còn nguyên chữ vừa gõ, và để nguyên nó là để lại mật khẩu nằm
        trong DOM của một trang đã đăng xuất. */

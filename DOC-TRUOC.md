@@ -1,68 +1,45 @@
-# V8.01 → V8.02 — bốn file, và ba file phải XOÁ
+# Bản cập nhật V8.03 → V8.07
 
-GitHub của em đang ở **V8.01**. Chỉ cần đổi bốn file dưới đây.
+23 file. **Chép đè lên đúng vị trí cũ** — đường dẫn trong zip đã đúng sẵn, giải
+nén ngay tại gốc dự án là xong. Không file nào bị xoá.
 
----
+Hai file **mới hoàn toàn**: `src/js/khoa.js` và `src/js/soan.js`.
 
-## 1 · Ba file kéo thả bình thường
+Bản này **gồm luôn** mọi thứ trong zip V8.04 gửi trước đó — nếu chưa chép bản
+kia thì chỉ cần chép bản này.
 
-| Kéo file này | Vào chỗ này trên GitHub |
-|---|---|
-| `wrangler.jsonc` | gốc repo |
-| `tools/kiem-dinh.mjs` | thư mục `tools/` |
-| `docs/LICH-SU.md` | thư mục `docs/` |
-
-Vào repo → **Add file** → **Upload files** → kéo vào → **Commit changes**.
-
----
-
-## 2 · File thứ tư KHÔNG kéo thả được
-
-`content/.moc.json` mở đầu bằng dấu chấm, và **trình duyệt bỏ qua mọi file bắt
-đầu bằng dấu chấm khi kéo thả**. Đây là lý do nó chưa bao giờ có trên GitHub.
-
-Hệ quả: sổ ghi mốc sửa bài không có trên GitHub, nên mỗi lần Cloudflare dựng
-lại là nó coi mọi bài đều mới tinh. **Nhãn "Updated" vì thế không bao giờ hiện
-trên bài nào cả** — không phải hỏng, chỉ là lặng lẽ không chạy.
-
-### Cách đưa lên
-
-1. Vào repo → **Add file** → **Create new file**
-2. Ô tên file, gõ đúng chuỗi này (gõ cả dấu `/`, GitHub tự tạo thư mục):
-
-   ```
-   content/.moc.json
-   ```
-
-3. Mở `content/moc.json.txt` trong gói này, chép **toàn bộ** nội dung, dán vào
-   khung soạn thảo
-4. **Commit changes**
-
-> File trong gói này để đuôi `.txt` để em mở xem được. Lúc tạo trên GitHub thì
-> tên phải là `.moc.json`, không có `.txt`.
-
----
-
-## 3 · Ba file phải XOÁ khỏi GitHub
-
-V7.09 đã dọn ba thứ chết này, nhưng kéo thả chỉ THÊM và GHI ĐÈ — không bao giờ
-xoá. Nên chúng vẫn nằm đó:
-
-```
-api/quote.js
-content/quotes.md
-tools/apps-script/Code.gs
+```bash
+npm run build && npm run kiem
 ```
 
-Chúng vô hại cho tới lúc có người mở nhầm ra sửa — rồi sửa vào chỗ không chạy,
-hoặc chép lại một cái tên model đã ngừng hoạt động.
+## Năm bản, năm việc
 
-**Cách xoá:** mở từng file trên GitHub → nút **⋯** góc phải → **Delete file** →
-**Commit changes**.
+**V8.03 — bàn làm việc**
+Đăng nhập một cửa cho cả ba ngăn, thử khoá thật với máy chủ trước khi nhận.
+Ô viết bài gõ như gõ văn bản rồi tự đổi ra Markdown. Màu chữ trong bài:
+`{tím: chữ}`. Bộ dựng hiểu dấu chéo ngược. "Sai khoá" và "máy chủ chưa có
+khoá" thành hai câu khác nhau.
 
----
+**V8.04 — chân trang**
+Còn một hàng, và dùng đúng bộ chữ của thanh đầu trang.
 
-## 4 · Sau khi xong
+**V8.05 — logo**
+Thêm một nhịp: hoa nở ra đầu cánh TRÒN, đứng yên một nhịp rồi NHỌN lên, xong
+mới xoay. Vành ngoài thành một đường sóng co dãn nhẹ thay hai vòng nét đứt.
+Mọi cú chuyển cảnh nay cùng một nhịp — trước đó có bốn đường cong thời gian
+chạy song song, hai trong số đó trên cùng một nét. Dừng ở hình cuối lâu gấp
+đôi (2,2s → 4,3s), đoạn dựng hình nhanh hơn một phần ba.
 
-Cloudflare tự dựng lại. Mở `z-in-borderland.com` xem chân trang có `V8.02` là
-xong.
+**V8.06 — màn đầu trên điện thoại**
+Tên blog cân giữa thay vì bám mép trái.
+
+**V8.07 — admin**
+"Haluuu, Zoey! — Đăng xuất" thay dòng phụ đề; lối ra là chữ trong câu. Gõ sai
+khoá thì màn hình không nói gì (ô khoá tự xoá trắng). Ngăn Note thôi kèm danh
+sách ghi chú ở dưới, và tiêu đề thôi in hai lần.
+
+## Chưa làm — đang xếp hàng
+
+Lưu/sửa draft rồi publish · quyền admin hiện ra ở trang ngoài (sửa bài, sửa
+và xoá ghi chú) · Hide bài vào sub-tab riêng · ngân hà theme tối chưa phủ hết
+màn · mưa theme Tĩnh lặng và hiệu ứng giọt chạm mặt nước.

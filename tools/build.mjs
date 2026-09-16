@@ -239,7 +239,12 @@ const NHAN = {
      Ba việc, ba ngăn, chỉ một ngăn hiện mỗi lúc. Nhãn để NGẮN vì chúng nằm
      trong một cột hẹp bên trái và phải đọc được bằng một cái liếc. */
   qlTitle     : 'Admin',
-  qlDan       : 'Ghi chú, bình luận và bài viết. Chỉ mình bạn thấy trang này.',
+  /* Dòng dưới tiêu đề trang Admin để TRỐNG. Chỗ ấy nay là lời chào kiêm lối
+     ra, và nó chỉ hiện sau khi đã vào được — xem `veChao` trong khoa.js.
+     Câu cũ ("Ghi chú, bình luận và bài viết. Chỉ mình bạn thấy trang này.")
+     tả lại đúng thứ người ta đang nhìn thấy, tức là không nói thêm gì. */
+  qlDan       : '',
+  khHello     : 'Haluuu, {ten}!',
   qlViet      : 'Viết ghi chú',
   qlDuyet     : 'Bình luận',
   qlMenu      : 'Chọn việc',
@@ -356,7 +361,6 @@ const NHAN = {
   khLead      : 'Nhập một lần, dùng được cho cả ghi chú, bình luận và bài viết.',
   khSignIn    : 'Đăng nhập',
   khSignOut   : 'Đăng xuất',
-  khSignOutTip: 'Quên khoá trên máy này — cả ba ngăn cùng đóng.',
   khChecking  : 'Đang thử khoá…',
   khNeedBoth  : 'Nhập đủ hai ô.',
   khFailed    : 'Máy chủ không nhận khoá này.',
@@ -835,7 +839,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                    ? `data-khoa-nhan="${attr(JSON.stringify({
                         title: NHAN.khTitle, lead: NHAN.khLead,
                         signIn: NHAN.khSignIn, signOut: NHAN.khSignOut,
-                        signOutTip: NHAN.khSignOutTip, checking: NHAN.khChecking,
+                        hello: NHAN.khHello, checking: NHAN.khChecking,
                         needBoth: NHAN.khNeedBoth, failed: NHAN.khFailed,
                         locked: NHAN.khLocked,
                         keyId: NHAN.keyId, keySecret: NHAN.keySecret,
@@ -1139,6 +1143,91 @@ function bangAnhHTML(bai) {
    vẫn vẽ ra đúng, chỉ là thôi biến. */
 const P_INF1 = 'M24 24C32 16 41 18 41 24C41 30 32 32 24 24C16 16 7 18 7 24C7 30 16 32 24 24';
 const P_INF2 = 'M24 24C16 32 18 41 24 41C30 41 32 32 24 24C32 16 30 7 24 7C18 7 16 16 24 24';
+
+/* ── BẢN NHỌN CỦA HAI VÔ CỰC ──
+   Cùng một hình, khác đúng bốn nút điều khiển — và khác ấy đổi hẳn chất của
+   đoá hoa: đầu cánh từ TRÒN thành NHỌN.
+
+   ── VÌ SAO KHÔNG PHẢI ĐỔI stroke-linejoin ──
+   Đầu cánh của bản gốc tròn vì HÌNH HỌC, không vì nét vẽ: ở điểm (41,24) nút
+   điều khiển vào là (41,18) và ra là (41,30) — cùng nằm trên một đường thẳng
+   đứng, nên tiếp tuyến liên tục và đường cong đi qua đó trơn tru. Ở một chỗ
+   trơn thì không có góc nào để `stroke-linejoin` bo hay không bo.
+
+   Muốn có mũi nhọn thì phải làm cho hai tiếp tuyến GÃY nhau. Kéo hai nút ấy
+   vào trong (41→38 ở bản ngang) là góc mở ra chừng 50°, và `stroke-linejoin:
+   miter` biến nó thành một mũi nhọn thật.
+
+   ── VÌ SAO GIỮ ĐÚNG CẤU TRÚC M + 4C ──
+   Hai đường này nội suy vào chính bản tròn của chúng, nên chúng phải cùng
+   chuỗi lệnh và cùng số nút — y như luật đã áp cho P_ZZ↔P_INF1. Bộ kiểm định
+   canh cả bốn tên này (xem tools/kiem-dinh.mjs).
+
+   Hình NGHỈ của logo là bản NHỌN — đó mới là đoá mandala người đọc nhận mặt.
+   Bản tròn chỉ xuất hiện ở chặng hoa vừa nở, như một hình còn đang mềm, rồi
+   đanh lại thành bản nhọn ngay trước lúc bắt đầu xoay. */
+const P_NHON1 = 'M24 24C32 15 38 17 41 24C38 31 32 33 24 24C16 15 10 17 7 24C10 31 16 33 24 24';
+const P_NHON2 = 'M24 24C15 32 17 38 24 41C31 38 33 32 24 24C33 16 31 10 24 7C17 10 15 16 24 24';
+
+/* ── VÀNH NGOÀI: MỘT ĐƯỜNG SÓNG, KHÔNG PHẢI HAI VÒNG NÉT ĐỨT ──
+   Bản trước có ba vòng tròn đồng tâm, cả ba đứt nét. Hai vòng ngoài đứt nét
+   ở cỡ 36px đọc ra thành một dãy gạch ngắn thô, và hai dãy gạch lồng nhau thì
+   chúng tranh nhau chỗ chứ không xếp thành tầng.
+
+   Nay vòng ngoài là MỘT đường cong khép kín, bán kính dao động quanh 21,5 —
+   nhìn như một dạng sóng âm uốn thành vòng. Nó vẫn quay, và vì biên độ không
+   đều nên quay bao nhiêu cũng thấy: đó chính là việc mà nét đứt từng phải làm.
+
+   Ba tần số 13 · 21 · 8 đều NGUYÊN nên đường khép kín liền mạch ở mốc 0°, và
+   chúng nguyên tố cùng nhau nên hình không lặp lại chính nó ở nửa vòng — cái
+   đó mới làm nó đọc ra là sóng ÂM chứ không phải một bông hoa nhiều cánh nữa
+   chồng lên bông đang có.
+
+   Thử 7 · 11 · 5 trước: quá ÍT gợn. Ở bảy bướu quanh một vòng thì mỗi bướu
+   rộng bằng cả một cánh hoa, và hình đọc ra là một vòng méo — đúng cái "hơi
+   thô" mà nét đứt cũ bị chê. Mười ba gợn thì mỗi gợn hẹp hơn nửa cánh, và cả
+   vành lùi hẳn về sau làm nền.
+
+   Số điểm mẫu phải đủ cho tần số cao nhất: 21 gợn cần ít nhất 84 mẫu để không
+   bị hụt. 72 mẫu là chỗ dừng — gợn 21 chỉ còn là gợn rất nhẹ trên lưng gợn 13,
+   mà đó đúng là vai trò của nó, và path ngắn hơn hẳn. */
+function duongSong(R, bienDo, so) {
+  const diem = [];
+  for (let i = 0; i < so; i++) {
+    const goc = (i / so) * Math.PI * 2;
+    /* Ba gợn chồng nhau, rồi NHÂN với một đường bao chạy chậm. Chỉ có ba gợn
+       thì biên độ đều nhau suốt vòng, và đều nhau thì đọc ra là một mép răng
+       cưa trang trí. Sóng âm thật thì có chỗ to chỗ nhỏ — đường bao ba đỉnh
+       dưới đây làm đúng việc ấy: ba quãng dội lên, ba quãng gần như phẳng.
+       Tần số 3 cũng nguyên, nên đường vẫn khép kín liền mạch. */
+    const bao = 0.30 + 0.70 * (0.5 + 0.5 * Math.sin(goc * 3 - 0.4));
+    const w = (Math.sin(goc * 13) * 0.52
+            +  Math.sin(goc * 21 + 1.2) * 0.28
+            +  Math.sin(goc * 8 - 0.7) * 0.20) * bao;
+    const r = R + bienDo * w;
+    diem.push([24 + Math.cos(goc) * r, 24 + Math.sin(goc) * r]);
+  }
+  /* Catmull-Rom → Bézier: nối 36 điểm bằng đoạn thẳng thì ở cỡ lớn nhìn ra
+     ngay là một đa giác. Công thức /6 dưới đây là bản chuẩn đổi một đoạn
+     Catmull-Rom sang một đoạn cubic — nó đi QUA mọi điểm mẫu, khác hẳn
+     B-spline vốn chỉ bị chúng kéo về phía mình. */
+  /* Một chữ số thập phân: khung nhìn rộng 48 đơn vị và logo vẽ ra ở 36px, nên
+     0,1 đơn vị ≈ 0,075px — nhỏ hơn hẳn một điểm ảnh. Hai chữ số làm path dài
+     thêm một phần tư mà không ai thấy khác, và path này nằm THẲNG trong HTML
+     của hai trang. */
+  const n = diem.length, f = (v) => v.toFixed(1);
+  let ra = 'M' + f(diem[0][0]) + ' ' + f(diem[0][1]);
+  for (let i = 0; i < n; i++) {
+    const p0 = diem[(i - 1 + n) % n], p1 = diem[i];
+    const p2 = diem[(i + 1) % n],     p3 = diem[(i + 2) % n];
+    ra += 'C' + f(p1[0] + (p2[0] - p0[0]) / 6) + ' ' + f(p1[1] + (p2[1] - p0[1]) / 6)
+        + ' ' + f(p2[0] - (p3[0] - p1[0]) / 6) + ' ' + f(p2[1] - (p3[1] - p1[1]) / 6)
+        + ' ' + f(p2[0]) + ' ' + f(p2[1]);
+  }
+  return ra + 'Z';
+}
+
+const P_SONG = duongSong(20.6, 0.90, 72);
 /* Chữ Z vẽ bằng bốn khúc cong có điểm điều khiển nằm THẲNG HÀNG — tức là bốn
    đoạn thẳng đội lốt đường cong. Nhìn ra chữ Z, mà cấu trúc thì đã sẵn sàng để
    cong ra.
@@ -1222,11 +1311,45 @@ const P_NOI  = 'M35 13L13 35';
    để file ấy mở riêng ra vẫn chạy. */
 const LG_CK = logoVongKe();
 
-function bien(tu, den, t1, t2) {
+/* ── TÁM MỐC, KHÔNG CÒN SÁU ──
+   Bản trước: nghỉ ở hình vô cực → nháy sang hình chữ → vẽ chữ → cong lại
+   thành vô cực → giữ tới hết vòng.
+
+   Nay thêm một nấc nữa ở cuối: vô cực TRÒN đanh lại thành vô cực NHỌN, rồi
+   mới tới chặng xoay. Đó là cú "hình vừa nở còn mềm, giờ nó định hình xong"
+   — và vì nó xảy ra lúc bông hoa đứng yên nên mắt bắt được; nhét vào giữa
+   chặng xoay thì nó trôi mất trong chuyển động.
+
+   Hình NGHỈ (mốc 0 và mốc 1) là bản NHỌN: đó là logo. Bản tròn chỉ sống trong
+   quãng từ lúc hai vô cực dựng xong tới lúc đanh lại.
+
+   `keySplines` phải có đúng số mốc trừ một — bảy dòng cho tám mốc. Thiếu một
+   dòng thì Firefox bỏ qua cả thẻ <animate>, im lặng, và hình thôi biến. */
+function bien(tu, tron, nhon, t1, t2, s1, s2) {
+  const spl = new Array(7).fill('.4 0 .2 1').join(';');
   return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
-      calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1;.4 0 .2 1"
-      keyTimes="0;.08;.12;${t1};${t2};1"
-      values="${den};${den};${tu};${tu};${den};${den}"/>`;
+      calcMode="spline" keySplines="${spl}"
+      keyTimes="0;.085;.116;${t1};${t2};${s1};${s2};1"
+      values="${nhon};${nhon};${tu};${tu};${tron};${tron};${nhon};${nhon}"/>`;
+}
+
+/* Hai cánh sao (bản sao xoay 45° và 135°) trước đây là nét TĨNH — chúng chỉ
+   hiện ở chặng mandala, sau khi hai vô cực đã dựng xong, nên chẳng có gì để
+   biến hình theo.
+
+   Nấc "đanh lại" đổi điều đó: lúc ấy CẢ TÁM cánh phải cùng nhọn lên một lượt.
+   Bốn cánh nhọn còn bốn cánh tròn thì bông hoa đọc ra là hỏng, không đọc ra
+   là đang định hình. Nên chúng nhận một thẻ <animate> riêng — ngắn hơn hẳn
+   bản trên, vì chúng không dự chặng kể chuyện bằng chữ.
+
+   Mốc .05 → .20 nằm gọn trong quãng chúng vô hình (xem @keyframes lg-man),
+   nên cú đổi từ nhọn về tròn ở đầu vòng không ai thấy. */
+function bienCanh(tron, nhon, s1, s2) {
+  const spl = new Array(5).fill('.4 0 .2 1').join(';');
+  return `<animate attributeName="d" dur="${LG_CK}" repeatCount="indefinite"
+      calcMode="spline" keySplines="${spl}"
+      keyTimes="0;.05;.20;${s1};${s2};1"
+      values="${nhon};${nhon};${tron};${tron};${nhon};${nhon}"/>`;
 }
 
 function logoHTML(dong) {
@@ -1262,13 +1385,16 @@ function logoHTML(dong) {
      Vành liền trơn xoay quanh tâm nó thì vẫn là chính nó: xoay bao nhiêu cũng
      không ai thấy. Đứt nét thì mỗi vạch là một cái nan hoa, và bánh xe mới có
      cái để quay. Bề rộng vạch khai ở layout.css. */
+  const canhSao = (goc) =>
+    `<path class="lg-canh" d="${P_NHON1}" transform="rotate(${goc} 24 24)">` +
+    (dong ? bienCanh(P_INF1, P_NHON1, '.50', '.53') : '') + `</path>`;
+
   const mandala = `<g class="lg-man" fill="none" stroke="currentColor">
-      <g class="lg-vanh-g lg-vanh-g--ngoai"><circle class="lg-vanh lg-vanh--ngoai" cx="24" cy="24" r="21.5"/></g>
-      <g class="lg-vanh-g lg-vanh-g--giua"><circle class="lg-vanh lg-vanh--giua" cx="24" cy="24" r="13.5"/></g>
+      <g class="lg-vanh-g lg-vanh-g--ngoai"><g class="lg-song-tho"><path class="lg-vanh lg-vanh--song" d="${P_SONG}"/></g></g>
       <g class="lg-vanh-g lg-vanh-g--trong"><circle class="lg-vanh lg-vanh--trong" cx="24" cy="24" r="6"/></g>
       <g class="lg-canh-g">
-        <path class="lg-canh" d="${P_INF1}" transform="rotate(45 24 24)"/>
-        <path class="lg-canh" d="${P_INF1}" transform="rotate(135 24 24)"/>
+        ${canhSao(45)}
+        ${canhSao(135)}
       </g>
     </g>`;
 
@@ -1333,8 +1459,13 @@ function logoHTML(dong) {
          Độ mờ của nhóm NHÂN với độ mờ của từng nét, nên lg-n1/lg-n2 vẫn giữ
          nguyên quyền tắt-bật nét của chúng ở các chặng kể chuyện. */
       `<g class="lg-goc">` +
-        net('lg-vc--1', P_INF1, dong ? bien(P_ZZ, P_INF1, '.38', '.44') : '') +
-        net('lg-vc--2', P_INF2, dong ? bien(P_B, P_INF2, '.50', '.58') : '') +
+        /* Bản TĨNH (trang giới thiệu) vẽ thẳng hình nghỉ — tức là bản NHỌN.
+           Trước đây nó vẽ P_INF1/P_INF2, nên hai trang có logo bày ra hai đoá
+           hoa hơi khác nhau mà không ai nói vì sao. */
+        net('lg-vc--1', P_NHON1,
+            dong ? bien(P_ZZ, P_INF1, P_NHON1, '.32', '.36', '.50', '.53') : '') +
+        net('lg-vc--2', P_NHON2,
+            dong ? bien(P_B,  P_INF2, P_NHON2, '.40', '.46', '.50', '.53') : '') +
       `</g>` +
     `</g>` +
     (dong ? bui : '') +
@@ -2737,6 +2868,11 @@ function trangChuTrang() {
          hỏi cùng một câu ba lần và "đăng xuất" ở ngăn này không đóng hai ngăn
          kia. Nay khoa.js dựng đúng một khung vào đây, và cả ba ngăn chỉ đứng
          sau nó. Lý do đầy đủ ở đầu src/js/khoa.js. -->
+    <!-- Lời chào kiêm lối ra, đứng đúng chỗ dòng phụ đề cũ. Mang sẵn thuộc
+         tính hidden (viết trần, KHÔNG bọc dấu huyền — cả khối này nằm trong
+         một template literal): nó chỉ có nghĩa sau khi đã vào được, mà lúc
+         chưa vào thì cả trang chỉ có một ô xin khoá. -->
+    <p class="ad-chao" data-khoa-chao data-ten="${attr(CAU.author || '')}" hidden></p>
     <div class="ad-cong" data-khoa-cong></div>
     <!-- Thuộc tính hidden đặt ngay trong HTML tĩnh (viết trần, KHÔNG bọc dấu
          huyền: cả khối này nằm trong một template literal, một dấu huyền lọt
@@ -2749,9 +2885,6 @@ function trangChuTrang() {
       </nav>
       <div class="ad-than">${than}
       </div>
-      <!-- Nút Đăng xuất ĐỨNG CUỐI, không nằm trong dải thẻ: nó không phải một
-           việc để chọn, và lọt vào dải thẻ thì mũi tên trái/phải chạy qua nó. -->
-      <div class="ad-ra" data-khoa-ra></div>
     </div>`,
     scripts: `<script src="${BASE}/assets/khoa.js" defer></script>` +
              `\n<script src="${BASE}/assets/admin.js" defer></script>` +

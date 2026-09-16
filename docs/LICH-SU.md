@@ -27,6 +27,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V8.07 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
+| V8.06 | 2026-09-16 | 06 | màn đầu ở khổ dọc: tên blog cân giữa thay vì bám mép trái |
+| V8.05 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh; dừng hình cuối lâu gấp đôi |
 | V8.04 | 2026-09-16 | 04 | chân trang gọn còn một hàng; chữ chân trang khớp chữ đầu trang |
 | V8.03 | 2026-09-16 | 03 | đăng nhập gom về một cửa; ô soạn thảo gõ như văn bản; màu chữ trong bài |
 | V8.02 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
@@ -103,6 +106,51 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V8.07 — 16-Sep-2026
+
+- **"Haluuu, Zoey! — Đăng xuất" thay dòng phụ đề.** Câu cũ tả lại đúng thứ
+  người ta đang nhìn thấy, tức là không nói thêm gì. Dòng mới nói hai điều
+  đáng nói: đang là ai, và đi ra lối nào. Lối ra là chữ trong câu, không phải
+  một cái nút có viền — bấm vào là về thẳng màn đăng nhập.
+- **Gõ sai khoá thì màn hình không nói gì.** Trang này ai gõ đúng đường dẫn
+  cũng mở được, nên câu "mã chủ hoặc khoá sai" là nói với người lạ rằng cửa
+  có thật và họ sai ở vế nào. Nay ô khoá chỉ tự xoá trắng và con trỏ nhảy về
+  đó. Riêng "máy chủ chưa đặt khoá" thì vẫn nói — lúc ấy không ai vào được,
+  chẳng có gì để giấu.
+- **Ngăn Note thôi kèm một danh sách ghi chú ở dưới.** Đăng xong là dưới ô
+  viết mọc ra một khối dài chép lại đúng thứ trang /notes/ đã bày đầy đủ hơn.
+  Tiêu đề "Viết ghi chú" cũng thôi in hai lần chồng nhau.
+
+## V8.06 — 16-Sep-2026
+
+- **Tên blog ở màn đầu điện thoại nay cân giữa.** Trước đây ba dòng bám mép
+  trái rồi đẩy dần sang phải — cách ấy đúng ở khổ ngang, nơi hai đường kẻ dọc
+  của lưới làm khung để neo vào. Khổ dọc không có đường kẻ nào, mà dòng đầu
+  ("Zoey") chỉ dài bằng một phần ba dòng dưới, nên bên phải nó bỏ trống hẳn
+  một mảng và cả cụm đọc ra là bị dồn về góc. Nay dòng ngắn nằm giữa dòng dài,
+  bậc thang còn lại thành hai cú nghiêng rất nhẹ quanh trục giữa.
+- Dòng "Borderland" to thêm một bậc để lấp chỗ vừa dôi ra, và ba dòng hở nhau
+  hơn — đuôi chữ "y" thôi đè lên chữ "in" ngay dưới nó.
+
+## V8.05 — 16-Sep-2026
+
+- **Đoá hoa đanh nét lại trước khi xoay.** Thêm một nhịp vào cuối đường dựng
+  hình: hoa nở ra với đầu cánh TRÒN, đứng yên một nhịp rồi các đầu cánh nhọn
+  lên, xong mới bắt đầu quay. Cú đanh lại rơi đúng lúc hình bất động nên mắt
+  bắt được — nhét vào giữa chuyển động thì nó trôi mất. Hình nghỉ của logo từ
+  nay là bản đầu cánh nhọn.
+- **Vành ngoài thành một đường sóng.** Hai vòng nét đứt lồng nhau đổi thành
+  một đường cong khép kín, bán kính dao động theo một đường bao ba đỉnh — có
+  quãng dội lên, có quãng gần phẳng, như một dạng sóng âm uốn thành vòng. Nó
+  còn co dãn nhẹ, bốn nhịp thở gọn trong một vòng kể.
+- **Mọi cú chuyển cảnh nay cùng một nhịp.** Trước đây trên cùng một khung hình
+  có tới bốn đường cong thời gian chạy song song, và hai trong số đó chạy trên
+  CÙNG một nét cùng lúc — độ mờ đi theo một đường, hình đi theo đường khác.
+  Xem một vòng thì không rõ; xem tới vòng thứ ba thì thành cái gợn.
+- **Dừng ở hình cuối lâu gấp đôi, kể chuyện nhanh hơn một phần ba.** Đoạn dựng
+  hình gọn lại còn hai phần ba thời lượng cũ, và chỗ tiết kiệm được dồn hết
+  sang quãng đứng yên ở hình đủ — từ 2,2 giây lên 4,3 giây.
 
 ## V8.04 — 16-Sep-2026
 

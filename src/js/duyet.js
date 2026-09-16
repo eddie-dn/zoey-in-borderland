@@ -208,7 +208,7 @@
     if (K && !oCamSan()) {
       var oRa = document.createElement('div');
       oRa.className = 'bl-duyet-ra';
-      K.veNutRa(oRa);
+      K.veChao(oRa, '');
       hop.appendChild(oRa);
     }
     batDongHo();
