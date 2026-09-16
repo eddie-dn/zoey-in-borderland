@@ -178,6 +178,8 @@ const NHAN = {
   gcPostFail  : 'Không gửi được. Kiểm tra lại khoá hoặc mạng.',
   gcDel       : 'Xoá ghi chú',
   gcDelFail   : 'Không xoá được.',
+  blUnapproveHint: 'Rút xuống hàng chờ, không xoá',
+  blHideHint  : 'Ẩn hẳn khỏi trang',
   seeAll      : 'See all',
   profile     : 'Profile',
   perPage     : 'Per page',
@@ -617,6 +619,28 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  /* Ghi chú đăng thẳng. CHỈ in ở /notes/ — mọi trang khác không
                     có danh sách ghi chú nào để mà chèn vào, in ra là mời người
                     ta đi mò một đường API chẳng dùng được ở đó. */
+                 /* ── BÀN DUYỆT MỌC ĐƯỢC Ở ĐÂU ──
+                    Trang bài và /notes/. Không phải mọi trang: khai địa chỉ ra
+                    trang nào là nạp thêm một file JS ở trang ấy, mà bàn duyệt
+                    thì chủ trang chỉ mở ở đúng hai chỗ này.
+
+                    /notes/ có mặt trong danh sách vì đó là lối tắt NGẮN nhất —
+                    nhớ một đường `/notes/` là vừa viết được ghi chú (#viet) vừa
+                    duyệt được bình luận (#duyet), khỏi phải nhớ đường dẫn của
+                    một bài cụ thể nào. */
+                 ((CAU.binhLuan || {}).bat !== false &&
+                  (duong === '/notes/' || /^\/posts\/.+\//.test(duong)))
+                   ? `data-duyet-api="${attr(BASE + ((CAU.binhLuan || {}).api || '/api/binh-luan'))}" ` +
+                     `data-duyet-nhan="${attr(JSON.stringify({
+                        queue: NHAN.queue, queueEmpty: NHAN.queueEmpty,
+                        loading: NHAN.loading, approve: NHAN.approve,
+                        unapprove: NHAN.unapprove, hide: NHAN.hide,
+                        keyId: NHAN.keyId, keySecret: NHAN.keySecret,
+                        keySave: NHAN.keySave, keyForget: NHAN.keyForget,
+                        badKey: NHAN.badKey, netErr: NHAN.netErr,
+                        anon: NHAN.anon
+                      }))}"`
+                   : '',
                  (duong === '/notes/' && (CAU.ghiChu || {}).online)
                    ? `data-gc-api="${attr(BASE + ((CAU.ghiChu || {}).api || '/api/ghi-chu'))}" ` +
                      `data-gc-nhan="${attr(JSON.stringify({
@@ -1231,7 +1255,8 @@ function binhLuanHTML(bai) {
     queue: NHAN.queue, queueEmpty: NHAN.queueEmpty, loading: NHAN.loading,
     approve: NHAN.approve, unapprove: NHAN.unapprove, hide: NHAN.hide,
     keyId: NHAN.keyId, keySecret: NHAN.keySecret, keySave: NHAN.keySave,
-    keyForget: NHAN.keyForget, badKey: NHAN.badKey, sentOwner: NHAN.sentOwner
+    keyForget: NHAN.keyForget, badKey: NHAN.badKey, sentOwner: NHAN.sentOwner,
+    unapproveHint: NHAN.blUnapproveHint, hideHint: NHAN.blHideHint
   }));
 
   /* `c.api` chứ không còn `c.url`. Địa chỉ nay là một đường dẫn NỘI BỘ
@@ -1368,7 +1393,8 @@ function trangBai(bai, congKhai) {
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
-                   : `\n<script src="${BASE}/assets/comments.js" defer></script>`) +
+                   : `\n<script src="${BASE}/assets/comments.js" defer></script>` +
+                     `\n<script src="${BASE}/assets/duyet.js" defer></script>`) +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
     /* HAI khối dữ liệu có cấu trúc, gộp trong một mảng @graph:
@@ -2256,7 +2282,9 @@ function trangGhiChu() {
     than,
     duong: '/notes/',
     description: `${NHAN.notesHint} — ${CAU.title}.`,
-    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>`
+    scripts: `<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
+             ((CAU.binhLuan || {}).bat !== false
+               ? `\n<script src="${BASE}/assets/duyet.js" defer></script>` : '')
   });
 }
 function trangArchive(bai) {
@@ -2441,7 +2469,7 @@ async function chay() {
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js',
-                     'bang-anh.js', 'xem.js', 'ghi-chu.js']) {
+                     'bang-anh.js', 'xem.js', 'ghi-chu.js', 'duyet.js']) {
       ghi(path.join(THU_MUC.dist, 'assets', j),
           fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8'));
     }

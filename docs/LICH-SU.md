@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V7.06 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
 | V7.05 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
 | V7.04 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
 | V7.03 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
@@ -94,6 +95,24 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V7.06 — 16-Sep-2026
+
+- **Bàn duyệt gom về một chỗ, và mở được ngay ở trang ghi chú.** Trước đó nó
+  sống trong khối bình luận, mà khối ấy chỉ có ở trang bài — muốn duyệt thì
+  phải mở một bài viết nào đó ra trước, và phải nhớ đường dẫn của đúng một bài
+  cụ thể. Duyệt là việc của chủ trang, chẳng dính tới bài nào, nên nó không
+  nên phải đi nhờ chỗ của bài khác mới có chỗ đứng. Nay nhớ một lối tắt là đủ:
+  cùng một trang, thêm dấu thăng này thì viết ghi chú, thêm dấu thăng kia thì
+  duyệt bình luận.
+- **Và nó tự làm mới.** Bàn duyệt hay bị mở rồi để đó; không tự xin lại thì
+  con số đứng im và chủ trang tưởng không có gì mới trong khi hàng chờ đã dài
+  ra. Cứ hai mươi giây một lượt, và chỉ khi cửa sổ đang hiện — nằm dưới thì
+  không ai nhìn, gọi tiếp là vẽ cho cái không ai xem.
+- **Gỡ một bình luận ngay tại chỗ đang đọc.** Đang đọc trong ngữ cảnh bài viết
+  rồi mới thấy cần gỡ, mà phải nhớ tên người gõ, mở bàn duyệt, dò lại trong
+  danh sách — đọc ở đây, bấm ở kia. Nay mỗi bình luận mang thêm hai nút nhỏ,
+  và chỉ hiện khi máy ấy có khoá.
 
 ## V7.05 — 16-Sep-2026
 

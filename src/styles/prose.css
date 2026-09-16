@@ -515,6 +515,37 @@ a.rn-card:hover{color:var(--text)}
   text-decoration:underline;text-underline-offset:3px;
 }
 
+/* ── BÀN DUYỆT KHI NÓ ĐỨNG MỘT MÌNH Ở ĐẦU TRANG ──
+   Mở `#duyet` thì khối này chèn vào ĐẦU trang, không phải trong khối bình
+   luận — nó là việc đang làm, không phải phần đọc thêm. Lúc ấy nó không có
+   khung cha nào bó bề ngang, nên phải tự khoá lấy: bằng đúng công thức của
+   cột chữ, để nó thẳng mép với mọi thứ còn lại thay vì trải hết màn hình. */
+.duyet-noi{
+  width:min(var(--measure), 100% - var(--gutter) * 2);
+  margin-inline:auto;
+  margin-bottom:var(--s8);
+}
+
+/* ── HAI NÚT CỦA CHỦ TRANG TRÊN TỪNG BÌNH LUẬN ──
+   Chỉ mọc khi máy này có khoá (xem nutChuTrang trong comments.js), nên người
+   đọc thường không bao giờ gặp. Mờ sẵn, rõ khi rê vào cả thẻ: đây là việc dọn
+   dẹp thỉnh thoảng mới làm, không phải thứ mắt phải vấp mỗi lần đọc.
+   Máy cảm ứng không có trạng thái "rê vào" nên để mờ sẵn ở mức đọc được. */
+.bl-quyen{
+  display:flex;gap:var(--s3);margin-top:var(--s2);
+  opacity:0;transition:opacity var(--dur-fast);
+}
+.bl-item:hover .bl-quyen,.bl-quyen:focus-within{opacity:1}
+@media (hover:none){.bl-quyen{opacity:.65}}
+.bl-quyen-nut{
+  font:inherit;font-size:var(--fs-2xs);cursor:pointer;
+  background:none;border:none;padding:0;color:var(--text-faint);
+  text-decoration:underline;text-underline-offset:3px;
+}
+.bl-quyen-nut:hover{color:var(--accent-ink)}
+.bl-quyen-nut--an:hover{color:var(--bad)}
+.bl-quyen-nut:disabled{opacity:.4;cursor:default}
+
 .bl-form{display:flex;flex-direction:column;gap:var(--s4)}
 /* Hai ô tên + email nằm cạnh nhau ở màn rộng, tự xuống hàng ở màn hẹp —
    auto-fit lo việc đó, không cần media query. */

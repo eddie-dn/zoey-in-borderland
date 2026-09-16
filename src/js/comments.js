@@ -17,11 +17,16 @@
       trước, mà Apps Script không trả lời OPTIONS. Nay hàm nằm cùng tên miền
       nên không có chuyện hỏi trước, và JSON là JSON.
 
-   3. KHÔNG CHẶN VIỆC ĐỌC BÀI.
+   3. BÀN DUYỆT KHÔNG Ở ĐÂY. Nó ở src/js/duyet.js và mọc được trên MỌI trang,
+      không riêng trang bài — duyệt là việc của chủ trang, chẳng dính tới một
+      bài nào. File này chỉ giữ hai cái nút nhỏ trên từng bình luận đã hiện,
+      cho lúc đang đọc mà muốn gỡ ngay.
+
+   4. KHÔNG CHẶN VIỆC ĐỌC BÀI.
       Bình luận tải sau, tải hỏng cũng không sao — bài vẫn nguyên vẹn. Nên mọi
       lỗi ở đây đều nuốt vào một câu báo nhỏ, không ném ra ngoài.
 
-   4. MỘT CÁI FORM DUY NHẤT, ĐEM ĐI CHỖ KHÁC.
+   5. MỘT CÁI FORM DUY NHẤT, ĐEM ĐI CHỖ KHÁC.
       Trả lời không dựng thêm form mới mà DI CHUYỂN chính cái form đang có
       xuống dưới bình luận được trả lời, kèm một dòng "Đang trả lời …".
       Dựng mỗi bình luận một form thì mười bình luận là mười cái form, mười bộ
@@ -199,6 +204,7 @@
     }
 
     if (c.con && c.con.length) li.appendChild(veCon(c.con));
+    nutChuTrang(c, li);
     return li;
   }
 
@@ -321,185 +327,59 @@
     });
   }
 
-  /* ══════════ 5. BÀN DUYỆT (/#duyet) ══════════
+  /* ══════════ 5. NÚT CỦA CHỦ TRANG, NGAY TRÊN TỪNG BÌNH LUẬN ══════════
 
-     ── VÌ SAO KHÔNG PHẢI MỘT CÁI NÚT ──
-     Cùng lý do với ô viết ghi chú: một cái nút "Duyệt bình luận" bày giữa
-     trang thì mọi người đọc đều thấy một thứ họ bấm vào cũng chẳng để làm gì.
-     `#duyet` thì lưu được vào màn hình chính điện thoại, còn người đọc thường
-     không bao giờ gặp. Đây KHÔNG phải lớp bảo mật — lớp bảo mật là hai vế khoá
-     ở phía máy chủ; ai gõ đúng #duyet cũng chỉ thấy một cái ô xin khoá.
+     Bàn duyệt (xem src/js/duyet.js) là chỗ xử lý HÀNG LOẠT: mở ra, lướt hàng
+     chờ, duyệt hoặc ẩn. Nhưng có một việc nó làm không tiện — đang ĐỌC một
+     bình luận trong ngữ cảnh bài viết rồi mới thấy nó cần gỡ. Lúc ấy phải nhớ
+     tên người gõ, mở bàn duyệt, dò lại trong danh sách. Đọc ở đây, bấm ở kia.
 
-     ── VÌ SAO HÀNG CHỜ LÀ TOÀN TRANG, KHÔNG RIÊNG BÀI ĐANG MỞ ──
-     Duyệt từ điện thoại mà phải mở từng bài xem bài nào có gì đang chờ thì
-     không ai duyệt nữa. Mở #duyet ở BẤT KỲ bài nào cũng ra hàng chờ của cả
-     blog, mỗi dòng có đường dẫn bài của nó. */
-  var banDuyet = null;
+     Nên mỗi bình luận đã hiện trên trang mang thêm hai nút nhỏ — nhưng CHỈ khi
+     máy này có khoá. Người đọc thường không bao giờ thấy chúng.
 
-  function moBanDuyet() {
-    if (banDuyet) return;
-    banDuyet = document.createElement('div');
-    banDuyet.className = 'bl-duyet';
-    than.insertBefore(banDuyet, than.firstChild);
-    veBanDuyet();
+     Mờ sẵn, rõ khi rê vào cả thẻ: đây là việc dọn dẹp thỉnh thoảng mới làm,
+     không phải thứ mắt phải vấp mỗi lần đọc một bình luận. */
+  function nutChuTrang(c, li) {
+    if (!coKhoa()) return;
 
-    /* ── PHẢI CUỘN TỚI, VÀ PHẢI NHẢY THẲNG ──
-       Khối này nằm cuối bài. Trên một bài dài nó rơi vào khoảng 4700px của một
-       trang cao 6200px — hơn năm màn hình. Mà `#duyet`/`#viet` không phải id
-       của phần tử nào nên trình duyệt không tự đưa tới: gõ địa chỉ xong thấy y
-       hệt một bài viết bình thường, không cách nào đoán ra là nó đã mở rồi.
+    var nhom = document.createElement('div');
+    nhom.className = 'bl-quyen';
 
-       Hai chỗ đã vấp khi chữa:
-
-       MỘT — `behavior:'smooth'`. Trang khai `scroll-behavior:smooth` ở :root
-       nên cú cuộn chạy thành hoạt hình dài mấy giây, và ảnh trong bài tải xong
-       giữa chừng làm chiều cao đổi, đích trôi đi. Đo ra: bốn giây sau khi mở
-       trang vẫn còn ở scrollY = 0. `instant` thì tới nơi ngay, và đây là bàn
-       làm việc chứ không phải một chặng đọc — không cần cảnh chuyển.
-
-       HAI — tính vị trí quá sớm. `requestAnimationFrame` chạy trước lúc ảnh
-       có kích thước, nên con số tính ra là của một bố cục chưa xong. Đợi
-       `load` thì mọi thứ đã đúng chỗ. */
-    function denNoi() {
-      var y = banDuyet.getBoundingClientRect().top + window.pageYOffset - 72;
-      window.scrollTo({ top: Math.max(0, y), behavior: 'instant' });
-    }
-    if (document.readyState === 'complete') denNoi();
-    else window.addEventListener('load', denNoi, { once: true });
-  }
-
-  function veBanDuyet() {
-    if (!coKhoa()) { veOKhoa(); return; }
-    banDuyet.innerHTML = '<p class="bl-duyet-de">' + L('queue') + '</p>' +
-                         '<p class="bl-duyet-bao">' + L('loading') + '</p>';
-    fetch(API + '?cho=1', { cache: 'no-store', headers: dauKhoa() })
-      .then(function (r) { return r.json(); })
-      .then(function (kq) {
-        if (!kq.ok) { veOKhoa(kq.loi || L('badKey')); return; }
-        veHang(kq.ds || []);
-      })
-      .catch(function () {
-        banDuyet.querySelector('.bl-duyet-bao').textContent = L('netErr');
-      });
-  }
-
-  function veOKhoa(loi) {
-    banDuyet.innerHTML = '';
-    var de = document.createElement('p');
-    de.className = 'bl-duyet-de';
-    de.textContent = L('queue');
-    banDuyet.appendChild(de);
-
-    var hang = document.createElement('div');
-    hang.className = 'bl-duyet-hang';
-    var oId = document.createElement('input');
-    oId.type = 'text'; oId.placeholder = L('keyId');
-    oId.autocapitalize = 'off'; oId.spellcheck = false;
-    var oKey = document.createElement('input');
-    oKey.type = 'password'; oKey.placeholder = L('keySecret');
-    var nut = document.createElement('button');
-    nut.type = 'button'; nut.className = 'btn'; nut.textContent = L('keySave');
-    nut.addEventListener('click', function () {
-      if (!oId.value.trim() || !oKey.value.trim()) return;
-      try {
-        localStorage.setItem(K_ID, oId.value.trim());
-        localStorage.setItem(K_KEY, oKey.value.trim());
-      } catch (e) {}
-      veBanDuyet();
-      tai();
-    });
-    hang.appendChild(oId); hang.appendChild(oKey); hang.appendChild(nut);
-    banDuyet.appendChild(hang);
-
-    var bao = document.createElement('p');
-    bao.className = 'bl-duyet-bao';
-    bao.textContent = loi || '';
-    banDuyet.appendChild(bao);
-  }
-
-  function veHang(ds) {
-    banDuyet.innerHTML = '';
-    var de = document.createElement('p');
-    de.className = 'bl-duyet-de';
-    var cho = ds.filter(function (c) { return !c.duyet; }).length;
-    de.textContent = L('queue') + (cho ? ' (' + cho + ')' : '');
-    banDuyet.appendChild(de);
-
-    if (!ds.length) {
-      var trong = document.createElement('p');
-      trong.className = 'bl-duyet-bao';
-      trong.textContent = L('queueEmpty');
-      banDuyet.appendChild(trong);
-    }
-
-    ds.forEach(function (c) { banDuyet.appendChild(veDongDuyet(c)); });
-
-    var quen = document.createElement('button');
-    quen.type = 'button'; quen.className = 'bl-duyet-quen';
-    quen.textContent = L('keyForget');
-    quen.addEventListener('click', function () {
-      try { localStorage.removeItem(K_ID); localStorage.removeItem(K_KEY); } catch (e) {}
-      veBanDuyet();
-      tai();
-    });
-    banDuyet.appendChild(quen);
-  }
-
-  function veDongDuyet(c) {
-    var d = document.createElement('div');
-    d.className = 'bl-dong' + (c.duyet ? ' bl-dong--roi' : '');
-
-    var dau = document.createElement('div');
-    dau.className = 'bl-dong-dau';
-    var ai = document.createElement('span');
-    ai.className = 'bl-ten';
-    ai.textContent = c.ten || L('anon');
-    var o = document.createElement('a');
-    o.className = 'bl-dong-trang';
-    o.href = c.trang; o.textContent = c.trang;
-    dau.appendChild(ai); dau.appendChild(o);
-
-    var nd = document.createElement('p');
-    nd.className = 'bl-nd';
-    nd.textContent = c.chu;                         /* ← textContent, không innerHTML */
-
-    var nut = document.createElement('div');
-    nut.className = 'bl-dong-nut';
-
-    function lam(than_, xong) {
-      fetch(API, { method: 'PATCH',
+    function lam(than, xong) {
+      fetch(API, {
+        method: 'PATCH',
         headers: dauKhoa({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(Object.assign({ ma: c.ma }, than_))
+        body: JSON.stringify(than)
       }).then(function (r) { return r.json(); })
         .then(function (kq) { if (kq.ok) xong(); })
         .catch(function () {});
     }
 
-    var bDuyet = document.createElement('button');
-    bDuyet.type = 'button'; bDuyet.className = 'btn';
-    bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
-    bDuyet.addEventListener('click', function () {
-      bDuyet.disabled = true;
-      lam({ duyet: c.duyet ? 0 : 1 }, function () { veBanDuyet(); tai(); });
+    var bRut = document.createElement('button');
+    bRut.type = 'button';
+    bRut.className = 'bl-quyen-nut';
+    bRut.textContent = L('unapprove');
+    bRut.title = L('unapproveHint');
+    bRut.addEventListener('click', function () {
+      bRut.disabled = true;
+      lam({ ma: c.ma, duyet: 0 }, function () { li.remove(); tai(); });
     });
 
     var bAn = document.createElement('button');
-    bAn.type = 'button'; bAn.className = 'bl-dong-an';
+    bAn.type = 'button';
+    bAn.className = 'bl-quyen-nut bl-quyen-nut--an';
     bAn.textContent = L('hide');
+    bAn.title = L('hideHint');
     bAn.addEventListener('click', function () {
       bAn.disabled = true;
-      lam({ an: 1 }, function () { d.remove(); tai(); });
+      lam({ ma: c.ma, an: 1 }, function () { li.remove(); tai(); });
     });
 
-    nut.appendChild(bDuyet); nut.appendChild(bAn);
-    d.appendChild(dau); d.appendChild(nd); d.appendChild(nut);
-    return d;
+    nhom.appendChild(bRut);
+    nhom.appendChild(bAn);
+    li.appendChild(nhom);
   }
 
-  if (location.hash === '#duyet') moBanDuyet();
-  window.addEventListener('hashchange', function () {
-    if (location.hash === '#duyet') moBanDuyet();
-  });
 
   tai();
 })();
