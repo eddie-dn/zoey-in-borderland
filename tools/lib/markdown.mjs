@@ -64,7 +64,12 @@ const MAU = {
   'vàng':'vang', 'vang':'vang',
   'lục':'luc',   'luc':'luc',
   'lam':'lam',
-  'xám':'xam',   'xam':'xam'
+  'xám':'xam',   'xam':'xam',
+  'nâu':'nau',   'nau':'nau',
+  'ngọc':'ngoc', 'ngoc':'ngoc',
+  'chàm':'cham', 'cham':'cham',
+  /* "ô liu" có dấu cách; bản không dấu viết liền. */
+  'ô liu':'oliu', 'oliu':'oliu'
 };
 
 /* Chỉ khớp khi tên NẰM TRONG bảng: `{note: xem thêm}` là chữ bình thường và

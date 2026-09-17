@@ -82,33 +82,6 @@
    nhờ vậy không bao giờ có vạch đứng lạc một mình ở đầu hàng hai.
 
    `:first-child` bỏ viền: nhóm đầu tiên không có gì ở bên trái để ngăn cách. */
-/* ── NÚT MANG CẢ CHỮ (Blocks) ──
-   Phải nằm Ở ĐÂY, không phải ở admin.css. Gói `ql` nạp `admin.css` TRƯỚC rồi
-   mới `soan.css`, nên `.sz-nut{width:28px}` dưới đây đè lên `.sz-nut--khoi`
-   khi lớp phụ ở file kia — hai luật cùng một mức cụ thể, file sau thắng. Hậu
-   quả: nút Blocks vẫn rộng 28px còn chữ "BLOCKS" tràn ra ngoài, đè lên vạch
-   ngăn của nhóm bên cạnh. Đó chính là "ô buttons tùm lum chữ với nút".
-
-   Chữ biến mất dưới 560px: ở đó thanh nút đã phải cuộn ngang, và một nút rộng
-   gấp ba đẩy mọi thứ khác ra khỏi tầm mắt. */
-.sz-nut--khoi{width:auto;gap:5px;padding-inline:8px}
-.sz-nut-chu{
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.07em;text-transform:uppercase;
-}
-@media (max-width:560px){ .sz-nut-chu{display:none} }
-
-/* Mẫu gõ in bên phải mỗi dòng trong bảng Khối và bảng căn dòng. Lớp này từ
-   trước tới nay KHÔNG có luật nào — mấy mẫu `{.giua}`, `@youtube[…]` hiện ra
-   bằng phông thân bài, lẫn vào chính câu mô tả bên cạnh. */
-.sz-khoi-ma{
-  flex:none;margin-left:var(--s3);
-  font-family:var(--font-mono);font-size:var(--fs-3xs);
-  padding:1px 5px;border-radius:var(--r-xs);
-  background:var(--surface-solid);color:var(--text-muted);
-  white-space:nowrap;
-}
-
 .sz-nhom{
   display:inline-flex;align-items:center;gap:2px;
   padding-left:5px;margin-left:2px;
@@ -209,7 +182,7 @@
   font-family:var(--font-mono);font-size:var(--fs-3xs);
   color:var(--text-faint);
 }
-/* Tám lớp màu phải hiện ra NGAY TRONG KHUNG GÕ, không chỉ ở bài đã dựng:
+/* Mười hai lớp màu phải hiện ra NGAY TRONG KHUNG GÕ, không chỉ ở bài đã dựng:
    tô màu mà không thấy màu thì cái nút ấy coi như không có. Luật trong
    prose.css chỉ với tới `.prose`, nên chép tên lớp sang đây. */
 .sz-khung .c-tim {color:var(--c-tim)}
@@ -220,6 +193,10 @@
 .sz-khung .c-luc {color:var(--c-luc)}
 .sz-khung .c-lam {color:var(--c-lam)}
 .sz-khung .c-xam {color:var(--c-xam)}
+.sz-khung .c-nau {color:var(--c-nau)}
+.sz-khung .c-ngoc{color:var(--c-ngoc)}
+.sz-khung .c-cham{color:var(--c-cham)}
+.sz-khung .c-oliu{color:var(--c-oliu)}
 
 /* ── HAI BẢNG BẬT RA ──
    Không dùng `position:absolute`: ở khổ điện thoại một bảng thả nổi hoặc tràn
@@ -231,17 +208,13 @@
   padding:var(--s3) var(--s4);
 }
 .sz-bang--mau{display:flex;flex-wrap:wrap;gap:var(--s1)}
-/* Bảng căn dòng dùng chung khuôn với bảng Khối (mỗi dòng một tên + một câu
-   mô tả), nhưng chỉ bốn dòng nên không cần chia cột. */
-.sz-bang--can{display:flex;flex-direction:column;gap:2px}
 
-/* ── BẢNG KHỐI ──
-   Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì tám ô chip xếp
-   ngang là đủ (màu tự nói ra nó là màu gì), còn ở đây "Note" và "Tip" trông
-   giống hệt nhau nếu chỉ có tên — câu mô tả mới là thứ phân biệt. */
-/* Mười sáu dòng. Ở khổ rộng chúng xếp ba cột nên vừa một màn; trên điện thoại
-   thì một cột, và mười sáu dòng đẩy khung gõ xuống tận đâu. Chặn chiều cao rồi
-   cho cuộn trong chính bảng — giống hệt bảng chỉ dẫn ngay bên cạnh. */
+/* ── BẢNG MEDIA ──
+   Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì mười hai ô chip
+   xếp ngang là đủ (màu tự nói ra nó là màu gì), còn ở đây "Wide block" và
+   "Full-bleed block" chỉ khác nhau ở câu mô tả. Bảy dòng, xếp lưới; ở khổ
+   hẹp một cột, chặn chiều cao rồi cuộn trong chính bảng. (Lớp vẫn tên
+   `--khoi` vì đây chính là bảng Blocks cũ, thu lại còn phần hình và video.) */
 .sz-bang--khoi{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;
   max-height:min(46vh,420px);overflow-y:auto;
@@ -253,17 +226,6 @@
   transition:background var(--dur-fast);
 }
 .sz-khoi-chu{display:flex;flex-direction:column;gap:1px;min-width:0}
-.sz-khoi-hang{display:flex;align-items:center;gap:6px}
-/* ── CHẤM MÀU CỦA BỐN KHUNG NHẤN ──
-   Thứ khác nhau THẬT giữa note · tip · warn · stop là MÀU, không phải chữ:
-   bốn câu mô tả cũ đều mở đầu bằng "same box", nên đọc xong bốn dòng vẫn không
-   chọn được cái nào. Chấm lấy đúng biến màu của `.callout--*` bên prose.css. */
-.sz-khoi-cham{
-  flex:none;width:8px;height:8px;border-radius:50%;
-  background:var(--m,var(--line-strong));
-}
-/* Tiêu đề nhóm chiếm TRỌN bề ngang lưới, nên nhóm nào cũng bắt đầu ở một hàng
-   mới dù bảng đang có hai hay ba cột. */
 .sz-khoi-de{
   grid-column:1 / -1;
   margin:var(--s3) 0 2px;padding:0 var(--s3);
@@ -293,11 +255,25 @@
    nó là loại này", mà không phải chép nguyên bộ màu của bốn kiểu callout trên
    trang thật sang đây. Khung soạn thảo không cần giống hệt trang đã dựng — nó
    cần nói đúng CẤU TRÚC. */
+/* ── KHỐI ::: TRONG KHUNG GÕ — MÀU THEO LOẠI ──
+   Bốn khung nhấn từng vẽ y hệt nhau ở đây (viền tím, nền chìm), trong khi trên
+   trang đã dựng chúng khác nhau bằng MÀU. Người viết bấm Tip mà thấy ra một
+   cái hộp giống hệt Note thì kết luận là hai nút làm cùng một việc. Ba biến
+   `--kh-*` lấy đúng bộ biến của `.callout--*` bên prose.css. */
 .sz-khung .sz-khoi{
+  --kh:var(--accent);--kh-chu:var(--accent-ink);--kh-nen:var(--surface-sunken);
   margin:1em 0;padding:var(--s3) var(--s4);
-  border-left:3px solid var(--accent);
+  border-left:3px solid var(--kh);
   border-radius:0 var(--r-sm) var(--r-sm) 0;
-  background:var(--surface-sunken);
+  background:var(--kh-nen);
+}
+.sz-khung .sz-khoi[data-khoi="note"]{--kh-nen:var(--accent-wash)}
+.sz-khung .sz-khoi[data-khoi="tip"] {--kh:var(--ok);  --kh-chu:var(--ok);  --kh-nen:var(--ok-wash)}
+.sz-khung .sz-khoi[data-khoi="warn"]{--kh:var(--warn);--kh-chu:var(--warn);--kh-nen:var(--warn-wash)}
+.sz-khung .sz-khoi[data-khoi="stop"]{--kh:var(--bad); --kh-chu:var(--bad); --kh-nen:var(--bad-wash)}
+/* Ba khối bọc không có màu riêng: viền xám để phân biệt với khung nhấn. */
+.sz-khung .sz-khoi:is([data-khoi="gallery"],[data-khoi="wide"],[data-khoi="full"]){
+  --kh:var(--line-strong);--kh-chu:var(--text-muted);
 }
 /* ── NHÃN KHỐI: MỘT NỬA KHOÁ, MỘT NỬA GÕ ĐƯỢC ──
    `note` là LOẠI khối — do cái nút vừa bấm quyết, gõ đè lên thì bộ dựng không
@@ -310,13 +286,16 @@
 .sz-khung .sz-khoi-nhan{
   display:flex;align-items:baseline;gap:7px;
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--kh-chu);
   margin-bottom:var(--s2);
 }
+/* Nhãn loại BẤM ĐƯỢC: xoay note → tip → warn → stop (xem soan.js). Con trỏ
+   tay và gạch chân khi rê là hai dấu hiệu nói ra điều đó. */
 .sz-khung .sz-khoi-loai{
-  flex:none;user-select:none;cursor:default;
-  opacity:.72;
+  flex:none;user-select:none;cursor:pointer;
+  opacity:.85;
 }
+.sz-khung .sz-khoi-loai:hover{text-decoration:underline;text-underline-offset:2px;opacity:1}
 /* Vạch phân cách giữa loại và tiêu đề — cùng dấu `·` mà nhãn cũ vẫn dùng. */
 .sz-khung .sz-khoi-loai::after{content:" ·";opacity:.5}
 .sz-khung .sz-khoi-de{
@@ -367,40 +346,6 @@
   content:"";position:absolute;inset:-1px;
   background:linear-gradient(to bottom right,transparent 45%,var(--line-strong) 45%,
              var(--line-strong) 55%,transparent 55%);
-}
-/* ── KHUNG CHỈ DẪN TRONG BẢNG KHỐI ──
-   Bảng khối là một LƯỚI nhiều cột dành cho các nút. Chỉ dẫn là văn bản chảy
-   dọc, nên nó chiếm trọn một hàng của lưới rồi tự lo bên trong. Thiếu dòng
-   `grid-column` này thì mỗi tiêu đề, mỗi danh sách lại thành một ô lưới —
-   chữ xếp thành ba cột chồng lên nhau. */
-.sz-giup{
-  grid-column:1/-1;
-  margin-top:var(--s3);padding-top:var(--s3);
-  border-top:1px solid var(--line);
-}
-.sz-giup-de{
-  margin:var(--s3) 0 var(--s2);
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
-}
-.sz-giup-de:first-child{margin-top:0}
-.sz-giup-ds{
-  margin:0;padding-left:1.1em;
-  display:flex;flex-direction:column;gap:5px;
-  font-size:var(--fs-xs);line-height:1.5;color:var(--text-muted);
-}
-/* Mẫu gõ in bằng phông máy chữ, trên một nền chìm: mắt tách ngay được phần
-   PHẢI GÕ ĐÚNG TỪNG KÝ TỰ ra khỏi phần giải thích bằng tiếng người. */
-.sz-giup-ma{
-  font-family:var(--font-mono);font-size:.92em;
-  padding:.1em .4em;border-radius:var(--r-xs);
-  background:var(--surface-solid);color:var(--text);
-  white-space:nowrap;
-}
-.sz-giup-chan{
-  margin:var(--s3) 0 0;padding-top:var(--s3);
-  border-top:1px solid var(--line);
-  font-size:var(--fs-2xs);line-height:1.5;color:var(--text-faint);
 }
 
 /* ── Ô XEM MARKDOWN ──
@@ -486,6 +431,12 @@
    src/js/soan.js.
    ══════════════════════════════════════════════════════════════════════ */
 .sz-cat{
+  /* `margin:auto` + `inset:0` là cách một `<dialog>` mở bằng `showModal()` tự
+     căn giữa màn — trình duyệt cho sẵn trong stylesheet mặc định. Nhưng
+     base.css có reset `*{margin:0}`, và luật của tác giả thắng luật mặc định
+     bất kể độ cụ thể — nên `margin:auto` bị xoá, và cái khung rơi lên góc
+     trên trái, đúng cảnh đã thấy. Khai lại ở đây. */
+  margin:auto;inset:0;
   border:0;padding:var(--s5);max-width:min(92vw,780px);max-height:92dvh;
   border-radius:var(--r-md);background:var(--surface-solid);color:var(--text);
   box-shadow:0 24px 64px rgba(20,10,40,.28);

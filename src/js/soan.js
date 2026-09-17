@@ -52,10 +52,17 @@
     { ma: 'vang', ten: 'Vàng' },
     { ma: 'luc',  ten: 'Lục' },
     { ma: 'lam',  ten: 'Lam' },
-    { ma: 'xam',  ten: 'Xám' }
+    { ma: 'xam',  ten: 'Xám' },
+    /* Bốn màu thêm ở V2.7.3 — mỗi màu có bản riêng cho cả bốn theme trong
+       tokens.css, tương phản trên nền từng theme đều trên 5:1. */
+    { ma: 'nau',  ten: 'Nâu' },
+    { ma: 'ngoc', ten: 'Ngọc' },
+    { ma: 'cham', ten: 'Chàm' },
+    { ma: 'oliu', ten: 'Ô liu' }
   ];
   var TEN_MD = { tim:'tím', hong:'hồng', do:'đỏ', cam:'cam',
-                 vang:'vàng', luc:'lục', lam:'lam', xam:'xám' };
+                 vang:'vàng', luc:'lục', lam:'lam', xam:'xám',
+                 nau:'nâu', ngoc:'ngọc', cham:'chàm', oliu:'ô liu' };
 
   /* ══════════════ TIỆN ÍCH ══════════════ */
 
@@ -1259,43 +1266,44 @@
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
         L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); donDanhSach(); });
 
-    /* ── CĂN DÒNG: MỘT NÚT, BỐN CHẾ ĐỘ ──
-       Bốn nút rời cho bốn kiểu căn là bốn chỗ trên một thanh vốn đã chật, mà
-       ba trong bốn cái gần như không bao giờ dùng tới. Một nút xổ ra bốn dòng
-       thì chiếm một chỗ, và lúc mở ra thì cả bốn nằm cạnh nhau — chọn được
-       bằng cách SO SÁNH thay vì phải nhớ icon nào là cái nào.
-
-       "Đều hai bên" là mặc định của `.prose p`, nên nó không gắn lớp gì; ba
-       cái kia gắn `{.trai}` · `{.giua}` · `{.phai}`. Bấm lại đúng cái đang
-       bật thì gỡ ra — `doiLopDoan` vốn đã làm vậy. */
-    var nutCan = nut(svg(['M4 6h16M4 12h10M4 18h16']), L('align', 'Alignment'),
-                     function () { moBangCan(); });
-    nutCan.setAttribute('aria-expanded', 'false');
-    var bangCan = veBangCan();
+    /* ── CĂN DÒNG: BA NÚT, KHÔNG PHẢI MỘT BẢNG ──
+       Bản trước là một nút mở ra bảng bốn dòng có câu mô tả. Căn dòng là việc
+       bấm một cái rồi thôi, và ba biểu tượng trái · giữa · phải đã là ngôn ngữ
+       chung của mọi trình soạn thảo — không cần đọc gì. "Đều hai bên" là mặc
+       định của `.prose p` nên không có nút: bấm lại đúng nút đang bật thì về
+       mặc định (`doiLopDoan` vốn đã bật/tắt). Nút của lớp đang bật sáng lên
+       theo con trỏ — xem `capNhat`. */
+    var nutCanDS = {};
+    [['{.trai}', L('canTrai', 'Left'),   ['M4 6h16', 'M4 12h10', 'M4 18h14']],
+     ['{.giua}', L('canGiua', 'Centre'), ['M4 6h16', 'M7 12h10', 'M5 18h14']],
+     ['{.phai}', L('canPhai', 'Right'),  ['M4 6h16', 'M10 12h10', 'M6 18h14']]
+    ].forEach(function (x) {
+      nutCanDS[x[0]] = nut(svg(x[2]), x[1], function () { doiLopDoan(x[0]); });
+    });
     vach(2);
 
-    /* ── CHÍNH 4: hai cửa chèn ──
-       Ảnh là thứ chèn nhiều nhất; Blocks là cửa vào mười sáu thứ còn lại. Hai
-       nút này đứng cạnh nhau và ở khoảng GIỮA thanh — chỗ mắt dừng lại khi
-       không tìm thấy thứ mình cần trong mấy nhóm trước. */
-    nut(svg(['M3 5h18v14H3z', 'm3 16 5-5 4 4 3-3 6 6']),
-        L('img', 'Image'), chenAnh);
-    /* ── NÚT NÀY MANG CẢ CHỮ, KHÔNG CHỈ ICON ──
-       Hai mươi lăm cái nút trên thanh đều là hình vẽ, và cái này là cửa vào
-       mười sáu thứ nữa — nó là nút quan trọng nhất trên thanh. Một hình chữ
-       nhật có gạch chân không nói ra được điều đó; ai không rê chuột lên đợi
-       dòng chú thích thì không bao giờ biết bên trong có gì.
+    /* ── HAI CỬA CHÈN: MEDIA và KHUNG NHẤN ──
+       Trước đây là Ảnh + Blocks, mà Blocks là một bảng mười sáu dòng trộn
+       ảnh, video, bảng, mã, bốn khung nhấn và hai lớp đoạn vào một chỗ — kèm
+       cả một khung chỉ dẫn dài ở dưới. Ai mở ra cũng phải đọc hết mới tìm
+       được thứ mình cần, và bốn khung nhấn trong khung soạn thảo trông y hệt
+       nhau nên bấm cái nào cũng như nhau.
 
-       Chữ ẩn đi ở khổ hẹp (xem `.sz-nut-chu` trong list.css): trên điện thoại
-       thanh nút đã phải cuộn ngang rồi. */
-    var nhanKhoi = document.createDocumentFragment();
-    nhanKhoi.appendChild(svg(['M4 5h16v6H4z', 'M4 15h10']));
-    nhanKhoi.appendChild(el('span', 'sz-nut-chu', L('block', 'Blocks')));
-    var nutKhoi = nut(nhanKhoi, L('block', 'Blocks'),
-                      function () { moBangKhoi(); }, 'sz-nut--khoi');
-    nutKhoi.setAttribute('aria-expanded', 'false');
-    var bangKhoi = veBangKhoi();
+       Nay: MEDIA mở đúng bảy thứ về hình và video. KHUNG NHẤN chèn thẳng một
+       khối `note`; loại đổi ngay trên NHÃN của khối (bấm vào chữ `note` là
+       xoay note → tip → warn → stop), và khối đổi màu theo loại ngay trong
+       khung gõ. Bảng · mã · checklist · hai lớp đoạn xuống hàng hai làm nút
+       riêng. Không còn bảng Blocks, không còn khung chỉ dẫn. */
+    var nutMedia = nut(svg(['M3 5h18v14H3z', 'm3 16 5-5 4 4 3-3 6 6', 'M15.5 8.5h.01']),
+                       L('media', 'Media — image, video, gallery'),
+                       function () { moBangMedia(); });
+    nutMedia.setAttribute('aria-expanded', 'false');
+    var bangMedia = veBangMedia();
+    nut(svg(['M5 5h14v14H5z', 'M8 5v14', 'M11 10h5M11 14h3']),
+        L('callout', 'Callout box — click its label to change the type'),
+        function () { chenKhoi('note', ''); });
     vach(1);
+
 
     /* ── PHỤ 1: nhấn một mẩu chữ ──
        Bốn nét cùng một họ: chúng bọc một đoạn chữ đã bôi đen, bấm lại thì gỡ.
@@ -1367,6 +1375,19 @@
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M3 9l3 3-3 3']),
         L('indent', 'Indent — makes a sub-list'), function () {
       if (!trongDanhSach()) return;
+      /* ── MỤC ĐẦU DANH SÁCH THÌ KHÔNG THỤT ──
+         Thụt vào nghĩa là "làm con của mục đứng trước". Mục đầu tiên không có
+         mục nào đứng trước, nên không có gì để làm con cả. Trình duyệt vẫn
+         chiều — nó bọc mục ấy vào một danh sách con rồi để danh sách con nằm
+         trơ dưới `<ol>` cha; `donDanhSach` phải dựng một `<li>` RỖNG để cho nó
+         chỗ bám, và cái `<li>` rỗng ấy hiện ra là một số "1." không có chữ,
+         ngay trên số "1." thật. Đó là cái "double 1" nhìn thấy trên màn hình.
+
+         Mọi trình soạn thảo đều xử lý bằng cách không làm gì ở đây. */
+      var s3 = window.getSelection();
+      var n3 = s3.getRangeAt(0).startContainer;
+      var li3 = (n3.nodeType === 1 ? n3 : n3.parentNode).closest('li');
+      if (li3 && !li3.previousElementSibling) return;
       lenh('indent'); donDanhSach();
     });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M6 9l-3 3 3 3']),
@@ -1377,7 +1398,24 @@
     nut('¶', L('para', 'Back to a normal paragraph'), function () {
       lenh('formatBlock', 'p');
     }, 'sz-nut--h');
+    /* Hai lớp đoạn còn lại — trước nằm trong bảng Blocks dưới đề "Whole
+       paragraph". Chúng là phép đổi trên đoạn đang đứng, cùng họ với `¶`. */
+    nut(svg(['M4 18 8 7l4 11', 'M5.5 14h5', 'M15 18l2-6 2 6', 'M15.8 16h2.4']),
+        L('bNho', 'Small text'), function () { doiLopDoan('{.nho}'); });
+    nut(svg(['M4 6h9', 'M4 12h16', 'M4 18h16', 'M16 3.5l4 4', 'M20 3.5l-4 4']),
+        L('bThuong', 'Not a lead-in'), function () { doiLopDoan('{.thuong}'); });
     nut(svg('M4 12h16'), L('hr', 'Divider'), function () { lenh('insertHorizontalRule'); });
+    vach(2);
+
+    /* ── BA KHỐI CẤU TRÚC: bảng · mã · checklist ──
+       Cũng từ bảng Blocks ra. Mỗi cái là một nút vì mỗi cái chèn một thứ khác
+       hẳn nhau — không có gì để so sánh trong một bảng cả. */
+    nut(svg(['M3 5h18v14H3z', 'M3 10h18', 'M9 5v14', 'M15 5v14']),
+        L('bTable', 'Table'), chenBang);
+    nut(svg(['M4 4h16v16H4z', 'M10 9l-3 3 3 3', 'M14 9l3 3-3 3']),
+        L('bCode', 'Code block'), chenMa);
+    nut(svg(['M4 5h5v5H4z', 'M12 7.5h8', 'M4 14h5v5H4z', 'M12 16.5h8', 'M5.3 7.5l1.2 1.2 2.2-2.4']),
+        L('bTask', 'Checklist'), chenViec);
     vach(2);
 
     /* ── Nhóm 5: dọn ── */
@@ -1401,9 +1439,9 @@
        Nay phần chỉ dẫn xuống nằm ở CUỐI bảng Blocks, sau danh sách khối. Ai mở
        bảng ấy ra là thấy cả hai, và không còn cửa thứ hai để lệch. */
 
-    /* ══════════ BẢNG KHỐI ══════════
+    /* ══════════ CHÈN MỘT KHỐI ::: ══════════
 
-       Mỗi dòng là một khối chèn được. Chèn bằng `insertHTML` chứ không dựng
+       Dùng cho khung nhấn lẫn ba khối bọc trong bảng Media. Chèn bằng `insertHTML` chứ không dựng
        DOM rồi nhét vào: `insertHTML` đi qua đúng cỗ máy hoàn tác của trình
        duyệt, nên Ctrl+Z gỡ được — dựng tay thì cú bấm ấy nằm ngoài lịch sử và
        người ta mất đường lùi. */
@@ -1426,7 +1464,8 @@
       document.execCommand('insertHTML', false,
         '<div class="sz-khoi" data-khoi="' + ma + '">' +
           '<div class="sz-khoi-nhan">' +
-            '<span class="sz-khoi-loai" contenteditable="false">' + ma + '</span>' +
+            '<span class="sz-khoi-loai" contenteditable="false" title="' +
+              thoatHTML(L('bLoaiDoi', 'Click to change: note → tip → warn → stop')) + '">' + ma + '</span>' +
             '<span class="sz-khoi-de" data-cho="' +
               thoatHTML(L('bDeCho', 'Title — type here')) + '">' +
               (ten ? thoatHTML(ten) : '') + '</span>' +
@@ -1436,62 +1475,19 @@
       capNhat();
     }
 
-    function veBangKhoi() {
-      /* Danh sách dựng BÊN TRONG hàm, không phải một `var` ở ngoài: hàm này
-         được gọi ngay lúc dựng thanh nút, mà `var` thì mới chỉ được cất chỗ ở
-         đó chứ chưa gán — đọc ra `undefined`, và cả khung soạn thảo chết ngay
-         dòng đầu. Khai báo hàm thì được đưa lên trước; khai báo biến thì không. */
-      /* ── BỐN KHUNG NHẤN, VÀ VÌ SAO CHÚNG TỪNG KHÔNG PHÂN BIỆT ĐƯỢC ──
-         Câu mô tả cũ tả CƠ CHẾ: "a boxed aside", rồi "same box, friendlier",
-         "same box, careful tone", "same box, strongest tone". Đọc bốn dòng ấy
-         cạnh nhau thì chúng nói đúng một điều — cùng một cái hộp — và không
-         dòng nào giúp chọn được cái nào.
-
-         Nay tả VIỆC: dùng cái này khi nào. Và thêm một chấm màu đúng bằng màu
-         nó hiện ra trên trang, vì thứ khác nhau thật giữa bốn khối này là màu
-         chứ không phải chữ.
-
-         `--cl` lấy đúng tên biến của `.callout--*` trong prose.css, nên đổi
-         màu ở đó là chấm ở đây đổi theo. */
-      var KHOI = [
-        { ma: 'note', nhom: 'nhan', cham: 'var(--accent-ink)',
-          ten: L('bNote', 'Note'),  mo: L('bNoteMo', 'a side point, out of the main flow') },
-        { ma: 'tip', nhom: 'nhan', cham: 'var(--ok)',
-          ten: L('bTip', 'Tip'),    mo: L('bTipMo', 'a shortcut, something that helps') },
-        { ma: 'warn', nhom: 'nhan', cham: 'var(--warn)',
-          ten: L('bWarn', 'Heads up'), mo: L('bWarnMo', 'worth knowing before you start') },
-        { ma: 'stop', nhom: 'nhan', cham: 'var(--bad)',
-          ten: L('bStop', 'Do not'), mo: L('bStopMo', 'something that should not be done') },
-        { ma: 'gallery', nhom: 'anh', ten: L('bGallery', 'Gallery'), mo: L('bGalleryMo', 'photos side by side') },
-        { ma: 'wide', nhom: 'anh', ten: L('bWide', 'Wide block'), mo: L('bWideMo', 'spills past the text column') },
-        /* `:::full` là khối DUY NHẤT bộ dựng hiểu mà bảng này chưa có nút —
-           nó vẫn nằm trong phần "gõ tay" của bảng chỉ dẫn, và đó là lý do
-           phần ấy còn tồn tại. Thêm nốt vào đây thì không còn gì phải gõ. */
-        { ma: 'full', nhom: 'anh', ten: L('bFull', 'Full-bleed block'), mo: L('bFullMo', 'edge to edge of the screen') }
-      ];
+    /* ══════════ BẢNG MEDIA ══════════
+       Chỉ những gì thuộc về HÌNH và VIDEO, mỗi dòng kèm cú pháp nó ghi ra
+       file. Bảng Blocks cũ gom mười sáu thứ, và cái giá là không ai tìm được
+       thứ mình cần; bảng này bảy dòng, đúng một câu hỏi: "đặt cái gì vào bài?". */
+    function veBangMedia() {
       var b = el('div', 'sz-bang sz-bang--khoi');
       b.hidden = true;
 
-      /* ── MỖI DÒNG BÀY LUÔN CÚ PHÁP CỦA NÓ ──
-         Trước bản này cú pháp nằm ở BẢNG CHỈ DẪN, dưới cái đầu đề "gõ tay —
-         không có nút". Nó sai từ lúc bảng khối ra đời: mọi thứ trong danh sách
-         ấy đều đã có nút. Ai mở bảng chỉ dẫn ra đọc thì được dạy gõ tay đúng
-         thứ chỉ cần bấm một cái — và kết luận là ô soạn thảo chẳng khác gì.
-
-         Nên cú pháp về đứng ngay cạnh cái nút làm ra nó. Một chỗ, không hai;
-         và bấm một lần là thấy ngay nó ghi ra cái gì trong file. */
-      function dong(ten, mo, cu, lam, cham) {
+      function dong(ten, mo, cu, lam) {
         var o = el('button', 'sz-khoi-nut');
         o.type = 'button';
         var trai = el('span', 'sz-khoi-chu');
-        var hang = el('span', 'sz-khoi-hang');
-        if (cham) {
-          var ch = el('span', 'sz-khoi-cham');
-          ch.style.setProperty('--m', cham);
-          hang.appendChild(ch);
-        }
-        hang.appendChild(el('span', 'sz-khoi-ten', ten));
-        trai.appendChild(hang);
+        trai.appendChild(el('span', 'sz-khoi-ten', ten));
         if (mo) trai.appendChild(el('span', 'sz-khoi-mo', mo));
         o.appendChild(trai);
         if (cu) o.appendChild(el('code', 'sz-khoi-cu', cu));
@@ -1500,32 +1496,24 @@
         b.appendChild(o);
       }
 
-      /* ── BẢNG CHIA NHÓM, KHÔNG PHẢI MỘT LƯỚI MƯỜI SÁU Ô ──
-         Mười sáu dòng xếp phẳng thì mắt phải đọc hết mới biết cái mình cần ở
-         đâu — và bốn khung nhấn nằm cạnh nhau mà câu mô tả đều mở đầu bằng
-         "same box" thì đọc xong vẫn không chọn được cái nào.
+      dong(L('img', 'Image'), L('imgMo', 'upload a file, or paste a /media/ path'), '![…](…)', chenAnh);
 
-         Bốn nhóm theo VIỆC: khung nhấn · ảnh và video · cấu trúc · cả đoạn.
-         Tiêu đề nhóm chiếm trọn bề ngang lưới (xem `.sz-khoi-de`), nên nhóm
-         nào cũng bắt đầu ở một hàng mới dù lưới đang có mấy cột. */
-      function de(chu) { b.appendChild(el('p', 'sz-khoi-de', chu)); }
-
-      function khoiNhom(ten) {
-        KHOI.filter(function (k) { return k.nhom === ten; }).forEach(function (k) {
-          dong(k.ten, k.mo, ':::' + k.ma, function () {
-            /* Nhãn của khối ghi chú là thứ hiện ra ở đầu ô trên trang đã dựng —
-               để trống thì bộ dựng lấy tên mặc định theo loại. Hỏi ngay lúc chèn
-               thì người ta khỏi phải tìm ra chỗ sửa nó sau. */
-            chenKhoi(k.ma, '');
-          }, k.cham);
-        });
-      }
-
-      de(L('gNhomNhan', 'Callout boxes'));
-      khoiNhom('nhan');
-
-      de(L('gNhomAnh', 'Pictures and video'));
-      khoiNhom('anh');
+      /* ── BỀ NGANG CỦA MỘT TẤM ẢNH ──
+         `{.wide}` và `{.full}` là thuộc tính của ĐÚNG một tấm ảnh, nên nó
+         không thể là một khối chèn vào — nó là một phép đổi trên tấm ảnh con
+         trỏ đang đứng cạnh. Bấm vòng: thường → rộng → tràn → thường. */
+      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), '{.wide} {.full}', function () {
+        var anh = anhGanConTro();
+        if (!anh) { window.alert(L('bAnhChua', 'Put the cursor next to an image first.')); return; }
+        var VONG = ['', '{.wide}', '{.full}'];
+        var nay = anh.getAttribute('data-lop') || '';
+        var ke = VONG[(VONG.indexOf(nay) + 1) % VONG.length];
+        if (ke) anh.setAttribute('data-lop', ke); else anh.removeAttribute('data-lop');
+        anh.classList.remove('sz-anh--wide', 'sz-anh--full');
+        if (ke === '{.wide}') anh.classList.add('sz-anh--wide');
+        if (ke === '{.full}') anh.classList.add('sz-anh--full');
+        capNhat();
+      });
 
       /* ── VIDEO ──
          Hai dạng, và bộ dựng phân biệt chúng bằng chính chữ đầu dòng:
@@ -1548,7 +1536,6 @@
         capNhat();
       });
 
-
       dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm you uploaded'), '@video[…]', function () {
         var u = window.prompt(L('bVidAsk', 'Video path (starts with /media/):'), '/media/') || '';
         u = u.trim();
@@ -1561,115 +1548,61 @@
         capNhat();
       });
 
-      /* ── BỀ NGANG CỦA MỘT TẤM ẢNH ──
-         `{.wide}` và `{.full}` là thuộc tính của ĐÚNG một tấm ảnh, nên nó
-         không thể là một khối chèn vào — nó là một phép đổi trên tấm ảnh con
-         trỏ đang đứng cạnh. Bấm vòng: thường → rộng → tràn → thường. */
-      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), '{.wide} {.full}', function () {
-        var anh = anhGanConTro();
-        if (!anh) { window.alert(L('bAnhChua', 'Put the cursor next to an image first.')); return; }
-        var VONG = ['', '{.wide}', '{.full}'];
-        var nay = anh.getAttribute('data-lop') || '';
-        var ke = VONG[(VONG.indexOf(nay) + 1) % VONG.length];
-        if (ke) anh.setAttribute('data-lop', ke); else anh.removeAttribute('data-lop');
-        anh.classList.remove('sz-anh--wide', 'sz-anh--full');
-        if (ke === '{.wide}') anh.classList.add('sz-anh--wide');
-        if (ke === '{.full}') anh.classList.add('sz-anh--full');
-        capNhat();
-      });
-
-      /* ── HAI LỚP CỦA CẢ ĐOẠN ──
-         Bật/tắt trên đoạn con trỏ đang đứng. Giữ ở `data-lop` chứ không gõ
-         thẳng vào chữ: gõ vào chữ thì mỗi lần sửa câu cuối phải né ba ký tự,
-         và không có cách nào bấm lần nữa để bỏ. */
-
-      de(L('gNhomCau', 'Structure'));
-
-
-      dong(L('bTable', 'Table'), L('bTableMo', 'up to 5 × 20 — Shift+Enter between rows'), '| a | b |', function () {
-        khung.focus();
-        /* ── HỎI CỠ BẢNG ──
-           Bản trước luôn chèn đúng 2×2, và muốn thêm cột thì phải tự gõ thêm
-           dấu gạch đứng vào cả ba dòng cho khớp nhau — sai một dấu là bảng
-           thôi là bảng. Hỏi một câu thì dựng sẵn đúng cỡ.
-
-           Trần 5×20. Trần CỘT là chuyện bề ngang thật: cột chữ của bài rộng
-           chừng 66 ký tự, chia sáu cột là mỗi cột mười ký tự — không còn đọc
-           được. Trần HÀNG chỉ để chặn gõ nhầm "200"; hai mươi hàng đã dài hơn
-           gần hết bảng người ta thật sự viết. */
-        var TRAN_COT = 5, TRAN_HANG = 20;
-        var tra = window.prompt(
-          L('bTableAsk', 'Size — columns × rows (up to 5 × 20):'), '2x3') || '';
-        var m = tra.replace(/\s/g, '').match(/^(\d+)[x×*,](\d+)$/i);
-        if (!m) return;
-        var nCot  = Math.max(1, Math.min(TRAN_COT,  parseInt(m[1], 10) || 2));
-        var nHang = Math.max(1, Math.min(TRAN_HANG, parseInt(m[2], 10) || 2));
-
-        /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
-           bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng chừng ấy dòng
-           liền nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì
-           phải viết thêm cả một bộ đổi bảng ↔ Markdown. */
-        function hang(o) { return '|' + new Array(nCot + 1).join(o + '|'); }
-        var d = [hang('  '), hang('---')];
-        for (var i = 0; i < nHang; i++) d.push(hang('  '));
-        document.execCommand('insertHTML', false,
-          '<p>' + d.join('<br>') + '</p><p><br></p>');
-        capNhat();
-      });
-
-
-      dong(L('bCode', 'Code block'), L('bCodeMo', 'keeps every space and line break'), '```js', function () {
-        khung.focus();
-        var ngon = window.prompt(L('bCodeAsk', 'Language (js, css, python… — can be empty):'), '') || '';
-        document.execCommand('insertHTML', false,
-          '<pre' + (ngon.trim() ? ' data-ngon="' + ngon.trim().replace(/[^\w-]/g, '') + '"' : '') +
-          '> </pre><p><br></p>');
-        capNhat();
-      });
-
-
-      dong(L('bTask', 'Checklist'), L('bTaskMo', 'a list with tick boxes'), '- [ ]', function () {
-        khung.focus();
-        document.execCommand('insertHTML', false,
-          '<ul><li data-viec="0"> </li></ul><p><br></p>');
-        capNhat();
-      });
-
-      de(L('gNhomDoan', 'Whole paragraph'));
-
-      /* ── HAI LỚP CỦA CẢ ĐOẠN ──
-         Bật/tắt trên đoạn con trỏ đang đứng. Giữ ở `data-lop` chứ không gõ
-         thẳng vào chữ: gõ vào chữ thì mỗi lần sửa câu cuối phải né ba ký tự,
-         và không có cách nào bấm lần nữa để bỏ. */
-      dong(L('bGiua', 'Centre this paragraph'), L('bGiuaMo', 'for a line that stands alone'), '{.giua}', function () {
-        doiLopDoan('{.giua}');
-      });
-
-      dong(L('bNho', 'Small text'), L('bNhoMo', 'for a side note or a source line'), '{.nho}', function () {
-        doiLopDoan('{.nho}');
-      });
-
-      dong(L('bThuong', 'Not a lead-in'), L('bThuongMo', 'stops the first paragraph being larger'), '{.thuong}', function () {
-        doiLopDoan('{.thuong}');
-      });
-
-      /* ── PHẦN CHỈ DẪN ĐI TRONG MỘT KHUNG RIÊNG ──
-         Trước bản này nó là một bảng riêng sau nút `i` — hai cửa dạy cùng một
-         việc, và chúng đã lệch nhau. Gộp vào đây là đúng.
-
-         Nhưng KHÔNG rót thẳng từng mẩu vào `b`: `b` là một LƯỚI ba cột, nên
-         mỗi tiêu đề và mỗi danh sách chỉ dẫn rơi vào một ô lưới riêng, nằm
-         chen ngang giữa các nút khối. Trên màn rộng nó ra thành ba cột chữ
-         xếp chồng lên nhau, đọc không ra chữ nào vào chữ nào.
-
-         Nên chỉ dẫn vào MỘT khung con, và khung ấy trải hết bề ngang lưới
-         (`grid-column:1/-1`). Trong khung thì chữ chảy dọc như văn bản
-         thường, đúng như nó cần. */
-      var oGiup = el('div', 'sz-giup');
-      giupVao(oGiup);
-      b.appendChild(oGiup);
+      /* Ba khối bọc: dải ảnh, và hai khổ rộng cho bất kỳ thứ gì nằm trong. */
+      dong(L('bGallery', 'Gallery'), L('bGalleryMo', 'photos side by side'), ':::gallery', function () { chenKhoi('gallery', ''); });
+      dong(L('bWide', 'Wide block'), L('bWideMo', 'spills past the text column'), ':::wide', function () { chenKhoi('wide', ''); });
+      dong(L('bFull', 'Full-bleed block'), L('bFullMo', 'edge to edge of the screen'), ':::full', function () { chenKhoi('full', ''); });
       return b;
     }
+
+    /* ══════════ BA KHỐI CẤU TRÚC ══════════ */
+    function chenBang() {
+      khung.focus();
+      /* ── HỎI CỠ BẢNG ──
+         Bản trước luôn chèn đúng 2×2, và muốn thêm cột thì phải tự gõ thêm
+         dấu gạch đứng vào cả ba dòng cho khớp nhau — sai một dấu là bảng
+         thôi là bảng. Hỏi một câu thì dựng sẵn đúng cỡ.
+
+         Trần 5×20. Trần CỘT là chuyện bề ngang thật: cột chữ của bài rộng
+         chừng 66 ký tự, chia sáu cột là mỗi cột mười ký tự — không còn đọc
+         được. Trần HÀNG chỉ để chặn gõ nhầm "200"; hai mươi hàng đã dài hơn
+         gần hết bảng người ta thật sự viết. */
+      var TRAN_COT = 5, TRAN_HANG = 20;
+      var tra = window.prompt(
+        L('bTableAsk', 'Size — columns × rows (up to 5 × 20):'), '2x3') || '';
+      var m = tra.replace(/\s/g, '').match(/^(\d+)[x×*,](\d+)$/i);
+      if (!m) return;
+      var nCot  = Math.max(1, Math.min(TRAN_COT,  parseInt(m[1], 10) || 2));
+      var nHang = Math.max(1, Math.min(TRAN_HANG, parseInt(m[2], 10) || 2));
+
+      /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
+         bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng chừng ấy dòng
+         liền nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì
+         phải viết thêm cả một bộ đổi bảng ↔ Markdown. */
+      function hangB(o) { return '|' + new Array(nCot + 1).join(o + '|'); }
+      var d = [hangB('  '), hangB('---')];
+      for (var i = 0; i < nHang; i++) d.push(hangB('  '));
+      document.execCommand('insertHTML', false,
+        '<p>' + d.join('<br>') + '</p><p><br></p>');
+      capNhat();
+    }
+
+    function chenMa() {
+      khung.focus();
+      var ngon = window.prompt(L('bCodeAsk', 'Language (js, css, python… — can be empty):'), '') || '';
+      document.execCommand('insertHTML', false,
+        '<pre' + (ngon.trim() ? ' data-ngon="' + ngon.trim().replace(/[^\w-]/g, '') + '"' : '') +
+        '> </pre><p><br></p>');
+      capNhat();
+    }
+
+    function chenViec() {
+      khung.focus();
+      document.execCommand('insertHTML', false,
+        '<ul><li data-viec="0"> </li></ul><p><br></p>');
+      capNhat();
+    }
+
 
     /* Tấm ảnh gần con trỏ nhất: trong chính đoạn đang đứng, hoặc — nếu đoạn ấy
        không có ảnh nào — tấm cuối cùng phía trên nó. */
@@ -1693,11 +1626,14 @@
       if (!s || !s.rangeCount) return;
       var n = s.getRangeAt(0).startContainer;
       var o = n.nodeType === 1 ? n : n.parentNode;
-      var p = o && o.closest ? o.closest('p') : null;
-      if (!p || !khung.contains(p)) {
-        window.alert(L('bDoanChua', 'Put the cursor in a paragraph first.'));
-        return;
-      }
+      /* Nhận MỌI khối chữ, không chỉ `<p>`: con trỏ đang ở một mục danh sách,
+         một tiêu đề, hay trong một khối trích dẫn thì căn dòng vẫn có nghĩa.
+         Bản trước chỉ nhận `<p>` và bật hộp báo "Put the cursor in a paragraph
+         first" — câu ấy đúng về kỹ thuật mà vô nghĩa với người đang gõ: họ RÕ
+         RÀNG đang đứng trong một đoạn chữ. Không có khối nào thì lặng lẽ thôi,
+         không bật hộp gì. */
+      var p = o && o.closest ? o.closest('p, li, h1, h2, h3, h4, blockquote, div.sz-khoi') : null;
+      if (!p || !khung.contains(p) || p === khung) return;
       var LOP_CSS = { '{.giua}': 'sz-doan--giua', '{.thuong}': 'sz-doan--thuong',
                       '{.nho}': 'sz-doan--nho',
                       '{.trai}': 'sz-doan--trai', '{.phai}': 'sz-doan--phai' };
@@ -1717,46 +1653,12 @@
       capNhat();
     }
 
-    function moBangKhoi() {
+    function moBangMedia() {
       bangMau.hidden = true;
-      bangKhoi.hidden = !bangKhoi.hidden;
-      nutKhoi.setAttribute('aria-expanded', bangKhoi.hidden ? 'false' : 'true');
+      bangMedia.hidden = !bangMedia.hidden;
+      nutMedia.setAttribute('aria-expanded', bangMedia.hidden ? 'false' : 'true');
     }
 
-    /* ══════════ BẢNG CĂN DÒNG ══════════ */
-    function veBangCan() {
-      var b = el('div', 'sz-bang sz-bang--can');
-      b.hidden = true;
-      [['', L('canDeu', 'Justified'), L('canDeuMo', 'the default — both edges straight')],
-       ['{.trai}', L('canTrai', 'Left'), L('canTraiMo', 'ragged right edge')],
-       ['{.giua}', L('canGiua', 'Centre'), L('canGiuaMo', 'for a line or two, not a whole paragraph')],
-       ['{.phai}', L('canPhai', 'Right'), L('canPhaiMo', 'a signature, a dedication')]
-      ].forEach(function (x) {
-        var o = el('button', 'sz-khoi-nut');
-        o.type = 'button';
-        var chu = el('div', 'sz-khoi-chu');
-        chu.appendChild(el('span', 'sz-khoi-ten', x[1]));
-        chu.appendChild(el('span', 'sz-khoi-mo', x[2]));
-        o.appendChild(chu);
-        if (x[0]) o.appendChild(el('code', 'sz-khoi-ma', x[0]));
-        o.addEventListener('mousedown', function (e) { e.preventDefault(); });
-        o.addEventListener('click', function () {
-          /* Chuỗi rỗng = về mặc định: gỡ lớp đang có, không gắn gì thêm. */
-          doiLopDoan(x[0] || '__bo__');
-          dongBang();
-        });
-        b.appendChild(o);
-      });
-      return b;
-    }
-
-    function moBangCan() {
-      bangMau.hidden = true;
-      bangKhoi.hidden = true;
-      nutKhoi.setAttribute('aria-expanded', 'false');
-      bangCan.hidden = !bangCan.hidden;
-      nutCan.setAttribute('aria-expanded', bangCan.hidden ? 'false' : 'true');
-    }
 
     /* ══════════ BẢNG MÀU ══════════ */
     function veBangMau() {
@@ -1811,101 +1713,16 @@
     /* Hai bảng, một chỗ đứng: mở cái này thì cái kia đóng. Chồng lên nhau thì
        bảng dưới vẫn ăn được cú bấm mà không ai thấy nó ở đó. */
     function moBangMau() {
-      bangKhoi.hidden = true;
-      nutKhoi.setAttribute('aria-expanded', 'false');
+      bangMedia.hidden = true;
+      nutMedia.setAttribute('aria-expanded', 'false');
       bangMau.hidden = !bangMau.hidden;
     }
 
     function dongBang() {
-      bangMau.hidden = true; bangKhoi.hidden = true; bangCan.hidden = true;
-      nutKhoi.setAttribute('aria-expanded', 'false');
-      nutCan.setAttribute('aria-expanded', 'false');
+      bangMau.hidden = true; bangMedia.hidden = true;
+      nutMedia.setAttribute('aria-expanded', 'false');
     }
 
-    /* ══════════ CHỈ DẪN ══════════
-
-       ── HAI PHẦN, VÌ CÓ HAI LOẠI NGƯỜI ĐỌC NÓ ──
-       Phần trên là những thứ có NÚT trên thanh: ai quên thì liếc một dòng là
-       xong. Phần dưới là những thứ KHÔNG có nút — khối ghi chú, ảnh tràn lề,
-       bảng — phải gõ tay bằng cú pháp.
-
-       Phần dưới sinh ra vì một chuyện cụ thể: bài "Vô thức tập thể" dùng bốn
-       kiểu khối `:::`, một dải ảnh, một bảng và một khối mã, mà trong ô soạn
-       thảo không có chỗ nào nói rằng những thứ ấy tồn tại. Người viết bài sau
-       mở ô này ra chỉ thấy mười cái nút, và không có đường nào đoán ra là còn
-       mười thứ nữa gõ được.
-
-       Mỗi dòng đúng MỘT việc, và có mẫu gõ sẵn ngay trong dòng — đây là thứ
-       liếc lúc đang quên, không phải thứ ngồi học. Ai muốn chép nguyên mẫu thì
-       bôi đen dòng đó là chép được. */
-    function giupVao(b) {
-      function nhom(de, ds) {
-        b.appendChild(el('p', 'sz-giup-de', de));
-        var ul = el('ul', 'sz-giup-ds');
-        ds.forEach(function (x) {
-          var li = el('li');
-          if (typeof x === 'string') { li.textContent = x; }
-          else {
-            li.appendChild(el('code', 'sz-giup-ma', x[0]));
-            li.appendChild(document.createTextNode(' ' + x[1]));
-          }
-          ul.appendChild(li);
-        });
-        b.appendChild(ul);
-      }
-
-      nhom(L('gHelp1', 'The buttons'), [
-        L('h1', 'Select some text, then press a button — no syntax to remember.'),
-        L('h2t', 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).'),
-        L('h3t', 'Colour: select → press the dot → pick one. Press the same one again to remove.'),
-        L('h4t', 'New line inside the same paragraph: Shift + Enter.'),
-        L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
-        L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
-        L('h9t', 'The — button drops a ✦ ✦ ✦ break between two parts of a post.'),
-        L('h10t', 'x² · x₂ · the key button: for m², H₂O and ⌘K.'),
-        L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
-      ]);
-
-      /* ── ẢNH ĐƯỢC MỘT MỤC RIÊNG ──
-         Nó là thứ đổi nhiều nhất ở bản này, và là thứ duy nhất trong cả ô soạn
-         thảo có một quãng CHỜ mà người dùng không đoán trước được: ảnh vào kho
-         mã ngay, nhưng phải đợi Cloudflare dựng xong mới có ở địa chỉ thật.
-         Không nói ra thì lần đầu mở bài đã đăng lên xem sẽ thấy ô ảnh vỡ và
-         tưởng mình làm hỏng. */
-      nhom(L('gHelpAnh', 'Images'), [
-        L('a1', 'Drag a photo onto the box, or press ⌘V after a screenshot, or press the image button.'),
-        L('a2', 'Big photos are shrunk to 1800px and turned into WebP here on your machine first.'),
-        L('a3', 'Double-click an image to describe it — that line is what a blind reader hears and what Google reads.'),
-        L('a4', 'A new image takes about a minute to appear on the live site; in this box you see it straight away.')
-      ]);
-
-      /* ── PHẦN NÀY TỪNG TÊN LÀ "GÕ TAY — KHÔNG CÓ NÚT", VÀ NÓ ĐÃ SAI ──
-         Danh sách ấy ra đời TRƯỚC bảng Blocks. Bảng Blocks nhận hết mười lăm
-         thứ trong đó, nhưng câu đầu đề thì ở lại — nên ai mở bảng chỉ dẫn ra
-         cũng được dạy gõ tay đúng những thứ chỉ cần bấm một cái, và kết luận
-         rất hợp lý là ô soạn thảo không khác gì bản cũ.
-
-         Nay cú pháp đứng ngay trên từng dòng của bảng Blocks (xem `dong()` ở
-         trên), nên chỗ này không chép lại nữa — chép lại là có hai bản, và
-         sớm muộn lại lệch nhau đúng như lần này. Còn đúng một câu: bảng ấy
-         nằm ở đâu. */
-      /* Mục "bảng Blocks nằm ở đâu" đã bỏ: phần chỉ dẫn này nay in ngay DƯỚI
-         chính danh sách ấy, nên chỉ đường tới thứ người ta đang nhìn là thừa.
-         Còn lại đúng một câu về cách gõ, thứ danh sách không nói được. */
-      nhom(L('gHelp2', 'Worth knowing'), [
-        L('g3', 'A ::: block and a table each live in ONE paragraph: Shift+Enter between rows, not Enter.'),
-        L('g2', 'Every line above shows the exact text it writes into the file — nothing needs typing.')
-      ]);
-
-      b.appendChild(el('p', 'sz-giup-chan',
-        L('gChan', 'Everything the site can render has a button now. Press </> at any time to ' +
-                   'see the exact Markdown that will be sent to GitHub.')));
-    }
-
-    /* ══════════ CHÈN LINK / ẢNH ══════════
-       `prompt` chứ không phải một khung tự dựng: nó xấu, nhưng nó chạy đúng
-       trên mọi máy kể cả điện thoại, không cần bẫy phím Esc, không cần trả
-       con trỏ về chỗ cũ. Ở một ô chỉ chủ trang dùng thì đó là đánh đổi đúng. */
     function chenLink() {
       var s = window.getSelection();
       var coChon = s && s.rangeCount && !s.isCollapsed;
@@ -1926,8 +1743,6 @@
       capNhat();
     }
 
-    /* Ô chọn file nằm ẩn trong khối soạn thảo. `accept` để hộp chọn của máy
-       lọc sẵn, `multiple` để chọn cả loạt một lượt — cùng đường với kéo thả. */
     var oFile = el('input');
     oFile.type = 'file';
     oFile.accept = 'image/*';
@@ -1935,8 +1750,7 @@
     oFile.hidden = true;
     oFile.addEventListener('change', function () {
       if (oFile.files && oFile.files.length) xepHang(oFile.files);
-      /* Dọn ô: chọn lại ĐÚNG file vừa chọn thì `change` không nổ lần nữa nếu
-         giá trị cũ còn đó — và người ta tưởng nút hỏng. */
+
       oFile.value = '';
     });
 
@@ -2079,6 +1893,32 @@
        một thanh công cụ nữa cho một việc mỗi tháng làm vài lần.
        ══════════════════════════════════════════════════════════════ */
     function moKhungCat(file, xong) {
+      /* ── GIỮ LẠI CHỖ ĐANG ĐỨNG TRƯỚC KHI MỞ KHUNG ──
+         `showModal()` kéo tiêu điểm vào hộp thoại, và vùng chọn trong khung
+         soạn thảo mất theo. Lúc đóng hộp rồi `chayHang()` gọi `insertHTML`,
+         nó chèn vào chỗ vùng chọn ĐANG có — mà lúc ấy hoặc không có, hoặc đã
+         nhảy về đầu khung. Kết quả nhìn thấy: bấm Crop xong, ảnh biến mất
+         (thật ra nó nằm ở một chỗ khác, ngoài tầm mắt, hoặc không vào đâu).
+
+         Chép lại Range trước khi mở, đặt lại ngay trước khi gọi tiếp. */
+      var vungCu = null;
+      try {
+        var sC = window.getSelection();
+        if (sC && sC.rangeCount && khung.contains(sC.getRangeAt(0).startContainer)) {
+          vungCu = sC.getRangeAt(0).cloneRange();
+        }
+      } catch (eC) {}
+      var xongGoc = xong;
+      xong = function (ra) {
+        if (vungCu) {
+          try {
+            khung.focus();
+            var sD = window.getSelection();
+            sD.removeAllRanges(); sD.addRange(vungCu);
+          } catch (eD) {}
+        }
+        xongGoc(ra);
+      };
       var xem = URL.createObjectURL(file);
       var img = new Image();
       img.onerror = function () { URL.revokeObjectURL(xem); xong(null); };
@@ -2346,8 +2186,16 @@
       for (var k = 0; k < conDs.length; k++) {
         var ds2 = conDs[k], cha = ds2.previousElementSibling;
         if (!cha || cha.tagName !== 'LI') {
-          cha = document.createElement('li');
-          ds2.parentNode.insertBefore(cha, ds2);
+          /* Không có mục nào đứng trước để làm cha. Bản trước dựng một `<li>`
+             RỖNG cho nó bám — và `<li>` rỗng trong `<ol>` in ra một con số
+             không có chữ, chính là cái "1. 1." đã thấy. Nay TRẢI PHẲNG: nhấc
+             từng mục con lên đứng ngay chỗ danh sách con đang đứng, rồi bỏ cái
+             vỏ. Không mất chữ, không mất mục, chỉ mất một bậc thụt vốn không
+             có nghĩa. */
+          var ke = ds2.parentNode;
+          while (ds2.firstChild) ke.insertBefore(ds2.firstChild, ds2);
+          ds2.remove();
+          continue;
         }
         cha.appendChild(ds2);
       }
@@ -2475,10 +2323,46 @@
         try { bat = document.queryCommandState(x[0]); } catch (e) {}
         x[1].classList.toggle('sz-nut--bat', !!bat);
       });
+      /* Ba nút căn dòng sáng theo lớp của khối con trỏ đang đứng. */
+      var lopNay = '';
+      var sC = window.getSelection();
+      if (sC && sC.rangeCount) {
+        var nC = sC.getRangeAt(0).startContainer;
+        var oC = nC.nodeType === 1 ? nC : nC.parentNode;
+        var kC = oC && oC.closest ? oC.closest('[data-lop]') : null;
+        if (kC && khung.contains(kC)) lopNay = kC.getAttribute('data-lop') || '';
+      }
+      for (var kCan in nutCanDS) nutCanDS[kCan].classList.toggle('sz-nut--bat', kCan === lopNay);
+      /* Nhãn loại của khối nhấn nói ra là bấm được — kể cả khối mở từ bài cũ,
+         nơi markup được dựng ở `tuMD` không có tay với tới `L()`. */
+      khung.querySelectorAll('.sz-khoi-loai:not([title])').forEach(function (n) {
+        n.title = L('bLoaiDoi', 'Click to change: note → tip → warn → stop');
+      });
       if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
       luuNhap();
       if (khiDoi) { try { khiDoi(); } catch (e) {} }
     }
+
+    /* ══════════ ĐỔI LOẠI KHUNG NHẤN NGAY TRÊN NHÃN ══════════
+       Bốn khung nhấn chỉ khác nhau ở MÀU, và màu ấy nay hiện ngay trong khung
+       gõ (xem `.sz-khoi[data-khoi]` trong soan.css). Nên cách tự nhiên nhất
+       để đổi loại là bấm vào chính cái nhãn: note → tip → warn → stop → note.
+       Ba khối bọc (gallery · wide · full) không xoay — chúng không phải một
+       họ với nhau. */
+    var LOAI_NHAN = ['note', 'tip', 'warn', 'stop'];
+    khung.addEventListener('click', function (e) {
+      var nhan = e.target && e.target.closest ? e.target.closest('.sz-khoi-loai') : null;
+      if (!nhan || !khung.contains(nhan)) return;
+      var kh = nhan.closest('.sz-khoi');
+      if (!kh) return;
+      var i = LOAI_NHAN.indexOf(kh.getAttribute('data-khoi'));
+      if (i < 0) return;
+      var moi = LOAI_NHAN[(i + 1) % LOAI_NHAN.length];
+      kh.setAttribute('data-khoi', moi);
+      nhan.textContent = moi;
+      capNhat();
+    });
+
 
     /* ══════════ DÁN ══════════ */
     khung.addEventListener('paste', function (e) {
@@ -2576,9 +2460,8 @@
     khoiSoan.appendChild(thanh);
     khoiSoan.appendChild(oBao);
     khoiSoan.appendChild(oFile);
-    khoiSoan.appendChild(bangKhoi);
+    khoiSoan.appendChild(bangMedia);
     khoiSoan.appendChild(bangMau);
-    khoiSoan.appendChild(bangCan);
     khoiSoan.appendChild(khung);
     khoiSoan.appendChild(oMD);
     oSan.appendChild(khoiSoan);

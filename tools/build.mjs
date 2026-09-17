@@ -449,58 +449,18 @@ const NHAN = {
   szColor     : 'Text colour',
   szNoColor   : 'Remove colour',
   szClear     : 'Clear formatting',
-  szHelp      : 'How to use',
   szSeeMd     : 'See the Markdown',
   szEmpty     : '(nothing yet)',
   szLinkAsk   : 'Link:',
   szLinkText  : 'Text to show:',
   szImgAsk    : 'Image path (starts with /media/):',
   szImgAlt    : 'Describe the image (for people who cannot see it):',
-  szH1t       : 'Select some text, then press a button — no syntax to remember.',
-  szH2t       : 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).',
-  szH3t       : 'Colour: select → press the dot → pick one. Press again to remove.',
-  szH4t       : 'New line inside the same paragraph: Shift + Enter.',
-  szH5t       : 'Images: press the image button, paste a path like /media/2026/post-name/pic.png',
-  szH6t       : 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.',
-  szH7t       : 'Drafts save to this device on their own; closing the tab is safe.',
-  szH8t       : 'Press </> to see the exact Markdown that will go to GitHub.',
-  /* Nút này có sẵn từ lâu mà chưa ai biết nó làm gì: tên "Divider" không nói ra
-     được thứ hiện lên trên trang là BA DẤU SAO, không phải một đường kẻ ngang.
-     Câu chỉ dẫn vì thế phải tả cái NHÌN THẤY, không tả cái thẻ HTML. */
-  szH9t       : 'The — button drops a ✦ ✦ ✦ break between two parts of a post.',
-  szH10t      : 'x² · x₂ · the key button: for m², H₂O and ⌘K.',
-  /* ── PHẦN HAI CỦA BẢNG CHỈ DẪN: THỨ KHÔNG CÓ NÚT ──
-     Mười cú pháp mà bộ dựng hiểu nhưng thanh nút không có chỗ cho. Chúng có
-     thật và đang được dùng (xem bài "Vô thức tập thể"), nên chúng phải được
-     NÓI RA ở đâu đó trong chính ô soạn thảo — không thì người viết bài sau chỉ
-     biết những gì có nút.
-
-     Mỗi dòng là phần GIẢI THÍCH; mẫu gõ nằm trong src/js/soan.js, vì mẫu ấy là
-     cú pháp chứ không phải chữ giao diện — dịch nó sang tiếng khác là hỏng. */
-  szGHelp1    : 'The buttons',
-  szGHelp2    : 'Worth knowing',
-  /* Bốn tiêu đề nhóm trong bảng Blocks. Chia theo VIỆC chứ không theo cú
-     pháp: người mở bảng ra đang tìm "chỗ đặt một tấm ảnh", không tìm "một
-     directive dạng :::". */
-  szGNhomNhan : 'Callout boxes',
-  szGNhomAnh  : 'Pictures and video',
-  szGNhomCau  : 'Structure',
-  szGNhomDoan : 'Whole paragraph',
-  szGNote     : 'boxed aside. Close it with ::: on its own line.',
-  szGCallout  : 'same box, three other tones.',
-  szGGallery  : 'photos side by side. Put the image lines inside.',
-  szGWide     : 'let a block spill past the text column.',
-  szGLop      : 'at the END of an image line — same, for one image.',
-  szGThuong   : 'at the end of the FIRST paragraph: stops it becoming the lead-in.',
-  szGBang     : 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|',
-  szGMa       : 'a code block — same paragraph, Shift+Enter between lines, ``` to close.',
-  szGViec     : 'a checklist: make a bullet list, then type this at the start of an item.',
-  szGNet      : 'superscript · subscript · a key — the three buttons do these too.',
-  szGLopDoan  : 'at the end of a paragraph: small text · centred.',
-  /* ── NHÃN CỦA BẢNG KHỐI ──
-     Mỗi khối có TÊN và một câu ngắn nói nó làm gì. Câu ấy không phải trang
-     trí: "Note" và "Tip" trông giống hệt nhau nếu chỉ có tên. */
-  szBlock     : 'Blocks',
+  szMedia     : 'Media — image, video, gallery',
+  /* Một nút, chèn thẳng khối `note`; loại đổi ngay trên nhãn của khối. Câu
+     chú thích phải nói ra chỗ đổi, vì không còn bảng nào bày bốn loại nữa. */
+  szCallout   : 'Callout box — click its label to change the type',
+  szBLoaiDoi  : 'Click to change: note → tip → warn → stop',
+  szImgMo     : 'upload a file, or paste a /media/ path',
   szBNote     : 'Note',       szBNoteMo   : 'a side point, out of the main flow',
   szBTip      : 'Tip',        szBTipMo    : 'a shortcut, something that helps',
   szBWarn     : 'Heads up',   szBWarnMo   : 'worth knowing before you start',
@@ -508,13 +468,11 @@ const NHAN = {
   szBGallery  : 'Gallery',    szBGalleryMo: 'photos side by side',
   szBWide     : 'Wide block', szBWideMo   : 'spills past the text column',
   szBTable    : 'Table',      szBTableMo  : 'up to 5 × 20 — Shift+Enter between rows',
-  /* Căn dòng — một nút xổ ra bốn chế độ. "Đều hai bên" là mặc định của bài,
-     nên nó không gắn lớp nào; ba cái kia gắn {.trai} · {.giua} · {.phai}. */
-  szAlign     : 'Alignment',
-  szCanDeu    : 'Justified', szCanDeuMo  : 'the default — both edges straight',
-  szCanTrai   : 'Left',      szCanTraiMo : 'ragged right edge',
-  szCanGiua   : 'Centre',    szCanGiuaMo : 'for a line or two, not a whole paragraph',
-  szCanPhai   : 'Right',     szCanPhaiMo : 'a signature, a dedication',
+  /* Căn dòng — ba nút riêng. "Đều hai bên" là mặc định của bài nên không có
+     nút; ba cái này gắn {.trai} · {.giua} · {.phai}, bấm lại là gỡ. */
+  szCanTrai   : 'Left',
+  szCanGiua   : 'Centre',
+  szCanPhai   : 'Right',
   szBTableAsk : 'Size — columns × rows (up to 5 × 20):',
   szBCode     : 'Code block', szBCodeMo   : 'keeps every space and line break',
   szBTask     : 'Checklist',  szBTaskMo   : 'a list with tick boxes',
@@ -533,7 +491,6 @@ const NHAN = {
   szBYoutube  : 'YouTube',   szBYoutubeMo : 'loads only when someone presses play',
   szBVideo    : 'Video file', szBVideoMo   : 'an .mp4 or .webm you uploaded',
   szBAnhRong  : 'Image width', szBAnhRongMo: 'normal → wide → full-bleed',
-  szBGiua     : 'Centre this paragraph', szBGiuaMo : 'for a line that stands alone',
   szBNho      : 'Small text', szBNhoMo : 'for a side note or a source line',
   szSup       : 'Superscript — m²',
   szSub       : 'Subscript — H₂O',
@@ -544,7 +501,6 @@ const NHAN = {
   szBVidAsk   : 'Video path (starts with /media/):',
   szBCapAsk   : 'Caption (can be empty):',
   szBAnhChua  : 'Put the cursor next to an image first.',
-  szBDoanChua : 'Put the cursor in a paragraph first.',
   szBFull     : 'Full-bleed block', szBFullMo : 'edge to edge of the screen',
   /* ── NHÃN CỦA VIỆC THẢ ẢNH ──
      Mấy câu này hiện ra ở dòng trạng thái ngay dưới thanh nút, trong lúc ảnh
@@ -577,7 +533,6 @@ const NHAN = {
   vbLoading   : 'Loading…',
   menu        : 'Menu',
   seeAll      : 'See all',
-  profile     : 'Profile',
   perPage     : 'Per page',
   allItems    : 'All',
   pages       : 'Pages',
@@ -1245,21 +1200,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         link: NHAN.szLink, img: NHAN.szImg, hr: NHAN.szHr,
                         mark: NHAN.szMark, color: NHAN.szColor,
                         noColor: NHAN.szNoColor, clear: NHAN.szClear,
-                        help: NHAN.szHelp, seeMd: NHAN.szSeeMd, empty: NHAN.szEmpty,
+                        seeMd: NHAN.szSeeMd, empty: NHAN.szEmpty,
+                        media: NHAN.szMedia, callout: NHAN.szCallout,
+                        imgMo: NHAN.szImgMo, bLoaiDoi: NHAN.szBLoaiDoi,
                         linkAsk: NHAN.szLinkAsk, linkText: NHAN.szLinkText,
                         imgAsk: NHAN.szImgAsk, imgAlt: NHAN.szImgAlt,
-                        h1: NHAN.szH1t, h2t: NHAN.szH2t, h3t: NHAN.szH3t,
-                        h4t: NHAN.szH4t, h5t: NHAN.szH5t, h6t: NHAN.szH6t,
-                        h7t: NHAN.szH7t, h8t: NHAN.szH8t, h9t: NHAN.szH9t,
-                        h10t: NHAN.szH10t,
-                        gHelp1: NHAN.szGHelp1, gHelp2: NHAN.szGHelp2,
-                        gNote: NHAN.szGNote, gCallout: NHAN.szGCallout,
-                        gGallery: NHAN.szGGallery, gWide: NHAN.szGWide,
-                        gLop: NHAN.szGLop, gThuong: NHAN.szGThuong,
-                        gBang: NHAN.szGBang, gMa: NHAN.szGMa,
-                        gViec: NHAN.szGViec, gChan: NHAN.szGChan,
-                        gNet: NHAN.szGNet, gLopDoan: NHAN.szGLopDoan,
-                        block: NHAN.szBlock,
                         bNote: NHAN.szBNote, bNoteMo: NHAN.szBNoteMo,
                         bTip: NHAN.szBTip, bTipMo: NHAN.szBTipMo,
                         bWarn: NHAN.szBWarn, bWarnMo: NHAN.szBWarnMo,
@@ -1268,11 +1213,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bWide: NHAN.szBWide, bWideMo: NHAN.szBWideMo,
                         bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
                         bTableAsk: NHAN.szBTableAsk,
-                        align: NHAN.szAlign,
-                        canDeu: NHAN.szCanDeu, canDeuMo: NHAN.szCanDeuMo,
-                        canTrai: NHAN.szCanTrai, canTraiMo: NHAN.szCanTraiMo,
-                        canGiua: NHAN.szCanGiua, canGiuaMo: NHAN.szCanGiuaMo,
-                        canPhai: NHAN.szCanPhai, canPhaiMo: NHAN.szCanPhaiMo,
+                        canTrai: NHAN.szCanTrai,
+                        canGiua: NHAN.szCanGiua,
+                        canPhai: NHAN.szCanPhai,
                         bCode: NHAN.szBCode, bCodeMo: NHAN.szBCodeMo,
                         bTask: NHAN.szBTask, bTaskMo: NHAN.szBTaskMo,
                         bDeCho: NHAN.szBDeCho, bCodeAsk: NHAN.szBCodeAsk,
@@ -1284,13 +1227,12 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bYoutube: NHAN.szBYoutube, bYoutubeMo: NHAN.szBYoutubeMo,
                         bVideo: NHAN.szBVideo, bVideoMo: NHAN.szBVideoMo,
                         bAnhRong: NHAN.szBAnhRong, bAnhRongMo: NHAN.szBAnhRongMo,
-                        bGiua: NHAN.szBGiua, bGiuaMo: NHAN.szBGiuaMo,
                         bNho: NHAN.szBNho, bNhoMo: NHAN.szBNhoMo,
                         sup: NHAN.szSup, sub: NHAN.szSub, kbd: NHAN.szKbd,
                         bThuong: NHAN.szBThuong, bThuongMo: NHAN.szBThuongMo,
                         bYtAsk: NHAN.szBYtAsk, bYtSai: NHAN.szBYtSai,
                         bVidAsk: NHAN.szBVidAsk, bCapAsk: NHAN.szBCapAsk,
-                        bAnhChua: NHAN.szBAnhChua, bDoanChua: NHAN.szBDoanChua,
+                        bAnhChua: NHAN.szBAnhChua,
                         bFull: NHAN.szBFull, bFullMo: NHAN.szBFullMo,
                         altMissing: NHAN.szAltMissing, upNo: NHAN.szUpNo,
                         upOne: NHAN.szUpOne, upMany: NHAN.szUpMany,
@@ -1299,8 +1241,6 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         gHelpAnh: NHAN.szGHelpAnh,
                         a1: NHAN.szA1, a2: NHAN.szA2, a3: NHAN.szA3, a4: NHAN.szA4,
                         g2: NHAN.szG2, g3: NHAN.szG3,
-                        gNhomNhan: NHAN.szGNhomNhan, gNhomAnh: NHAN.szGNhomAnh,
-                        gNhomCau: NHAN.szGNhomCau, gNhomDoan: NHAN.szGNhomDoan,
                         cover: NHAN.vbCover, coverDrop: NHAN.vbCoverDrop,
                         coverAlt: NHAN.vbCoverAlt, coverOff: NHAN.vbCoverOff,
                         coverUp: NHAN.vbCoverUp, coverOk: NHAN.vbCoverOk,
@@ -3538,7 +3478,6 @@ function trangChu(bai) {
     <div class="hero-man">
 
     <div class="hero-cot hero-cot--trai">
-      <a class="hero-hoso" href="${BASE}/about/">${escapeHtml(NHAN.profile)} →</a>
       ${oQuote('hero-quote')}
     </div>
 

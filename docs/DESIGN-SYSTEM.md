@@ -736,12 +736,12 @@ hai bộ nhãn cho cùng một hình dáng. Một bộ nhãn thì không có gì
 ### 9.2 · Một ngoại lệ còn lại: tên màu chữ
 
 Bảng màu trong ô soạn thảo vẫn ghi **Tím · Hồng · Đỏ · Cam · Vàng · Lục · Lam ·
-Xám**, không dịch. Không phải bỏ sót.
+Xám · Nâu · Ngọc · Chàm · Ô liu**, không dịch. Không phải bỏ sót.
 
 Cú pháp màu ghi vào file `.md` là `{tím: chữ}` — tên màu tiếng Việt là **một
 phần của cú pháp**, không phải một nhãn giao diện. Nút ghi "Purple" mà file ghi
-`tím` thì hai thứ nói hai chuyện, và bảng chỉ dẫn ở nút `i` (dạy đúng cú pháp
-ấy) mất luôn chỗ bám. Nhãn ở đây phải nói ra **cái sắp được viết**.
+`tím` thì hai thứ nói hai chuyện, và ô xem Markdown `</>` (in đúng cú pháp
+ấy) lệch với nút vừa bấm. Nhãn ở đây phải nói ra **cái sắp được viết**.
 
 Đổi được, nhưng phải đổi cả ba nơi cùng lúc: `TEN_MD` trong `src/js/soan.js`,
 `MAU`/`RE_MAU` trong `tools/lib/markdown.mjs`, và mọi bài `.md` đã dùng màu.

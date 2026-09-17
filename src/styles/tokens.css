@@ -95,6 +95,7 @@ Mọi giá trị ở đây đo được ít nhất 4.5:1 trên nền của chín
 màu chữ mà không đọc được thì nó là màu trang trí, không phải màu chữ. */
   --c-tim:#7A52B8;  --c-hong:#B33D74; --c-do:#B2415F;  --c-cam:#9A5518;
   --c-vang:#7D6410; --c-luc:#2F7D62;  --c-lam:#25608F; --c-xam:#6A587F;
+  --c-nau:#6B3F22;   --c-ngoc:#1A5F62;  --c-cham:#2A378A;  --c-oliu:#505C14;
 
   --shadow-sm:0 2px 8px rgba(94,72,133,.07);
   --shadow-md:0 10px 28px rgba(94,72,133,.12);
@@ -334,6 +335,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
     /* Bảng màu chữ của theme này — giải thích ở khối :root. */
     --c-tim:#D7B6F5;  --c-hong:#F3A8CE; --c-do:#F5A8B8;  --c-cam:#F0B07A;
     --c-vang:#E8CE7A; --c-luc:#7FD3B0;  --c-lam:#8FC4EE; --c-xam:rgba(246,239,251,.62);
+    --c-nau:#D9A97C;   --c-ngoc:#7FD8D4;  --c-cham:#A9B4F5;  --c-oliu:#C9CF7A;
 
     /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
        --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
@@ -414,6 +416,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Bảng màu chữ của theme này — giải thích ở khối :root. */
   --c-tim:#D7B6F5;  --c-hong:#F3A8CE; --c-do:#F5A8B8;  --c-cam:#F0B07A;
   --c-vang:#E8CE7A; --c-luc:#7FD3B0;  --c-lam:#8FC4EE; --c-xam:rgba(246,239,251,.62);
+  --c-nau:#D9A97C;   --c-ngoc:#7FD8D4;  --c-cham:#A9B4F5;  --c-oliu:#C9CF7A;
 
     /* Khai LẠI đúng bằng giá trị bên Sakura, dù thừa về mặt CSS.
      --glass-tint dựng từ --accent-2/--accent/--accent-3, mà Galaxy giữ
@@ -610,6 +613,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Bảng màu chữ của theme này — giải thích ở khối :root. */
   --c-tim:#6B4BA8;  --c-hong:#A93B6C; --c-do:#A83B54;  --c-cam:#8A4C14;
   --c-vang:#6E5A0E; --c-luc:#1F6B57;  --c-lam:#0B5A78; --c-xam:#41616F;
+  --c-nau:#6B3F22;   --c-ngoc:#1A5F62;  --c-cham:#2A378A;  --c-oliu:#505C14;
 
   --shadow-sm:0 2px 8px rgba(28,68,90,.11);
   --shadow-md:0 10px 28px rgba(28,68,90,.18);
@@ -740,6 +744,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
 
   --c-tim:#5B4B8A;  --c-hong:#A8436B;  --c-do:#A32F42;   --c-cam:#9A5A1E;
   --c-vang:#8A6410; --c-luc:#2E6B4F;   --c-lam:#2C5C85;  --c-xam:#5C6166;
+  --c-nau:#7A4A2A;   --c-ngoc:#1E6B6E;  --c-cham:#2F3F9E;  --c-oliu:#5B661A;
 
   /* Bóng ở đây ĐEN chứ không nhuốm màu: một bóng tím trên giấy trắng đọc ra
      ngay là sai chất liệu. */

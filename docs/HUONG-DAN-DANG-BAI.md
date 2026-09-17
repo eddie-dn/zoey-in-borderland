@@ -95,8 +95,8 @@ bộ gãy, ảnh mồ côi, tag viết lệch nhau, bản nháp lọt vào RSS, 
 > **Không mở máy cũng đăng được.** Vào `/z-admin/`, đăng nhập một lần, sang
 > ngăn **Post**. Ô soạn thảo ở đó gõ như gõ văn bản thường — bôi đen rồi bấm
 > nút, không phải nhớ cú pháp — và lúc bấm Đăng nó tự đổi ra Markdown rồi ghi
-> thẳng một file `.md` vào kho mã. Bấm nút `i` trên thanh nút để xem cách
-> dùng, bấm `</>` để xem đúng đoạn Markdown sắp gửi đi.
+> thẳng một file `.md` vào kho mã. Rê chuột lên nút nào cũng có một dòng
+> nói nó làm gì; bấm `</>` để xem đúng đoạn Markdown sắp gửi đi.
 >
 > Bài gõ ở đó **tự lưu nháp trên máy**, nên đóng nhầm tab vẫn còn. Nhưng nó
 > chỉ **tạo bài mới**, không sửa được bài cũ — sửa thì vẫn phải mở file ra.
@@ -235,11 +235,12 @@ Gõ ở **cuối đoạn**, sau dấu cách:
 | `{.giua}` | cả đoạn căn giữa, cột hẹp lại — cho một câu đứng riêng |
 | `{.thuong}` | tắt cỡ chữ lớn ở đoạn ĐẦU bài (mặc định đoạn đầu là sapo) |
 
-Ba cái này cũng có nút trong ô soạn thảo ở `/z-admin/` — bảng **Blocks**.
+Ba cái này đều có nút trên thanh nút của ô soạn thảo ở `/z-admin/`: căn giữa
+nằm cùng hàng với căn trái · phải; chữ nhỏ và tắt sapo nằm ở hàng hai, cạnh `¶`.
 
-**Tám tên màu**, gõ có dấu hay không dấu đều được (`{tim: …}` = `{tím: …}`):
+**Mười hai tên màu**, gõ có dấu hay không dấu đều được (`{tim: …}` = `{tím: …}`):
 
-`tím` · `hồng` · `đỏ` · `cam` · `vàng` · `lục` · `lam` · `xám`
+`tím` · `hồng` · `đỏ` · `cam` · `vàng` · `lục` · `lam` · `xám` · `nâu` · `ngọc` · `chàm` · `ô liu` (không dấu: `oliu`)
 
 Màu thật khai ở `src/styles/tokens.css` và **có bản riêng cho từng theme**, nên
 một bài tô màu hồi theme Sakura vẫn đọc được khi người đọc bật Galaxy. Đừng gõ

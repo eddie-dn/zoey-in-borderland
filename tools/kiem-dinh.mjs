@@ -244,7 +244,7 @@ const KIEM = [
        một biến rơi ngược về giá trị Sakura, và nó rơi ÂM THẦM — CSS không báo
        lỗi biến thiếu, nó chỉ lấy giá trị kế thừa gần nhất. Trang vẫn lên, chỉ
        là sai màu ở đúng một theme mà người sửa không mở ra xem. */
-    ten: 'Galaxy và Tĩnh lặng khai cùng một bộ biến',
+    ten: 'Galaxy, Tĩnh lặng và 霜降 khai cùng một bộ biến',
     muc: 'loi',
     chay: ({ goc }) => {
       const f = path.join(goc, 'src', 'styles', 'tokens.css');
@@ -266,17 +266,26 @@ const KIEM = [
 
       const toi  = than(/:root\[data-theme="dark"\]\s*\{/);
       const tinh = than(/:root\[data-theme="calm"\]\s*\{/);
-      if (!toi || !tinh) return ['tokens.css thiếu khối [data-theme="dark"] hoặc [data-theme="calm"]'];
+      const suong = than(/:root\[data-theme="frost"\]\s*\{/);
+      if (!toi || !tinh || !suong) {
+        return ['tokens.css thiếu khối [data-theme="dark"], [data-theme="calm"] hoặc [data-theme="frost"]'];
+      }
 
       /* --raw-* là chú thích chạy được, mỗi theme đặt tên màu gốc của riêng nó
          (raw-orchid bên Sakura, raw-suoi bên Tĩnh lặng). Component không được
          phép đọc chúng nên chúng không cần khớp nhau. */
       const bo = (s) => new Set([...s].filter((k) => !k.startsWith('--raw-')));
-      const a = bo(bien(toi)), b = bo(bien(tinh));
+      const a = bo(bien(toi));
 
+      /* 霜降 vào cùng một lượt so: bốn màu chữ thêm ở V2.7.3 phải có mặt ở
+         cả ba theme tự chọn, thiếu một khối là chữ tô màu ấy rơi về màu mặc
+         định của theme mà không ai báo. */
       const ra = [];
-      for (const k of a) if (!b.has(k)) ra.push(`tokens.css — [data-theme="calm"] thiếu ${k} (Galaxy có khai)`);
-      for (const k of b) if (!a.has(k)) ra.push(`tokens.css — [data-theme="dark"] thiếu ${k} (Tĩnh lặng có khai)`);
+      for (const [ten, khoi] of [['calm', tinh], ['frost', suong]]) {
+        const b = bo(bien(khoi));
+        for (const k of a) if (!b.has(k)) ra.push(`tokens.css — [data-theme="${ten}"] thiếu ${k} (Galaxy có khai)`);
+        for (const k of b) if (!a.has(k)) ra.push(`tokens.css — [data-theme="dark"] thiếu ${k} ([data-theme="${ten}"] có khai)`);
+      }
 
       /* ── HAI KHỐI GALAXY PHẢI GIỐNG NHAU TỪNG GIÁ TRỊ ──
          Media query và attribute selector không giao nhau nên không kế thừa

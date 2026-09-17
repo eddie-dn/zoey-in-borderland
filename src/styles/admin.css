@@ -72,6 +72,18 @@
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
 }
+/* Mũi tên quay lại danh sách bài — do viet-bai.js cắm vào đầu `.ql-de` khi
+   đang viết hoặc sửa một bài. Cỡ theo dòng chữ bên cạnh, không phải một nút
+   riêng: nó là một phần của đầu đề ("← Write a post"). */
+.ql-ve{
+  appearance:none;border:0;background:none;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;margin:-6px 4px -6px -6px;border-radius:50%;
+  color:var(--text-muted);vertical-align:middle;
+}
+.ql-ve svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ql-ve:hover{color:var(--accent-ink);background:var(--surface-sunken)}
+.ql-ve:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 /* Ở trang này ô viết và bàn duyệt là NỘI DUNG chính, không phải khối lạc vào
    một trang đọc — nên bỏ lề ngoài và cho chúng rộng hết khung. */
 .ad-o .gc-viet,.ad-o .bl-duyet{margin:0;width:100%}

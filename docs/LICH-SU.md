@@ -58,6 +58,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.7.6 | 2026-09-17 | 06 | màn đầu bỏ dòng Profile; chú thích nút đổi câu sang bên phải, thôi đè lên ô trích dẫn; dãy núi 霜降 trở lại đường thoải |
+| V2.7.5 | 2026-09-17 | 05 | nền 霜降 chốt một bản: mặt trời lặn sau núi gần mặt nước, sương dâng, trăng lên và sao lấp lánh; bỏ hai bản demo và đường ?nen= |
+| V2.7.4 | 2026-09-17 | 04 | màu chữ trong bài lên mười hai màu, mỗi màu có bản cho cả bốn theme; phép kiểm cùng bộ biến so cả 霜降 |
+| V2.7.3 | 2026-09-17 | 03 | ô soạn thảo: bảng Blocks thay bằng nút Media và nút khung nhấn đổi loại ngay trên nhãn; ba nút căn dòng; mũi tên quay lại lên đầu trang viết bài |
 | V2.7.2 | 2026-09-17 | 02 | chọn bản nền 霜降 bằng địa chỉ ?nen=thac hoặc ?nen=mattroi, khỏi phải mở Console |
 | V2.7.1 | 2026-09-17 | 01 | logo kể lại từ đầu khi người đọc quay lại tab sau hơn tám giây |
 | V2.7.0 | 2026-09-17 | 00 | nền 霜降 vẽ lại thành bức sơn thuỷ: thác đổ làm phần động, sương vẽ tĩnh, điểm một sắc lục trúc; kèm bản thứ hai mặt trời và đàn chim để chọn |
@@ -222,6 +226,50 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.7.6 — 17-Sep-2026
+
+- **Màn đầu bỏ dòng "PROFILE →".** Thanh đầu trang đã có ABOUT; ở màn đầu nó
+  là một mục điều hướng thứ hai cho cùng một chỗ.
+- **Chú thích nút đổi câu sang bên phải.** Trước nó bật sang trái, tức là vào
+  trong ô, đè lên nhãn và câu trích. Bên phải ô ở màn đầu là khoảng trống.
+- **Dãy núi 霜降 thoải lại** — bỏ mấy đỉnh nhọn thêm ở V2.6.8.
+
+## V2.7.5 — 17-Sep-2026
+
+- **Nền 霜降 chốt một bản.** Một vòng chừng hai phút rưỡi: mặt trời nhỏ ở
+  trên cao, hạ dần về chân dãy núi gần mặt nước, to và đỏ dần rồi khuất; sương
+  ở các thung dâng lên; trăng lên bên trái, sao hiện dần và lấp lánh; rồi đêm
+  nhạt đi, quay về đầu vòng. Đàn chim thưa dần khi chiều xuống.
+- **Núi gần nay là vật thật.** Mực rửa trong suốt không che được gì — bản đầu
+  vẽ mặt trời "sau" núi mà vẫn thấy nguyên vầng đỏ xuyên qua, và mặt nước xoá
+  mực thành lỗ thủng cho mặt trời lộ ra như đang lặn xuống dưới nước. Nay tô
+  một lớp GIẤY dưới mực núi gần và phủ giấy lên vùng nước: khuất là khuất.
+- **Bỏ hai bản demo và đường `?nen=`.** Không còn `localStorage`, không còn
+  tham số địa chỉ; nen.js ngắn đi hơn trăm dòng.
+
+## V2.7.4 — 17-Sep-2026
+
+- **Mười hai màu chữ.** Thêm nâu · ngọc · chàm · ô liu. Mỗi màu có bản riêng
+  cho cả bốn theme, tương phản trên nền từng theme đều trên 5:1. Gõ
+  `{nâu: chữ}` hay `{nau: chữ}` đều được; `ô liu` không dấu viết liền `oliu`.
+- **Phép kiểm cùng bộ biến so cả 霜降.** Trước chỉ so Galaxy với Tĩnh lặng;
+  thiếu một biến ở 霜降 thì chữ tô màu ấy lặng lẽ rơi về màu mặc định. Cắm lỗi
+  thử — bỏ một màu khỏi khối 霜降 — là đỏ ngay.
+
+## V2.7.3 — 17-Sep-2026
+
+- **Bảng Blocks không còn.** Mười sáu dòng trộn ảnh, video, bảng, mã, khung
+  nhấn và lớp đoạn — kèm cả một khung chỉ dẫn dài — nay tách ra: nút **Media**
+  mở đúng bảy thứ về hình và video; bảng · mã · checklist · chữ nhỏ · tắt sapo
+  thành nút riêng ở hàng hai. Thanh nút giờ phủ hết mọi cú pháp bộ dựng hiểu.
+- **Khung nhấn: một nút, đổi loại ngay trên nhãn.** Bấm là có khối `note`; bấm
+  vào chữ `note` trong khối là xoay sang tip → warn → stop, và khối đổi màu
+  ngay trong khung gõ — trước đây cả bốn vẽ y hệt nhau nên bấm cái nào cũng
+  như nhau.
+- **Căn dòng là ba nút** trái · giữa · phải, nút của lớp đang bật sáng theo con
+  trỏ. **Mũi tên quay lại** lên đầu trang viết bài, ngay trước "Write a post",
+  có ở cả lúc viết mới lẫn lúc sửa; nút Back ở đáy biểu mẫu bỏ.
 
 ## V2.7.2 — 17-Sep-2026
 

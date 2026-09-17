@@ -149,6 +149,7 @@
 
   function veBang() {
     soan = null;
+    muiTenVe(false);
     hop.innerHTML =
       '<div class="ad-thanh">' +
         '<button type="button" class="btn" data-moi>' +
@@ -461,6 +462,32 @@
       });
   }
 
+  /* ── MŨI TÊN QUAY LẠI, ĐẶT CẠNH ĐẦU ĐỀ NGĂN ──
+     Trước đây nút Back nằm ở ĐÁY biểu mẫu, cạnh nút Lưu — cuối một trang dài
+     có cả khung soạn thảo, và chỉ có khi đang sửa bài cũ. Muốn quay về danh
+     sách thì phải cuộn hết bài; viết bài mới thì không có đường về nào ngoài
+     bấm tab khác. Nay là một mũi tên ở đầu ngăn, ngay trước chữ "Write a
+     post" — chỗ mắt tìm đường về, và có ở cả hai ca. Bản nháp vẫn nằm trong
+     máy (xem KHO trong soan.js), nên quay về không mất gì. */
+  function muiTenVe(hien) {
+    /* `hop` nằm TRONG ô `[data-viet-bai-host]`, còn đầu đề là anh em của ô
+       ấy trong ngăn `.ad-o` — nên phải đi lên một tầng nữa mới thấy nó. */
+    var ngan = oSan.parentNode || document;
+    var de = ngan.querySelector('.ql-de');
+    if (!de) return;
+    var cu = de.querySelector('.ql-ve');
+    if (!hien) { if (cu) cu.remove(); return; }
+    if (cu) return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ql-ve';
+    b.title = L('back', 'Back');
+    b.setAttribute('aria-label', L('back', 'Back'));
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+    b.addEventListener('click', function () { dangSua = null; veBang(); });
+    de.insertBefore(b, de.firstChild);
+  }
+
   function khungViet(cu) {
     var chon = (dsMuc || []).map(function (m) {
       return '<option value="' + tho(m) + '">' + tho(m) + '</option>';
@@ -570,8 +597,6 @@
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
-        (cu ? '<button type="button" class="ad-lenh" data-ve>' +
-                tho(L('back', 'Back')) + '</button>' : '') +
         '<button type="button" class="btn" data-dang>' +
           tho(cu ? L('save', 'Save') : L('publish', 'Post')) + '</button>' +
       '</div>' +
@@ -616,9 +641,8 @@
         oSlugCu.value = cu.duong.split('/').pop()
           .replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
       }
-      var bVe = hop.querySelector('[data-ve]');
-      if (bVe) bVe.addEventListener('click', function () { dangSua = null; veBang(); });
     }
+    muiTenVe(true);
 
     /* Cắm khung soạn thảo SAU khi innerHTML đã xong: đặt trước thì lượt gán
        innerHTML kế tiếp quét sạch nó đi cùng mọi trình nghe sự kiện của nó. */

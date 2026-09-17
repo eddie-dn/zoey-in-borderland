@@ -759,276 +759,46 @@
       }
     };
   }
-  /* ══════════ SƠN THUỶ — THEME 霜降 ══════════
+  /* ══════════════════════════════════════════════════════════════════════
+     霜降 — MỘT BUỔI CHIỀU TRÔI SANG ĐÊM, TRÊN GIẤY TRẮNG
 
-     Vẽ lại theo một bức thuỷ mặc: núi đá dựng đứng, một dòng THÁC đổ xuống
-     mặt nước, sương mờ nằm giữa các lớp núi ở xa, và mấy đốt trúc ở tiền
-     cảnh.
+     Núi xa mấy lớp, một dải nước ở chân, và một vòng ngày–đêm rất chậm
+     (chừng hai phút rưỡi một vòng, xem CHU_KY):
 
-     ── VÌ SAO ĐỔI PHẦN CHUYỂN ĐỘNG TỪ SƯƠNG SANG THÁC ──
-     Bản trước lấy sương trôi ngang làm phần động. Nó gần như không thấy
-     được, và lý do không phải ở chỗ vẽ sai: một MẢNG mờ trôi ngang trên nền
-     giấy trắng thì mắt phải so sánh hai vùng gần như cùng màu ở hai thời
-     điểm — thứ mắt người rất kém.
+       0.00 – 0.50  mặt trời nhỏ ở cao, hạ dần về chân núi, to dần và đỏ
+                    dần, rồi khuất sau dãy núi gần — ngay trên mặt nước.
+       0.50 – 0.70  chiều tà: sương ở các thung dâng lên, dày lên; nền trời
+                    phủ một lớp mực rất mỏng; đàn chim thưa dần rồi thôi.
+       0.60 – 0.95  trăng lên bên trái, sao hiện dần và lấp lánh.
+       0.95 – 1.00  đêm nhạt đi, quay về đầu vòng.
 
-     Một dòng nước rơi thì khác hẳn. Nó là những NÉT DỌC mảnh chạy trong một
-     dải hẹp, và mắt bắt chuyển động dọc ở độ tương phản thấp hơn hẳn — đó là
-     cùng cơ chế giúp ta thấy mưa qua cửa kính lúc trời xám. Nên thác đọc được
-     ở alpha thấp hơn sương nhiều lần, mà vẫn không cướp mắt khỏi chữ.
+     ── VÌ SAO KHÔNG CÓ "TRỜI TỐI" ──
+     Nền là canvas trong suốt trên một trang GIẤY TRẮNG. Không thể làm tối
+     cả trang mà chữ vẫn đọc được, và một bức thuỷ mặc cũng không tô đen bầu
+     trời: đêm được gợi bằng trăng, sao, và một lớp mực rửa rất mỏng phía
+     trên. Người xem tự biết là đêm.
 
-     ── SƯƠNG NAY VẼ TĨNH ──
-     Sương ở xa thì vẽ MỘT LẦN vào tấm nền: nó là thứ làm cho các lớp núi tách
-     khỏi nhau và làm cho lớp xa ra vẻ xa. Đứng yên cũng không ai thấy thiếu —
-     sương thật cũng gần như không nhúc nhích trong mươi giây người ta nhìn
-     vào một cái nền.
-
-     ── MỘT SẮC LỤC DUY NHẤT ──
-     Trúc là chỗ duy nhất có màu trên cả bức, và nó rất trầm (`#7E9384`). Đó
-     đúng cách một bức thuỷ mặc dùng màu: mực là chính, màu chỉ để điểm. Thêm
-     màu nữa là theme thôi là giấy.
+     ── BA TẤM NỀN TĨNH, MỘT LỚP ĐỘNG ──
+     Núi xa (`xa`) và núi gần + mặt nước (`gan`) vẽ MỘT LẦN vào hai canvas
+     ngoài màn hình. Mặt trời nằm GIỮA hai tấm ấy: đi trước dãy xa (đỏ trên
+     nền sương, như tranh vẫn vẽ) và khuất sau dãy gần. Sương dâng buổi chiều
+     là lớp destination-out vẽ mỗi khung — nó XOÁ mực đi để giấy lộ ra, cùng
+     cách sương được vẽ trong tranh. Trắng chồng lên trắng thì không thấy gì;
+     bài học ấy đã trả giá một lần ở bản trước.
   ══════════════════════════════════════════════════════════════════════ */
-  function dungThuyMac() {
-    var nen = null, W0 = 0, H0 = 0;
-    var giot = [], gon = [];
-    /* Khung của dòng thác, tính theo tỉ lệ khung nhìn — đặt vào một chỗ và
-       mọi thứ khác (miệng thác, vũng nước, gợn sóng) đọc từ đây. */
-    var tX = 0, tRong = 0, tDinh = 0, tChan = 0;
-
-    var MUC  = '17,19,21';
-    var TRUC = '126,147,132';        /* lục trúc, đã hạ tươi hết mức */
-
-    /* ── MỘT NẾP NÚI ──
-       Đường sống dựng bằng tổng ba sóng sin lệch pha, cộng tuỳ chọn một hai
-       ngọn nhô lên (đường chuông). Tô NGƯỢC nhau cho hai loại: núi xa đậm ở
-       đường sống rồi nhoè xuống chân (đó là thứ làm nó ra một ngọn núi nhìn
-       qua sương); núi gần nhạt ở đỉnh, đậm xuống chân. */
-    function veNui(c, y0, cao, mo, hat, dinh, xa) {
-      c.beginPath();
-      c.moveTo(0, H0);
-      for (var x = 0; x <= W0; x += 3) {
-        var u = x / W0;
-        var h = Math.sin(u * 6.1 + hat) * 0.45
-              + Math.sin(u * 2.3 + hat * 1.7) * 0.36
-              + Math.sin(u * 11.4 + hat * 0.6) * 0.19;
-        if (dinh) {
-          for (var k = 0; k < dinh.length; k++) {
-            var d = (u - dinh[k][0]) / dinh[k][1];
-            h += dinh[k][2] * Math.exp(-d * d * 4);
-          }
-        }
-        c.lineTo(x, y0 - h * cao);
-      }
-      c.lineTo(W0, H0);
-      c.closePath();
-      var g;
-      if (xa) {
-        g = c.createLinearGradient(0, y0 - cao * 1.6, 0, y0 + cao * 0.5);
-        g.addColorStop(0, 'rgba(' + MUC + ',' + mo.toFixed(3) + ')');
-        g.addColorStop(0.62, 'rgba(' + MUC + ',' + (mo * 0.5).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(' + MUC + ',0)');
-      } else {
-        g = c.createLinearGradient(0, y0 - cao, 0, y0 + cao * 0.9);
-        g.addColorStop(0, 'rgba(' + MUC + ',0)');
-        g.addColorStop(0.45, 'rgba(' + MUC + ',' + (mo * 0.72).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(' + MUC + ',' + mo.toFixed(3) + ')');
-      }
-      c.fillStyle = g;
-      c.fill();
-    }
-
-    /* ── DẢI SƯƠNG NẰM NGANG ──
-       Vẽ bằng `destination-out`: nó XOÁ mực đã có, để giấy trắng phía sau
-       hiện ra. Tô trắng đè lên thì không đổi gì — canvas trong suốt nằm trên
-       trang giấy trắng. */
-    function veSuong(c, y, cao, manh) {
-      c.save();
-      c.globalCompositeOperation = 'destination-out';
-      var g = c.createLinearGradient(0, y - cao, 0, y + cao);
-      g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.5, 'rgba(0,0,0,' + manh.toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      c.fillStyle = g;
-      c.fillRect(0, y - cao, W0, cao * 2);
-      c.restore();
-    }
-
-    /* ── MẤY ĐỐT TRÚC ──
-       Thân thẳng, đốt ngắt quãng, vài chiếc lá hình thoi. Không vẽ kỹ: ở
-       alpha này nó là một bóng lá ở mép khung, không phải một bức vẽ trúc. */
-    function veTruc(c, x0, y0, cao, ng, mo) {
-      c.save();
-      c.translate(x0, y0);
-      c.rotate(ng);
-      c.strokeStyle = 'rgba(' + TRUC + ',' + mo.toFixed(3) + ')';
-      c.lineCap = 'round';
-      c.lineWidth = Math.max(1.4, cao * 0.012);
-      var dot = cao / 6;
-      for (var i = 0; i < 6; i++) {
-        c.beginPath();
-        c.moveTo(0, -i * dot);
-        c.lineTo(0, -(i + 0.86) * dot);
-        c.stroke();
-      }
-      c.fillStyle = 'rgba(' + TRUC + ',' + (mo * 0.8).toFixed(3) + ')';
-      for (var j = 0; j < 7; j++) {
-        var ly = -(1.6 + Math.random() * 4.2) * dot;
-        var ben = Math.random() < 0.5 ? -1 : 1;
-        var dai = dot * (0.7 + Math.random() * 0.8);
-        c.beginPath();
-        c.moveTo(0, ly);
-        c.quadraticCurveTo(ben * dai * 0.6, ly - dai * 0.42,
-                           ben * dai, ly - dai * 0.16);
-        c.quadraticCurveTo(ben * dai * 0.55, ly + dai * 0.1, 0, ly);
-        c.fill();
-      }
-      c.restore();
-    }
-
-    /* Một giọt của dòng thác: nét dọc mảnh, lớp càng gần càng dài và nhanh. */
-    function moiGiot(batDau) {
-      var lop = Math.random();
-      return {
-        x: tX + Math.random() * tRong,
-        y: batDau ? tDinh + Math.random() * (tChan - tDinh) : tDinh - Math.random() * 30,
-        dai: 10 + lop * 34,
-        v: 1.6 + lop * 3.4,
-        rong: 0.6 + lop * 1.1,
-        mo: 0.05 + lop * 0.13
-      };
-    }
-
-    /* Gợn sóng ở chân thác: vòng tròn nở ra rồi tan. */
-    function moiGon(x) {
-      gon.push({ x: x, y: tChan + Math.random() * 8,
-                 r: 1, rMax: 14 + Math.random() * 34,
-                 v: 0.5 + Math.random() * 0.6, mo: 0.10 + Math.random() * 0.10 });
-    }
-
-    return {
-      dung: function () {
-        W0 = W; H0 = H;
-        tRong = Math.max(26, W0 * 0.055);
-        tX    = W0 * 0.655;
-        tDinh = H0 * 0.30;
-        tChan = H0 * 0.63;
-
-        nen = document.createElement('canvas');
-        nen.width = Math.max(1, Math.round(W0));
-        nen.height = Math.max(1, Math.round(H0));
-        var c = nen.getContext('2d');
-
-        /* Xa trước gần sau. Hai lớp đầu là núi XA — cao, nhạt, mỗi lớp một
-           ngọn nhô lên; lớp thứ ba là vách đá đỡ dòng thác. */
-        veNui(c, H0 * 0.44, H0 * 0.30, 0.070, 1.3, [[0.17, 0.09, 0.90]], true);
-        veNui(c, H0 * 0.48, H0 * 0.26, 0.055, 3.7, [[0.86, 0.08, 0.76]], true);
-        veSuong(c, H0 * 0.46, H0 * 0.055, 0.85);
-
-        veNui(c, H0 * 0.58, H0 * 0.22, 0.105, 5.1, [[0.66, 0.10, 0.82]], true);
-        veSuong(c, H0 * 0.575, H0 * 0.040, 0.70);
-
-        /* Vách đá gần, hai bên miệng thác. Không vẽ đè lên dải thác: chừa ra
-           bằng cách cắt một cửa sổ dọc trước khi tô. */
-        c.save();
-        c.beginPath();
-        c.rect(0, 0, tX - tRong * 0.15, H0);
-        c.rect(tX + tRong * 1.15, 0, W0, H0);
-        c.clip();
-        veNui(c, H0 * 0.70, H0 * 0.17, 0.115, 0.0);
-        c.restore();
-
-        veNui(c, H0 * 0.84, H0 * 0.11, 0.085, 2.4);
-        veSuong(c, H0 * 0.66, H0 * 0.030, 0.55);
-
-        /* Trúc ở hai mép dưới — chỗ mắt ít đi qua nhất. */
-        veTruc(c, W0 * 0.06, H0 * 1.02, H0 * 0.40, -0.05, 0.16);
-        veTruc(c, W0 * 0.12, H0 * 1.04, H0 * 0.32,  0.07, 0.11);
-        veTruc(c, W0 * 0.93, H0 * 1.02, H0 * 0.36,  0.04, 0.13);
-
-        var n = Math.max(30, Math.min(110, Math.round(tRong * 2.2)));
-        giot = [];
-        for (var i = 0; i < n; i++) giot.push(moiGiot(true));
-        gon = [];
-      },
-
-      ve: function () {
-        ctx.clearRect(0, 0, W, H);
-        if (nen) ctx.drawImage(nen, 0, 0, W, H);
-
-        /* ── DÒNG THÁC ──
-           Nét dọc, không phải hạt tròn: cùng một lượng mực, một nét dài đọc
-           ra là NƯỚC ĐANG RƠI còn một chấm thì đọc ra là bụi. */
-        ctx.lineCap = 'round';
-        for (var i = 0; i < giot.length; i++) {
-          var g = giot[i];
-          g.y += g.v;
-          if (g.y - g.dai > tChan) {
-            /* Chạm mặt nước thì sinh một gợn rồi quay lên miệng thác. Chỉ một
-               phần nhỏ sinh gợn — mỗi giọt một gợn thì chân thác thành một
-               mảng trắng đặc. */
-            if (Math.random() < 0.14) moiGon(g.x);
-            giot[i] = moiGiot(false);
-            continue;
-          }
-          ctx.strokeStyle = 'rgba(' + MUC + ',' + g.mo.toFixed(3) + ')';
-          ctx.lineWidth = g.rong;
-          ctx.beginPath();
-          ctx.moveTo(g.x, g.y - g.dai);
-          ctx.lineTo(g.x, g.y);
-          ctx.stroke();
-        }
-
-        /* ── GỢN Ở CHÂN THÁC ──
-           Vẽ bằng `destination-out` như sương: chúng là chỗ nước trắng xoá,
-           tức chỗ mực bị đẩy đi. */
-        ctx.save();
-        ctx.globalCompositeOperation = 'destination-out';
-        for (var j = gon.length - 1; j >= 0; j--) {
-          var o = gon[j];
-          o.r += o.v;
-          if (o.r > o.rMax) { gon.splice(j, 1); continue; }
-          var mo = o.mo * (1 - o.r / o.rMax);
-          ctx.strokeStyle = 'rgba(0,0,0,' + mo.toFixed(3) + ')';
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.ellipse(o.x, o.y, o.r, o.r * 0.28, 0, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-    };
-  }
-
-  /* ══════════ SƠN THUỶ, BẢN HAI: MẶT TRỜI VÀ ĐÀN CHIM ══════════
-
-     Cùng một bộ núi và sương với bản thác, chỉ đổi phần ĐỘNG và phần điểm
-     màu: một vầng mặt trời thấp ở chân trời, và một đàn chim bay ngang rất
-     chậm.
-
-     ── VÌ SAO ĐÀN CHIM ĐỌC ĐƯỢC ──
-     Cùng lý do với thác, nhưng theo chiều khác: chim là những nét NHỎ và ĐẬM
-     di chuyển trên một vùng giấy gần như trống. Mắt bắt một vật nhỏ tương
-     phản cao dễ hơn nhiều so với một mảng lớn tương phản thấp — nên chỉ cần
-     mươi cái chấm bằng đầu kim là cả bức có sự sống, mà tổng lượng mực thêm
-     vào còn ít hơn một dòng chữ.
-
-     ── MẶT TRỜI LÀ CHỖ DUY NHẤT CÓ MÀU ──
-     Một đĩa cam ở chân trời. Nó đứng yên, rất nhạt, và nằm ở nửa trên màn —
-     chỗ mắt đi qua chứ không dừng. Ở bản thác thì chỗ có màu là mấy đốt trúc;
-     ở đây là mặt trời. Cả hai bản đều giữ đúng một nguồn màu.
-  ══════════════════════════════════════════════════════════════════════ */
-  function dungMatTroi() {
-    var nen = null, W0 = 0, H0 = 0, chim = [];
+  function dungSuongGiang() {
+    var xa = null, gan = null, W0 = 0, H0 = 0, chim = [], sao = [];
     var MUC = '17,19,21';
+    var CHU_KY = 9000;   /* khung hình — ~150 giây ở 60 khung/giây */
 
-    /* Một con chim: hai nét cong nối nhau, vẽ bằng một đường bezier duy nhất.
-       Ở cỡ này không cần hơn — thêm thân hay đuôi là nó thành một hình vẽ
-       chim, mà cái cần là một DẤU chim. */
+    function kep(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+    /* 0 → 1 mượt giữa hai mốc a, b của pha. */
+    function muot(p, a, b) { var u = kep((p - a) / (b - a)); return u * u * (3 - 2 * u); }
+
     function veChim(c, x, y, r, mo, vo) {
       c.strokeStyle = 'rgba(' + MUC + ',' + mo.toFixed(3) + ')';
       c.lineWidth = Math.max(0.9, r * 0.13);
       c.lineCap = 'round';
-      /* `vo` 0→1: cánh đang hạ → đang nâng. Biên độ nhỏ thôi, và mỗi con một
-         pha riêng — cả đàn vỗ cùng nhịp thì đọc ra là một hoạ tiết lặp. */
       var nang = 0.34 + vo * 0.5;
       c.beginPath();
       c.moveTo(x - r, y);
@@ -1048,14 +818,17 @@
         pha: Math.random() * Math.PI * 2,
         nhip: 0.055 + Math.random() * 0.05,
         mo: 0.20 + lop * 0.4,
-        /* Trôi lên xuống rất nhẹ theo đường sin — chim bay thẳng băng thì đọc
-           ra là một dấu trượt ngang, không ra là đang bay. */
         bien: 5 + lop * 12,
         nhipY: 0.004 + Math.random() * 0.004
       };
     }
 
-    function veNui(c, y0, cao, mo, hat, dinh, xa) {
+    /* Màu giấy của theme — dùng để tô ĐẶC dãy núi gần. Mực rửa trong suốt thì
+       không che được gì: bản đầu vẽ mặt trời "sau" dãy gần mà vẫn thấy nguyên
+       vầng đỏ xuyên qua núi. Tô một lớp giấy dưới mực là núi thành vật thật. */
+    var GIAY = (getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#fff').trim() || '#fff';
+
+    function veNui(c, y0, cao, mo, hat, dinh, xaXoi, dac) {
       c.beginPath();
       c.moveTo(0, H0);
       for (var x = 0; x <= W0; x += 3) {
@@ -1073,8 +846,11 @@
       }
       c.lineTo(W0, H0);
       c.closePath();
+      if (dac) { c.fillStyle = GIAY; c.fill(); }
       var g;
-      if (xa) {
+      if (xaXoi) {
+        /* Núi xa: đậm nhất ngay tại đường sống rồi nhoè xuống chân — đó là
+           cách mắt thấy núi qua một lớp không khí dày. */
         g = c.createLinearGradient(0, y0 - cao * 1.6, 0, y0 + cao * 0.5);
         g.addColorStop(0, 'rgba(' + MUC + ',' + mo.toFixed(3) + ')');
         g.addColorStop(0.62, 'rgba(' + MUC + ',' + (mo * 0.5).toFixed(3) + ')');
@@ -1089,6 +865,7 @@
       c.fill();
     }
 
+    /* Sương: XOÁ mực trong một dải ngang, đậm ở giữa dải, tan ra hai mép. */
     function veSuong(c, y, cao, manh) {
       c.save();
       c.globalCompositeOperation = 'destination-out';
@@ -1101,50 +878,217 @@
       c.restore();
     }
 
+    /* Mặt nước: từ chân dãy núi gần xuống mép dưới. Xoá bớt mực cho nó nhạt
+       hơn núi, rồi mấy nét ngang mảnh — nước trong tranh là vài nét, không
+       phải một mảng. */
+    function veNuoc(c) {
+      var y0 = H0 * 0.84;
+      /* Phủ GIẤY lên (source-over), KHÔNG xoá mực (destination-out): xoá thì
+         tấm `gan` thủng ở vùng nước, và mặt trời nằm dưới tấm ấy lộ ra qua lỗ
+         thủng — trông như vầng đỏ lặn xuống dưới mặt nước. Phủ giấy thì nước
+         nhạt hơn núi mà vẫn kín. */
+      var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(GIAY);
+      var rgb = m ? parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) : '255,255,255';
+      var g = c.createLinearGradient(0, y0, 0, H0);
+      g.addColorStop(0, 'rgba(' + rgb + ',0)');
+      g.addColorStop(0.25, 'rgba(' + rgb + ',0.72)');
+      g.addColorStop(1, 'rgba(' + rgb + ',0.86)');
+      c.fillStyle = g;
+      c.fillRect(0, y0, W0, H0 - y0);
+      c.lineCap = 'round';
+      for (var i = 0; i < 9; i++) {
+        var yy = y0 + H0 * (0.02 + i * 0.016) + Math.sin(i * 2.7) * 3;
+        var dai = W0 * (0.16 + ((i * 7) % 5) * 0.09);
+        var x0 = W0 * (0.08 + ((i * 3) % 7) * 0.11);
+        if (x0 + dai > W0) x0 = W0 - dai - 10;
+        c.strokeStyle = 'rgba(' + MUC + ',' + (0.045 + (i % 3) * 0.015).toFixed(3) + ')';
+        c.lineWidth = 0.8 + (i % 2) * 0.5;
+        c.beginPath(); c.moveTo(x0, yy); c.lineTo(x0 + dai, yy); c.stroke();
+      }
+    }
+
+    /* Ánh phản chiếu của mặt trời / trăng trên nước: một cột mềm ngay dưới
+       thiên thể, rung rất nhẹ theo thời gian. */
+    /* `xoa` = vệt SÁNG: ánh trăng trên nước là chỗ giấy lộ ra, nên nó xoá mực
+       thay vì thêm mực. Thêm mực xám ở đó thì ra một hòn đá ở mép nước. */
+    function vePhanChieu(c, x, r, mau, mo, t, xoa) {
+      var y0 = H0 * 0.87, y1 = H0 * 0.99;
+      var rung = 0.82 + 0.18 * Math.sin(t * 0.045);
+      c.save();
+      if (xoa) c.globalCompositeOperation = 'destination-out';
+      var g = c.createLinearGradient(0, y0, 0, y1);
+      g.addColorStop(0, 'rgba(' + mau + ',0)');
+      g.addColorStop(0.35, 'rgba(' + mau + ',' + (mo * rung).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(' + mau + ',0)');
+      c.fillStyle = g;
+      c.beginPath();
+      c.ellipse(x, (y0 + y1) / 2, r * 0.8, (y1 - y0) / 2, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+    }
+
+    function veTamNen() {
+      W0 = W; H0 = H;
+      xa = document.createElement('canvas');
+      xa.width = Math.max(1, Math.round(W0));
+      xa.height = Math.max(1, Math.round(H0));
+      var c = xa.getContext('2d');
+      /* Không có đỉnh nhọn nào: mấy ngọn cao vút thêm ở V2.6.8 phá mất đường
+         núi thoải vốn là cái đẹp của bức này. Ba lớp xa chỉ là ba đường sin
+         chồng nhau, nhấp nhô vừa phải. */
+      veNui(c, H0 * 0.44, H0 * 0.30, 0.070, 1.3, null, true);
+      veNui(c, H0 * 0.48, H0 * 0.26, 0.055, 3.7, null, true);
+      veSuong(c, H0 * 0.46, H0 * 0.055, 0.85);
+      veNui(c, H0 * 0.58, H0 * 0.22, 0.105, 5.1, null, true);
+      veSuong(c, H0 * 0.575, H0 * 0.040, 0.70);
+
+      gan = document.createElement('canvas');
+      gan.width = xa.width; gan.height = xa.height;
+      var g = gan.getContext('2d');
+      veNui(g, H0 * 0.72, H0 * 0.15, 0.115, 0.0, null, false, true);
+      veNui(g, H0 * 0.81, H0 * 0.07, 0.085, 2.4, null, false, true);
+      veSuong(g, H0 * 0.69, H0 * 0.030, 0.55);
+      veNuoc(g);
+    }
+
     return {
       dung: function () {
-        W0 = W; H0 = H;
-        nen = document.createElement('canvas');
-        nen.width = Math.max(1, Math.round(W0));
-        nen.height = Math.max(1, Math.round(H0));
-        var c = nen.getContext('2d');
-
-        /* Mặt trời vẽ TRƯỚC núi: nó ở sau dãy, nên mép dưới bị núi che khuất
-           một phần — đó là thứ đặt nó vào không gian thay vì dán lên trên. */
-        var sx = W0 * 0.70, sy = H0 * 0.20, sr = Math.min(W0, H0) * 0.058;
-        var gs = c.createRadialGradient(sx, sy, 0, sx, sy, sr * 2.6);
-        gs.addColorStop(0, 'rgba(216,116,70,0.30)');
-        gs.addColorStop(0.28, 'rgba(216,116,70,0.16)');
-        gs.addColorStop(1, 'rgba(216,116,70,0)');
-        c.fillStyle = gs;
-        c.beginPath(); c.arc(sx, sy, sr * 2.6, 0, Math.PI * 2); c.fill();
-        c.fillStyle = 'rgba(206,98,54,0.34)';
-        c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI * 2); c.fill();
-
-        veNui(c, H0 * 0.44, H0 * 0.30, 0.070, 1.3, [[0.17, 0.09, 0.90]], true);
-        veNui(c, H0 * 0.48, H0 * 0.26, 0.055, 3.7, [[0.86, 0.08, 0.76]], true);
-        veSuong(c, H0 * 0.46, H0 * 0.055, 0.85);
-        veNui(c, H0 * 0.58, H0 * 0.22, 0.105, 5.1, [[0.66, 0.10, 0.82]], true);
-        veSuong(c, H0 * 0.575, H0 * 0.040, 0.70);
-        veNui(c, H0 * 0.72, H0 * 0.16, 0.115, 0.0);
-        veNui(c, H0 * 0.86, H0 * 0.10, 0.085, 2.4);
-        veSuong(c, H0 * 0.68, H0 * 0.030, 0.55);
-
+        veTamNen();
         var n = Math.max(7, Math.min(18, Math.round(W0 / 110)));
         chim = [];
         for (var i = 0; i < n; i++) chim.push(moiChim(true));
+        /* Sao: rải ở nửa trên, tránh vùng trăng sẽ lên. Vài ngôi sáng hơn có
+           bốn tia ngắn — ở cỡ này, một chấm và một chấm có tia là đủ hai bậc. */
+        sao = [];
+        var m = Math.max(28, Math.min(70, Math.round(W0 / 16)));
+        for (var j = 0; j < m; j++) {
+          sao.push({
+            x: Math.random() * W0, y: Math.random() * H0 * 0.46,
+            r: 0.6 + Math.random() * 1.0,
+            mo: 0.22 + Math.random() * 0.34,
+            tia: Math.random() < 0.14,
+            pha: Math.random() * Math.PI * 2,
+            nhip: 0.018 + Math.random() * 0.045
+          });
+        }
       },
 
       ve: function (t) {
         ctx.clearRect(0, 0, W, H);
-        if (nen) ctx.drawImage(nen, 0, 0, W, H);
-        for (var i = 0; i < chim.length; i++) {
-          var k = chim[i];
-          k.x += k.v;
-          if (k.x - k.r > W) { chim[i] = moiChim(false); continue; }
-          var y = k.y + Math.sin(t * k.nhipY + k.pha) * k.bien;
-          var vo = (Math.sin(t * k.nhip + k.pha) + 1) / 2;
-          veChim(ctx, k.x, y, k.r, k.mo, vo);
+        var p = (t % CHU_KY) / CHU_KY;
+        var m = Math.min(W, H);
+
+        /* Bao của từng thứ theo pha. `dem` lên từ 0.50, xuống hết ở 1.00. */
+        var ngay  = 1 - muot(p, 0.48, 0.62) + muot(p, 0.96, 1.0);
+        var dem   = muot(p, 0.52, 0.72) * (1 - muot(p, 0.93, 1.0));
+        var trang = muot(p, 0.58, 0.76) * (1 - muot(p, 0.92, 0.99));
+
+        /* ── Lớp mực rửa mỏng phía trên: chiều xuống thì trời "nặng" hơn. ── */
+        if (dem > 0) {
+          var gt = ctx.createLinearGradient(0, 0, 0, H * 0.62);
+          gt.addColorStop(0, 'rgba(' + MUC + ',' + (0.075 * dem).toFixed(3) + ')');
+          gt.addColorStop(1, 'rgba(' + MUC + ',0)');
+          ctx.fillStyle = gt;
+          ctx.fillRect(0, 0, W, H * 0.62);
+        }
+
+        /* ── Sao ── */
+        if (dem > 0.02) {
+          for (var s = 0; s < sao.length; s++) {
+            var k = sao[s];
+            var nhay = 0.55 + 0.45 * Math.sin(t * k.nhip + k.pha);
+            var a = k.mo * dem * nhay;
+            ctx.fillStyle = 'rgba(' + MUC + ',' + a.toFixed(3) + ')';
+            ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2); ctx.fill();
+            if (k.tia) {
+              ctx.strokeStyle = 'rgba(' + MUC + ',' + (a * 0.6).toFixed(3) + ')';
+              ctx.lineWidth = 0.7;
+              var d = k.r * (2.4 + nhay * 1.6);
+              ctx.beginPath();
+              ctx.moveTo(k.x - d, k.y); ctx.lineTo(k.x + d, k.y);
+              ctx.moveTo(k.x, k.y - d); ctx.lineTo(k.x, k.y + d);
+              ctx.stroke();
+            }
+          }
+        }
+
+        /* ── Trăng: lên bên trái, hiện dần trong lúc lên. Một vòng mực mảnh và
+           một quầng rửa nhạt quanh — trăng thuỷ mặc là chỗ giấy được CHỪA
+           lại, nên phần trong để trắng. ── */
+        var mx = 0, my = 0, mr = m * 0.030;
+        if (trang > 0) {
+          mx = W * 0.23; my = H * (0.50 - 0.30 * muot(p, 0.58, 0.78));
+          var gq = ctx.createRadialGradient(mx, my, mr * 0.9, mx, my, mr * 3.2);
+          gq.addColorStop(0, 'rgba(' + MUC + ',' + (0.10 * trang).toFixed(3) + ')');
+          gq.addColorStop(1, 'rgba(' + MUC + ',0)');
+          ctx.fillStyle = gq;
+          ctx.beginPath(); ctx.arc(mx, my, mr * 3.2, 0, Math.PI * 2); ctx.fill();
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.fillStyle = 'rgba(0,0,0,1)';
+          ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(' + MUC + ',' + (0.42 * trang).toFixed(3) + ')';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath(); ctx.arc(mx, my, mr, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        /* ── Dãy xa ── */
+        if (xa) ctx.drawImage(xa, 0, 0, W, H);
+
+        /* ── Mặt trời: nhỏ trên cao → to, đỏ, thấp; khuất sau dãy gần. ── */
+        var uS = muot(p, 0.0, 0.50);
+        var hienS = muot(p, 0.0, 0.05) * (1 - muot(p, 0.50, 0.56));
+        var sx = 0, sy = 0, sr = 0;
+        if (hienS > 0) {
+          sx = W * (0.70 - 0.10 * uS);
+          sy = H * (0.14 + 0.66 * uS);
+          sr = m * (0.040 + 0.045 * uS);
+          /* Đã chìm hẳn dưới đường sống dãy gần thì thôi vẽ — kể cả quầng. */
+          hienS *= 1 - muot(sy - sr, H * 0.74, H * 0.80);
+          var r1 = Math.round(206 - 14 * uS), g1 = Math.round(98 - 30 * uS), b1 = Math.round(54 - 10 * uS);
+          var mau = r1 + ',' + g1 + ',' + b1;
+          var gs = ctx.createRadialGradient(sx, sy, 0, sx, sy, sr * 2.6);
+          gs.addColorStop(0, 'rgba(' + mau + ',' + (0.30 * hienS).toFixed(3) + ')');
+          gs.addColorStop(0.28, 'rgba(' + mau + ',' + (0.16 * hienS).toFixed(3) + ')');
+          gs.addColorStop(1, 'rgba(' + mau + ',0)');
+          ctx.fillStyle = gs;
+          ctx.beginPath(); ctx.arc(sx, sy, sr * 2.6, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(' + mau + ',' + ((0.32 + 0.10 * uS) * hienS).toFixed(3) + ')';
+          ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+        }
+
+        /* ── Dãy gần + mặt nước ── */
+        if (gan) ctx.drawImage(gan, 0, 0, W, H);
+
+        /* ── Phản chiếu trên nước: mặt trời lúc đã xuống thấp, trăng lúc đã lên. ── */
+        /* Mặt trời khuất sau dãy gần (đường sống quanh 0.70H ở chỗ nó lặn)
+           thì ánh trên nước cũng tắt theo — không có mặt trời thì không có
+           bóng của nó. */
+        if (hienS > 0 && uS > 0.35) {
+          var che = muot(sy - sr * 0.3, H * 0.66, H * 0.74);
+          vePhanChieu(ctx, sx, sr * 1.3, '206,98,54',
+                      0.09 * hienS * muot(uS, 0.35, 0.8) * (1 - che), t, false);
+        }
+        if (trang > 0.3) vePhanChieu(ctx, mx, mr * 1.6, '0,0,0', 0.55 * trang, t, true);
+
+        /* ── Sương dâng buổi chiều: ba dải, càng về đêm càng lên cao, càng dày. ── */
+        if (dem > 0) {
+          veSuong(ctx, H * (0.70 - 0.09 * dem), H * (0.035 + 0.035 * dem), 0.35 * dem);
+          veSuong(ctx, H * (0.60 - 0.07 * dem), H * (0.030 + 0.030 * dem), 0.30 * dem);
+          veSuong(ctx, H * (0.83 - 0.05 * dem), H * (0.020 + 0.025 * dem), 0.28 * dem);
+        }
+
+        /* ── Chim: bay ban ngày, thưa dần khi chiều xuống. ── */
+        if (ngay > 0.02) {
+          for (var i = 0; i < chim.length; i++) {
+            var ch = chim[i];
+            ch.x += ch.v;
+            if (ch.x - ch.r > W) { chim[i] = moiChim(false); continue; }
+            var y = ch.y + Math.sin(t * ch.nhipY + ch.pha) * ch.bien;
+            var vo = (Math.sin(t * ch.nhip + ch.pha) + 1) / 2;
+            veChim(ctx, ch.x, y, ch.r, ch.mo * ngay, vo);
+          }
         }
       }
     };
@@ -1155,34 +1099,7 @@
   /* Theme → hiệu ứng. Một bảng tra, không phải một chuỗi if: thêm theme là
      thêm đúng một dòng ở đây, và không có đường nào rơi vào nhánh "còn lại"
      để rồi lặng lẽ chạy sai hiệu ứng. */
-  /* ── HAI BẢN NỀN CHO 霜降, ĐANG CHỌN ──
-     TẠM THỜI. Chủ trang đang so hai bản để quyết:
-       `thac`    núi đá + dòng thác đổ + mấy đốt trúc  (mặc định)
-       `mattroi` núi xa + mặt trời thấp + đàn chim bay ngang
-
-     Đổi bằng cách gõ vào Console của trình duyệt:
-       localStorage.setItem('zib-nen-frost','mattroi')   rồi tải lại trang
-       localStorage.removeItem('zib-nen-frost')          về lại bản thác
-
-     Chọn xong thì XOÁ khối này và xoá hàm của bản không dùng — giữ hai bản
-     song song lâu là hai chỗ phải sửa mỗi lần đụng tới nền. */
-  function nenFrost() {
-    var chon = '';
-    /* Nhận cả từ ĐỊA CHỈ: `?nen=mattroi` hoặc `?nen=thac`. Mở Console gõ lệnh
-       là một rào cản thật — dán nhầm vào terminal là chuyện xảy ra ngay lần
-       đầu. Một đường dẫn bấm được thì không nhầm vào đâu được.
-
-       Bấm một lần là nhớ luôn (ghi vào localStorage), nên mọi trang sau đó
-       đều theo bản đã chọn mà không cần mang tham số đi kèm. */
-    try {
-      var q = new URLSearchParams(location.search).get('nen');
-      if (q === 'mattroi' || q === 'thac') localStorage.setItem('zib-nen-frost', q);
-      chon = localStorage.getItem('zib-nen-frost') || '';
-    } catch (e) {}
-    return chon === 'mattroi' ? dungMatTroi() : dungThuyMac();
-  }
-
-  var BO = { light: dungHoa, dark: dungThienHa, calm: dungThac, frost: nenFrost };
+  var BO = { light: dungHoa, dark: dungThienHa, calm: dungThac, frost: dungSuongGiang };
 
   /* Theme nào đang chạy. Trả về đúng tên theme chứ không trả về true/false như
      bản hai theme: thêm theme thứ ba vào thì một câu hỏi có/không không còn

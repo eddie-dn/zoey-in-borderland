@@ -1203,13 +1203,14 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 
    Tám dòng gần giống nhau, và cố ý KHÔNG rút gọn bằng một biến chung kiểu
    `.c-*{color:var(--c-N)}` — CSS không có cách nào ghép tên biến từ tên lớp.
-   Viết tay tám dòng thì đọc một cái là biết có đúng tám màu, không hơn.
+   Viết tay mười hai dòng thì đọc một cái là biết có đúng mười hai màu, không hơn.
 
    Chỉ đặt `color`, không đặt nền, không đậm lên, không đổi cỡ: người viết
    muốn nhấn thêm thì đã có `**đậm**` và `==tô nền==` nằm sẵn cạnh đó, và
    chồng ba thứ nhấn mạnh lên cùng một cụm chữ thì cụm ấy hết nhấn mạnh được
    gì — nó chỉ còn ồn. */
-.prose :is(.c-tim,.c-hong,.c-do,.c-cam,.c-vang,.c-luc,.c-lam,.c-xam){
+.prose :is(.c-tim,.c-hong,.c-do,.c-cam,.c-vang,.c-luc,.c-lam,.c-xam,
+           .c-nau,.c-ngoc,.c-cham,.c-oliu){
   /* Màu đi theo chữ chứ không theo khối, nên link nằm trong cụm màu vẫn giữ
      màu link của nó — `color` ở đây không với tới thẻ <a> con. */
   transition:color var(--dur-fast);
@@ -1222,6 +1223,10 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .prose .c-luc {color:var(--c-luc)}
 .prose .c-lam {color:var(--c-lam)}
 .prose .c-xam {color:var(--c-xam)}
+.prose .c-nau {color:var(--c-nau)}
+.prose .c-ngoc{color:var(--c-ngoc)}
+.prose .c-cham{color:var(--c-cham)}
+.prose .c-oliu{color:var(--c-oliu)}
 
 /* ══════════ CỤM TIM · CHIA SẺ · BÌNH LUẬN ══════════
    Nằm CUỐI HÀNG META, ngay sau ngày đăng và lượt xem — một ô flex như mọi ô

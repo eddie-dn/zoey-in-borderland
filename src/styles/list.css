@@ -594,17 +594,17 @@
 .hero-cot--giua{grid-column:2;grid-row:1;justify-content:flex-end;gap:var(--s5);align-items:flex-start}
 .hero-cot--phai{grid-column:3;grid-row:1;justify-content:flex-start;gap:var(--s5)}
 
-/* ── CỬA VÀO TRANG GIỚI THIỆU ──
-   Một dòng, đúng kiểu nhãn 9px như mọi nhãn khác ở màn đầu. Bản trước dựng hẳn
-   một khối ba dòng có viền trái — nhưng màn đầu đã có khối chữ lớn làm trọng
-   tâm rồi, thêm một khối nữa là hai thứ tranh nhau. */
-.hero-hoso{
-  font-family:var(--font-label);font-size:9px;font-weight:600;
-  letter-spacing:.24em;text-transform:uppercase;
-  color:var(--text-muted);text-decoration:none;
-  transition:color var(--dur-fast);
+/* ── CHÚ THÍCH CỦA NÚT ĐỔI CÂU: SANG PHẢI, Ở MÀN ĐẦU ──
+   Luật chung (components.css) đẩy nó sang TRÁI của nút, tức là vào trong ô —
+   đè lên nhãn và câu trích. Ở màn đầu bên phải ô là khoảng trống trước khối
+   tên blog, nên chú thích ra đó: không che gì trong ô. Trang giới thiệu giữ
+   luật chung vì ô ở đó rộng hết cột, bên phải không còn chỗ. */
+.hero-quote .q-nut.tip::after{
+  right:auto;left:calc(100% + 8px);
+  translate:-4px -50%;
 }
-.hero-hoso:hover,.hero-hoso:focus-visible{color:var(--accent-ink);outline:none}
+.hero-quote .q-nut.tip:hover::after,.hero-quote .q-nut.tip:focus-visible::after{translate:0 -50%}
+
 /* ── TRÍCH DẪN MỖI NGÀY Ở MÀN ĐẦU ──
    Cùng một ô với trang giới thiệu cũ, chỉ thu nhỏ cho vừa cột. Không dựng lại
    một ô riêng: hai ô cùng công dụng mà khác mã là hai chỗ phải sửa mỗi lần. */
@@ -753,7 +753,6 @@
          in
            Borderland
        (khoảng trống)
-       PROFILE →
        ┌ trích dẫn hôm nay ┐
        READ ON ⌄
 
@@ -808,11 +807,6 @@
     padding-top:var(--s7);padding-bottom:var(--s8);
     border-top:1px solid var(--line);margin-top:var(--s6)}
 
-  /* Cửa vào trang giới thiệu BIẾN MẤT ở khổ dọc. Ở khổ ngang nó là một dòng
-     nhãn 9px nép góc trái, gần như không tốn chỗ. Trên điện thoại thì nó đứng
-     một mình thành một dòng riêng ngay trên ô trích dẫn, và ở đó nó đọc ra
-     như một mục điều hướng — trong khi thanh đầu trang đã có "ABOUT" rồi. */
-  .hero-hoso{display:none}
   .hero-cot--trai{order:1;justify-content:flex-end;gap:var(--s4);flex:none}
   .hero-cot--giua{order:2;align-items:center;justify-content:flex-end;
     padding-bottom:var(--s7);flex:none}
