@@ -45,15 +45,15 @@ content/quote-nguon.md                              nguồn + kho câu trích d�
 public/media/<năm>/<slug>/                          ảnh, video của từng bài
 public/_headers                                     luật cache cho Cloudflare
 _anh/           chỗ quăng ảnh tạm; `npm run anh` xếp chúng vào bài
-src/styles/     tokens · base · glass · layout · components · prose
-src/styles/     …· list (chưa kể ở dòng trên)
-src/js/         theme · nen · toc · media · comments · duyet · copy-guard
-                reveal · so-tay · quote · search · trang-so · moc · bang-anh
-                xem · ghi-chu · viet-bai · admin · khoa · soan · man-dau
-                chia-se · logo-nhip · menu · cum-theo · muc
+src/styles/     fonts · tokens · base · glass · layout · components
+                prose · list · about · quote · khoa · admin · soan
+src/js/         theme · nen · logo-nhip · man-dau · menu · toc · reveal
+                media · bang-anh · xem · quote · search · trang-so · moc
+                comments · cum-theo · chia-se · copy-guard · so-tay
+                khoa · admin · duyet · ghi-chu · viet-bai · muc · soan
 src/templates/  shell.html · post.html · page.html
-tools/          build · new-post · anh · bia · og · nen · dev · version
-                kiem-dinh · ghi-chu-keo · og-font/ · lib/
+tools/          build · dev · new-post · nhap · anh · bia · og · nen
+                phong · version · kiem-dinh · ghi-chu-keo · og-font/ · lib/
 worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/*
 wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1
 docs/logo/      14 chặng của vòng kể + một file chạy trọn vòng + tấm lát cắt
@@ -115,18 +115,21 @@ của Google, không cookie theo dõi đặt lên người đọc.
 **Tìm kiếm chạy hẳn trong trình duyệt.** Build sinh `search-index.json` có sẵn
 bản bỏ dấu, nên gõ `tam ly` cũng tìm ra *tâm lý*. Không máy chủ, không API.
 
-**Ba khung trình bày bài,** chọn bằng một chữ trong front matter (`khung: A|B|C`).
-Cả ba dùng chung một HTML, chỉ khác cách xếp bằng grid.
+**Ba khung trình bày bài,** chọn bằng front matter: `khung: post left` (mặc
+định — cột bên có mục lục), `post full` (một cột rộng), `post insta` (băng ảnh
+trên đầu, chuyển bài bằng cặp lùi/tới). Cả ba dùng chung một HTML, chỉ khác
+cách xếp bằng grid.
 
-**Ba theme, một vòng xoay.** Sáng (Sakura) → tối (Galaxy) → **Tĩnh lặng** —
-thác nước, suối, thiền, tông xanh pastel. Bấm cái nút ở góc phải thanh đầu
-trang; lựa chọn được nhớ lại. Màn đầu trang chủ có nền động riêng cho từng
-theme: cánh hoa rơi · đĩa thiên hà · thác nước đổ xuống mặt nước có gợn sóng.
-Cả ba dùng chung một bộ token, nên thêm theme không phải sửa component nào
-(`docs/DESIGN-SYSTEM.md` §1).
+**Bốn theme, một vòng xoay.** Sáng (Sakura) → tối (Galaxy) → **Tĩnh lặng**
+(tông xanh pastel) → **霜降** (giấy trắng mực đen). Bấm cái nút ở góc phải
+thanh đầu trang; lựa chọn được nhớ lại. Mỗi theme một nền động riêng: cánh hoa
+rơi · đĩa thiên hà · thác nước đổ xuống mặt nước có gợn · và một bức sơn thuỷ
+chạy trọn **một vòng ngày đêm** — mặt trời mọc sau dãy núi xa, lên đỉnh, lặn;
+sương thở dày mỏng; trăng lên, sao lấp lánh; rồi lặp. Cả bốn dùng chung một bộ
+token, nên thêm theme không phải sửa component nào (`docs/DESIGN-SYSTEM.md`
+§1 và §12).
 
-**Logo tự kể chuyện.** Ở trang chủ và trang giới thiệu, logo kể lại đúng trình
-tự đã dựng ra nó: dòng chữ bóp lại → chữ Z → nét nối khép thành nút thắt vô cực
+**Logo tự kể chuyện.** Ở trang chủ, logo kể lại đúng trình tự đã dựng ra nó: dòng chữ bóp lại → chữ Z → nét nối khép thành nút thắt vô cực
 → vô cực thứ nhất → chữ B vặn bụng → vô cực thứ hai → mandala tám cánh → xoay
 chậm rồi nhanh → vỡ thành bụi rơi → tụ lại, kể lại. Vòng 30 giây, không dùng
 ảnh, không phụ thuộc phông (`docs/DESIGN-SYSTEM.md` §19).
@@ -161,10 +164,11 @@ mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web — m�
 là có cả ô viết ghi chú lẫn hàng chờ duyệt. Làm được từ điện thoại, không cần
 mở máy, không cần dựng lại trang.
 
-**Tim · chia sẻ · bình luận nằm chung MỘT hàng với ngày đăng**, ở mọi kiểu bài,
-và mỗi con số in ngay trên cái nút sinh ra nó. Bấm nút bình luận thì bài dài mở
-khung viết ở cột phải, còn bài ảnh thì nhảy thẳng tới ô viết dưới hàng tag —
-`docs/DESIGN-SYSTEM.md` §18.5.
+**Tim · bình luận · chia sẻ nằm chung MỘT hàng với ngày đăng**, ở mọi kiểu
+bài, và mỗi con số in ngay trên cái nút sinh ra nó. Bấm nút bình luận thì ở khổ
+rộng khung viết mở ra ở cột phải; trên điện thoại nó **trượt lên thành một tấm
+nổi** bám mép dưới màn, có màn mờ phía sau — bài đằng sau đứng yên, bấm ra
+ngoài hoặc Esc là đóng (`docs/BINH-LUAN.md` — mục "Khổ hẹp").
 
 **Bảng bài ở `/z-admin/` tải từng trang 20 bài**, có nút tải thêm và ô lọc theo
 tên (gõ không dấu cũng ra). Mỗi bài là một lượt gọi ra GitHub, nên tải cả kho
@@ -179,15 +183,17 @@ khi bấm Lưu.
 trên trang, viết câu mô tả dưới tên ấy ở `/posts/`, sắp thứ tự, thêm mục mới,
 bỏ mục rỗng. Nó ghi thẳng `content/posts/<mục>/_muc.json`.
 
-**Ô soạn thảo có nút cho mọi khối**, không còn phải nhớ cú pháp: khung ghi chú
-bốn tông, dải ảnh, khối tràn lề, bảng, khối mã, danh sách việc. Mở một bài đã
-đăng ra sửa thì mọi khối ấy đi qua nguyên vẹn — có phép kiểm canh vòng
-đổi-đi-đổi-lại đứng yên từ lượt lưu thứ hai.
+**Ô soạn thảo có nút cho mọi khối**, không còn phải nhớ cú pháp: một nút
+**Media** mở ảnh · video · dải ảnh · khổ tràn lề, một nút **khung nhấn** bày
+bốn tông kèm chấm màu, rồi bảng · khối mã · danh sách việc đứng riêng. Bảng là
+một **bảng thật** gõ thẳng vào ô (Tab sang ô kế); bấm vào một tấm ảnh là hiện
+thanh ba khổ. Mở một bài đã đăng ra sửa thì mọi khối ấy đi qua nguyên vẹn — có
+phép kiểm canh vòng đổi-đi-đổi-lại đứng yên từ lượt lưu thứ hai.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 42 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
+**Bộ kiểm định 67 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
 link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt vào bản dựng, thẻ meta thiếu,
 file CSS/JS quên đăng ký, hàm dùng thứ Cloudflare Workers không có. Mỗi phép
 kiểm đều phải cắm lỗi vào thử xem nó có bắt thật không trước khi tính là xong.
@@ -203,13 +209,14 @@ Bản hiện tại: xem tem `Vxx.yy` ở chân mọi trang, hoặc dòng đầu 
 danh sách), `/posts/` với thư mục con theo chuyên mục, `/tags/`, `/archive/`,
 `/search/` tìm ngay trên máy người đọc, `/about/` khung bento.
 
-**Chạy trên máy chủ:** bốn hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
-`/api/xem` và `/api/quote`. Ba cái đầu dùng chung một cơ sở dữ liệu D1 và chung
-một cặp khoá chủ trang. Ngoài chúng ra, trang là file tĩnh thuần.
+**Chạy trên máy chủ:** bảy hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
+`/api/xem`, `/api/thich`, `/api/anh`, `/api/bai` và `/api/quote`. Trừ `quote`,
+tất cả dùng chung một cơ sở dữ liệu D1 và chung một cặp khoá chủ trang; `anh`
+và `bai` thì ghi thẳng vào kho mã trên GitHub. Ngoài chúng ra, trang là file
+tĩnh thuần.
 
-**Còn treo:** `site.config.json` vẫn để địa chỉ `.pages.dev` — đổi sang tên
-miền thật trước khi công bố, không thì thẻ canonical, ảnh chia sẻ và sitemap
-đều trỏ sai. Danh sách việc còn lại: `docs/IA.md` §6.
+**Còn treo:** danh sách việc nằm ở `docs/VIEC-DANG-CHO.md` — sổ hàng đợi thật,
+làm xong thì xoá khỏi đó và ghi một dòng vào `docs/LICH-SU.md`.
 
 ---
 ## Đưa lên mạng

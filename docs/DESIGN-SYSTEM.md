@@ -20,7 +20,7 @@
 | Chữ chính | `#3E2F56` tím mực | `#F6EFFB` | `#15303E` mực đá ướt | `#111315` mực |
 | Nhấn (trang trí) | `#E3AADD` | `#E3AADD` | `#7ABFDE` | `#9AA0A6` |
 | Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` | `#0B5A78` | `#2B3138` |
-| Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước | mây trôi qua núi |
+| Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước | một vòng ngày đêm trên núi |
 | Favicon | `favicon.svg` | `favicon.svg` | `favicon-calm.svg` | `favicon-frost.svg` |
 | Ảnh chia sẻ | `og.jpg` | `og-thien-ha.jpg` | `og-tinh-lang.jpg` | `og-suong-giang.jpg` |
 
@@ -379,13 +379,34 @@ Thêm mảnh mới thì **tra bảng này trước khi vẽ**. Cùng một việ
 | Nhãn nhỏ viết hoa | `.label` | Oswald, giãn `.22em` |
 | Nút chính của màn | `.btn` | **mỗi màn đúng MỘT nút chính** |
 | Nút phụ | `.btn.btn--ghost` | viền mảnh, nền trong |
+| Nút cỡ nhỏ | `.btn.btn--nho` | cho màn "việc đã xong", chỉ còn mở đường đi tiếp |
 | Nút chỉ có hình | `.ico-btn` | **bắt buộc** `aria-label` + `.tip` |
-| Chú thích nổi | `.tip` + `data-tip` | **luôn đặt phía DƯỚI nút** |
+| Chú thích nổi | `.tip` + `data-tip` | mặc định phía DƯỚI nút — xem ngoại lệ ở §3.2 |
 | Tag | `.tag` | một hình duy nhất ở mọi nơi |
 | Đường dẫn phân cấp | `.crumbs` | Bài viết / Mục / Mục con |
 | Thẻ bài | `.card` | trang danh sách |
 | Hàng meta | `.meta-row` | ngày · phút đọc · trạng thái |
 | Huy hiệu | `.badge--draft` `--new` `--pin` | |
+
+### 3.2 · Chú thích nổi đi xuống dưới, trừ hai chỗ
+
+Phía trên một cái nút gần như luôn là tiêu đề hoặc hàng meta, nên chú thích bật
+lên trên là che mất chữ. Mặc định vì thế là **dưới**.
+
+Hai ngoại lệ, và cả hai đều vì chỗ trống nằm ở nơi khác:
+
+- **Nút "xem câu khác" trong ô trích dẫn** nằm ở góc TRÊN PHẢI của một cái ô
+  nhỏ; bật xuống dưới là đè thẳng lên câu trích. Ở /about/ nó bật sang TRÁI —
+  ngang hàng với dòng nhãn "QUOTE OF THE DAY", một dòng ngắn còn thừa chỗ. Ở
+  màn đầu trang chủ thì bật sang PHẢI, vì bên phải ô là khoảng trống trước khối
+  tên blog, còn bên trái đã là mép trang.
+- **Mục cuối của thanh điều hướng** neo về mép phải, không thì chú thích tràn
+  khỏi màn.
+
+Khai bề rộng khi đẩy ngang: ô chứa của `::after` là chính cái nút (rộng 26px),
+neo `right` ra ngoài 34px thì chỗ trống còn lại là âm và trình duyệt co hộp về
+gần 0 — ra một mẩu 22px không đọc được chữ nào. `width:max-content` chữa đúng
+chỗ đó.
 
 ### 3.1 · Nút chỉ có hình: ba luật cứng
 
@@ -554,7 +575,7 @@ không khớp được gì** trên trang đang xem.
 | `about.css` | riêng trang About — khung bento | mọi trang khác |
 | `khoa.css` | khung đăng nhập (`/z-admin/` và `/notes/` cùng mượn) | bàn làm việc |
 | `admin.css` | bàn làm việc của chủ trang — `.ad-*`, `.vb-*` | ô soạn thảo |
-| `soan.css` | ô soạn thảo — `.sz-*`, kể cả khung cắt ảnh | bảng danh sách |
+| `soan.css` | ô soạn thảo — `.sz-*`: thanh nút, các bảng bật ra, bảng gõ trong bài, khung cắt ảnh, khung đặt cỡ bảng, thanh khổ ảnh | bảng danh sách |
 
 ### Gói
 
@@ -641,10 +662,22 @@ Dưới 1080px cả ba về **một cột**.
 > lần. `khung: post left` thì đọc được ngay trong front matter. Tên cũ vẫn nhận
 > để bài cũ không phải sửa, nhưng chỉ dạy tên mới.
 
-> **Hiện toàn bộ bài đang dùng `post left`** — kiểu của bài "Chiếc gương".
-> `post full` chưa có công dụng rõ. `post insta` còn đó và chạy được; nó là nơi
-> cặp lùi/tới `.rn-cap` ra đời, và khối "đọc tiếp" của mọi khung nay mượn lại
-> đúng hình ấy (§8.2).
+> **Gần hết bài đang dùng `post left`** — kiểu của bài "Chiếc gương". Bài
+> "Thứ bảy, không có gì" dùng `post insta`; `post full` chưa có công dụng rõ.
+> `post insta` là nơi cặp lùi/tới `.rn-cap` ra đời, và khối "đọc tiếp" của mọi
+> khung nay mượn lại đúng hình ấy.
+
+> **Khối "đọc tiếp" bỏ nhãn khi nó nằm trong DÒNG BÀI.** Ở cột bên nó là một
+> mục của cột, đứng cạnh mục lục, nên nó cần một dòng nhãn để nói mình là mục
+> nào. Ở chân bài thì ngay trên nó đã là hàng tag kết thúc bằng một đường kẻ —
+> thêm một vạch ngăn có chấm giữa rồi một dòng chữ hoa giãn ly nữa là BA lần
+> ngắt mạch liên tiếp trong chừng trăm pixel, chỉ để giới thiệu hai cái liên
+> kết vốn đã tự mang nhãn RELATED · NEWER · OLDER ở đầu mỗi dòng.
+>
+> Điều kiện là **chỗ đứng**, không phải tên khung: một bài `post left` không có
+> tiêu đề mục nào thì cũng chẳng có cột bên, và nó rơi vào đúng cảnh ấy. Tham
+> số `oBen` của `readNextHTML()` quyết, và lớp `.read-next--gon` là bản không
+> nhãn.
 
 **`post insta` khoá chiều cao băng ảnh theo MÀN, không theo tỉ lệ ảnh.** Băng ảnh
 dính khi cuộn, nên cả cụm ảnh + chú thích + hàng chấm phải lọt trong một màn
@@ -856,15 +889,20 @@ và không ai cuộn ngược để xem lại hiệu ứng.
 
 ## 12 · NỀN ĐỘNG
 
-Ba hiệu ứng, tự đổi theo theme. Bảng tra `BO` ở phần ĐIỀU PHỐI của
+Bốn hiệu ứng, tự đổi theo theme. Bảng tra `BO` ở phần ĐIỀU PHỐI của
 `src/js/nen.js` là **chỗ duy nhất** biết theme nào đi với hiệu ứng nào — thêm
 theme là thêm đúng một dòng ở đó, không phải đi sửa một chuỗi `if`.
 
-| Theme | Hiệu ứng | Gốc |
-|---|---|---|
-| Sakura | cánh hoa anh đào rơi chéo | HAN-961030-a |
-| Galaxy | đĩa thiên hà xoắn ốc | HAN-961030-b |
-| Tĩnh lặng | thác nước · giọt · gợn · mặt nước | dựng mới cho blog |
+| Theme | Hiệu ứng | Hàm dựng | Gốc |
+|---|---|---|---|
+| Sakura | cánh hoa anh đào rơi chéo | `dungHoa` | HAN-961030-a |
+| Galaxy | đĩa thiên hà xoắn ốc | `dungThienHa` | HAN-961030-b |
+| Tĩnh lặng | thác nước · giọt · gợn · mặt nước | `dungThac` | dựng mới cho blog |
+| 霜降 | sơn thuỷ, chạy trọn một vòng ngày đêm | `dungSuongGiang` | dựng mới cho blog |
+
+Cả bốn trả về cùng một giao kèo: `{ dung, ve(t) }` — `dung()` dựng lại mọi thứ
+phụ thuộc kích thước khung (gọi lại mỗi lần đổi cỡ cửa sổ), `ve(t)` vẽ một
+khung hình ở nhịp `t`. Không hàm nào được giữ trạng thái ở ngoài.
 
 ### 12.0 · Thác nước — bốn tầng, và vì sao tầng GIỌT là tầng quan trọng nhất
 
@@ -892,7 +930,62 @@ Ba chỗ dễ làm sai:
 - **Gợn vẽ bằng ELIP, không phải hình tròn.** Vòng sóng tròn chiếu lên màn nhìn
   xiên thì thành hình bẹt. Vẽ tròn là cả vũng nước dựng đứng lên như tấm bảng.
 
-### 12.1 · Bật ở đâu
+### 12.1 · 霜降 — một vòng ngày đêm trên giấy trắng
+
+Đây là hiệu ứng phức tạp nhất trong bốn cái, và cũng là cái duy nhất có **thời
+gian trong ngày**. Một vòng `CHU_KY = 4200` khung hình (~70 giây ở 60fps) rồi
+lặp lại:
+
+| Pha `p` | Xảy ra gì |
+|---|---|
+| 0.00 → 0.05 | đêm tàn, chân trời đông ửng |
+| 0.03 → 0.16 | **mặt trời mọc** — quầng sáng dâng lên từ sau dãy núi xa |
+| 0.16 → 0.42 | lên cao, nhỏ và nhạt dần; giấy gần như trắng |
+| 0.42 → 0.58 | hạ về bên phải, to và đỏ lại; một dải ấm ở chân trời |
+| 0.56 → 0.70 | chạng vạng, sương dâng, sao hiện |
+| 0.62 → 0.98 | trăng đi một cung từ phải sang trái rồi lặn |
+| 0.93 → 1.00 | trời nhạt dần, nối liền về đầu vòng |
+
+Ba bao `dem` · `binhMinh` · `hoangHon` đều bằng 0 ở cả `p=0` lẫn `p=1`, nên
+vòng khép kín mà không có một nhịp giật nào ở chỗ nối.
+
+**Bốn luật của bức này** — phá luật nào cũng ra một thứ trông sai mà khó chỉ
+tên:
+
+1. **Trên giấy trắng, SÁNG là chỗ bớt mực đi.** Không có màu nào sáng hơn
+   giấy. Nên mặt trăng và vệt trăng dưới nước đều vẽ bằng
+   `globalCompositeOperation = 'destination-out'`, tức là lấy bớt lớp rửa đêm
+   để giấy hiện lên. Bản đầu vẽ quầng trăng bằng MỰC — ra một quầng *tối*
+   quanh mặt trăng, đọc y như một cái đĩa dán lên.
+2. **Muốn xoá được thì phải có gì đó để xoá.** Lớp rửa đêm vì thế phủ tới TẬN
+   ĐÁY khung chứ không dừng ở chân trời — mặt nước phản chiếu bầu trời, và
+   chính nhờ nó sẫm mà vệt trăng mới hiện ra. Bản đầu dừng lớp rửa ở chân
+   trời, nên bóng trăng xoá vào chỗ trống và không bao giờ thấy.
+3. **Mực rửa trong suốt không che được gì.** Dãy núi GẦN phải tô một lớp giấy
+   đặc trước rồi mới rửa mực lên (`dac = true` trong `veNui`), không thì mặt
+   trời nằm sau nó vẫn xuyên qua. Cùng lý do, mặt nước **phủ giấy** chứ không
+   xoá mực — xoá thì tấm nền thủng và thứ nằm dưới lộ ra qua lỗ.
+4. **Sương xoá mực, nên nó xoá luôn cả bức tranh.** Mỗi dãy vì thế có thêm một
+   **nét sống núi** mảnh (`netVien`): sương dày thì cả tầng núi tan vào giấy,
+   sương mỏng đi thì cái viền hiện ra trước tiên — đúng như núi thật ló khỏi
+   mây. Không có nét ấy thì lúc sương lên, bức tranh mất hẳn khung.
+
+**Thứ tự vẽ quyết định chiều sâu**, và đây là toàn bộ trật tự: nền trời →
+trăng → sao → mặt trời → dãy xa → dãy gần và mặt nước → vệt sáng trên nước →
+sương → chim. Mặt trời nằm TRƯỚC cả dãy xa nhất, nên lúc mọc thì thứ hiện ra
+đầu tiên là quầng sáng dâng lên từ sau cụm núi cao; đổi chỗ nó xuống sau dãy
+xa là mất luôn chặng "rạng".
+
+**Vệt sáng trên nước là một CỘT VỆT NGANG, không phải một vũng.** Gần bờ thì
+ngắn và khít, ra xa thì dài và thưa, cả cột rung theo sóng (`veVet`). Vẽ một
+khối mờ hình bầu dục thì nó ra một vũng dầu, không ra ánh sáng.
+
+**Không có mây.** Từng có, và đã bỏ: một đám mây vẽ bằng mấy bọng mờ chồng
+nhau thì ở độ đậm nào cũng đọc ra là vệt bẩn trên giấy. Phần chuyển động dồn
+hết vào sương — ba dải, ba nhịp lệch nhau, mỗi dải vừa dày mỏng vừa trôi lên
+xuống.
+
+### 12.2 · Bật ở đâu
 
 **Trang tĩnh** (`content/pages/*.md`) — thêm vào front matter:
 
@@ -906,7 +999,7 @@ nen: tinh     # tắt (mặc định)
 `nen` **chỉ có tác dụng ở `content/pages/`**. Gõ vào một bài viết thì nó bị bỏ
 qua — bộ kiểm định bắt trường hợp này và báo cảnh báo.
 
-### 12.2 · Cỡ đĩa thiên hà
+### 12.3 · Cỡ đĩa thiên hà
 
 Đĩa bị ép dẹt còn 0.34 chiều cao, nên **chiều dọc không bao giờ là cạnh chạm
 mép trước**. Lấy cỡ theo `min(W,H)` là trói đĩa vào chiều cao: trên màn ngang
@@ -933,7 +1026,7 @@ Rl = R * 0.46                      // quầng lõi, bám theo R
 Mặc định là `tinh`. Bật ở mọi trang thì nó hết là điểm nhấn, và trang đọc bài
 cần yên để đọc.
 
-### 12.2 · Bốn thứ nó tự lo
+### 12.4 · Bốn thứ nó tự lo
 
 1. **Đổi theme là đổi hiệu ứng ngay**, kể cả khi người đọc bấm nút giữa chừng.
 2. **Tab bị ẩn thì dừng hẳn.** Trình duyệt có tiết lưu `requestAnimationFrame`
@@ -942,10 +1035,20 @@ cần yên để đọc.
 4. **`prefers-reduced-motion`**: vẫn vẽ MỘT khung hình tĩnh rồi dừng, không bỏ
    trắng. Người tắt chuyển động vẫn xứng đáng được nhìn cái nền.
 
-### 12.3 · Mật độ theo diện tích, không theo số cố định
+### 12.5 · Mật độ theo diện tích, không theo số cố định
 
 Số cánh hoa và số sao tính từ `W × H` của khung. Để một con số cố định thì màn
 1440px thấy thưa thớt mà màn 390px thấy dày đặc.
+
+**Cùng một luật, áp cho HÌNH DẠNG chứ không chỉ cho số lượng.** Đường sống núi
+của 霜降 là tổng mấy hàm sin, và bản đầu tính tần số theo `u = x / W0` — tức là
+số ngọn núi trên một dãy luôn bằng nhau bất kể màn rộng hay hẹp. Trên màn
+1400px thì vừa; nhét đúng chừng ấy ngọn vào một cái điện thoại 375px thì chúng
+chen nhau thành hàng răng cưa lởm chởm.
+
+Nay tần số nhân thêm `kW = W0 / 1400`, nghĩa là **bước sóng đo bằng pixel**:
+màn hẹp thấy ít ngọn hơn, mỗi ngọn vẫn rộng đúng chừng ấy — giống hệt việc cắt
+một khúc của cùng một bức tranh, thay vì ép cả bức vào khung hẹp.
 
 ---
 
@@ -1426,7 +1529,7 @@ tới một màn.
 Dưới tiêu đề có **đúng một hàng**:
 
 ```
-15 Sep 2026 · 6 views      [♥ 12]  [chia sẻ]  [💬 3]
+15 Sep 2026 · 6 views      [♥ 12]  [💬 3]  [chia sẻ]
 └── chữ để ĐỌC ───────┘    └── nút để BẤM ───────────┘
 ```
 
@@ -1443,7 +1546,12 @@ dưới ngón tay vừa bấm.
 **Nhãn "Leave a note" đã bỏ.** Ba cái icon nói đúng thứ nó nói, và một nhãn
 Oswald hoa đặt trước chúng chỉ thêm một dòng cho cùng một câu.
 
-**Cụm này đứng ở đây trong MỌI khung bài** (A · B · C). Cùng một thứ nằm ba chỗ
+**Thứ tự ba nút là thứ tự của VIỆC**: thích là phản ứng ngay, bình luận là ngồi
+xuống viết, chia sẻ là việc làm sau khi đã đọc xong và đã thích — và nó là cái
+duy nhất đưa người ta rời trang, nên nó đứng cuối.
+
+**Cụm này đứng ở đây trong MỌI khung bài** (`post left` · `post full` ·
+`post insta`). Cùng một thứ nằm ba chỗ
 tuỳ khung là bắt người đọc đi tìm lại nó mỗi lần mở một bài khác kiểu — mà ba
 khung ấy chỉ khác nhau ở cách bày ẢNH, không khác nhau ở chuyện thả tim.
 
@@ -1484,7 +1592,7 @@ băng ảnh ngay phía trên, nên không phải học thêm gì.
 
 ### 18.7 · Bài dài: cụm nút đi theo người đọc
 
-Trên **2.500 ký tự** (chữ trơn, không kể thẻ), cụm tim · chia sẻ · bình luận
+Trên **2.500 ký tự** (chữ trơn, không kể thẻ), cụm tim · bình luận · chia sẻ
 rời hàng meta khi hàng ấy trôi khỏi màn hình:
 
 | Khổ màn | Nó về đâu |
@@ -1495,6 +1603,15 @@ rời hàng meta khi hàng ấy trôi khỏi màn hình:
 Bốn trường hợp **không** dời: bài ngắn · hàng meta vẫn trong tầm mắt · khung
 bình luận đang chiếm cột phải · đã cuộn tới chân bài ở khổ hẹp (cụm nổi sẽ che
 mất nút Gửi).
+
+**Cụm nổi trốn đi trong lúc người đọc đang cuộn XUỐNG, và về lại khi tay dừng.**
+Đời trước chỉ đổi trạng thái lúc HƯỚNG cuộn đảo chiều — giấu khi xuống, hiện
+khi lên. Trên điện thoại đó là một cái bẫy: một cú vuốt mạnh sinh ra quán tính
+chạy tiếp cả nghìn pixel rồi tắt dần, và hướng KHÔNG BAO GIỜ đảo. Cụm trượt ra
+khỏi mép phải rồi nằm luôn ngoài đó cho tới khi người đọc chủ động vuốt ngược.
+Nay có thêm một đường về thứ hai: hết cuộn **420ms** là nó hiện lại — đủ dài để
+không chớp tắt giữa những cú vuốt nối nhau, đủ ngắn để vừa dừng mắt đã thấy nó
+ở đó.
 
 **DỜI, không chép.** Trạng thái — đã thả tim chưa, mấy lượt thích, mấy bình
 luận — nằm trong chính phần tử ấy. Dựng một cụm thứ hai là hai `aria-pressed`,
@@ -1747,14 +1864,37 @@ dừng ở bốn cánh là dừng giữa chừng.
 
 ## 20 · BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH QUẢN TRỊ
 
-`/z-admin/` có ba ngăn, và cả ba làm cùng một loại việc: bày một danh sách để
-**điểm danh** rồi thao tác trên từng mục.
+`/z-admin/` có bốn ngăn — **Note · Comment · Post · Category** — và ba trong số
+đó làm cùng một loại việc: bày một danh sách để **điểm danh** rồi thao tác trên
+từng mục. (Ngăn Note chỉ có một ô viết, không có danh sách.)
 
 | Ngăn | Mỗi hàng là | Nút trên hàng |
 |---|---|---|
 | Post | một bài đã đăng | Edit · Hide |
 | Category | một chuyên mục | Edit · Delete |
-| Comment | một bình luận chờ duyệt | Approve · Hide |
+| Comment | một bình luận chờ duyệt | Approve · Hide, và một ô tích để làm hàng loạt |
+
+Thứ tự bốn ngăn đi theo TẦN SUẤT dùng, không theo thứ bậc dữ liệu: Category là
+việc làm một lần rồi cả tháng không mở lại, nên nó đứng cuối.
+
+### Thanh làm hàng loạt — và vì sao nền nó phải ĐỤC
+
+Ngăn Comment có thêm một ô tích mỗi hàng; tích ít nhất một cái thì một thanh
+`n SELECTED · APPROVE · UNAPPROVE · HIDE · CLEAR` hiện ra và **dính** ở đầu
+bảng khi cuộn (tích một dòng ở cuối danh sách rồi phải cuộn ngược lên đầu mới
+bấm được thì cả cơ chế này không tiết kiệm gì).
+
+Dính thì nền phải ĐỤC. Bản đầu tô `--accent-wash` — một lớp rửa alpha `.14` —
+nên mọi hàng trôi qua phía dưới đều hiện xuyên lên: chữ chồng chữ, nút chồng
+nút. Đứng yên thì thanh trông hoàn toàn bình thường, nên không ai ngờ tới; chỉ
+lúc cuộn nó mới lộ. Nay là một lớp mặt phẳng (`--surface-solid`) rồi mới rửa
+màu nhấn lên trên.
+
+Ở khổ hẹp, hàng có ô tích phải **khai lại lưới của nó**: `.ad-dong--chon` và
+`.ad-dong` cùng một mức cụ thể, mà luật khổ hẹp đứng sau trong file nên nó
+thắng và cột ô tích biến mất — ô tích rơi vào cột ngày giờ, ngày giờ bị đẩy
+sang cột chữ, cột trạng thái tự tìm một hàng mới. Bốn ô vì thế được đặt chỗ
+THẲNG bằng `grid-area`, không để lưới tự xếp.
 
 ### Chuyện đã xảy ra khi không có khuôn chung
 
@@ -1941,3 +2081,102 @@ cùng mà không phải đi tranh `z-index` với ai.
 
 Bảng lịch sử tự dựng vì nó có sẵn từ trước và có hiệu ứng mờ dần riêng khi mở;
 đổi nó sang `<dialog>` là một việc nên làm, chưa làm.
+
+---
+
+## 22 · Ô SOẠN BÀI `.sz-*` — MỘT THANH NÚT, KHÔNG MỘT CÁI TỦ
+
+Ô soạn ở `/z-admin/` → Post là một `contenteditable`, và mọi thứ gõ được trong
+đó đều phải đi ra Markdown ở lượt lưu rồi đọc ngược lại được ở lượt sửa. Cả
+chương này xoay quanh đúng ràng buộc ấy.
+
+### 22.1 · Thanh nút hai hàng, chia theo NGHĨA
+
+Hàng 1 đổi **CHỮ** (đậm, nghiêng, liên kết, màu, chỉ số trên dưới…). Hàng 2 đổi
+**KHỐI** (tiêu đề, danh sách, căn dòng, media, khung nhấn, bảng, mã, checklist).
+
+Chia cố định chứ không để `flex-wrap` tự xuống hàng: khi chỗ xuống hàng do bề
+ngang cửa sổ quyết định thì cùng một cái nút, màn rộng hẹp khác nhau là nằm
+hàng khác nhau — và người dùng nhớ nút theo VỊ TRÍ, không theo tên.
+
+Mỗi nhóm bọc trong một `.sz-nhom`, nên nhóm xuống hàng nguyên cụm chứ không bị
+xé đôi, và vạch ngăn là viền trái của nhóm chứ không phải một thẻ riêng — nhờ
+vậy không bao giờ có vạch đứng lạc một mình ở đầu hàng.
+
+### 22.2 · Bảng Blocks đã bỏ — và vì sao
+
+Từng có một bảng "Blocks" gom mười sáu thứ vào một chỗ: ảnh, video, bảng, mã,
+bốn khung nhấn, hai lớp đoạn, cộng một khung chỉ dẫn dài ở dưới. Ai mở ra cũng
+phải đọc hết mới tìm được thứ mình cần, và bốn khung nhấn trong đó trông y hệt
+nhau nên bấm cái nào cũng như nhau.
+
+Nay tách theo CÂU HỎI người viết đang hỏi:
+
+| Nút | Mở ra | Câu hỏi nó trả lời |
+|---|---|---|
+| **Media** | ảnh · khổ ảnh · YouTube · video · gallery · wide · full | "đặt cái gì vào bài?" |
+| **Khung nhấn** | note · tip · warn · stop, mỗi dòng một chấm màu | "nhấn câu này bằng tông nào?" |
+| **Khối mã** | tám ngôn ngữ + "no colours" | "tô màu cú pháp theo ngôn ngữ nào?" |
+| Bảng · checklist · chữ nhỏ · tắt sapo · căn dòng | chèn thẳng | — |
+
+Khung chỉ dẫn cũng bỏ: nó dạy gõ tay đúng những thứ đã có nút, và hai cửa dạy
+một việc thì sớm muộn chúng lệch nhau. Nay mỗi nút có một dòng chú thích khi rê
+chuột, và `</>` in ra đúng đoạn Markdown sắp gửi đi.
+
+### 22.3 · Khối `:::` — màu ngay trong ô gõ, loại đổi trên NHÃN
+
+Khối nhấn trong ô soạn là `<div class="sz-khoi" data-khoi="note">` có một nhãn
+hai phần: `note` (loại, khoá) và tiêu đề (gõ được tại chỗ).
+
+Ba biến `--kh` · `--kh-chu` · `--kh-nen` lấy đúng bộ biến của `.callout--*` bên
+`prose.css`, nên **ô soạn vẽ đúng thứ trang sẽ hiện**. Trước đó cả bốn loại vẽ
+y hệt nhau ở đây — viền tím, nền chìm — nên bấm Tip mà thấy ra một cái hộp
+giống hệt Note thì kết luận là hai nút làm cùng một việc.
+
+Bấm vào chữ `note` là xoay note → tip → warn → stop. Ba khối bọc (gallery ·
+wide · full) không xoay: chúng không cùng một họ với nhau.
+
+### 22.4 · Bảng: một `<table>` thật, đổi ra Markdown lúc lưu
+
+Đời trước chèn mấy dòng `| | |` vào một đoạn văn và để người viết gõ giữa hai
+dấu gạch. Nhìn ra đúng như nó là: một mớ ký tự — không thấy được ô nào là ô
+nào, thêm một cột là phải đếm tay lại cả bảng, gõ lố một dấu là bảng thôi là
+bảng.
+
+Nay trong ô soạn nó là `<table class="sz-bang-o">`: bấm ô nào gõ ô đó, **Tab**
+sang ô kế, **Shift+Tab** lùi, Tab ở ô cuối thì thêm một hàng mới. Hàng đầu là
+`<thead>` — đúng hàng mà bộ dựng hiểu là hàng tiêu đề.
+
+Hai chiều đổi nằm ở `khoi()` (TABLE → mấy dòng gạch đứng) và `bangTuMD()`
+(gạch đứng → TABLE). Dấu `|` người viết lỡ gõ trong một ô được thoát, không thì
+nó cắt ô ấy làm đôi ở lượt đọc lại.
+
+Cỡ bảng hỏi bằng một `<dialog>` có hai cặp nút cộng trừ và một bảng xem trước,
+không phải một chuỗi `3x4` gõ vào `window.prompt`. Trần **5 × 20**: trần cột là
+chuyện bề ngang thật (cột chữ rộng chừng 66 ký tự, chia sáu cột là mỗi cột mười
+ký tự), trần hàng chỉ để chặn gõ nhầm.
+
+### 22.5 · Ảnh: ba khổ, và không có khổ thứ tư
+
+Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay dưới nó với ba
+nút — **thường · rộng (`{.wide}`) · tràn (`{.full}`)** — khổ đang dùng sáng lên.
+
+Ba, và chỉ ba. Kéo góc cho to nhỏ tuỳ ý là thứ **không viết ra được thành
+Markdown**, nên một con số pixel sẽ biến mất ở lượt lưu — bày ra một tay cầm
+kéo được rồi để nó mất tác dụng còn tệ hơn là không có.
+
+### 22.6 · Ba luật cứng của mọi thứ trong ô soạn
+
+1. **Chèn bằng `document.execCommand('insertHTML')`**, không dựng DOM rồi nhét
+   vào. `insertHTML` đi qua đúng cỗ máy hoàn tác của trình duyệt nên Ctrl+Z gỡ
+   được; dựng tay thì cú bấm ấy nằm ngoài lịch sử và người ta mất đường lùi.
+2. **`mousedown` + `preventDefault` trên mọi nút**, không phải `click`. Bấm một
+   cái nút là trình duyệt bỏ vùng chọn trong khung soạn TRƯỚC khi `click` chạy
+   tới; chặn ở `mousedown` thì vùng chọn còn nguyên.
+3. **Vòng đổi-đi-đổi-lại phải đứng yên từ lượt lưu thứ hai.** Mở một bài đã
+   đăng ra rồi lưu lại mà file đổi là hỏng. Đây là luật **chưa có phép kiểm tự
+   động nào canh** — `sangMD`/`tuMD` chạy trong trình duyệt và cần một cây DOM,
+   mà bộ kiểm định thì chạy trong Node và không dùng thư viện ngoài. Nên mỗi
+   lần đụng vào hai hàm ấy, phải thử tay: mở một bài có đủ khối (bảng, khung
+   nhấn, ảnh, khối mã), bấm `</>` ghi lại đoạn Markdown, lưu, mở lại, bấm `</>`
+   lần nữa — hai đoạn phải giống nhau từng ký tự.

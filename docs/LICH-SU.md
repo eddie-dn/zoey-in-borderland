@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.7 | 2026-09-18 | 07 | rà lại toàn bộ tài liệu cho khớp mã: nền động bốn hiệu ứng, ô soạn bài có chương riêng, bàn duyệt bốn ngăn, và mọi con số lạc hậu |
 | V2.8.6 | 2026-09-18 | 06 | ô soạn: bấm vào ảnh là hiện thanh ba khổ; màn hình sau khi đăng gom lại một khối gọn; bảng trên trang có hàng kẻ xen kẽ |
 | V2.8.5 | 2026-09-18 | 05 | ô soạn: bảng nay là bảng thật gõ thẳng vào ô, có khung đặt cỡ và Tab sang ô kế; khối mã và khung nhấn đều có bảng chọn |
 | V2.8.4 | 2026-09-18 | 04 | khối đọc tiếp ở chân bài bỏ nhãn và vạch ngăn; cụm cuối hàng meta đổi thứ tự thành tim, bình luận, chia sẻ; nút chính theme Tĩnh lặng thôi loang hai hệ màu |
@@ -236,6 +237,22 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.7 — 18-Sep-2026
+
+- **Tài liệu rà lại cho khớp mã.** Mỗi lượt sửa đều ghi sổ phiên bản, nhưng tài
+  liệu MÔ TẢ HIỆN TRẠNG thì trôi dần: README vẫn nói "ba theme", "42 phép
+  kiểm", "bốn hàm Cloudflare", `khung: A|B|C`; IA vẫn kê trang 404 và menu màn
+  hẹp vào mục CHƯA LÀM, và vẫn tả bình luận chạy trên Google Apps Script;
+  BINH-LUAN vẫn tả cụm nút nằm ở cuối cột phải. Đã sửa hết.
+- **Hai chương mới trong DESIGN-SYSTEM.** §12.1 tả nền 霜降 — vòng ngày đêm,
+  thứ tự vẽ, và bốn luật của việc vẽ bằng mực trên giấy trắng (sáng là chỗ bớt
+  mực đi; muốn xoá được thì phải có gì để xoá). §22 tả ô soạn bài `.sz-*`:
+  thanh nút hai hàng, ba bảng bật ra, khối `:::`, bảng thật, thanh khổ ảnh.
+- **Sửa một chỗ tài liệu nói dối.** §22 bản đầu ghi "có phép kiểm canh vòng
+  đổi-đi-đổi-lại của ô soạn" — không có. `sangMD`/`tuMD` cần một cây DOM mà bộ
+  kiểm định chạy trong Node không dùng thư viện ngoài, nên đó vẫn là việc thử
+  tay; tài liệu nay nói đúng thế và ghi rõ các bước thử.
 
 ## V2.8.6 — 18-Sep-2026
 

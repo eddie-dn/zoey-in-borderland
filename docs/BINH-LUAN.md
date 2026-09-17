@@ -89,28 +89,29 @@ Một nhánh quá hai trả lời thì mấy cái cũ gấp lại sau một dòn
 Một bình luận có 15 trả lời mà bung hết thì đẩy mọi bình luận khác xuống tận
 đáy trang. Bung ra thì chèn **ngược lên đầu**, để thứ tự thời gian vẫn đúng.
 
-### Ba nút ở cột phải, dưới "Read next"
+### Ba nút nằm cuối HÀNG META đầu bài
 
-Cuối bài **không có nút nào**. Tim · chia sẻ · bình luận gom thành một cụm ở
-cột bên, đặt sau khối gợi ý đọc tiếp:
+Tim · bình luận · chia sẻ gom thành một cụm, và cụm ấy là **một ô của hàng
+meta** — cùng hàng với ngày đăng và lượt xem, ở mọi khung bài:
 
 ```
-cột phải:   ON THIS PAGE  (mục lục)
-            READ NEXT     (gợi ý bài)
-            LEAVE A NOTE  ♡  share  💬
+POSTS / MUSINGS
+Tiêu đề bài
+4 Apr 2017  ·  Updated 2 days ago  ·  ♡ 12   💬 3   share
 ```
 
-Thứ tự ấy là thứ tự của câu hỏi trong đầu người đọc: đang ở đâu trong bài →
-đọc gì nữa → có gì muốn nói không. Đặt cụm nút lên đầu cột thì nó chen vào
-trước cả hai câu kia, và một lời mời viết bình luận lúc người ta còn chưa đọc
-xong là lời mời sai lúc.
+**Thứ tự là thứ tự của việc**: thích là phản ứng ngay, bình luận là ngồi xuống
+viết, chia sẻ là việc làm SAU khi đã đọc xong và đã thích. Chia sẻ đứng cuối vì
+nó là cái ít người bấm nhất và là cái duy nhất đưa người ta rời trang.
 
-Khung nào **không có cột bên thật** (`post full`, `post insta`) thì cụm ở lại cuối bài — nhưng
-vẫn đứng sau khối "đọc tiếp", nên thứ tự đọc y hệt.
+**Mỗi con số in ngay trên cái nút sinh ra nó.** Trước đó ba con số đứng riêng ở
+hàng meta còn nút thì trơn — hệ quả là một bài có hai biểu tượng bong bóng cạnh
+nhau, một cái mang số mà bấm không được, một cái bấm được mà không mang số. Một
+chỗ, một lần.
 
-**Ba con số — lượt xem · lượt thích · bình luận — ở hàng meta ĐẦU bài**, không
-in trên nút. Nút là chỗ bấm, hàng meta là chỗ đọc; và mỗi con số xuất hiện đúng
-một lần thì không có hai bản để trôi lệch nhau.
+Cụm này từng nằm ở cuối cột phải, dưới khối "đọc tiếp". Bỏ chỗ ấy vì nó chỉ
+đúng với `post left` có mục lục; ba khung còn lại không có cột bên nào, nên
+cùng một trang web mà cụm nút xuất hiện ở hai nơi khác nhau tuỳ bài.
 
 ### Khổ rộng: khung viết chiếm luôn cột phải
 
@@ -128,6 +129,33 @@ trong trang, ngay cạnh bài đang đọc, thì con lăn đi qua nó là cả t
 Và khung có nút **Back** ở góc trên: khi nó đã chiếm cột bên, cái nút đã mở nó
 có thể nằm ngoài tầm mắt, nên phải có một lối lùi nhìn thấy được. Nút ấy bấm hộ
 chính nút mở — một đường đóng, không phải hai.
+
+### Khổ hẹp: một TẤM NỔI trượt lên từ mép dưới
+
+Dưới 1080px không có cột nào để mượn. Ba đời đã thử ba cách:
+
+1. **Khung ở lại chân bài.** Bấm nút giữa một bài ba nghìn chữ là bị ném xuống
+   tận đáy trang; muốn về chỗ đang đọc thì phải tự dò ngược lên. Không ai làm
+   thế — họ đóng tab.
+2. **Chèn thẳng vào bài**, ngay dưới đoạn đang đọc. Giải quyết đúng chuyện bị
+   ném xuống đáy, nhưng đẻ ra một chuyện khó chịu hơn: bài bị cắt đôi bởi một
+   cái hộp cao gần bằng màn hình, chữ trên chữ dưới rời hẳn nhau, và mở ra đóng
+   vào là cả bài nhảy lên nhảy xuống vì dòng chảy đổi chiều cao hai lần.
+3. **Một tấm nổi** — bản đang dùng. Khung trượt lên từ mép dưới màn, có màn mờ
+   phía sau; bấm ra ngoài hoặc Esc là đóng. Bài phía sau **không suy suyển một
+   pixel nào**.
+
+Bám mép DƯỚI chứ không căn giữa màn: bàn phím điện thoại bung lên từ dưới, và
+một tấm bám đáy bị đẩy lên nguyên khối nên ô gõ luôn nằm ngay trên bàn phím.
+Tấm căn giữa thì bị bàn phím ăn mất nửa dưới.
+
+Vẫn là **DỜI** cái form đang có, không chép ra bản mới — nên chữ đang gõ dở và
+chip "đang trả lời ai" đều đi theo. Dời hẳn ra `<body>`: `position:fixed` bên
+trong một tổ tiên có `transform` thì neo theo tổ tiên ấy chứ không theo màn
+hình, một cái bẫy chỉ lộ ra khi ai đó thêm hiệu ứng vào khung bài.
+
+Trang phía sau bị khoá cuộn trong lúc tấm mở (`html.bl-khoa`), và trong tấm thì
+`overscroll-behavior:contain` chặn cú vuốt truyền ra ngoài khi đã hết nội dung.
 
 ### Một cái form, đem đi chỗ khác
 

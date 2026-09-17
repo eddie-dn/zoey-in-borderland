@@ -230,29 +230,35 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 | `/archive/` gom theo năm | `congKhai` |
 | `/about/` khung bento | `content/pages/` |
 | `/z-admin/` — bàn làm việc của chủ trang: ba ngăn **Note · Comment · Post**, mỗi lúc một ngăn | `admin.js` + `ghi-chu.js` · `duyet.js` · `viet-bai.js` |
-| Ảnh chia sẻ mặc định `og.jpg` · `og-thien-ha.jpg` · `og-tinh-lang.jpg` | bài không có `cover` rơi về một trong ba, chọn theo tên bài. Sinh bằng `npm run og` |
+| Ảnh chia sẻ mặc định — một bản cho mỗi theme: `og.jpg` · `og-thien-ha.jpg` · `og-tinh-lang.jpg` · `og-suong-giang.jpg` | bài không có `cover` rơi về một trong bốn, chọn theo tên bài. Sinh bằng `npm run og` |
+| `/404` — trang không tìm thấy, dựng cùng bộ khung với mọi trang khác | `trang404()` |
+| Menu thả xuống cho màn hẹp — bốn mục điều hướng gấp vào sau nút ☰ | `menu.js` |
 
 ### 6.0b · Chưa làm
 
-| Việc | Vì sao chưa | Ước lượng |
-|---|---|---|
-| **Trang 404** | Cloudflare Pages trả trang mặc định của nó; chưa xấu tới mức phải sửa | nhỏ |
-| **Menu trượt cho màn hẹp** | dưới 640px nav giấu chữ, chỉ còn brand + nút tìm + nút theme. Bốn mục thì tạm được; thêm mục thứ năm là phải làm | nhỏ |
-| **Ảnh cho bài đăng từ `/z-admin/`** | ngăn Post mới đăng được chữ. Ảnh vẫn phải qua `npm run anh` ở máy, vì bộ dựng còn ĐO ảnh để khoá tỉ lệ khung — gửi ảnh qua mạng thì phải đo ở phía máy chủ | vừa |
-| **Vân tay nội dung cho tên file CSS/JS** | tên file chưa có vân tay nên không cache dài được; xem `docs/DUA-LEN-MANG.md` §8 | vừa |
-### 6.1 · Bình luận — đã có (V1.1.1)
+Bốn việc từng nằm ở đây — trang 404, menu cho màn hẹp, đưa ảnh vào bài ngay từ
+`/z-admin/`, và vân tay nội dung cho tên file CSS/JS — **đều đã làm xong**.
+Ảnh nay thả thẳng vào ô soạn: trình duyệt thu nhỏ rồi `functions/api/anh.js`
+ghi vào kho mã, và ô soạn giữ bản xem tại chỗ cho tới khi Cloudflare dựng xong.
 
-Google Apps Script làm máy chủ, Google Sheet làm chỗ lưu. Không tốn tiền, không
-đăng ký dịch vụ nào, dữ liệu nằm trong Drive của chính chủ trang. Cài đặt từng
-bước: [`docs/BINH-LUAN.md`](BINH-LUAN.md).
+Sổ hàng đợi thật nằm ở [`VIEC-DANG-CHO.md`](VIEC-DANG-CHO.md) — mục này không
+chép lại nó.
+### 6.1 · Bình luận — chạy trên Cloudflare D1
+
+Cùng nhà với trang: một hàm Worker và một cơ sở dữ liệu D1, không dịch vụ bên
+thứ ba nào. Cài đặt từng bước: [`docs/BINH-LUAN.md`](BINH-LUAN.md).
 
 ```
-Người đọc gõ ──POST──► Apps Script ──ghi──► Sheet (cột Duyệt TRỐNG)
-Trang web   ◄──GET──── Apps Script ◄─chỉ dòng đã duyệt─┘
+Người đọc gõ ──POST──► /api/binh-luan ──ghi──► D1 (cột duyet = 0)
+Trang web   ◄──GET──── /api/binh-luan ◄─chỉ dòng đã duyệt─┘
+Chủ trang   ──PATCH──► /api/binh-luan          duyệt · ẩn · gỡ
 ```
 
 Hai luật cứng: **không bình luận nào tự lên trang**, và **email không bao giờ
-ra khỏi Sheet** (hàm `doGet` không đọc cột email).
+rời máy chủ** — câu truy vấn công khai không chọn cột ấy.
+
+> Đời đầu (V1.1.1) dùng Google Apps Script và một Google Sheet. Vì sao đổi:
+> `docs/BINH-LUAN.md`, mục "Vì sao KHÔNG còn Google Apps Script".
 
 ### 6.2 · Cố ý chưa làm
 
