@@ -596,7 +596,9 @@
   font-size:19px;line-height:1.15;letter-spacing:var(--ls-tight);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-/* Trang chủ và trang giới thiệu: chỉ logo. Mọi trang khác: chỉ chữ. */
+/* Trang chủ: chỉ logo — khối chữ khổng lồ ngay dưới đã nói tên blog rồi.
+   Mọi trang khác: chữ, thỉnh thoảng thở thành logo. Luật đầy đủ ở `lopBrand`
+   trong tools/build.mjs và ở DESIGN-SYSTEM §19.5. */
 .brand--logo b{display:none}
 .brand--chu:not(.brand--doi) .logo{display:none}
 

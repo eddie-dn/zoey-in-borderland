@@ -1113,7 +1113,7 @@
    Mỗi ô là một chuyên mục: tên · số bài · một dòng mô tả · ba bài mới nhất ·
    "See all" ở chân ô. Ô tự co theo bề ngang, tối thiểu 280px.
 
-   ── MỌI Ô CAO BẰNG NHAU, KỂ CẢ Ô MỘT BÀI ──
+   ── Ô CAO BẰNG NHAU TRONG MỘT HÀNG, KỂ CẢ Ô MỘT BÀI ──
    Đời trước để `align-items:start`, cho ô thấp giữ đúng chiều cao nội dung
    của nó. Lý do khi ấy: một mục một bài mà bị kéo cao bằng mục ba bài thì đáy
    ô có một mảng trống, và mảng trống ấy đọc ra là THIẾU.
@@ -1122,7 +1122,7 @@
    thấp so le nhau, mỗi hàng một đường chân răng cưa. Một lưới bento mà các ô
    không khớp mép thì nó thôi là lưới, chỉ còn là mấy cái hộp xếp gần nhau.
 
-   Nay ô nào cũng căng hết ô lưới (mặc định `stretch`), và mảng trống ở đáy có
+   Nay ô nào cũng căng hết HÀNG của nó (mặc định `stretch`), và mảng trống ở đáy có
    người giữ chỗ: "See all" — hoặc một ô rỗng cùng chiều cao khi mục chưa đủ
    bài — bị `margin-top:auto` đẩy xuống sát đáy. Nhờ vậy ô nào cũng KẾT THÚC
    giống nhau, và khoảng trống nằm giữa danh sách với chân ô đọc ra là chỗ
@@ -1137,22 +1137,36 @@
   gap:var(--s4);
 }
 @media (min-width:640px){
+  /* ── CAO BẰNG NHAU TRONG MỘT HÀNG, KHÔNG PHẢI GIỮA CÁC HÀNG ──
+     Bản trước khai `grid-auto-rows:1fr`, tức là MỌI hàng cao bằng ô cao nhất
+     của CẢ LƯỚI. Lý do ghi lúc ấy: hai hàng lệch nhau thì "vẫn là lưới răng
+     cưa, chỉ là răng to hơn". Đo lại trên trang thật thì lý do ấy không đứng
+     được — mép răng cưa là chuyện của các ô NẰM CẠNH NHAU; hai hàng cao thấp
+     khác nhau thì mỗi hàng vẫn có một mép trên và một mép dưới thẳng băng, và
+     mắt đọc chúng ra là hai dải, không ra là răng cưa.
+
+     Cái giá thì đo được: sáu chuyên mục, bốn mục một bài, và cả bốn bỏ trống
+     116px dưới danh sách — gần một nửa chiều cao thẻ, chỉ vì ở hàng TRÊN có
+     một mục ba bài. Cả một dải ngang toàn khoảng trắng.
+
+     Nay để lưới tự lo: `stretch` mặc định vẫn kéo mọi ô trong CÙNG một hàng
+     cao bằng nhau (mép khớp — phần thật sự cần), còn hàng toàn mục ít bài thì
+     được thấp lại đúng bằng nội dung của nó. Khoảng trống còn sót trong một
+     hàng có mục ba bài là cái giá của việc khớp mép, và `.muc-them` bị
+     `margin-top:auto` đẩy xuống đáy vẫn giữ cho ô nào cũng kết thúc giống
+     nhau. */
   .muc-luoi{
     grid-template-columns:repeat(2,minmax(0,1fr));
-    /* `1fr` cho MỌI hàng, không chỉ trong một hàng: thiếu dòng này thì hàng
-       trên cao theo ô cao nhất của nó, hàng dưới cao theo ô cao nhất của nó,
-       và hai hàng lệch nhau — vẫn là lưới răng cưa, chỉ là răng to hơn. */
-    grid-auto-rows:1fr;
   }
 }
 @media (min-width:1000px){
   .muc-luoi{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-/* MỘT CỘT thì không ô nào nằm cạnh ô nào, nên không có mép nào để khớp — mà
-   `grid-auto-rows:1fr` vẫn kéo ô một bài cao bằng ô ba bài. Trên điện thoại
-   đó là một cột dọc toàn khoảng trống, phải cuộn qua để tới ô sau. Chiều cao
-   bằng nhau là luật của LƯỚI; một cột thì nó là danh sách, và luật ấy không
-   áp dụng. (Không cần luật riêng — `grid-auto-rows` chỉ khai từ 640px lên.) */
+/* MỘT CỘT thì không ô nào nằm cạnh ô nào, nên không có mép nào để khớp, và ô
+   một bài được thấp đúng bằng nội dung. Trên điện thoại đó là điều muốn:
+   không phải cuộn qua một cột dọc toàn khoảng trống. Chiều cao bằng nhau là
+   luật của HÀNG; một cột thì mỗi ô là một hàng, nên luật ấy tự biến mất —
+   không cần khai gì thêm. */
 .muc-khoi{
   display:flex;flex-direction:column;
   padding:var(--s4) var(--s5) var(--s3);

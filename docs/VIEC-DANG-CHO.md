@@ -14,36 +14,11 @@
 
 ---
 
-## H · Một vòng rà UX/UI toàn trang
+> **Sổ đang gần rỗng.** Còn đúng một mục, và nó đang chờ một quyết định của chủ
+> trang chứ không chờ mã. Một việc chưa nằm trong sổ này thì chưa ai hứa làm —
+> thêm vào cuối nhóm của nó rồi hãy bắt tay.
 
-> Vòng rà đã chạy (17-09-2026): đọc lại trang chủ, trang bài, /posts/,
-> /archive/, /about/ và khu bình luận ở hai khổ màn — 1150px và 375px. Bảy
-> mục H1–H7 đầu tiên đã làm xong và xoá khỏi đây. Những gì còn lại dưới đây là
-> danh sách sinh ra TỪ vòng rà ấy, xếp theo mức nặng.
-
-### H9. Trang /about/ trên điện thoại mở đầu bằng một khối trống
-Ô ảnh chân dung cao chừng 200px nằm ngay dưới thanh đầu trang, và nó đang rỗng
-— một mảng chuyển sắc không có gì trong đó. Trên màn hẹp nó chiếm gần một phần
-tư màn đầu tiên. Hoặc đặt ảnh thật vào (`anh` trong front matter của
-`content/pages/about.md`), hoặc cho ô ấy tự ẩn khi không có ảnh.
-
-### H10. Thanh đầu trang đổi mặt giữa các trang
-/about/ và trang chủ bày dấu hiệu hình hoa; /posts/, /archive/ bày chữ "Zoey in
-Borderland". Hai bộ mặt cho cùng một thanh, và người đọc dùng chính chỗ ấy để
-biết mình đang ở đâu. Chọn một, hoặc nói rõ quy tắc đổi trong DESIGN-SYSTEM.
-
-### H11. Thẻ chuyên mục ở /posts/ cao thấp so le
-Ô có một bài và ô có năm bài cao bằng nhau vì lưới kéo giãn, nên ô một bài còn
-lại một khoảng trống bằng nửa thẻ. Cân nhắc cho lưới `align-items:start`, hoặc
-lấp khoảng trống bằng câu mô tả chuyên mục dài hơn.
-
-### H12. Hệ màu: đặt tên theo VIỆC, không theo màu
-Bảng biến trong `tokens.css` đã đi đúng hướng (`--ok`, `--warn`, `--bad`,
-`--accent`), nhưng mười hai màu chữ trong bài thì đặt theo tên màu
-(`--c-tim`…). Chúng phục vụ hai việc khác nhau — một bên là trạng thái giao
-diện, một bên là bút màu của người viết — nên đừng gộp. Việc cần làm là ghi rõ
-ranh giới ấy vào DESIGN-SYSTEM §9 để lượt sau không ai lấy `--c-do` làm màu báo
-lỗi.
+---
 
 ## C · Bình luận
 

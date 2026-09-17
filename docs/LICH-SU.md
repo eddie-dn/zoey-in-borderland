@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.1 | 2026-09-18 | 01 | trang giới thiệu hiện tên blog trên thanh đầu như mọi trang khác; thẻ chuyên mục thôi bị kéo cao theo hàng trên; bộ dựng nhắc khi ảnh chân dung gần như trống |
 | V2.8.0 | 2026-09-17 | 00 | phép kiểm mới: bắt một lớp CSS bị khai hai lần cùng một thuộc tính trong một file |
 | V2.7.9 | 2026-09-17 | 09 | nền động bốn theme hiện rõ hơn; nền 霜降 vẽ lại trăng và cho bầu trời đổi màu trọn một vòng ngày đêm |
 | V2.7.8 | 2026-09-17 | 08 | điện thoại: khung bình luận giữa bài nay là tấm nổi, bài phía sau đứng yên; khu trả lời gộp hai nhãn về một hàng; trang bài có dấu trang nhỏ cho ảnh chụp màn hình |
@@ -230,6 +231,25 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.1 — 18-Sep-2026
+
+- **Trang giới thiệu hiện tên blog trên thanh đầu.** Nó từng nằm chung nhóm
+  với trang chủ — chỉ bày một đoá hoa, không có chữ. Trang chủ làm vậy được vì
+  khối chữ "Zoey in Borderland" cao bằng nửa màn nằm ngay dưới; /about/ thì
+  tiêu đề là "About me", nên trên cả trang không còn một chữ nào nói đây là
+  blog nào. Luật nay gọn lại một câu: **thanh đầu trang chỉ giấu tên blog ở
+  nơi trang đã tự nói tên nó rồi**, và đúng một trang thoả.
+- **Thẻ chuyên mục thôi bị kéo cao theo hàng trên.** Sáu chuyên mục, bốn mục
+  một bài, và cả bốn bỏ trống 116px dưới danh sách — gần nửa chiều cao thẻ —
+  chỉ vì ở hàng TRÊN có một mục ba bài. Nay các ô vẫn khớp mép trong CÙNG một
+  hàng (phần thật sự cần), còn hàng toàn mục ít bài thì được thấp lại: 245px
+  xuống 155px.
+- **Bộ dựng nhắc khi ảnh chân dung gần như trống.** Ô ấy chiếm gần một phần tư
+  màn đầu trên điện thoại, mà một tấm chuyển sắc rỗng đi qua được mọi cửa: file
+  có thật, kích thước đúng, build vẫn xanh. Nay đo số byte trên mỗi điểm ảnh;
+  dưới 0,12 là nhắc, kèm hai đường ra — thay ảnh, hoặc bỏ dòng `anh:` để trang
+  tự xếp lại không còn ô trống.
 
 ## V2.8.0 — 17-Sep-2026
 

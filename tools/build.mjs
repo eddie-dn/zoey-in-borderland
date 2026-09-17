@@ -1284,7 +1284,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        trang là thứ mắt không bỏ qua được. Nay cả hai cùng kể — xem ghi chú
        "MỘT VÒNG DÀI HƠN" ở layout.css về cách bù lại chỗ đó. */
     menuLabel : attr(NHAN.menu),
-    logo      : logoHTML(duong === '/' || duong === '/about/'),
+    logo      : logoHTML(duong === '/'),
     /* LOGO CHỈ Ở TRANG CHỦ VÀ TRANG GIỚI THIỆU, và ở đó nó đứng MỘT MÌNH.
        Mọi trang khác chỉ có dòng chữ tên blog, không logo.
 
@@ -1305,9 +1305,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
        Nét logo vốn ĐÃ nằm sẵn trong HTML của mọi trang (logoHTML() nhả ra bất
        kể trang nào), trước nay chỉ bị `display:none` giấu đi. Nên chỗ này
        không thêm một byte markup nào — chỉ thôi giấu nó. */
-    lopBrand  : duong === '/'        ? ' brand--logo brand--dong'
-              : duong === '/about/'  ? ' brand--logo brand--dong'
-              :                        ' brand--chu brand--doi',
+    /* ── LUẬT MỘT DÒNG: CHỈ TRANG CHỦ MỚI GIẤU TÊN BLOG ──
+       Trang chủ có khối chữ "Zoey in Borderland" cao bằng nửa màn nằm ngay
+       dưới thanh đầu, nên in tên lần nữa trên thanh là nói hai lần một câu.
+       Mọi trang khác thì thanh đầu là chỗ DUY NHẤT tên blog xuất hiện, nên nó
+       phải đọc được thành chữ.
+
+       /about/ từng nằm chung nhóm với trang chủ, và đó là một chỗ hở: tiêu đề
+       của nó là "About me", không phải tên blog — nên trên cả trang giới thiệu
+       không có một chữ nào nói đây là blog nào. Người tới thẳng /about/ từ một
+       đường dẫn chia sẻ thì chỉ thấy một đoá hoa. */
+    lopBrand  : duong === '/' ? ' brand--logo brand--dong'
+                              : ' brand--chu brand--doi',
     siteTitle : escapeHtml(CAU.title),
     tagline   : escapeHtml(CAU.tagline),
     author    : escapeHtml(CAU.author),
@@ -2718,9 +2727,12 @@ function khungBento(t, soBai, soTag) {
      trích dẫn 2. Hai đường đều KÍN LƯỚI — đó là lý do phải đổi cả ô giới
      thiệu chứ không chỉ chèn thêm một ô ảnh vào. */
   const o = [];
-  const coAnh = !!anhBento(t);
+  /* Gọi MỘT lần rồi dùng lại: hàm này đẩy cảnh báo vào CANH_BAO, nên gọi hai
+     lượt là mỗi cảnh báo in ra hai bản. */
+  const oAnh = anhBento(t);
+  const coAnh = !!oAnh;
 
-  if (coAnh) o.push(anhBento(t));
+  if (coAnh) o.push(oAnh);
 
   /* `data-cua-ql` — bấm 5 nhịp vào tiêu đề là tới bàn làm việc của chủ trang.
      Chỉ gắn ở trang giới thiệu: đó là trang chủ trang hay mở nhất mà không
@@ -2809,6 +2821,30 @@ function anhBento(t) {
     }
     const kt = kichThuocAnh(that);
     if (kt) dim = ` width="${kt.w}" height="${kt.h}"`;
+    /* ── ẢNH CHÂN DUNG CÓ PHẢI MỘT TẤM TRẮNG KHÔNG ──
+       Ô này chiếm gần một phần tư màn đầu tiên trên điện thoại, nên một tấm
+       rỗng ở đây là một khối trống to đùng mở đầu trang giới thiệu. Và nó đi
+       qua được mọi cửa: file CÓ thật, kích thước đúng, HTML hợp lệ, build
+       xanh — chỉ có mắt người mới thấy là trong đó chẳng có gì. Nó đã lên
+       sóng như thế một thời gian.
+
+       Đo bằng SỐ BYTE TRÊN MỖI ĐIỂM ẢNH, vì đó là thứ đọc được mà không phải
+       giải mã cả tấm PNG (kho này không dùng thư viện ngoài). Một dải chuyển
+       sắc mượt nén xuống gần như không còn gì; một tấm ảnh chụp thật thì dày
+       hơn cả chục lần. 0,12 là ngưỡng rộng rãi — bản đang dùng nằm ở 0,07.
+
+       Chỉ PNG: JPEG nén theo cách khác hẳn nên cùng con số ấy không có nghĩa
+       gì. Và chỉ là CẢNH BÁO — một hình minh hoạ tối giản cố ý vẽ phẳng vẫn
+       là một lựa chọn đúng, chỉ cần chủ trang biết mình đang chọn nó. */
+    if (kt && /\.png$/i.test(that)) {
+      const bpp = fs.statSync(that).size / (kt.w * kt.h);
+      if (bpp < 0.12) {
+        CANH_BAO.push(`${t.nhan}: ảnh chân dung \`${t.anh}\` gần như không có gì trong đó ` +
+          `(${bpp.toFixed(3)} byte mỗi điểm ảnh — một tấm chụp thật dày hơn cả chục lần). ` +
+          `Ô ảnh chiếm gần một phần tư màn đầu trên điện thoại. Thay bằng ảnh thật, ` +
+          `hoặc bỏ dòng \`anh:\` đi thì trang tự xếp lại gọn không còn ô trống.`);
+      }
+    }
   }
   return `<figure class="bo bo--anh card">` +
     `<img src="${attr(ngoai ? t.anh : BASE + t.anh)}" alt="${attr(t.anhAlt)}"${dim}` +

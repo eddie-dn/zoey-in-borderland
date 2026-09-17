@@ -115,6 +115,31 @@ Bên theme tối thì orchid đạt 9.4:1, nên hai biến về chung một màu
 **Component không bao giờ đọc `--raw-*`.** Chỉ đọc lớp ngữ nghĩa (`--text`,
 `--accent-ink`, `--surface`…). Nhờ vậy đổi theme là đổi đúng một chỗ.
 
+### 1.3 · HAI HỌ MÀU, và đừng bao giờ trộn chúng
+
+Trong `tokens.css` có hai họ biến màu trông na ná nhau mà phục vụ hai việc
+không liên quan gì đến nhau. Trộn chúng là cách chắc chắn nhất để một lượt đổi
+theme làm hỏng một chỗ không ai ngờ tới.
+
+| | Họ TRẠNG THÁI | Họ BÚT MÀU |
+|---|---|---|
+| Biến | `--accent` · `--accent-ink` · `--ok` · `--warn` · `--bad` (+ `-wash`) | `--c-tim` · `--c-hong` · `--c-do` · `--c-cam` · `--c-vang` · `--c-luc` · `--c-lam` · `--c-xam` · `--c-nau` · `--c-ngoc` · `--c-cham` · `--c-oliu` |
+| Ai quyết | **giao diện** — mã quyết, người đọc không chọn | **người viết**, gõ `{tím: chữ}` trong file `.md` |
+| Nghĩa | một *trạng thái*: xong, cần chú ý, hỏng, đang được nhấn | một *màu*, đúng nghĩa đen |
+| Đổi được không | đổi được, miễn giữ nguyên nghĩa | **không** — tên màu là một phần cú pháp, xem §9.2 |
+| Dùng ở đâu | nút, nhãn, viền, khung nhấn `:::tip`, báo tin `.bao` | duy nhất `.c-*` trong thân bài |
+
+**Luật:** một component báo lỗi phải đọc `--bad`, **không phải** `--c-do`. Hai
+thứ ấy hôm nay cùng đỏ, nhưng `--bad` là lời hứa "màu của cái hỏng" còn
+`--c-do` là lời hứa "màu đỏ" — và một lượt chỉnh bảng màu chỉ giữ được một
+trong hai lời hứa. Chiều ngược lại cũng vậy: đừng lấy `--accent-ink` làm màu
+bút cho người viết, vì đổi theme là chữ họ tô đổi màu theo, mà họ tô nó với ý
+"cho câu này màu tím".
+
+Dấu hiệu nhận ra đang trộn: một luật CSS **ngoài** `.prose` / `.sz-khung` mà
+đọc `--c-*`. Hiện chỉ có đúng ba chỗ được phép, và cả ba đều là bảng chọn màu
+của người viết: `.sz-cham`, `.sz-nut--mau .sz-cham`, `.sz-mau-cham`.
+
 ---
 
 ## 2 · CHỮ
@@ -1682,31 +1707,33 @@ máy. Đã vấp hai lần đúng vì chuyện này, và cả hai lần đều t
 | Trang | Thấy gì | Lớp |
 |---|---|---|
 | `/` | logo, tự kể chuyện, vòng 30 giây | `.brand--logo .brand--dong` |
-| `/about/` | logo, tự kể chuyện, vòng 30 giây | `.brand--logo .brand--dong` |
-| mọi trang khác | dòng chữ *Zoey in Borderland* | `.brand--chu` |
+| mọi trang khác | dòng chữ *Zoey in Borderland*, thỉnh thoảng thở thành logo | `.brand--chu .brand--doi` |
 
 Không bao giờ hiện cả hai cùng lúc: logo và tên viết đầy đủ nói **cùng một
 điều**, đặt cạnh nhau thì thành lặp, và ở thanh đầu trang thì lặp là tốn chỗ của
 mục điều hướng.
 
-Danh sách hai trang ấy khai ở **một chỗ**: hằng `CHO_KE` trong phép kiểm
-"Logo và dòng chữ tên blog không cùng hiện trên một trang". Phép kiểm dùng nó
-cho cả hai vế — chỗ báo sai trang, và chỗ đếm tổng.
+Danh sách trang ấy khai ở **một chỗ**: hằng `CHO_KE` trong phép kiểm "Logo và
+dòng chữ tên blog không cùng hiện trên một trang". Phép kiểm dùng nó cho cả hai
+vế — chỗ báo sai trang, và chỗ đếm tổng.
 
-### 19.5b · Trang giới thiệu nay CÓ lặp — và cái giá của nó
+### 19.5b · Vì sao chỉ còn MỘT trang giấu tên blog
 
-Trước bản này, `/about/` cố ý **không** cho logo lặp: đó là trang nhiều chữ
-nhất, và một hình động lặp ở thanh đầu trang là thứ mắt không bỏ qua được.
+Luật gọn lại còn một câu: **thanh đầu trang giấu tên blog đúng ở nơi trang đã
+tự nói tên nó rồi.** Chỉ trang chủ thoả — khối chữ "Zoey in Borderland" ở đó
+cao bằng nửa màn hình.
 
-Nay nó có lặp. Bù lại bằng hai chỗ:
+`/about/` từng nằm chung nhóm với trang chủ, và đó là một chỗ hở thật: tiêu đề
+của nó là "About me", nên khi thanh đầu chỉ bày một đoá hoa thì **trên cả trang
+giới thiệu không có một chữ nào nói đây là blog nào**. Người tới thẳng /about/
+từ một đường dẫn được chia sẻ chỉ thấy một cái hình. Nay nó dùng chung ô đổi
+qua lại như mọi trang khác: đọc ra là chữ, và thỉnh thoảng thở thành logo.
 
-- **Vòng kéo từ 20 lên 30 giây.** Phần mandala xoay và vỡ chiếm mất quãng nghỉ
-  cũ (bản trước kể hết 58% rồi đứng yên 42%), nên nếu giữ 20 giây thì thanh đầu
-  trang gần như không lúc nào đứng yên. Kéo dài vòng ra thì mỗi chặng vẫn đủ
-  thời gian đọc, mà tần suất một chuyện được kể lại thì thưa đi.
-- **Vòng vẫn mở và đóng bằng hình ĐỦ**, không bằng hình rỗng. Logo là dấu nhận
-  mặt của trang; để nó biến mất thì có lúc người đọc nhìn lên góc trái và không
-  thấy gì cả. Bụi rơi xong thì bông phải tụ lại.
+Đổi lại, mất một chỗ kể chuyện. Chấp nhận được — vòng kể 30 giây vẫn còn
+nguyên ở trang chủ, nơi người ta dừng lại lâu nhất và nơi nó KHÔNG phải cạnh
+tranh với một trang kín chữ. (Đó cũng đúng lý do bản đời trước đưa ra để **tắt**
+lặp ở /about/; lượt sau bật lại, rồi lượt này tắt hẳn bằng một lý do khác và
+nặng hơn: khả năng nhận ra mình đang ở đâu.)
 
 Nếu đọc thấy vướng thì chỗ chỉnh là đúng **một con số** `--lg-ck` trong
 `layout.css` — nhớ sửa kèm `LG_CK` trong `tools/build.mjs`, có phép kiểm canh

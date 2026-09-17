@@ -490,6 +490,14 @@ chuyển ra màn đầu trang chủ — xem `docs/DESIGN-SYSTEM.md` §16.3.)
 giãn, không để băng trống. Ảnh chân dung thì căn ở 38% chiều cao chứ không phải
 giữa — căn giữa thì cắt mất trán trước khi cắt tới cằm.
 
+> **Bộ dựng báo nếu tấm ảnh gần như trống.** Ô này chiếm gần một phần tư màn
+> đầu tiên trên điện thoại, nên một dải chuyển sắc không có gì trong đó là một
+> khối trống to đùng mở đầu trang — mà nó đi qua được mọi cửa kiểm tra: file có
+> thật, kích thước đúng, build vẫn xanh. Bộ dựng vì thế đo **số byte trên mỗi
+> điểm ảnh** của file PNG; dưới 0,12 là nó nhắc một câu. Nếu ảnh phẳng là cố ý
+> thì bỏ qua lời nhắc; nếu chưa có ảnh thật thì **bỏ hẳn hai dòng trên** —
+> trang tự xếp lại gọn, ô giới thiệu chiếm trọn 6 cột, không còn ô trống nào.
+
 ### 6.4 · Hai khung
 
 Dòng `khung:` trong front matter đổi cả cách bày trang, cùng một nội dung:

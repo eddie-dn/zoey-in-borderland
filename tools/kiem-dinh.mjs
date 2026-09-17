@@ -1620,7 +1620,12 @@ const KIEM = [
     chay: ({ trang }) => {
       /* Hai trang có logo. Đổi danh sách này là đổi luôn cả hai vế của phép
          kiểm — chỗ báo sai trang, và chỗ đếm tổng. */
-      const CHO_KE = ['/', '/about/'];
+      /* ── CHỈ TRANG CHỦ ──
+         /about/ từng nằm trong danh sách này. Bỏ ra ở V2.8.1: tiêu đề trang ấy
+         là "About me", nên khi thanh đầu trang chỉ bày một đoá hoa thì trên cả
+         trang không còn một chữ nào nói đây là blog nào. Trang chủ thì khác —
+         khối chữ "Zoey in Borderland" cao bằng nửa màn nằm ngay dưới thanh. */
+      const CHO_KE = ['/'];
       const ra = [];
       let soDong = 0;
       for (const t of trang) {
