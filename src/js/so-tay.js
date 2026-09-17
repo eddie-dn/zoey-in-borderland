@@ -116,7 +116,7 @@
   });
 
   /* ══════════ HỘP ══════════ */
-  var nen = null, hop = null, traVe = null;
+  var nen = null, hop = null;
 
   function mo() {
     if (nen) return;
@@ -126,46 +126,67 @@
     xinDuLieu().then(moThat, function () {});
   }
 
+  /* ══════════ HỘP DỰNG BẰNG <dialog> ══════════
+
+     Bản trước tự dựng lớp phủ: một `<div>` `position:fixed`, cộng ba đoạn mã
+     viết tay cho ba việc mà trình duyệt vốn đã làm sẵn —
+
+       · nghe phím Escape để đóng;
+       · giam tiêu điểm trong hộp, không thì bấm Tab vài cái là con trỏ chạy
+         ra sau tấm nền mờ và người dùng bàn phím gõ vào một trang họ không
+         nhìn thấy;
+       · che phần còn lại của trang khỏi trình đọc màn hình.
+
+     `showModal()` cho cả ba, đúng và đủ, không phải viết dòng nào. Kèm theo
+     nó là `::backdrop` — một lớp nền nằm sẵn ở tầng trên cùng, nên thôi phải
+     đi tranh `z-index` với thanh đầu trang hay cụm nút nổi.
+
+     Hai hộp thoại còn lại của trang (`.anh-to` xem ảnh, `.sz-cat` cắt ảnh) đã
+     dùng `<dialog>` từ đầu. Đây là cái cuối cùng còn tự dựng — xem
+     docs/DESIGN-SYSTEM.md §21.4.
+
+     ── CÒN GIỮ LẠI HAI THỨ ──
+     Khoá cuộn nền (`body.so-khoa`): `showModal()` chặn tương tác nhưng KHÔNG
+     chặn cuộn, nên cuộn trong hộp tới đáy rồi cuộn tiếp là trang phía sau
+     chạy. Và nhịp mờ dần lúc mở — `<dialog>` không có sẵn, vẫn phải tự gắn
+     lớp `hien` ở khung sau. */
   function moThat() {
     if (nen) return;
-    traVe = document.activeElement;
 
-    nen = document.createElement('div');
+    nen = document.createElement('dialog');
     nen.className = 'so-nen';
-    nen.innerHTML = '<div class="so-hop glass" role="dialog" aria-modal="true" ' +
-                    'aria-label="' + an(L('history')) + '"></div>';
+    nen.setAttribute('aria-label', an(L('history')));
+    nen.innerHTML = '<div class="so-hop glass"></div>';
     hop = nen.querySelector('.so-hop');
     document.body.appendChild(nen);
     document.body.classList.add('so-khoa');
 
     veBuild();
+    nen.showModal();
     requestAnimationFrame(function () { nen.classList.add('hien'); });
 
+    /* Bấm ra ngoài hộp thì đóng. `<dialog>` nhận cú bấm trên chính nó khi
+       người ta bấm vào vùng backdrop, nên so `e.target === nen` là đủ — bấm
+       vào ruột hộp thì target là phần tử bên trong. */
     nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
-    document.addEventListener('keydown', phim);
-  }
-
-  function phim(e) {
-    if (e.key === 'Escape') { dong(); return; }
-    if (e.key !== 'Tab' || !hop) return;
-    /* Giam tiêu điểm trong hộp. Thiếu đoạn này thì bấm Tab vài cái là con trỏ
-       chạy ra sau tấm nền mờ, người dùng bàn phím gõ vào một trang họ không
-       nhìn thấy. */
-    var oc = hop.querySelectorAll('button,[href],[tabindex]:not([tabindex="-1"])');
-    if (!oc.length) return;
-    var dau = oc[0], cuoi = oc[oc.length - 1];
-    if (e.shiftKey && document.activeElement === dau) { e.preventDefault(); cuoi.focus(); }
-    else if (!e.shiftKey && document.activeElement === cuoi) { e.preventDefault(); dau.focus(); }
+    /* Escape do trình duyệt lo, nhưng nó đóng bằng cách riêng của nó — phải
+       nghe `cancel` để dọn dẹp cho đúng thay vì để lại một thẻ chết trong DOM
+       và một `body.so-khoa` không ai gỡ. */
+    nen.addEventListener('cancel', function (e) { e.preventDefault(); dong(); });
   }
 
   function dong() {
     if (!nen) return;
-    document.removeEventListener('keydown', phim);
     document.body.classList.remove('so-khoa');
     var x = nen; nen = null; hop = null;
     x.classList.remove('hien');
-    setTimeout(function () { x.remove(); }, 200);
-    if (traVe && traVe.focus) traVe.focus();
+    /* Đợi hết nhịp mờ rồi mới `close()` + gỡ: gọi ngay thì hộp biến mất phụt
+       một cái. `close()` tự trả tiêu điểm về chỗ đã mở nó, nên không cần giữ
+       `traVe` nữa. */
+    setTimeout(function () {
+      if (x.open) x.close();
+      x.remove();
+    }, 200);
   }
 
   /* ══════════ CHỮ ══════════ */

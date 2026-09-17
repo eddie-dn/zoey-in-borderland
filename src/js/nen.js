@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   NỀN ĐỘNG — ba theme, ba hiệu ứng.
+   NỀN ĐỘNG — bốn theme, bốn hiệu ứng.
 
      Sakura      cánh hoa anh đào rơi chéo      (port từ HAN-961030-a)
      Galaxy      đĩa thiên hà xoắn ốc           (port từ HAN-961030-b)
@@ -760,12 +760,149 @@
     };
   }
 
+  /* ══════════ MÂY VÀ NÚI — THEME 霜降 ══════════
+
+     Ảnh gốc là Đà Lạt trong sương: mấy nếp núi mờ dần về phía xa, và từng
+     dải mây trôi ngang che đi rồi hé ra. Vẽ lại bằng mực trên giấy, không vẽ
+     lại bằng ảnh — theme này không có màu nào, nên mọi thứ ở đây là xám.
+
+     ── HAI LỚP, HAI CÁCH VẼ KHÁC HẲN ──
+     NÚI đứng yên. Nó được vẽ MỘT LẦN vào một canvas phụ lúc `dung()`, rồi mỗi
+     khung chỉ dán tấm ấy lên. Vẽ lại ba nếp núi bằng bezier sáu mươi lần mỗi
+     giây là đốt CPU cho một hình không nhúc nhích.
+
+     MÂY trôi, nên phải vẽ lại thật. Mỗi dải là vài quầng tròn mờ chồng lên
+     nhau: một quầng tròn đơn đọc ra là một vệt bẩn, ba bốn quầng lệch tâm
+     chồng lên mới ra cái bờ mây lởm chởm.
+
+     ── VÌ SAO MÂY TRÔI NGANG, KHÔNG BỒNG BỀNH LÊN XUỐNG ──
+     Mây thật ở thung lũng trôi theo gió, tức gần như thuần ngang. Cho nó dập
+     dềnh lên xuống thì đọc ra là khói chứ không ra là mây, và ở một nền trang
+     web thì chuyển động dọc còn cạnh tranh với chính cú cuộn của người đọc.
+
+     ── RẤT MỜ, VÀ CỐ Ý ──
+     Đây là nền của một trang để ĐỌC. Mọi alpha ở đây đều dưới .1: đủ để thấy
+     có gì đó chuyển động khi nhìn thẳng vào, không đủ để bắt mắt lúc đang đọc
+     một dòng chữ. Theme 霜降 sinh ra để nhìn ảnh và đọc lâu — nền mà tranh
+     phần thì hỏng đúng cái lý do nó tồn tại. */
+  function dungMay() {
+    var may = [], nui = null, W0 = 0, H0 = 0;
+
+    /* Một nếp núi: đường gấp khúc mềm dựng bằng tổng ba sóng sin lệch pha.
+       Tổng sin chứ không phải random từng điểm — random cho ra răng cưa, mà
+       sườn núi thì liền mạch. Ba tần số để nó không đều đặn như sóng nước. */
+    function veNui(c, y0, cao, mo, hat) {
+      c.beginPath();
+      c.moveTo(0, H0);
+      for (var x = 0; x <= W0; x += 4) {
+        var u = x / W0;
+        var h = Math.sin(u * 6.1 + hat) * 0.45
+              + Math.sin(u * 2.3 + hat * 1.7) * 0.36
+              + Math.sin(u * 11.4 + hat * 0.6) * 0.19;
+        c.lineTo(x, y0 - h * cao);
+      }
+      c.lineTo(W0, H0);
+      c.closePath();
+      /* Chuyển dần lên trong suốt ở đỉnh: núi thuỷ mặc không có đường viền
+         trên, nó tan vào giấy. Đây là chỗ làm nó ra mực chứ không ra hình cắt
+         dán. */
+      var g = c.createLinearGradient(0, y0 - cao, 0, y0 + cao * 0.9);
+      g.addColorStop(0, 'rgba(17,19,21,0)');
+      g.addColorStop(0.45, 'rgba(17,19,21,' + (mo * 0.72).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(17,19,21,' + mo.toFixed(3) + ')');
+      c.fillStyle = g;
+      c.fill();
+    }
+
+    function moiMay(batDau) {
+      /* Lớp: 0 = dải xa tít, 1 = dải ngay trước mặt. Cỡ, độ đậm và tốc độ đều
+         suy ra từ một con số này — cùng cách dựng chiều sâu với hoa rơi. */
+      var lop = Math.random();
+      var r = 60 + lop * 190;
+      return {
+        lop: lop,
+        x: batDau ? Math.random() * (W + r * 4) - r * 2 : -r * 2.4,
+        /* Mây chỉ ở nửa dưới màn, quanh mực núi: mây lửng lơ giữa trời trống
+           thì không có gì để nó ôm lấy. */
+        y: H * (0.46 + Math.random() * 0.42),
+        r: r,
+        /* Dải gần trôi nhanh hơn dải xa — thị sai, và nó là thứ duy nhất ở
+           đây nói ra chiều sâu, vì màu thì cả bốn dải gần như nhau. */
+        v: 0.05 + lop * 0.16,
+        /* Mây TRẮNG trên giấy trắng: nó không tự hiện ra, nó chỉ XOÁ BỚT mực
+           của núi phía dưới. Đó đúng là cách mây được vẽ trong tranh thuỷ
+           mặc — chỗ trắng là chỗ chừa lại, không phải chỗ tô thêm. Nên alpha
+           ở đây phải đủ để xoá thấy được: .05 tới .18. */
+        mo: 0.05 + lop * 0.13,
+        /* Mỗi dải vài quầng lệch tâm, sinh sẵn một lần. Sinh lại mỗi khung
+           thì bờ mây rung như nhiễu. */
+        cum: (function () {
+          var n = 3 + ((Math.random() * 3) | 0), ra = [];
+          for (var i = 0; i < n; i++) {
+            ra.push({ dx: (Math.random() - 0.5) * r * 2.1,
+                      dy: (Math.random() - 0.5) * r * 0.5,
+                      rr: r * (0.45 + Math.random() * 0.5) });
+          }
+          return ra;
+        })()
+      };
+    }
+
+    return {
+      dung: function () {
+        W0 = W; H0 = H;
+        var n = Math.max(5, Math.min(16, Math.round(W / 120)));
+        may = [];
+        for (var i = 0; i < n; i++) may.push(moiMay(true));
+
+        /* Canvas phụ cho núi. Vẽ ở đúng cỡ CSS rồi để phép dán tự lo tỉ lệ —
+           nhân thêm dpr ở đây là tốn bộ nhớ cho một hình vốn đã mờ tịt. */
+        nui = document.createElement('canvas');
+        nui.width = Math.max(1, Math.round(W0));
+        nui.height = Math.max(1, Math.round(H0));
+        var c = nui.getContext('2d');
+        /* Ba nếp, xa trước gần sau: nếp xa nhạt và cao, nếp gần đậm và thấp. */
+        /* Ba nấc đậm này đã tăng một lượt so với bản đầu (.045/.062/.080).
+           Ở mức cũ, núi mờ tới nỗi MÂY không còn gì để che — mà mây ở đây là
+           màu TRẮNG, nên trên nền giấy trắng nó chỉ hiện ra được ở đúng chỗ
+           có mực để xoá đi. Núi nhạt quá thì cả hiệu ứng thành một tấm giấy
+           trắng đứng yên. */
+        veNui(c, H0 * 0.62, H0 * 0.17, 0.055, 0.0);
+        veNui(c, H0 * 0.74, H0 * 0.13, 0.080, 2.4);
+        veNui(c, H0 * 0.86, H0 * 0.10, 0.105, 5.1);
+      },
+
+      ve: function () {
+        ctx.clearRect(0, 0, W, H);
+        if (nui) ctx.drawImage(nui, 0, 0, W, H);
+
+        for (var i = 0; i < may.length; i++) {
+          var m = may[i];
+          m.x += m.v;
+          if (m.x - m.r * 2.4 > W) { may[i] = moiMay(false); continue; }
+          for (var k = 0; k < m.cum.length; k++) {
+            var q = m.cum[k];
+            var g = ctx.createRadialGradient(m.x + q.dx, m.y + q.dy, 0,
+                                             m.x + q.dx, m.y + q.dy, q.rr);
+            g.addColorStop(0, 'rgba(255,255,255,' + m.mo.toFixed(3) + ')');
+            g.addColorStop(0.55, 'rgba(250,251,252,' + (m.mo * 0.6).toFixed(3) + ')');
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.arc(m.x + q.dx, m.y + q.dy, q.rr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+    };
+  }
+
   /* ══════════ ĐIỀU PHỐI ══════════ */
 
   /* Theme → hiệu ứng. Một bảng tra, không phải một chuỗi if: thêm theme là
      thêm đúng một dòng ở đây, và không có đường nào rơi vào nhánh "còn lại"
      để rồi lặng lẽ chạy sai hiệu ứng. */
-  var BO = { light: dungHoa, dark: dungThienHa, calm: dungThac };
+  var BO = { light: dungHoa, dark: dungThienHa, calm: dungThac, frost: dungMay };
 
   /* Theme nào đang chạy. Trả về đúng tên theme chứ không trả về true/false như
      bản hai theme: thêm theme thứ ba vào thì một câu hỏi có/không không còn

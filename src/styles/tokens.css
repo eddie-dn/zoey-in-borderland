@@ -2,7 +2,7 @@
    TOKENS — nguồn duy nhất của màu, chữ, nhịp, bóng đổ.
    Kế thừa bảng màu của HAN-961030-A (Sakura) và -B (Galaxy).
 
-   BA THEME, BỐN KHỐI. Viết đúng thứ tự này thì nút chuyển mới
+   BỐN THEME, NĂM KHỐI. Viết đúng thứ tự này thì nút chuyển mới
    thắng được mọi chiều:
      1. :root                         → SAKURA sáng, định nghĩa ĐỦ mọi biến
      2. @media (prefers-color-scheme: dark) :root:not([data-theme])
@@ -234,6 +234,16 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Ruột kính MỎNG ĐI (.55/.26 → .42/.17). Đặc quá thì tấm kính thành tấm
      nhựa trắng: không thấy gì phía sau, và mảng màu của nó át cả chữ bên
      trong. Kính phải để lọt nền qua thì mới ra kính. */
+  /* ── NÉT CHỮ THÂN BÀI, KHAI THEO THEME ──
+     400 ở hai theme nền-tối-hoặc-hồng. Ở Tĩnh lặng thì nền lam rất nhạt và
+     chữ màu mực đá: đủ tương phản theo số đo (11:1), nhưng nét mảnh nằm trên
+     một nền sáng đều thì mắt vẫn đọc ra là "chữ tiệp vào nền". 500 dày lên
+     vừa đủ để nét có thân, mà chưa thành chữ đậm.
+
+     Đi qua biến chứ không viết `[data-theme="calm"] .prose{}`: tokens.css chỉ
+     được chứa `:root` (§7), và một luật theme nằm lẫn trong prose.css thì lần
+     sau thêm theme là phải đi sửa cả hai file. */
+  --w-doc:400;
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
   /* ── RUỘT CỦA MỘT TẤM PHỦ (menu ☰, và mọi tấm bật ra sau này) ──
      Kính bình thường để lọt nền qua, và đó là cái hay của nó — nhưng chỉ khi
@@ -339,7 +349,10 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
     /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
        hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
        đục, mất hẳn cảm giác kính. */
-    --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
+    /* Nền tối thì nét 400 đã đủ thân: chữ sáng trên nền tối vốn trông
+     dày hơn chữ tối trên nền sáng ở cùng một cân nặng. */
+  --w-doc:400;
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
     /* Nền tối: tấm phủ lấy màu MẶT THẺ đục (#241839) pha sáng lên một chút,
        chứ không lấy trắng trong suốt — trắng .9 trên nền tối ra một vũng sữa. */
     --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
@@ -416,6 +429,9 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Kính trên nền tối: ruột phải SÁNG hơn nền (không phải tối hơn), viền mảnh
      hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
      đục, mất hẳn cảm giác kính. */
+  /* Nền tối thì nét 400 đã đủ thân: chữ sáng trên nền tối vốn trông
+     dày hơn chữ tối trên nền sáng ở cùng một cân nặng. */
+  --w-doc:400;
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
   --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
   --glass-edge:rgba(227,170,221,.15);
@@ -501,11 +517,23 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --raw-suoi:#9FD3EA;   --raw-reu:#A8DED6;   --raw-troi:#BAD9F4;
   --raw-suong:#DAE8F5;  --raw-da:#15303E;    --raw-tham:#0B5A78;
 
-  /* ── NỀN GIỮ NGUYÊN BẢN GỐC ──
-     Có một lượt thử hạ nền xuống #D8E7F2. Nó chữa đúng con số: mọi chênh lệch
-     cấu trúc tăng cùng lúc. Nhưng nó đổi luôn CHẤT của theme — thứ làm nên
-     Tĩnh lặng là cái sáng mỏng, gần như trắng ra nước, và hạ một bậc là mất
-     đúng cái ấy để đổi lấy 0,11 điểm tương phản. Đổi hớ, nên trả lại.
+  /* ── NỀN HẠ HAI NẤC — ĐỔI Ý SO VỚI BẢN TRƯỚC ──
+     Bản trước từng thử hạ nền xuống #D8E7F2 rồi TRẢ LẠI, với lý do: thứ làm
+     nên Tĩnh lặng là cái sáng mỏng gần như trắng ra nước, hạ một bậc là mất
+     đúng cái ấy để đổi lấy 0,11 điểm tương phản.
+
+     Lý do ấy đúng về số nhưng sai về thứ người ta thấy. Ở nền #E9F1FA, mặt
+     thẻ trắng chỉ nổi 1,14:1 — nghĩa là cái THẺ không đọc ra là thẻ, và cả
+     trang thành MỘT mảng phẳng. Chủ trang gọi đúng tên nó: "lì". Mà "sáng
+     mỏng" với "phẳng lì" chỉ cách nhau đúng ở chỗ có hay không có ranh giới.
+
+     #DCE8F5 vẫn là một màu lam rất nhạt — không ai gọi nó là tối — mà thẻ
+     trắng nổi lên 1,24:1. Chữ chính còn 11,09:1, chữ nhạt 5,34 (bù lại bằng
+     cách đậm màu chữ nhạt một bậc, xem dưới).
+
+     Đây KHÔNG phải cách chữa duy nhất, và cũng không phải cách chính: ở một
+     bảng màu gần trắng thì ranh giới do BÓNG ĐỔ nói, không do màu nền nói.
+     Nền hạ hai nấc chỉ mở đường cho bóng ấy có chỗ đổ.
 
      Phần cấu trúc chữa bằng đường khác, không đụng tới nền:
        · đường kẻ .22 → .34   (1,52 → 1,96)  — mép thẻ do NÓ nói, không do nền
@@ -519,7 +547,8 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      được ~1,13:1. Đó là giới hạn của một theme nền sáng, và Sakura sống với
      1,05 suốt từ đầu. Việc phân tách vì thế phải do đường kẻ gánh — không
      phải một cách chữa tạm, mà là cách đúng cho bảng màu kiểu này. */
-  --bg:#E9F1FA;
+  --w-doc:500;
+  --bg:#DCE8F5;
   /* Ba quầng, đọc từ trên xuống đúng như một cái thác: sương ở đỉnh, khoảng
      trời hở bên phải, rồi vũng nước lắng ở chân màn. Cùng số lớp và cùng kiểu
      dựng với --bg-tint bên Sakura — chỉ thay trục màu. */
@@ -536,7 +565,9 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
 
   --text:#15303E;                     /* mực đá ướt — cố ý KHÔNG dùng đen */
   --text-muted:#365665;
-  --text-faint:#41616F;
+  /* Đậm thêm một bậc để bù phần nền vừa hạ: 5,95:1 trên nền mới, tức là
+     còn cao hơn 5,82 của bản cũ. */
+  --text-faint:#3A5A68;
   --text-invert:#FFFFFF;
   /* Chữ trên nút chính. Nút chính tô bằng --glass-tint, mà ở theme này
      gradient ấy là reu → suoi → troi: ba màu pastel sáng gần bằng nhau.
@@ -580,8 +611,8 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --c-tim:#6B4BA8;  --c-hong:#A93B6C; --c-do:#A83B54;  --c-cam:#8A4C14;
   --c-vang:#6E5A0E; --c-luc:#1F6B57;  --c-lam:#0B5A78; --c-xam:#41616F;
 
-  --shadow-sm:0 2px 8px rgba(28,68,90,.07);
-  --shadow-md:0 10px 28px rgba(28,68,90,.12);
+  --shadow-sm:0 2px 8px rgba(28,68,90,.11);
+  --shadow-md:0 10px 28px rgba(28,68,90,.18);
   --shadow-lg:0 24px 60px rgba(28,68,90,.18);
 
   /* Kính trên nền sáng: cùng thông số ruột với Sakura (.42 → .17) vì nền hai
@@ -589,12 +620,18 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      kính mất đường bao đúng như lỗi đã vấp ở bản Sakura đầu tiên. */
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
   --glass-tam:linear-gradient(163deg,rgba(255,255,255,.985),rgba(246,251,255,.95));
-  --glass-edge:rgba(21,48,62,.18);
+  --glass-edge:rgba(21,48,62,.26);
   --glass-ring:rgba(255,255,255,.75);
   --glass-spec:rgba(255,255,255,.95);
   --glass-spec2:rgba(255,255,255,.10);
-  --glass-drop:0 10px 34px rgba(28,68,90,.13);
-  --glass-drop-lift:0 18px 48px rgba(28,68,90,.20);
+  /* ── BÓNG LÀ THỨ NÓI RA MÉP THẺ Ở THEME NÀY ──
+     Nền và mặt thẻ đều gần trắng, nên chênh lệch MÀU không bao giờ đủ để
+     tách chúng ra (trần là ~1,24:1). Bóng thì không bị trần ấy chặn: nó
+     dựng ra một mép có chiều sâu mà mắt đọc được ngay, kể cả khi hai mặt
+     phẳng hai bên gần như cùng màu.
+     .13 → .20 và .20 → .28, kèm một tầng bóng gần để mép thẻ có nét. */
+  --glass-drop:0 1px 2px rgba(28,68,90,.10), 0 10px 30px rgba(28,68,90,.20);
+  --glass-drop-lift:0 2px 4px rgba(28,68,90,.12), 0 18px 46px rgba(28,68,90,.28);
 
   /* Quầng nước thay quầng tím. Nền đã sáng sẵn nên để rất nhẹ, đúng như
      Sakura — quầng mạnh trên nền sáng chỉ làm bẩn chứ không làm sáng. */
@@ -610,3 +647,108 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
 
   color-scheme:light;
 }
+/* ══════════════════════════════════════════════════════════════════════
+   THEME 4 · 霜降 — nền trắng, mực đen, mây thuỷ mặc
+
+   霜降 (Sương giáng) là tiết khí thứ mười tám, quãng cuối tháng Mười —
+   lúc sương bắt đầu đọng thành giá. Cái tên nói đúng bảng màu: trắng,
+   xám bạc, và một lớp sương phủ lên núi.
+
+   Khoá trong mã là `frost` chứ không phải 霜降: nó đi vào `data-theme`,
+   vào `localStorage` và vào tên file favicon — ba chỗ mà một chuỗi ASCII
+   không bao giờ gây chuyện, còn chữ Hán thì tuỳ nơi mà bị mã hoá khác đi.
+
+   Ba theme kia đều có MÀU làm chất riêng: Sakura hồng, Galaxy tím than,
+   Tĩnh lặng lam nhạt. Theme này cố ý KHÔNG có màu nào cả — nền là giấy
+   trắng, chữ là mực đen, và mọi thứ còn lại là các sắc xám.
+
+   ── VÌ SAO CẦN MỘT THEME KHÔNG MÀU ──
+   Ba theme kia đều nhuộm ảnh trong bài: một tấm ảnh chụp món ăn nằm trên
+   nền hồng thì đọc ra khác hẳn khi nó nằm trên nền trắng. Đây là theme để
+   NHÌN ẢNH và để đọc lâu — mắt không phải trừ đi màu nền nữa.
+
+   ── PHÂN TÁCH DO ĐƯỜNG KẺ, KHÔNG DO NỀN ──
+   Nền trắng và mặt thẻ trắng thì chênh lệch màu bằng 0 — không có cách nào
+   khác. Nên ở đây đường kẻ gánh toàn bộ việc nói ra mép, đúng như mực nói ra
+   hình trên giấy. `--line` đo 1,82:1 trên nền; đó là trần đi được mà chưa
+   thành một khung đen.
+
+   Cùng bài toán với Tĩnh lặng, nhưng lời giải ngược: ở kia nền hạ hai nấc để
+   thẻ trắng nổi lên, ở đây nền không hạ được (giấy phải là giấy), nên đổi
+   lại là bóng đổ và đường kẻ phải đi xa hơn một bậc nữa.
+   ══════════════════════════════════════════════════════════════════════ */
+:root[data-theme="frost"]{
+  /* Bảng gốc — xám mực, không sắc. `--raw-mac` là mực đậm nhất dùng cho chữ. */
+  --raw-mac:#111315;    --raw-tro:#5C6166;   --raw-khoi:#9AA0A6;
+  --raw-suong:#E4E6E8;  --raw-suong-gia:#FFFFFF;  --raw-cham:#2B3138;
+
+  /* Nét 400: nền trắng và mực gần đen đo 17:1 — nét mảnh ở tương phản ấy vẫn
+     rõ mồn một, dày thêm là chữ thành nặng. */
+  --w-doc:400;
+
+  --bg:#FFFFFF;
+  /* Hai quầng xám cực nhạt, không phải màu: chúng chỉ để mặt giấy thôi phẳng
+     tuyệt đối, vì một mặt phẳng trắng tuyệt đối trên màn hình đọc ra như lỗi
+     hiển thị chứ không ra như giấy. */
+  --bg-tint:
+    radial-gradient(120% 70% at 12% -6%, #F7F8F9 0%, rgba(247,248,249,0) 55%),
+    radial-gradient(110% 60% at 88% 104%, #F2F4F5 0%, rgba(242,244,245,0) 58%);
+  --surface:rgba(255,255,255,.96);
+  --surface-solid:#FFFFFF;
+  /* Nền lõm phải TỐI hơn nền, không sáng hơn — trên giấy trắng thì không còn
+     phía sáng nào nữa. */
+  --surface-sunken:#F1F3F4;
+
+  --text:#111315;                    /* mực — 17,4:1 trên giấy */
+  --text-muted:#44494E;              /* 9,1:1  */
+  --text-faint:#5C6166;              /* 6,4:1  */
+  --text-invert:#FFFFFF;
+  --btn-ink:#111315;
+
+  --accent:#9AA0A6;                  /* trang trí: 1,82:1 — đúng vai nét mờ */
+  --accent-ink:#2B3138;              /* chữ link — 12,3:1 */
+  --accent-ink-hover:#111315;
+  --accent-2:#B4B9BE;
+  --accent-3:#CDD1D5;
+  --accent-wash:rgba(154,160,166,.16);
+
+  /* Đường kẻ gánh toàn bộ việc phân tách ở theme này, nên nó đi xa nhất có
+     thể: .20 đo 1,82:1. Trên nữa là thành một cái khung, mà giấy thì không
+     có khung. */
+  --line:rgba(17,19,21,.20);
+  --line-strong:rgba(17,19,21,.34);
+  --sel-bg:rgba(154,160,166,.34);
+
+  /* Bốn khối callout giữ nguyên sắc gốc — chúng là thứ DUY NHẤT có màu trên
+     trang này, và đó là chủ ý: một cảnh báo trên nền giấy phải nhảy ra. */
+  --ok:#2E6B4F;     --ok-wash:rgba(46,107,79,.10);
+  --warn:#8A6410;   --warn-wash:rgba(138,100,16,.10);
+  --bad:#A32F42;    --bad-wash:rgba(163,47,66,.10);
+
+  --c-tim:#5B4B8A;  --c-hong:#A8436B;  --c-do:#A32F42;   --c-cam:#9A5A1E;
+  --c-vang:#8A6410; --c-luc:#2E6B4F;   --c-lam:#2C5C85;  --c-xam:#5C6166;
+
+  /* Bóng ở đây ĐEN chứ không nhuốm màu: một bóng tím trên giấy trắng đọc ra
+     ngay là sai chất liệu. */
+  --shadow-sm:0 1px 3px rgba(17,19,21,.08);
+  --shadow-md:0 8px 24px rgba(17,19,21,.10);
+  --shadow-lg:0 20px 52px rgba(17,19,21,.14);
+
+  --glass-fill:linear-gradient(163deg,rgba(255,255,255,.72),rgba(255,255,255,.42));
+  --glass-tam:linear-gradient(163deg,rgba(255,255,255,.99),rgba(250,251,252,.97));
+  --glass-edge:rgba(17,19,21,.16);
+  --glass-ring:rgba(255,255,255,.9);
+  --glass-spec:rgba(255,255,255,.98);
+  --glass-spec2:rgba(17,19,21,.05);
+  --glass-drop:0 1px 2px rgba(17,19,21,.07), 0 10px 28px rgba(17,19,21,.10);
+  --glass-drop-lift:0 2px 5px rgba(17,19,21,.09), 0 18px 44px rgba(17,19,21,.14);
+  /* Giấy không phát sáng. Hai token quầng sáng vẫn phải KHAI (mọi theme khai
+     cùng một bộ), nhưng khai bằng `none` — đó là câu trả lời đúng, không phải
+     một chỗ bỏ trống. */
+  --glow:none;
+  --glow-manh:none;
+  --chu-bong:none;
+  /* Không tăng bão hoà: nền không có màu để mà bão hoà. */
+  --glass-sat:1;
+}
+

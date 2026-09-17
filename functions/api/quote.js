@@ -138,6 +138,64 @@ const traLoi = (obj, cache) => new Response(JSON.stringify(obj), {
   headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': cache }
 });
 
+/* ══════════════════════════════════════════════════════════════════════
+   ĐỆM TRONG D1 — MỘT LƯỢT GỌI GEMINI CHO CẢ NGÀY
+
+   ── VÌ SAO CACHE HTTP KHÔNG ĐỦ ──
+   Hàm này đã trả `s-maxage` để Cloudflare giữ bản trả lời tới hết khung giờ.
+   Nhưng cache ấy nằm ở TỪNG ĐIỂM BIÊN: người đọc ở Hà Nội và người đọc ở
+   Singapore đi qua hai điểm khác nhau, nên mỗi bên phải có một lượt gọi thật.
+   Và điểm biên dọn cache bất cứ lúc nào nó thấy cần.
+
+   Nặng hơn: Gemini CHẶN THEO VÙNG. Từ điểm biên Hong Kong nó trả
+   `FAILED_PRECONDITION`, nên phần lớn lượt gọi từ Việt Nam rơi thẳng về kho
+   câu viết sẵn. Người đọc gần như không bao giờ thấy câu do AI viết.
+
+   D1 thì CHUNG cho mọi điểm biên. Một lượt gọi thành công — từ bất kỳ đâu,
+   vào bất kỳ lúc nào trong khung — là cất lại được, và mọi người còn lại
+   trong khung ấy đọc từ đệm. Nghĩa là chỉ cần MỘT điểm biên không bị chặn.
+
+   ── KHÔNG ĐỆM LƯỢT `moi=1` ──
+   Nút "xem câu khác" là lượt xin một câu CHƯA AI ĐỌC. Đệm nó lại thì người
+   thứ hai bấm nút sẽ nhận đúng câu người thứ nhất vừa nhận, và cái nút thành
+   vô nghĩa.
+
+   ── HỎNG THÌ IM LẶNG ──
+   Mọi lượt đọc/ghi đệm đều bọc try/catch và nuốt lỗi. Chưa gắn D1, bảng chưa
+   có, kho đầy — đều KHÔNG được làm hỏng việc chính. Mất đệm là mất một tiện
+   ích, còn ném lỗi ra là mất luôn câu trích dẫn.
+   ══════════════════════════════════════════════════════════════════════ */
+const TAO_DEM = `CREATE TABLE IF NOT EXISTS quote_dem (
+  khoa TEXT PRIMARY KEY,
+  du   TEXT NOT NULL,
+  luc  INTEGER NOT NULL
+)`;
+
+async function docDem(env, khoa) {
+  if (!env || !env.DB) return null;
+  try {
+    const r = await env.DB.prepare('SELECT du FROM quote_dem WHERE khoa = ?')
+                          .bind(khoa).first();
+    return r && r.du ? JSON.parse(r.du) : null;
+  } catch (e) { return null; }
+}
+
+async function ghiDem(env, khoa, du) {
+  if (!env || !env.DB) return;
+  try {
+    await env.DB.prepare(TAO_DEM).run();
+    await env.DB.prepare(
+      'INSERT INTO quote_dem (khoa, du, luc) VALUES (?, ?, ?) ' +
+      'ON CONFLICT(khoa) DO UPDATE SET du = excluded.du, luc = excluded.luc'
+    ).bind(khoa, JSON.stringify(du), Date.now()).run();
+    /* Dọn bản cũ hơn bảy ngày. Chạy kèm lượt ghi chứ không cần lịch riêng:
+       mỗi ngày có nhiều nhất bốn lượt ghi, nên bảng không bao giờ lớn, và
+       một lượt DELETE thêm vào đó không đáng kể. */
+    await env.DB.prepare('DELETE FROM quote_dem WHERE luc < ?')
+                .bind(Date.now() - 7 * 86400000).run();
+  } catch (e) { /* im lặng — xem chú thích ở đầu khối */ }
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const p = new URL(request.url).searchParams;
@@ -206,6 +264,21 @@ export async function onRequest(context) {
 
   /* Biến môi trường lấy từ `env`, KHÔNG phải `process.env` — Workers không có
      `process`. Khai ở Cloudflare: Pages → Settings → Variables and Secrets. */
+  /* ── ĐỌC ĐỆM TRƯỚC KHI LÀM BẤT CỨ VIỆC GÌ KHÁC ──
+     Đặt Ở ĐÂY, sau khi đã tính `ngay`/`khung` nhưng TRƯỚC khi hỏi tới khoá
+     Gemini: có bản đệm thì trả ngay, không cần khoá, không cần mạng, không
+     cần biết Gemini có bị chặn ở vùng này không. */
+  const khoaDem = ngay + '#' + khung;
+  if (!xinMoi) {
+    const dem = await docDem(env, khoaDem);
+    if (dem && dem.ds && dem.ds.length) {
+      return traLoi({ ok: true, q: dem.ds[0].q, tacGia: dem.ds[0].tacGia, ds: dem.ds,
+                      chuDe: dem.chuDe, khung, src: 'dem' },
+                    'public, s-maxage=' + (HAN_CACHE[soKhung] || conLaiTrongNgay())
+                    + ', stale-while-revalidate=86400');
+    }
+  }
+
   const key = env.GEMINI_KEY || env.GOOGLE_API_KEY;
   if (!key || !NGUON.nhac) {
     /* Chưa khai khoá không phải lỗi — chỉ là chưa bật lớp này. Trang đang hiện
@@ -364,6 +437,14 @@ export async function onRequest(context) {
 
     /* Trả về CẢ CHÙM ở `ds`, và giữ `q`/`tacGia` trỏ vào câu đầu — bản trang
        cũ chỉ đọc hai khoá ấy, nên nó vẫn chạy y nguyên sau khi hàm này lên. */
+    /* Cất lại cho những người còn lại trong khung này. `waitUntil` để lượt
+       ghi chạy SAU khi đã trả lời — người vừa gọi không phải đợi thêm một
+       vòng D1 cho một việc không dành cho họ. */
+    if (!xinMoi) {
+      const viec = ghiDem(env, khoaDem, { ds, chuDe: chuDe.ten });
+      if (context.waitUntil) context.waitUntil(viec);
+    }
+
     return traLoi({ ok: true, q: ds[0].q, tacGia: ds[0].tacGia, ds,
                     chuDe: chuDe.ten, khung, src: 'gemini' }, cache);
   } catch (e) {

@@ -2,10 +2,18 @@
 title: About me
 khung: bento
 
-# Nền động TẮT ở trang này. Trang giới thiệu kín chữ từ trên xuống dưới, và
-# cánh hoa rơi qua sau chữ làm mắt bị kéo đi liên tục — đọc được, nhưng đọc mệt.
-# Đổi thành `dong` nếu muốn bật lại.
-nen: tinh
+# Nền động BẬT, nhưng nhạt hơn màn hero hai nấc (opacity .42 → .22, xem
+# `.nen-boc > .nen-canvas` trong src/styles/list.css).
+#
+# Bản trước TẮT hẳn, với lý do: trang này kín chữ từ trên xuống dưới, và cánh
+# hoa rơi qua sau chữ làm mắt bị kéo đi liên tục. Lý do ấy đúng ở độ đậm của
+# màn hero, nhưng nó dẫn tới một kết luận quá tay — tắt sạch thì trang About
+# thành trang DUY NHẤT không có chất riêng của blog, và ai đi từ trang chủ
+# sang thấy như lạc sang một site khác.
+#
+# Ở .22 thì cánh hoa còn thấy được khi nhìn vào khoảng trống, mà không còn đủ
+# tương phản để cướp mắt khỏi một dòng chữ. Đổi lại `tinh` nếu muốn tắt.
+nen: dong
 summary: Ghi chép về tâm lý, đời thường, và mấy thứ chưa nghĩ xong.
 
 # ─────────── KHUNG BENTO đọc mấy field dưới đây ───────────

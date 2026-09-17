@@ -271,6 +271,8 @@ a.tag:hover{color:var(--accent-ink-hover);text-decoration:underline;
 
 :root[data-theme="calm"] .theme-btn .i-sun{display:none}
 :root[data-theme="calm"] .theme-btn .i-giot{display:block}
+:root[data-theme="frost"] .theme-btn .i-sun{display:none}
+:root[data-theme="frost"] .theme-btn .i-may{display:block}
 
 /* Máy để tối mà người đọc chưa chọn gì. `:not([data-theme])` — xem tokens.css. */
 @media (prefers-color-scheme:dark){
@@ -313,16 +315,33 @@ a.tag:hover{color:var(--accent-ink-hover);text-decoration:underline;
    tính thì tấm kính tím nổi lên như một vật thật đặt trên đó. Blur mạnh gấp
    bốn để chữ sau lưng tan hẳn thành mảng màu, không còn đọc được — mắt thôi
    cố đọc nó và dồn vào hộp. */
+/* ── `<dialog>`, KHÔNG PHẢI MỘT DIV TỰ DỰNG ──
+   Từ V2.5.9 hộp này là một `<dialog>` mở bằng `showModal()` — trình duyệt lo
+   phím Escape, giam tiêu điểm, và che phần còn lại khỏi trình đọc màn hình.
+   Xem docs/DESIGN-SYSTEM.md §21.4.
+
+   Phải gỡ ba mặc định mà trình duyệt gắn sẵn cho `<dialog>`: viền, lề tự căn
+   giữa, và nền trắng. Không gỡ thì hộp nằm trong một khung trắng có viền, cỡ
+   vừa nội dung, chứ không phủ kín màn.
+
+   `display:flex` chỉ khi ĐANG MỞ: `<dialog>` lúc đóng là `display:none`, mà
+   một luật `display:flex` không điều kiện sẽ đè lên đúng chỗ ấy và để lại cái
+   hộp nằm giữa trang suốt. */
 .so-nen{
   position:fixed;inset:0;z-index:300;
-  display:flex;align-items:center;justify-content:center;
-  padding:var(--s5);
+  max-width:none;max-height:none;width:auto;height:auto;
+  margin:0;border:0;padding:var(--s5);
   background:rgba(16,12,26,.62);
   -webkit-backdrop-filter:blur(12px) saturate(.72);
   backdrop-filter:blur(12px) saturate(.72);
   opacity:0;transition:opacity .22s var(--ease-glass);
+  overflow:visible;
 }
+.so-nen[open]{display:flex;align-items:center;justify-content:center}
 .so-nen.hien{opacity:1}
+/* Lớp phủ thật của `<dialog>` để TRONG SUỐT: phần mờ và phần làm nhoè đã nằm
+   ở chính `.so-nen` rồi. Khai cả hai thì nền tối gấp đôi. */
+.so-nen::backdrop{background:transparent}
 /* Khoá cuộn NỀN khi hộp đang mở. Thiếu dòng này thì cuộn trong hộp tới đáy
    rồi cuộn tiếp là trang phía sau chạy — người đọc đóng hộp ra thấy mình đang
    ở một chỗ khác trên trang mà không hiểu vì sao. */

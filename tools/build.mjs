@@ -251,6 +251,7 @@ const NHAN = {
      trong cùng một vòng xoay, nên nó phải cùng loại chữ — một tính từ tả cảm
      giác của trang, không phải một cái tên riêng. */
   toCalm      : 'Switch to calm',
+  toFrost     : 'Switch to 霜降',
   older       : 'Older',
   newer       : 'Newer',
 
@@ -1378,6 +1379,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
         'max-snippet:-1, max-video-preview:-1">',
     base      : BASE,
     skipToMain: escapeHtml(NHAN.skipToMain),
+    toFrost   : attr(NHAN.toFrost),
     toLight   : attr(NHAN.toLight),
     toDark    : attr(NHAN.toDark),
     toCalm    : attr(NHAN.toCalm),

@@ -8,6 +8,8 @@
    ============================================================ */
 
 .prose{
+  /* Nét chữ theo theme — xem `--w-doc` ở tokens.css. */
+  font-weight:var(--w-doc);
   display:grid;
   grid-template-columns:
     [full-start] minmax(var(--gutter),1fr)
@@ -1006,7 +1008,7 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   font-variant-numeric:tabular-nums;flex:none}
 /* pre-line giữ lại chỗ người ta xuống dòng, nhưng KHÔNG giữ khoảng trắng thừa —
    nên không ai đẩy được nội dung lệch đi bằng một dãy dấu cách. */
-.bl-nd{margin:0;white-space:pre-line;font-size:calc(var(--fs-base) * .94);
+.bl-nd{margin:0;font-weight:var(--w-doc);white-space:pre-line;font-size:calc(var(--fs-base) * .94);
   line-height:1.62;color:var(--text-muted);overflow-wrap:break-word}
 
 /* ── ĐẦU KHỐI ──

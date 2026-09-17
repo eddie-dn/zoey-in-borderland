@@ -93,6 +93,35 @@ toàn — nhưng cứ dùng `####` cho đúng ý.
 
 ---
 
+## Đệm trong D1 — một lượt gọi cho cả khung giờ
+
+Hàm đã trả `s-maxage` để Cloudflare giữ bản trả lời tới hết khung giờ. Nhưng
+cache ấy nằm ở **từng điểm biên**: người đọc ở Hà Nội và người ở Singapore đi
+qua hai điểm khác nhau, nên mỗi bên phải có một lượt gọi thật.
+
+Nặng hơn: **Gemini chặn theo vùng.** Từ điểm biên Hong Kong nó trả
+`FAILED_PRECONDITION`, nên phần lớn lượt gọi từ Việt Nam rơi thẳng về kho câu
+viết sẵn — người đọc gần như không bao giờ thấy câu do AI viết.
+
+D1 thì **chung cho mọi điểm biên**. Một lượt gọi thành công, từ bất kỳ đâu và
+bất kỳ lúc nào trong khung, là cất lại được; mọi người còn lại trong khung ấy
+đọc từ đệm. Nghĩa là chỉ cần MỘT điểm biên không bị chặn.
+
+| | |
+|---|---|
+| Bảng | `quote_dem (khoa, du, luc)` — tự tạo ở lượt ghi đầu tiên |
+| Khoá | `<ngày>#<khung>`, ví dụ `2026-09-17#1` |
+| Dọn | bản cũ hơn 7 ngày, xoá kèm mỗi lượt ghi |
+| `src` trong JSON | `dem` khi trả từ đệm, `gemini` khi vừa gọi thật |
+
+**Lượt `moi=1` KHÔNG đệm.** Nút "xem câu khác" là lượt xin một câu chưa ai
+đọc; đệm nó lại thì người thứ hai bấm nút nhận đúng câu người thứ nhất vừa
+nhận, và cái nút thành vô nghĩa.
+
+**Hỏng thì im lặng.** Mọi lượt đọc/ghi đệm đều nuốt lỗi: chưa gắn D1, bảng
+chưa có, kho đầy — đều không được làm hỏng việc chính. Mất đệm là mất một tiện
+ích; ném lỗi ra là mất luôn câu trích dẫn.
+
 ## 2 · Lớp Gemini — tuỳ chọn, mặc định TẮT
 
 Cách bật, cách lấy khoá, cách khai biến môi trường: xem **`docs/CAI-DAT.md` §2**.

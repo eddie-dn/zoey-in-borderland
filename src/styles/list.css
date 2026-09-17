@@ -537,11 +537,18 @@
    Cho chân trang dính liền vào mép hero thì hai khối thành một mạch: đường kẻ
    trên chân trang nối tiếp mép dưới màn hero thay vì đứng riêng. */
 .shell[data-nen] .site-foot{background:none;margin-top:0}
-/* Ở TRANG TĨNH thì hạ hẳn xuống. Màn hero chỉ có mấy dòng nhãn nhỏ, nền động là
-   nhân vật chính ở đó. Trang giới thiệu thì ngược lại: kín chữ từ trên xuống
-   dưới, và cánh hoa rơi qua sau chữ ở độ đậm của màn hero làm mắt bị kéo đi
-   liên tục — đọc được, nhưng đọc mệt. */
-.nen-boc > .nen-canvas{opacity:.42}
+/* ── Ở TRANG TĨNH THÌ HẠ HẲN XUỐNG ──
+   Màn hero chỉ có mấy dòng nhãn nhỏ, nền động là nhân vật chính ở đó. Trang
+   giới thiệu thì ngược lại: kín chữ từ trên xuống dưới, và cánh hoa rơi qua
+   sau chữ ở độ đậm của màn hero làm mắt bị kéo đi liên tục — đọc được, nhưng
+   đọc mệt.
+
+   .42 → .22, hạ thêm hai nấc. Ở .42 nó vẫn còn đủ tương phản để mắt bắt được
+   một cánh hoa đang bay ngang trong lúc đang đọc một dòng — mà "bắt được"
+   nghĩa là đã mất một nhịp đọc. Ở .22 thì phải NHÌN VÀO khoảng trống mới
+   thấy, tức là nó chỉ hiện ra đúng lúc người ta rời mắt khỏi chữ. Đó là chỗ
+   một cái nền nên đứng. */
+.nen-boc > .nen-canvas{opacity:.22}
 
 /* ── LƯỚI BA CỘT ──
    Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi

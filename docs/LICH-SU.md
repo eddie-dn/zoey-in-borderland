@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.6.0 | 2026-09-17 | 00 | thêm theme thứ tư 霜降: nền trắng, mực đen, nền động là mây trôi qua núi thuỷ mặc; bảng lịch sử đổi sang thẻ dialog; trích dẫn AI đệm trong D1 nên một lượt gọi đủ cho cả khung giờ |
+| V2.5.9 | 2026-09-17 | 09 | theme Tĩnh lặng: nền hạ hai nấc cho thẻ trắng nổi lên, bóng đổ đậm thêm, nét chữ thân bài dày một bậc; trang About bật lại nền động ở độ mờ .22 |
 | V2.5.8 | 2026-09-17 | 08 | tooltip nút xem câu khác sang trái, thôi đè lên câu trích dẫn; giờ bình luận về liền sau tên người viết; nhớ tên và email người đã bình luận; trần 12 trả lời mỗi nhánh rồi mở nhánh mới |
 | V2.5.7 | 2026-09-17 | 07 | ba khung đổi tên thành post left · post full · post insta, mọi bài hiện dùng post left; khối đọc tiếp bày như cặp lùi/tới của post insta ở mọi khổ màn, 116px còn 73px |
 | V2.5.6 | 2026-09-17 | 06 | chữ đậm trong bài về cân nặng thật 600 thay vì nét đậm trình duyệt tự bịa; ghi luật ba họ phông vào Design System; thêm phép kiểm chặn cân nặng không có face đỡ |
@@ -208,6 +210,44 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.6.0 — 17-Sep-2026
+
+- **Theme thứ tư: 霜降.** Nền trắng, mực đen, không một màu nào — ba theme kia
+  đều nhuộm ảnh trong bài, mà một tấm ảnh nằm trên nền hồng đọc ra khác hẳn
+  khi nó nằm trên nền trắng. Đây là theme để **nhìn ảnh và đọc lâu**. Nền động
+  là mây trôi ngang qua ba nếp núi thuỷ mặc: núi vẽ một lần vào canvas phụ rồi
+  dán mỗi khung, chỉ mây là vẽ lại thật. Mây màu TRẮNG — trên giấy trắng nó
+  không tự hiện ra mà chỉ xoá bớt mực của núi, đúng cách mây được vẽ trong
+  tranh thuỷ mặc.
+- **Bảng lịch sử đổi sang `<dialog>`.** Nó là hộp thoại cuối cùng còn tự dựng
+  lớp phủ bằng `div` + `position:fixed`, kèm ba đoạn mã viết tay cho ba việc
+  trình duyệt vốn làm sẵn: nghe Escape, giam tiêu điểm trong hộp, che phần còn
+  lại khỏi trình đọc màn hình. `showModal()` cho cả ba, không phải viết dòng
+  nào.
+- **Trích dẫn AI đệm trong D1.** Cache HTTP nằm ở từng điểm biên, mà Gemini
+  **chặn theo vùng** — từ điểm biên Hong Kong nó trả `FAILED_PRECONDITION`,
+  nên phần lớn lượt gọi từ Việt Nam rơi thẳng về kho câu viết sẵn. D1 thì chung
+  cho mọi điểm biên: một lượt gọi thành công từ bất kỳ đâu là cất lại được, và
+  cả khung giờ đọc từ đệm. Chỉ cần MỘT điểm biên không bị chặn.
+
+## V2.5.9 — 17-Sep-2026
+
+- **Tĩnh lặng thôi phẳng lì.** Ở nền cũ, mặt thẻ trắng chỉ nổi **1,14:1** —
+  thẻ không đọc ra là thẻ và cả trang thành một mảng phẳng. Bản trước từng thử
+  hạ nền rồi trả lại vì sợ mất cái "sáng mỏng"; nhưng "sáng mỏng" với "phẳng
+  lì" chỉ cách nhau ở chỗ có hay không có ranh giới. Nay nền `#E9F1FA` →
+  `#DCE8F5` (thẻ nổi **1,24:1**), bóng đổ đậm từ .13 lên .20 kèm một tầng bóng
+  gần, và mép kính .18 → .26.
+- **Nét chữ thân bài dày một bậc ở Tĩnh lặng.** Chữ đo 11:1 — thừa tiêu chuẩn —
+  nhưng nét mảnh nằm trên nền sáng đều thì mắt vẫn đọc ra là "chữ tiệp vào
+  nền". Đi qua một token `--w-doc` (400 ở ba theme kia, 500 ở Tĩnh lặng) chứ
+  không viết một luật theme lẫn trong `prose.css`.
+- **Trang About bật lại nền động, ở `.22`.** Bản trước tắt hẳn vì cánh hoa rơi
+  qua sau chữ kéo mắt đi liên tục. Đúng ở độ đậm của màn hero, nhưng tắt sạch
+  thì About thành trang DUY NHẤT không có chất riêng của blog. Ở `.22` thì phải
+  nhìn vào khoảng trống mới thấy — tức nó chỉ hiện ra đúng lúc người ta rời mắt
+  khỏi chữ.
 
 ## V2.5.8 — 17-Sep-2026
 

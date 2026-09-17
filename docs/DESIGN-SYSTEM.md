@@ -11,15 +11,29 @@
 
 ---
 
-## 1 · BA THEME
+## 1 · BỐN THEME
 
-| | Sakura (mặc định) | Galaxy | Tĩnh lặng |
-|---|---|---|---|
-| Nền | `#FAF6FD` + ba quầng pastel | `#120C22` → `#2B1E4C` ở giữa | `#F1F7F8` + ba quầng xanh |
-| Chữ chính | `#3E2F56` tím mực | `#F6EFFB` | `#1F3B42` mực đá ướt |
-| Nhấn (trang trí) | `#E3AADD` | `#E3AADD` | `#9BD3DA` |
-| Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` | `#0F6B77` |
-| Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước |
+| | Sakura (mặc định) | Galaxy | Tĩnh lặng | 霜降 |
+|---|---|---|---|---|
+| Khoá trong mã | `light` | `dark` | `calm` | `frost` |
+| Nền | `#FAF6FD` + ba quầng pastel | `#120C22` → `#2B1E4C` ở giữa | `#DCE8F5` + ba quầng xanh | `#FFFFFF` + hai quầng xám |
+| Chữ chính | `#3E2F56` tím mực | `#F6EFFB` | `#15303E` mực đá ướt | `#111315` mực |
+| Nhấn (trang trí) | `#E3AADD` | `#E3AADD` | `#7ABFDE` | `#9AA0A6` |
+| Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` | `#0B5A78` | `#2B3138` |
+| Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước | mây trôi qua núi |
+
+> **霜降** (Sương giáng) là tiết khí thứ mười tám, quãng cuối tháng Mười — lúc
+> sương bắt đầu đọng thành giá. Ba theme kia đều có MÀU làm chất riêng; theme
+> này cố ý không có màu nào, vì nó là theme để **nhìn ảnh và đọc lâu**: một
+> tấm ảnh nằm trên nền hồng đọc ra khác hẳn khi nó nằm trên nền trắng.
+>
+> Khoá trong mã là `frost` chứ không phải chữ Hán — nó đi vào `data-theme`,
+> `localStorage` và tên file favicon, ba chỗ mà ASCII không bao giờ gây chuyện.
+>
+> Nền trắng và mặt thẻ trắng thì chênh lệch màu bằng 0, nên ở đây **đường kẻ
+> gánh toàn bộ việc nói ra mép** — đúng như mực nói ra hình trên giấy. Cùng
+> bài toán với Tĩnh lặng nhưng lời giải ngược: ở kia hạ nền hai nấc để thẻ
+> trắng nổi lên, ở đây nền không hạ được nên bóng và đường kẻ phải đi xa hơn.
 
 Người đọc bấm nút ở góc phải header để đổi; lựa chọn được nhớ lại. Nút là một
 **vòng xoay ba nhịp** — sáng → tối → tĩnh lặng → sáng — chứ không phải cái bập
@@ -502,7 +516,7 @@ không khớp được gì** trên trang đang xem.
 | File | Chứa | Không chứa |
 |---|---|---|
 | `fonts.css` | `@font-face` cho ba họ chữ tự host (`npm run phong` sinh ra) | mọi thứ khác — đừng sửa tay |
-| `tokens.css` | mọi biến màu, chữ, nhịp, bóng đổ · cả ba theme | bất kỳ selector nào khác `:root` |
+| `tokens.css` | mọi biến màu, chữ, nhịp, bóng đổ · cả bốn theme | bất kỳ selector nào khác `:root` |
 | `base.css` | reset, nền trang, chữ gốc, focus | component |
 | `glass.css` | vật liệu kính + hai nhịp chuyển động | màu (đọc từ tokens) · bố cục |
 | `layout.css` | header, chân trang, cột bài + mục lục, logo | style của thân bài |
@@ -1878,13 +1892,18 @@ Hai lý do, và cả hai đều là chuyện thứ tự file (§7):
 > **Phép kiểm #62** chặn hai việc: lớp phụ tự khai trạng thái
 > (`.x-bao--hong`), và gắn lớp phụ mà quên lớp gốc.
 
-### 21.4 · Hộp thoại — ba cái, hai cách dựng
+### 21.4 · Hộp thoại — ba cái, MỘT cách dựng
 
-| Hộp | Cách dựng | Nền mờ | Đóng · khoá cuộn |
+| Hộp | Cách dựng | Nền mờ | Đóng · giam tiêu điểm |
 |---|---|---|---|
 | `.anh-to` xem ảnh to | `<dialog>` + `showModal()` | `::backdrop` | trình duyệt lo |
 | `.sz-cat` cắt ảnh | `<dialog>` + `showModal()` | `::backdrop` | trình duyệt lo |
-| `.so-nen`/`.so-hop` bảng lịch sử | `div` + `position:fixed` | tự vẽ | JS tự lo, `body.so-khoa` |
+| `.so-nen` bảng lịch sử | `<dialog>` + `showModal()` | `::backdrop` | trình duyệt lo |
+
+Bảng lịch sử từng tự dựng lớp phủ bằng `div` + `position:fixed`, kèm ba đoạn
+mã viết tay cho ba việc trình duyệt vốn làm sẵn: nghe Escape, giam tiêu điểm
+trong hộp, và che phần còn lại khỏi trình đọc màn hình. Đổi sang `<dialog>` ở
+V2.5.9 thì bỏ được cả ba.
 
 **Cái mới thì dùng `<dialog>`.** `showModal()` cho sẵn bốn thứ mà một lớp phủ
 tự dựng phải viết tay và dễ quên: phím Esc đóng, bẫy tiêu điểm trong hộp, che

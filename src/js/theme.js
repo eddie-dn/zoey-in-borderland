@@ -24,12 +24,16 @@
      sáng/tối mà mọi trang web đều có, người đọc bấm một nhịp là gặp đúng cái
      họ đang đi tìm. Theme thứ ba là thứ tìm thấy thêm, không phải thứ chắn
      đường. */
-  var VONG = ['light', 'dark', 'calm'];
+  /* Thứ tự vòng: hai theme có màu trước, rồi Tĩnh lặng, rồi 霜降. 霜降 đứng
+     CUỐI vì nó là theme không màu — ai bấm tới đó là đang tìm một trang
+     trung tính, và người đi tìm thì chịu bấm thêm một nhịp. Đặt nó thứ hai
+     thì ai chỉ muốn đổi sáng-tối phải đi qua nó mỗi vòng. */
+  var VONG = ['light', 'dark', 'calm', 'frost'];
 
   /* Màu thanh trạng thái của trình duyệt điện thoại. Bảng này lặp lại ở đoạn
      script trong <head> — cố ý, vì đoạn đó phải chạy trước khi file này kịp
      tải. Sửa màu nền của theme nào thì sửa CẢ HAI chỗ. */
-  var MAU_THANH = { light:'#FAF6FD', dark:'#120C22', calm:'#E9F1FA' };
+  var MAU_THANH = { light:'#FAF6FD', dark:'#120C22', calm:'#DCE8F5', frost:'#FFFFFF' };
 
   /* ICON CỦA TAB theo theme. Chỉ khai theme nào CÓ bản riêng; tên nào không
      có ở đây thì về favicon.svg.
@@ -51,7 +55,8 @@
   var NHAN = {
     light: ['data-nhan-sang', 'Switch to light'],
     dark : ['data-nhan-toi',  'Switch to dark'],
-    calm : ['data-nhan-tinh', 'Switch to calm']
+    calm : ['data-nhan-tinh', 'Switch to calm'],
+    frost: ['data-nhan-frost', 'Switch to 霜降']
   };
 
   function he(){            /* máy đang để sáng hay tối */
