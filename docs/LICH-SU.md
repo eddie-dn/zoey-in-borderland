@@ -27,6 +27,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V14.00 | 2026-09-17 | 00 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
+| V13.00 | 2026-09-17 | 00 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
 | V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
 | V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
 | V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
@@ -146,6 +148,115 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V14.00 — 17-Sep-2026
+
+- **Bài dài: cụm tim · chia sẻ · bình luận đi theo người đọc.** Ở một bài ba
+  nghìn chữ, hàng meta trôi khỏi màn hình sau một cú vuốt — ai đọc tới đoạn hay
+  nhất mà muốn thả tim thì phải cuộn ngược lên đầu bài, và phần lớn thì không
+  cuộn. Nay cuộn qua khỏi đầu bài là cụm hiện lại: ở cột phải trên máy bàn
+  (ngay dưới phần gợi ý đọc tiếp), ở góc dưới phải trên điện thoại. Tới chân
+  bài thì nó lui đi, để không che nút Gửi. Bài dưới 2.500 chữ không có — cả bài
+  gọn trong một hai màn, và một cụm nút nổi lên ở đó chỉ che mất chữ.
+- **Menu ☰ trên điện thoại thành kính thật.** Nó vốn là một tấm nhựa đục, dán
+  ngay dưới một thanh đầu trang trong suốt — hai vật liệu khác nhau cách nhau
+  8px. Nay nó mượn đúng công thức kính của thanh đầu trang: vệt sáng chạy quanh
+  mép, bóng đổ, bung ra từ góc trên phải đúng chỗ ngón tay vừa chạm.
+  Dòng "Search" trong menu bỏ cái kính lúp — bốn mục quanh nó đều là chữ trơn.
+- **Mục lục trên điện thoại thôi đứng chơ vơ.** Nó là một viên thuốc rộng 120px
+  nằm giữa một khoảng trắng, không neo vào mép nào. Nay là một hàng của trang:
+  căng hết bề ngang, một sợi kẻ trên dưới, mũi nhọn ở mép phải — và cả hàng bấm
+  được thay vì đúng 120px.
+- **Chữ trên điện thoại căn đều hai bên như trên máy bàn.** Luật cũ tắt căn đều
+  dưới 560px vì "chỉ còn 30–40 ký tự một dòng". Đo lại bằng chính chữ tiếng
+  Việt trên màn 375px thì ra 45 ký tự — con số cũ đếm bằng bề ngang chữ số 0,
+  chữ rộng nhất trong phông. 45 ký tự là đủ để mép phải thẳng mà không hở.
+- **Khoảng trống cuối bài co lại, và khung bình luận có tên.** Từ dòng cuối bài
+  xuống tới hàng tag là gần một phần tư màn hình trắng trơn — cuộn tới đó thì
+  tưởng bài đã hết. Và khi mở khung bình luận ra, phía trên nó là một mảng
+  trống không nói gì; nay có một dòng **NOTES** kèm số lời nhắn.
+- **Đường dẫn bài sửa được, ngay trên dòng xem trước.** Tiêu đề hay cho người
+  đọc thường ra một đường dẫn dài 46 ký tự, mà đường dẫn tốt cho tìm kiếm thì
+  ngắn. Nay phần giữa đường dẫn là một ô gõ; hai đầu vẫn là chữ chết, nên nhìn
+  thấy nguyên cái link thật trong lúc sửa.
+- **Chuyên mục của một bài đã đăng đổi được.** Trước đây ô ấy khoá hẳn. Nay đổi
+  được, và máy chủ ghi bản mới TRƯỚC rồi mới xoá bản cũ — hỏng ở bước nào cũng
+  còn ít nhất một bản. Cái giá là link cũ gãy, và ô soạn nói thẳng ra điều đó
+  kèm đúng cái link sắp gãy, trước khi bấm Lưu.
+- **Có ngăn Category ở /z-admin/.** Đặt tên hiện ra trên trang cho từng chuyên
+  mục, viết câu mô tả nằm dưới tên ấy ở trang Posts, sắp thứ tự, thêm mục mới,
+  bỏ mục rỗng. Trước đây muốn sửa một câu mô tả thì phải mở kho mã trên GitHub.
+- **Ô soạn thảo có nút cho mọi khối.** Khung ghi chú bốn tông, dải ảnh, khối
+  tràn lề, bảng, khối mã, danh sách việc — sáu thứ trước đây chỉ có cách gõ tay
+  `:::note`. Khung ghi chú nay hiện ra trong lúc gõ đúng như một cái ô, không
+  phải ba dòng dấu hai chấm.
+- **Và một lỗi mất chữ đã chữa: bảng trong bài cũ.** Mở một bài có bảng ra sửa
+  rồi lưu lại thì mọi hàng của bảng bị nối thành một đoạn văn đầy gạch đứng —
+  bảng hỏng thật, không chỉ hiện xấu. Dải ảnh cũng vậy: hai tấm ảnh dồn về một
+  dòng là dải ảnh thành một đoạn có hai ảnh nằm ngang. Nay cả hai đi qua nguyên
+  vẹn, và vòng đổi-đi-đổi-lại đứng yên từ lượt lưu thứ hai.
+- **Google có đủ dữ liệu để biết ai đứng sau trang.** Trước đây mỗi trang tự
+  khai một nút "Person" riêng — chín bài là hai chục nút rời rạc cùng tên mà
+  không cái nào nói nó là cùng một người. Nay cả trang là một đồ thị liền, và
+  trang giới thiệu được khai đúng là trang hồ sơ của chính người ấy. Điền thêm
+  `mangXaHoi` trong `site.config.json` thì mạnh hơn nữa.
+
+## V13.00 — 17-Sep-2026
+
+- **Tim · chia sẻ · bình luận về chung MỘT hàng với ngày đăng.** Trước là hai
+  hàng, và hai hàng ấy còn nói lặp nhau: một trái tim ở hàng meta để ĐỌC số,
+  một trái tim ở hàng dưới để BẤM. Người đọc thấy tim là bấm — mà cái họ thấy
+  trước lại đúng là cái không bấm được. Nay một trái tim duy nhất, số in ngay
+  trên nút, bấm phát là nhảy tại chỗ. Nhãn "Leave a note" bỏ luôn: ba cái icon
+  đã nói đúng thứ nó nói.
+- **Và nó đứng đúng một chỗ ở mọi kiểu bài.** Trước cụm đi ba đường tuỳ khung
+  bài — đầu bài, cột phải, hay cuối bài — nên mở một bài khác kiểu là phải đi
+  tìm lại nó. Nay luôn ở dưới tiêu đề. Chỉ ĐÍCH ĐẾN của nút bình luận là khác:
+  bài ảnh thì nhảy thẳng tới ô viết ngay dưới hàng tag, bài dài thì mở ra ở cột
+  phải như cũ.
+- **Cột phải thôi giật ra khi mở bình luận.** Nó vốn rộng 280px rồi bị kéo lên
+  400px ngay lúc bấm — cả trang xô lại một nhịp, đúng lúc người ta đang nhìn.
+  Nay rộng sẵn 320px cho cả hai trạng thái: đủ chỗ gõ, mục lục cũng dễ đọc hơn,
+  và bấm nút thì bề ngang không nhúc nhích.
+- **Bài ảnh có cặp lùi / tới thay cho danh sách gợi ý.** Một trang ảnh chỉ có
+  một khối chữ ngắn; dán vào cuối nó ba dòng gợi ý có nhãn loại và ngày tháng
+  là thêm một khối chữ nặng bằng cả bài. Nay hai đường đi, chữ nhỏ, một dòng:
+  bài cũ hơn ở mép trái, bài mới hơn ở mép phải — cùng cử chỉ với việc lật ảnh
+  ngay phía trên.
+- **Khoảng trống chết cuối bài ảnh đã hết.** Khung bình luận lúc đóng cao đúng
+  0 nhưng vẫn ăn khoảng cách ở cả hai phía, để lại 112px trắng giữa hàng tag và
+  phần đọc tiếp — trên điện thoại là một phần bảy màn hình, và cuộn tới đó thì
+  tưởng bài đã hết.
+- **Chữ trong bài ảnh thẳng mép với ảnh.** Có hai đường lề cùng nói một chuyện
+  chồng lên nhau, nên cột chữ thụt vào 37px mỗi bên trên màn 375px — một phần
+  năm bề ngang màn hình để vẽ lề. Nay một lề, mỗi dòng dài thêm 13%.
+- **Trang Posts: bỏ sáu sợi kẻ cụt, đổi phông tên chuyên mục, các ô bằng nhau.**
+  Tên chuyên mục vốn dùng đúng bộ chữ và gần đúng cỡ chữ của tiêu đề "All posts"
+  ngay trên đầu trang, nên sáu cái tên đọc ngang hàng với tiêu đề của cả trang
+  và trang mất thứ bậc. Ô cũng cao thấp so le nhau — một lưới bento không khớp
+  mép thì thôi là lưới. Nay ô nào cũng căng bằng nhau và kết thúc bằng một chân
+  ô giống nhau; mục chưa đủ bài thì chừa sẵn chỗ, có bài là lấp vào.
+- **Kho lưu gọn lại theo cùng một phép.** Con số năm thôi to bằng tiêu đề
+  trang, hai sợi kẻ sát nhau dưới mỗi năm còn một, và tên bài đổi sang phông
+  thân bài — kho lưu là chỗ đi TÌM một bài đã biết tên, mà một bảng tra thì
+  quét mắt nhanh hơn ở cỡ chữ nhỏ.
+- **Điện thoại: nút ☰ ra sát góc phải, kính lúp vào trong menu.** Ba nút hình
+  cạnh nhau trên một thanh 375px thì tên blog chỉ còn hơn trăm pixel. Nay
+  "Search" là một dòng trong chính tấm menu ☰ — cùng chỗ với bốn mục điều
+  hướng kia, tức đúng chỗ người ta mở ra để đi tới một trang.
+- **Ô soạn thảo: bấm đổi màu chữ nay thật sự đổi màu.** Tô lại một cụm đã có
+  màu thì màu cũ biến mất mà màu mới không lên — phép gỡ lớp cũ huỷ luôn vùng
+  chọn, nên lượt tô ngay sau đó không còn gì để tô. Bôi đen qua hai đoạn văn
+  còn tệ hơn: nó cắt đôi cả hai đoạn. Cả hai đã chữa, và viết lại theo cách
+  không đụng tới cấu trúc đoạn.
+- **Bảng chỉ dẫn trong ô soạn thảo nói cả những thứ KHÔNG có nút.** Khối ghi
+  chú, dải ảnh, bảng, khối mã, ảnh tràn lề — mười cú pháp mà bộ dựng hiểu và
+  đang được dùng trong bài, nhưng thanh nút không có chỗ cho, nên người viết
+  bài sau chỉ biết những gì có nút.
+- **Bảng bài ở /z-admin/ tải theo trang.** Nó vốn dừng ở 40 bài mới nhất và
+  không có đường nào đi tiếp — với một blog viết đều thì đó là hạn dùng, không
+  phải giới hạn kỹ thuật. Nay mỗi lượt 20 bài, có nút tải thêm, có dòng "đã tải
+  20 trên 63", và có ô lọc theo tên gõ không dấu cũng ra.
 
 ## V12.07 — 16-Sep-2026
 

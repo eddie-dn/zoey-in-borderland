@@ -1118,23 +1118,25 @@ hành vi phải nói bằng đúng thẻ của nó, không phải bằng CSS.
 dẫn ngay trên (`6 chuyên mục · 9 bài`). Hai lần cùng một con số cách nhau vài
 chục pixel thì cái nào cũng thành thừa.
 
-### 17.5 · Một khuôn dòng, dùng ở bốn nơi
+### 17.5 · Một khuôn dòng, và hai vai của một danh sách
 
-Bốn chỗ liệt kê bài theo cùng một kiểu — một dòng cho một bài, ngăn nhau bằng
+Sáu chỗ liệt kê bài theo cùng một kiểu — một dòng cho một bài, ngăn nhau bằng
 sợi kẻ:
 
-| Lớp | Ở đâu | Cột trái | Cột phải |
-|---|---|---|---|
-| `.hero-dong` | ba bài mới nhất ở màn đầu | số thứ tự | ngày |
-| `.mc-dong` | bài trong một ô bento ở `/posts/` | số thứ tự | ngày |
-| `.kho-dong` | bài trong một năm ở `/archive/` | ngày | chuyên mục |
-| `.rn-dong` | gợi ý đọc tiếp cuối bài | loại (related/newer/older) | ngày |
+| Lớp | Ở đâu | Cột trái | Cột phải | Vai |
+|---|---|---|---|---|
+| `.hero-dong` | ba bài mới nhất ở màn đầu | số thứ tự | ngày | trưng bày |
+| `.rn-dong` | gợi ý đọc tiếp cuối bài | loại (related/newer/older) | ngày | trưng bày |
+| `.mc-dong` | bài trong một ô bento ở `/posts/` | số thứ tự | ngày | điều hướng |
+| `.kho-dong` | bài trong một năm ở `/archive/` | ngày | chuyên mục | điều hướng |
+| `.ben .rn-dong` | gợi ý đọc tiếp ở cột bên | loại | ngày | điều hướng |
+| `.rn-p` | cặp lùi / tới ở khung ảnh | mũi tên + nhãn | — | điều hướng |
 
 **Luật chung.** Ai lệch thì phải có lý do ghi ngay tại chỗ lệch:
 
 - **tiêu đề** — phông tiêu đề, nghiêng, `--fs-h4`, một dòng, tràn thì cắt bằng `…`
 - **nhãn và ngày** — Oswald hoa, `--fs-3xs`, `--text-faint`, số dùng bản đều bề ngang
-- **ngăn cách** — sợi kẻ `--line` ở ĐÁY mỗi dòng; dòng đầu có thêm kẻ trên
+- **ngăn cách** — một sợi kẻ `--line` giữa hai dòng, và kẻ ở hai đầu danh sách
 - **rê chuột** — đổi MÀU chữ và đẩy sang phải `var(--s2)`. **Không đổi nền:**
   đổi nền thì hai sợi kẻ trên dưới phải đổi theo mới không hở, tức là ba thứ
   động cho một cú rê chuột
@@ -1145,10 +1147,19 @@ và đổi NỀN khi rê vào, ba chỗ kia dùng phông tiêu đề nghiêng v�
 khác nhau — dù chúng nói đúng một chuyện. Không ai thấy khi nhìn từng trang;
 chỉ thấy khi đi qua lại.
 
-**Ngoại lệ đã biết: cột bên.** Trong `.ben`, tiêu đề đổi sang phông thân bài và
-cỡ `--fs-sm`. Cột ấy hẹp (280px), và ở đó danh sách là chỗ **điều hướng** chứ
-không phải chỗ trưng bày — trộn hai phông trong một cột hẹp thì mắt đọc ra hai
-danh sách rời nhau, trong khi chúng chỉ là hai lối đi cạnh nhau.
+**Cột "Vai" quyết định phông của tiêu đề, và đó là ngoại lệ DUY NHẤT.**
+
+- **trưng bày** — mời người đọc dừng lại ở một bài. Giữ Cormorant nghiêng,
+  `--fs-h4`.
+- **điều hướng** — quét mắt tìm một cái tên đã biết. Đổi sang phông thân bài,
+  `--fs-sm`, không nghiêng.
+
+Ba chỗ điều hướng có chung một hoàn cảnh: cột hẹp (cột bên 320px, ô bento
+300px) hoặc danh sách dày (kho lưu, hai ba chục dòng liền). Ở đó một cột toàn
+chữ nghiêng cỡ lớn đọc ra là mấy chục khối trang trí xếp chồng, không đọc ra là
+một bảng tra. Con số năm ở `/archive/` và tên chuyên mục ở `/posts/` theo cùng
+một luật, vì cùng một lý do: cỡ cũ của chúng gần bằng tiêu đề của chính trang,
+nên trang mất thứ bậc — cái gì cũng là tiêu đề thì không cái nào là tiêu đề.
 
 **Thêm một danh sách mới thì thêm lớp vào bảng trên**, đừng khai lại cỡ chữ.
 
@@ -1260,6 +1271,110 @@ Hệ quả cho bài nhập từ nơi khác: bản xuất WordPress hay mở bài
 trích dẫn — chính là câu dẫn. Công cụ nhập lấy nó làm tóm tắt **và bỏ nó khỏi
 thân bài**; giữ cả hai là bắt người đọc đọc một đoạn hai lần, cách nhau chưa
 tới một màn.
+
+### 18.5 · Hàng meta: một dòng, và mọi con số đứng trên nút của nó
+
+Dưới tiêu đề có **đúng một hàng**:
+
+```
+15 Sep 2026 · 6 views      [♥ 12]  [chia sẻ]  [💬 3]
+└── chữ để ĐỌC ───────┘    └── nút để BẤM ───────────┘
+```
+
+**Luật: một con số xuất hiện đúng một lần, và nó đứng trên thứ sinh ra nó.**
+Lượt thích và số bình luận in ngay trong nút tim / nút bình luận. Lượt xem ở
+lại phần chữ, vì nó **không có nút** — không ai "bấm để xem".
+
+Bản trước tách hai việc ấy ra: số ở hàng meta để đọc, nút ở một hàng riêng bên
+dưới để bấm. Lý lẽ khi đó nghe hợp lý ("nút là chỗ bấm, hàng meta là chỗ đọc"),
+nhưng trên màn hình nó ra thành **hai trái tim cạnh nhau** — và người đọc bấm
+vào cái họ thấy trước, đúng cái không bấm được. Gộp lại thì con số nhảy ngay
+dưới ngón tay vừa bấm.
+
+**Nhãn "Leave a note" đã bỏ.** Ba cái icon nói đúng thứ nó nói, và một nhãn
+Oswald hoa đặt trước chúng chỉ thêm một dòng cho cùng một câu.
+
+**Cụm này đứng ở đây trong MỌI khung bài** (A · B · C). Cùng một thứ nằm ba chỗ
+tuỳ khung là bắt người đọc đi tìm lại nó mỗi lần mở một bài khác kiểu — mà ba
+khung ấy chỉ khác nhau ở cách bày ẢNH, không khác nhau ở chuyện thả tim.
+
+Chỉ **đích đến** của nút bình luận là khác, và `binhLuanODau()` trong
+`tools/build.mjs` là chỗ duy nhất quyết định:
+
+| Khung | Bấm nút bình luận thì… |
+|---|---|
+| A (có cột bên, ≥1080px) | khung viết dời sang **cột phải**, thế chỗ mục lục |
+| còn lại | **nhảy tới** ô viết, nằm ngay dưới hàng tag |
+
+Build ghi lựa chọn ấy vào `data-o` trên chính cái nút, và `src/js/comments.js`
+đọc nó. Trước đây file JS tự suy ra bằng cách hỏi DOM xem lưới có mang lớp
+`khung-a` không — suy ra được, nhưng đó là bản sao thứ hai của một luật đã có
+nơi khác, và hai bản sao thì sớm muộn lệch nhau.
+
+**Cột phải rộng cố định 320px**, cả lúc thường lẫn lúc đang viết bình luận. Bản
+trước là 280px rồi nở ra 400px khi bấm: cả trang xô lại một nhịp đúng lúc người
+đọc đang nhìn nó. Đổi một trong hai con số ấy thì đổi luôn ở chú thích đầu khối
+ĐÓNG MỞ trong `src/js/comments.js`.
+
+### 18.6 · Khung ảnh: cặp lùi / tới thay cho danh sách gợi ý
+
+Khung C chỉ có một băng ảnh và vài dòng chữ. Dán vào cuối nó ba dòng gợi ý —
+mỗi dòng một nhãn loại, một tiêu đề nghiêng cỡ lớn và một ngày — là thêm một
+khối chữ nặng bằng cả phần chữ của chính bài.
+
+Ở đó khối "đọc tiếp" co thành hai đường đi ở hai mép: **bài cũ hơn bên trái,
+bài mới hơn bên phải**, mũi tên quay ra ngoài. Nó lặp đúng cử chỉ lật ảnh của
+băng ảnh ngay phía trên, nên không phải học thêm gì.
+
+- xếp theo **ngày**, không theo tag — một trục thời gian thì phải là thời gian
+- **không in ngày tháng**: tên bài đủ để quyết định, còn ngày đã có cả một
+  trang kho lưu lo
+- ở đầu và cuối danh sách, phía thiếu để một **ô rỗng giữ chỗ** — bỏ hẳn thì
+  nút còn lại trượt về giữa và mất nghĩa "trái là lùi, phải là tới". Dưới
+  520px ô rỗng co về 0, để nút duy nhất được cả hàng.
+
+### 18.7 · Bài dài: cụm nút đi theo người đọc
+
+Trên **2.500 ký tự** (chữ trơn, không kể thẻ), cụm tim · chia sẻ · bình luận
+rời hàng meta khi hàng ấy trôi khỏi màn hình:
+
+| Khổ màn | Nó về đâu |
+|---|---|
+| ≥1080px, khung A | **cột phải**, dưới khối "đọc tiếp" — cột dính khi cuộn |
+| còn lại | một cụm **nổi ở góc dưới phải**, nút tròn 42px |
+
+Bốn trường hợp **không** dời: bài ngắn · hàng meta vẫn trong tầm mắt · khung
+bình luận đang chiếm cột phải · đã cuộn tới chân bài ở khổ hẹp (cụm nổi sẽ che
+mất nút Gửi).
+
+**DỜI, không chép.** Trạng thái — đã thả tim chưa, mấy lượt thích, mấy bình
+luận — nằm trong chính phần tử ấy. Dựng một cụm thứ hai là hai `aria-pressed`,
+hai con số, và mọi tham chiếu của `comments.js` trỏ vào bản cũ. Cùng nguyên tắc
+với cách khung bình luận dời sang cột phải (`src/js/comments.js`).
+
+Ngưỡng đổi chỗ đặt ở **đúng mép trên màn hình**, không có `rootMargin`: thêm lề
+âm thì có một quãng cả hai cùng nằm trong tầm mắt — hai cụm nút giống hệt nhau
+trên một màn.
+
+### 18.8 · Kính phủ: đừng lồng `backdrop-filter`
+
+Tấm menu ☰ nằm **bên trong** `.site-head`, mà thanh ấy đã có `backdrop-filter`.
+Theo chuẩn, một phần tử có `backdrop-filter` trở thành **gốc nền** cho mọi con
+cháu: lớp nhoè của con chỉ lấy mẫu được cái nền đã gộp của cha, trong đúng
+khung của cha. Tấm menu thì thò xuống dưới thanh — phần thò ra không có nền nào
+để lấy mẫu, và Chrome trả về một lớp rỗng.
+
+Hậu quả nhìn thấy: tấm menu **gần như trong suốt**, tiêu đề bài đọc xuyên qua,
+chữ trong menu thì chìm. Dựng lại được: tắt một dòng `backdrop-filter` là nó
+đặc lại ngay.
+
+Nên có biến thể **`.glass--tam`** — ruột `--glass-tam` tự nó đã đủ đặc (0.985 →
+0.945), giữ nguyên vệt sáng mép và bóng đổ, và **không** có `backdrop-filter`.
+Vẫn là kính, chỉ là kính mờ — đúng như menu của iOS khi nó bung ra trên một
+trang đầy chữ.
+
+**Luật chung: đừng lồng `backdrop-filter` trong `backdrop-filter`.** Mảnh nào
+bung ra đè lên nội dung thì dùng `.glass--tam`.
 
 ---
 
