@@ -272,6 +272,8 @@ const NHAN = {
   qlComment   : 'Comment',
   qlPost      : 'Post',
   qlBai       : 'Write a post',
+  qlMuc       : 'Category',
+  qlMucDe     : 'Categories',
   /* ── ô viết bài ── */
   vbTitle     : 'Title',
   vbMuc       : 'Category',
@@ -307,6 +309,31 @@ const NHAN = {
   vbFind      : 'Filter by title',
   vbNoMatch   : 'Nothing matches, in what is loaded so far.',
   vbCapped    : 'The repository is too large to list in full.',
+  /* ── ĐƯỜNG DẪN BÀI ──
+     `vbSlugMoved` là câu quan trọng nhất trong nhóm này: nó là thứ duy nhất
+     báo cho chủ trang biết một link đã chia sẻ sắp gãy, và nó phải hiện ra
+     TRƯỚC khi bấm Lưu chứ không phải sau. */
+  vbSlug      : 'Link',
+  vbSlugAuto  : 'From title',
+  vbSlugMoved : 'The old link {u} will stop working — anyone who saved it, and Google, will hit a 404.',
+  vbSlugLong  : 'Long links get cut off in search results — under 60 characters reads better.',
+
+  /* ── NGĂN CHUYÊN MỤC (src/js/muc.js) ──
+     Đi CHUNG bảng `data-bai-nhan` với ô viết bài: cả hai nói chuyện với cùng
+     một endpoint, dùng cùng một cặp khoá, và mọc trong cùng một trang. Một
+     bảng nhãn thứ năm trên cùng trang ấy là thêm một chỗ nữa để quên. */
+  mucNew      : 'New category',
+  mucAdd      : 'Add',
+  mucDel      : 'Delete',
+  mucDelAsk   : 'Remove the name and description of “{n}”? The folder itself stays.',
+  mucFolder   : 'Folder name — part of every link',
+  mucTitle    : 'Name shown on the site',
+  mucDesc     : 'One line under the name on All posts',
+  mucOrder    : 'Order — smaller comes first',
+  mucCount    : '{n} posts',
+  mucNeed     : 'A folder name and a name to show are both needed.',
+  mucBusy     : 'This category still has posts in it.',
+  mucLocked   : 'The folder name cannot be changed here — it is part of every link in this category. Move the posts one by one from the Post tab instead.',
   vbClash     : 'This post changed somewhere else. Go back and reopen it to get the latest version.',
 
   /* ── NHÃN CỦA KHUNG SOẠN THẢO (src/js/soan.js) ──
@@ -366,6 +393,21 @@ const NHAN = {
   szGBang     : 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|',
   szGMa       : 'a code block — same paragraph, Shift+Enter between lines, ``` to close.',
   szGViec     : 'a checklist: make a bullet list, then type this at the start of an item.',
+  /* ── NHÃN CỦA BẢNG KHỐI ──
+     Mỗi khối có TÊN và một câu ngắn nói nó làm gì. Câu ấy không phải trang
+     trí: "Note" và "Tip" trông giống hệt nhau nếu chỉ có tên. */
+  szBlock     : 'Blocks',
+  szBNote     : 'Note',       szBNoteMo   : 'a boxed aside',
+  szBTip      : 'Tip',        szBTipMo    : 'same box, friendlier',
+  szBWarn     : 'Heads up',   szBWarnMo   : 'same box, careful tone',
+  szBStop     : 'Do not',     szBStopMo   : 'same box, strongest tone',
+  szBGallery  : 'Gallery',    szBGalleryMo: 'photos side by side',
+  szBWide     : 'Wide block', szBWideMo   : 'spills past the text column',
+  szBTable    : 'Table',      szBTableMo  : '2 columns — Shift+Enter between rows',
+  szBCode     : 'Code block', szBCodeMo   : 'keeps every space and line break',
+  szBTask     : 'Checklist',  szBTaskMo   : 'a list with tick boxes',
+  szBAsk      : 'Title for the box — leave empty for the default:',
+  szBCodeAsk  : 'Language (js, css, python… — can be empty):',
   szGChan     : 'A ::: line goes in a paragraph of its own. A table or code block keeps its rows inside ONE paragraph — Shift+Enter, not Enter. Images always go in with the image button, never typed. Press </> to see what will be sent.',
   vbNeedBoth  : 'Both a title and some text are needed.',
   vbSending   : 'Sending…',
@@ -439,6 +481,9 @@ const NHAN = {
 
   /* ── bình luận: khung ── */
   comments    : 'Leave a note',
+  /* Tên của KHỐI bình luận cuối bài — khác `comments`, vốn là nhãn của cái
+     NÚT. Nút mời làm một việc ("để lại một dòng"); khối thì nói nó chứa gì. */
+  blDe        : 'Notes',
   blLike      : 'Like this post',
   blShare     : 'Share this post',
   shareCopied : 'Link copied',
@@ -951,6 +996,14 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         empty: NHAN.vbEmptyList, capped: NHAN.vbCapped, clash: NHAN.vbClash,
                         shown: NHAN.vbShown, more: NHAN.vbMore,
                         find: NHAN.vbFind, noMatch: NHAN.vbNoMatch,
+                        slug: NHAN.vbSlug, slugAuto: NHAN.vbSlugAuto,
+                        slugMoved: NHAN.vbSlugMoved, slugLong: NHAN.vbSlugLong,
+                        mucNew: NHAN.mucNew, mucAdd: NHAN.mucAdd,
+                        mucDel: NHAN.mucDel, mucDelAsk: NHAN.mucDelAsk,
+                        mucFolder: NHAN.mucFolder, mucTitle: NHAN.mucTitle,
+                        mucDesc: NHAN.mucDesc, mucOrder: NHAN.mucOrder,
+                        mucCount: NHAN.mucCount, mucNeed: NHAN.mucNeed,
+                        mucBusy: NHAN.mucBusy, mucLocked: NHAN.mucLocked,
                         locked: NHAN.khLocked, draftAsk: NHAN.vbDraftAsk,
                         crash: NHAN.vbCrash,
                         toolbar: NHAN.szToolbar, bold: NHAN.szBold,
@@ -971,7 +1024,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         gGallery: NHAN.szGGallery, gWide: NHAN.szGWide,
                         gLop: NHAN.szGLop, gThuong: NHAN.szGThuong,
                         gBang: NHAN.szGBang, gMa: NHAN.szGMa,
-                        gViec: NHAN.szGViec, gChan: NHAN.szGChan
+                        gViec: NHAN.szGViec, gChan: NHAN.szGChan,
+                        block: NHAN.szBlock,
+                        bNote: NHAN.szBNote, bNoteMo: NHAN.szBNoteMo,
+                        bTip: NHAN.szBTip, bTipMo: NHAN.szBTipMo,
+                        bWarn: NHAN.szBWarn, bWarnMo: NHAN.szBWarnMo,
+                        bStop: NHAN.szBStop, bStopMo: NHAN.szBStopMo,
+                        bGallery: NHAN.szBGallery, bGalleryMo: NHAN.szBGalleryMo,
+                        bWide: NHAN.szBWide, bWideMo: NHAN.szBWideMo,
+                        bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
+                        bCode: NHAN.szBCode, bCodeMo: NHAN.szBCodeMo,
+                        bTask: NHAN.szBTask, bTaskMo: NHAN.szBTaskMo,
+                        bAsk: NHAN.szBAsk, bCodeAsk: NHAN.szBCodeAsk
                       }))}"`
                    : '',
                  ((duong === '/notes/' || duong === '/z-admin/') &&
@@ -1053,14 +1117,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
       ? `<a class="ico-btn tip nap-tim" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
         `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
         `<path d="M16.2 16.2 21 21"/></svg></a>` : '',
-    /* Dòng "Search" trong tấm menu ☰, chỉ có mặt ở khổ hẹp. Mang cả icon lẫn
-       chữ: bốn mục trên nó là chữ trơn, nên một icon ở đây vừa đủ để mắt nhận
-       ra "cái này không phải một trang trong bộ bốn kia" mà không phải kẻ thêm
-       một đường phân cách. */
+    /* Dòng "Search" trong tấm menu ☰, chỉ có mặt ở khổ hẹp. CHỮ TRƠN, không
+       icon: bốn mục trên nó đều là chữ trơn, nên một cái kính lúp riêng cho
+       mục thứ năm làm hàng ấy thụt vào và đọc ra như thuộc một nhóm khác —
+       trong khi nó cũng chỉ là một đường tới một trang, y như bốn mục kia. */
     timTrongMenu: coTrang('/search/')
       ? `\n        <a class="nav-text nav-tim" href="${BASE}/search/">` +
-        `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
-        `<path d="M16.2 16.2 21 21"/></svg>${escapeHtml(NHAN.search)}</a>` : '',
+        `${escapeHtml(NHAN.search)}</a>` : '',
     /* Ghi chú đã thế chỗ Tags trên thanh đầu trang, nhưng trang tag vẫn còn và
        vẫn nên có đường vào — chân trang là chỗ của nó. Bỏ hẳn Tags khỏi cả hai
        nơi thì mấy chục trang tag thành trang mồ côi: Google vẫn giữ trong chỉ
@@ -1636,7 +1699,11 @@ function cumTuongTac(bai) {
   /* Toàn `<span>`, không có thẻ khối nào: cả cụm là MỘT ô của hàng meta — một
      hàng flex — và một thẻ khối lồng giữa hàng chữ là chỗ trình duyệt hay tự ý
      ngắt dòng. */
-  return `<span class="cum-tt">
+  /* `data-nhan-ben` chỉ có việc khi cụm đã dời sang cột phải: lúc ấy CSS lôi
+     nó ra làm dòng tên của khối (xem `.cum-tt--ben` ở prose.css). Ở hàng meta
+     nó nằm im, không vẽ gì — ba cái icon đứng cạnh ngày tháng đã tự nói ra
+     chúng là gì. */
+  return `<span class="cum-tt" data-nhan-ben="${attr(NHAN.comments)}">
     <span class="cum-nut">
       <button class="bl-nut bl-tim tip" type="button"
               data-thich="${attr(BASE + '/api/thich')}"
@@ -1811,6 +1878,16 @@ function binhLuanHTML(bai) {
 
     <div class="bl-than" id="bl-than" hidden>
 
+    ${/* ── KHỐI NÀY PHẢI TỰ XƯNG TÊN ──
+          Mở ra mà không có dòng nào nói đây là chỗ gì thì người đọc gặp một
+          mảng trống, rồi câu "chưa có lời nhắn nào", rồi mấy ô nhập — phải đọc
+          tới ô nhập mới đoán ra khu vực này để làm gì.
+
+          Cùng khuôn với hàng `TAGGED` ngay phía trên, nên hai khối cuối bài
+          đọc ra là hai mục của cùng một hàng thông tin. Con số do comments.js
+          đổ vào, và để rỗng khi chưa có lời nhắn nào. */''}
+    <p class="bl-de">${escapeHtml(NHAN.blDe)}<span class="bl-de-so" data-bl-dem></span></p>
+
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
           định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
           xong vẫn thấy một dòng khác hiện lên, và không có cách nào tắt. */''}
@@ -1968,6 +2045,72 @@ function readNextHTML(bai, congKhai) {
    Băm bằng tổng mã ký tự: không cần mạnh, chỉ cần TẤT ĐỊNH và rải tạm đều. */
 const OG_THEME = ['/og.jpg', '/og-thien-ha.jpg', '/og-tinh-lang.jpg'];
 
+/* ══════════ HAI NÚT GỐC CỦA ĐỒ THỊ DỮ LIỆU ══════════
+
+   ── VÌ SAO PHẢI CÓ `@id` ──
+   Trước bản này, mỗi trang tự khai một nút `Person` riêng: trang chủ một cái,
+   trang giới thiệu một cái, và MỖI BÀI thêm hai cái nữa (author + publisher).
+   Chín bài là hai mươi nút Person rời rạc, cùng tên mà không cái nào nói nó là
+   cùng một người với cái kia.
+
+   Google đọc ra: một trang web có rất nhiều người trùng tên. Không sai đủ để
+   báo lỗi, nhưng nó không gom được thành MỘT thực thể — và "About this page"
+   của Chrome, cùng panel tri thức, chỉ hiện được thứ gì đã gom thành thực thể.
+
+   `@id` là cách schema.org nói "hai nút này là một". Khai đúng một nút đầy đủ
+   ở trang chủ và trang giới thiệu, còn mọi chỗ khác chỉ trỏ tới `@id` ấy. Cả
+   trang web thành một đồ thị liền, không phải hai chục mảnh rời.
+
+   Dấu `#` là quy ước: `@id` phải DUY NHẤT toàn cầu, nên nó lấy tên miền làm
+   gốc; phần sau `#` chỉ là nhãn, không cần ứng với một trang thật nào. */
+const ID_TRANG   = () => `${CAU.url}${BASE}/#trang`;
+const ID_TAC_GIA = () => `${CAU.url}${BASE}/#tac-gia`;
+
+/* Nút Person ĐẦY ĐỦ. `sameAs` là thứ Google dựa vào nhiều nhất để nối một cái
+   tên với một người có thật ngoài đời — mỗi địa chỉ mạng xã hội là một phiếu
+   xác nhận. Để trống trong `site.config.json` thì khoá này biến mất hẳn, không
+   in ra một mảng rỗng (mảng rỗng là một câu khẳng định "người này không có mặt
+   ở đâu cả", khác hẳn với việc không nói gì). */
+function nutTacGia(moTa) {
+  const xh = Array.isArray(CAU.mangXaHoi) ? CAU.mangXaHoi.filter(Boolean) : [];
+  return {
+    '@type': 'Person',
+    '@id': ID_TAC_GIA(),
+    name: CAU.author,
+    url: `${CAU.url}${BASE}/`,
+    ...(moTa ? { description: moTa } : {}),
+    ...(coTrang('/about/') ? { mainEntityOfPage: `${CAU.url}${BASE}/about/` } : {}),
+    ...(xh.length ? { sameAs: xh } : {})
+  };
+}
+
+/* Nút WebSite đầy đủ. `potentialAction` là ô tìm kiếm Google có thể gắn ngay
+   dưới kết quả của trang — nó chỉ có nghĩa khi trang thật sự đọc được `?q=`,
+   và /search/ ở đây đọc được (xem src/js/search.js). Không có trang tìm kiếm
+   thì bỏ luôn khoá ấy: khai một hành động không làm được là nói dối máy. */
+function nutTrang() {
+  return {
+    '@type': 'WebSite',
+    '@id': ID_TRANG(),
+    name: CAU.title,
+    alternateName: CAU.tagline || undefined,
+    description: CAU.description,
+    url: `${CAU.url}${BASE}/`,
+    inLanguage: CAU.lang,
+    publisher: { '@id': ID_TAC_GIA() },
+    ...(coTrang('/search/') ? {
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${CAU.url}${BASE}/search/?q={search_term_string}`
+        },
+        'query-input': 'required name=search_term_string'
+      }
+    } : {})
+  };
+}
+
 function anhChiaSe(bai) {
   if (bai.cover) {
     return /^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`;
@@ -1977,9 +2120,24 @@ function anhChiaSe(bai) {
   return `${CAU.url}${BASE}${OG_THEME[h % OG_THEME.length]}`;
 }
 
+/* ── NGƯỠNG "BÀI DÀI" ──
+   Trên ngưỡng này, cụm tim · chia sẻ · bình luận THEO NGƯỜI ĐỌC: cuộn qua khỏi
+   hàng meta thì nó hiện lại ở một chỗ khác (cột phải ở khổ rộng, một cụm nổi ở
+   mép phải trên điện thoại). Xem src/js/cum-theo.js.
+
+   Bài NGẮN không cần: cả bài gọn trong một hai màn, nên hàng meta ở đầu chưa
+   bao giờ ra khỏi tầm mắt lâu, và một cụm nút nổi lên ở đó chỉ là thứ che mất
+   chữ.
+
+   2.500 ký tự ≈ 500 từ tiếng Việt ≈ chừng ba màn điện thoại — quãng mà người
+   đọc bắt đầu quên mất đầu bài có gì. Đếm trên bản CHỮ TRƠN (`tho`), không
+   đếm HTML: thẻ và đường dẫn ảnh không phải thứ người ta đọc. */
+const NGUONG_DAI = 2500;
+
 function trangBai(bai, congKhai) {
   const noiDung = dienMau(MAU_POST, {
     khung       : bai.khung,
+    baiDai      : String(bai.tho || '').length >= NGUONG_DAI ? ' data-dai' : '',
     /* Thuộc tính cho copy-guard.js. Để rỗng khi tắt trong cấu hình thì script
        không tìm thấy mốc và tự thoát ngay, không làm gì cả. */
     copyGuard   : (CAU.baoVeChu || {}).bat === false ? '' :
@@ -2056,6 +2214,11 @@ function trangBai(bai, congKhai) {
                  `<script src="${BASE}/assets/media.js" defer></script>` +
                  ((CAU.binhLuan || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/chia-se.js" defer></script>`) +
+                 /* Cụm nút đi theo người đọc — CHỈ ở bài dài. File tự thoát
+                    ngay dòng đầu khi `.post-layout` không có `data-dai`, nên
+                    nạp ở mọi trang bài cũng không tốn gì đáng kể. */
+                 ((CAU.binhLuan || {}).bat === false ? ''
+                   : `\n<script src="${BASE}/assets/cum-theo.js" defer></script>`) +
                  ((CAU.binhLuan || {}).bat === false ? ''
                      /* khoa.js đứng TRƯỚC comments.js: cả hai mang `defer` nên
                         chúng chạy đúng thứ tự thẻ, và comments.js hỏi
@@ -2090,8 +2253,11 @@ function trangBai(bai, congKhai) {
           inLanguage: bai.lang,
           wordCount: (bai.tho.match(/\S+/g) || []).length,
           image: [anhChiaSe(bai)],
-          author: { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` },
-          publisher: { '@type': 'Person', name: CAU.author },
+          /* Trỏ tới nút Person khai đầy đủ ở trang chủ, không khai lại ở đây
+             — lý do ở khối `@id` gần `OG_THEME`. */
+          author: { '@id': ID_TAC_GIA() },
+          publisher: { '@id': ID_TAC_GIA() },
+          isPartOf: { '@id': ID_TRANG() },
           mainEntityOfPage: { '@type': 'WebPage', '@id': `${CAU.url}${bai.url}` }
         },
         {
@@ -2334,12 +2500,28 @@ function trangTinh(t, soBai, soTag) {
                  (t.nen === 'dong' ? `\n<script src="${BASE}/assets/nen.js" defer></script>` : '') +
                  ((CAU.baoVeChu || {}).bat === false ? ''
                    : `\n<script src="${BASE}/assets/copy-guard.js" defer></script>`),
+    /* ── TRANG GIỚI THIỆU LÀ "TRANG HỒ SƠ" CỦA CHÍNH NGƯỜI ẤY ──
+       `ProfilePage` + `mainEntity` nói với Google: trang này KHÔNG phải một bài
+       viết về ai đó, nó LÀ trang chính thức của người này. Đó là mảnh dữ liệu
+       làm cho một cái tên thành một thực thể tra được, thay vì một chuỗi chữ.
+
+       Nút Person ở đây dùng CHUNG `@id` với nút khai ở trang chủ, nên hai bên
+       gộp làm một thay vì thành hai người trùng tên. Và vì nó đầy đủ hơn (có
+       câu giới thiệu thật do chính chủ viết trong about.md), nó là bản Google
+       nên đọc — `nutTacGia` nhận câu ấy làm `description`. */
     headExtra  : `<script type="application/ld+json">${JSON.stringify({
-      '@context': 'https://schema.org', '@type': 'ProfilePage',
-      name: t.title, description: t.summary, inLanguage: t.lang,
-      mainEntity: { '@type': 'Person', name: CAU.author,
-                    description: t.gioiThieu || t.summary,
-                    url: `${CAU.url}${BASE}/` }
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'ProfilePage',
+          name: t.title, description: t.summary, inLanguage: t.lang,
+          url: `${CAU.url}${t.url}`,
+          isPartOf: { '@id': ID_TRANG() },
+          mainEntity: { '@id': ID_TAC_GIA() }
+        },
+        nutTacGia(t.gioiThieu || t.summary),
+        nutTrang()
+      ]
     })}</script>`
   });
 }
@@ -2854,14 +3036,17 @@ function trangChu(bai) {
        Đưa lên `.shell` thì canvas phủ từ thanh đầu trang xuống hết chân
        trang, và trang đọc ra là MỘT tấm. */
     shellAttr: ' data-nen',
+    /* Trang chủ là nơi khai ĐẦY ĐỦ hai nút gốc; mọi trang khác chỉ trỏ tới
+       `@id` của chúng. Google coi trang chủ là trang đại diện cho cả tên miền,
+       nên WebSite và ô tìm kiếm phải nằm ở đây mới được đọc. */
     headExtra: `<script type="application/ld+json">${JSON.stringify({
       '@context': 'https://schema.org',
-      '@graph': [
-        { '@type': 'WebSite', name: CAU.title, description: CAU.description,
-          url: `${CAU.url}${BASE}/`, inLanguage: CAU.lang,
-          publisher: { '@type': 'Person', name: CAU.author } },
-        { '@type': 'Person', name: CAU.author, url: `${CAU.url}${BASE}/` }
-      ]
+      /* KHÔNG truyền `CAU.description` làm mô tả người: câu ấy tả cái BLOG
+         ("blog cá nhân về tâm lý, đời thường…"), không tả tác giả. Dán nó vào
+         nút Person là nói với Google rằng người này LÀ một blog. Câu tả người
+         nằm ở `gioiThieu` trong content/pages/about.md, và trang giới thiệu
+         mới là chỗ khai nó. */
+      '@graph': [nutTrang(), nutTacGia()]
     })}</script>`,
     scripts: `<script src="${BASE}/assets/nen.js" defer></script>\n` +
       `<script src="${BASE}/assets/man-dau.js" defer></script>\n` +
@@ -3226,7 +3411,12 @@ function trangGhiChu() {
 const AD_NGAN = [
   { ma: 'note',    nhan: () => NHAN.qlNote,    de: () => NHAN.qlViet,  o: 'data-viet-host' },
   { ma: 'comment', nhan: () => NHAN.qlComment, de: () => NHAN.qlDuyet, o: 'data-duyet-host' },
-  { ma: 'post',    nhan: () => NHAN.qlPost,    de: () => NHAN.qlBai,   o: 'data-viet-bai-host' }
+  { ma: 'post',    nhan: () => NHAN.qlPost,    de: () => NHAN.qlBai,   o: 'data-viet-bai-host' },
+  /* Ngăn chuyên mục đứng SAU ngăn bài, vì nó là việc làm một lần rồi thôi:
+     đặt tên cho mấy cái ngăn, viết một câu mô tả, rồi cả tháng không mở lại.
+     Ngăn bài thì mở mỗi lần viết. Thứ tự trong cột chọn việc đi theo tần suất
+     dùng, không đi theo thứ bậc dữ liệu. */
+  { ma: 'muc',     nhan: () => NHAN.qlMuc,     de: () => NHAN.qlMucDe, o: 'data-muc-host' }
 ];
 
 function trangChuTrang() {
@@ -3280,7 +3470,8 @@ function trangChuTrang() {
              `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
              `\n<script src="${BASE}/assets/duyet.js" defer></script>` +
              `\n<script src="${BASE}/assets/soan.js" defer></script>` +
-             `\n<script src="${BASE}/assets/viet-bai.js" defer></script>`
+             `\n<script src="${BASE}/assets/viet-bai.js" defer></script>` +
+             `\n<script src="${BASE}/assets/muc.js" defer></script>`
   });
 }
 
@@ -3532,8 +3723,9 @@ async function chay() {
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',
                      'bang-anh.js', 'xem.js', 'khoa.js', 'ghi-chu.js', 'duyet.js',
+                     'cum-theo.js',
                      'chia-se.js', 'logo-nhip.js', 'menu.js',
-                     'soan.js', 'viet-bai.js', 'admin.js']) {
+                     'soan.js', 'viet-bai.js', 'admin.js', 'muc.js']) {
       const goc = fs.readFileSync(path.join(THU_MUC.src, 'js', j), 'utf8');
       /* Lưới an toàn: thử DỊCH bản đã cắt trước khi ghi. new Function() dựng
          đúng bộ phân tích cú pháp của V8, nên nó bắt được mọi chỗ bộ đọc token

@@ -955,7 +955,8 @@ const KIEM = [
 
       for (const [o, ten] of [['data-viet-host', 'Note'],
                               ['data-duyet-host', 'Comment'],
-                              ['data-viet-bai-host', 'Post']]) {
+                              ['data-viet-bai-host', 'Post'],
+                              ['data-muc-host', 'Category']]) {
         if (!ql.html.includes(o)) ra.push(`/z-admin/ thiếu chỗ cắm ngăn ${ten} (${o})`);
       }
       if (!/data-bai-api="[^"]+"/.test(ql.html)) {
@@ -978,7 +979,7 @@ const KIEM = [
         }
       }
 
-      for (const j of ['admin.js', 'viet-bai.js']) {
+      for (const j of ['admin.js', 'viet-bai.js', 'muc.js']) {
         if (!ql.html.includes(`/assets/${j}`)) ra.push(`/z-admin/ không nạp ${j}`);
         if (!fs.existsSync(path.join(goc, 'dist', 'assets', j))) {
           ra.push(`thiếu dist/assets/${j} — thêm vào danh sách chép trong tools/build.mjs`);
@@ -986,11 +987,17 @@ const KIEM = [
       }
 
       /* Ngăn thứ hai trở đi PHẢI mang `hidden` ngay trong HTML tĩnh. Thiếu nó
-         thì trong khoảnh khắc trước lúc admin.js chạy, cả ba khung hiện chồng
-         lên nhau rồi hai cái biến mất — một cú giật thấy rõ mỗi lần mở trang. */
+         thì trong khoảnh khắc trước lúc admin.js chạy, cả mấy khung hiện chồng
+         lên nhau rồi lần lượt biến mất — một cú giật thấy rõ mỗi lần mở trang.
+
+         Đếm theo SỐ NGĂN THẬT thay vì gõ cứng một con số: thêm ngăn thứ tư
+         (Category) mà quên sửa phép kiểm thì nó báo lỗi ở đúng chỗ không có
+         lỗi, và người sửa mất một vòng mới biết là phép kiểm sai chứ không
+         phải trang sai. */
+      const tong = (ql.html.match(/role="tabpanel"/g) || []).length;
       const an = (ql.html.match(/role="tabpanel"[^>]*hidden/g) || []).length;
-      if (an !== 2) {
-        ra.push(`/z-admin/ có ${an} ngăn mang hidden sẵn, đáng lẽ 2 — mở trang sẽ thấy giật`);
+      if (tong && an !== tong - 1) {
+        ra.push(`/z-admin/ có ${tong} ngăn mà ${an} cái mang hidden sẵn, đáng lẽ ${tong - 1} — mở trang sẽ thấy giật`);
       }
       return ra;
     }
