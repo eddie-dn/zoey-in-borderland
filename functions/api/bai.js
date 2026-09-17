@@ -180,15 +180,90 @@ function b64(s) {
   return btoa(r);
 }
 
+/* ── HAI TẦNG, KHÔNG PHẢI MỘT ──
+   Kho bài có chuyên mục con thật: `doi-thuong/ha-noi`. Bản trước chỉ liệt kê
+   tầng một, nên ô chọn chuyên mục ở /z-admin/ không bao giờ có mục con — và
+   một bài đang nằm trong mục con mà mở ra sửa thì ô ấy không tìm thấy giá trị
+   của chính nó.
+
+   Đọc bằng CÂY kho mã, một lượt gọi, thay vì `/contents/` từng cấp: đi từng
+   cấp là một lượt gọi cho mỗi chuyên mục, mà Workers giới hạn số lượt trong
+   một request. Cây đằng nào cũng phải đọc cho bảng bài.
+
+   Dừng ở hai tầng. Sâu hơn thì đường dẫn bài dài tới mức không ai gõ lại
+   được, và trang Posts — vốn chỉ bày chuyên mục cấp một — hết chỗ để nói chúng
+   nằm ở đâu. */
 async function danhSachMuc(env) {
   const { ma, du } = await goiGH(env,
-    `/repos/${env.GH_REPO}/contents/${THU_MUC_BAI}?ref=${encodeURIComponent(nhanh(env))}`);
-  if (ma !== 200 || !Array.isArray(du)) return { ma, ds: null, du };
-  const ds = du
-    .filter((x) => x.type === 'dir' && !x.name.startsWith('_') && !x.name.startsWith('.'))
-    .map((x) => x.name)
+    `/repos/${env.GH_REPO}/git/trees/${encodeURIComponent(nhanh(env))}?recursive=1`);
+  if (ma !== 200 || !du || !Array.isArray(du.tree)) return { ma, ds: null, du };
+  const goc = THU_MUC_BAI + '/';
+  const ds = du.tree
+    .filter((x) => x.type === 'tree' && x.path.startsWith(goc))
+    .map((x) => x.path.slice(goc.length))
+    .filter((p) => p.split('/').length <= 2 &&
+                   p.split('/').every((t) => t && !t.startsWith('_') && !t.startsWith('.')))
     .sort();
   return { ma: 200, ds };
+}
+
+/* Đường dẫn chuyên mục hợp lệ: một hoặc hai tầng, mỗi tầng chỉ chữ thường, số
+   và gạch ngang. Dấu chấm cấm hẳn — ".." là đủ để đi ngược lên khỏi
+   content/posts và ghi vào chỗ khác trong kho mã. */
+const MUC_HOP_LE = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)?$/;
+
+/* Đường dẫn RIÊNG của một bài (phần sau ngày trong tên file). Cùng một luật
+   cho cả lượt đăng mới lẫn lượt dời bài, nên khai một chỗ: hai bản sao của một
+   biểu thức chính quy là hai chỗ để quên sửa. */
+const HOP_LE_SLUG = /^[a-z0-9][a-z0-9-]{0,80}$/;
+
+/* ══════════ ĐỌC / GHI _muc.json ══════════
+   Mỗi chuyên mục có thể có một `_muc.json`: tên hiện ra trên trang, câu mô tả
+   dưới tên ấy ở trang Posts, và thứ tự. Thiếu file thì bộ dựng lấy chính tên
+   thư mục làm tên — nên file này là TUỲ CHỌN, và ngăn Category ở /z-admin/ là
+   cách viết nó mà không phải mở kho mã. */
+async function danhSachMucDayDu(env) {
+  /* MỘT lượt đọc cây cho cả hai việc — danh sách thư mục và số bài trong từng
+     thư mục. Gọi `danhSachMuc()` ở đây rồi đọc cây lần nữa là hai lượt gọi ra
+     GitHub cho đúng một mẩu dữ liệu, mà Workers thì đếm từng lượt. */
+  const { ma, du: cay } = await goiGH(env,
+    `/repos/${env.GH_REPO}/git/trees/${encodeURIComponent(nhanh(env))}?recursive=1`);
+  if (ma !== 200 || !cay || !Array.isArray(cay.tree)) return { ma, ds: null };
+
+  const goc = THU_MUC_BAI + '/';
+  const sach = (p) => p.split('/').every((t) => t && !t.startsWith('_') && !t.startsWith('.'));
+  const ds = cay.tree
+    .filter((x) => x.type === 'tree' && x.path.startsWith(goc))
+    .map((x) => x.path.slice(goc.length))
+    .filter((p) => p.split('/').length <= 2 && sach(p))
+    .sort();
+
+  const dem = {};
+  for (const x of cay.tree) {
+    if (x.type !== 'blob' || !x.path.startsWith(goc) || !x.path.endsWith('.md')) continue;
+    const ten = x.path.split('/').pop();
+    if (ten.startsWith('_')) continue;
+    const m = x.path.slice(goc.length, x.path.length - ten.length - 1);
+    if (m) dem[m] = (dem[m] || 0) + 1;
+  }
+
+  const muc = await Promise.all(ds.map(async (m) => {
+    const r = await goiGH(env,
+      `/repos/${env.GH_REPO}/contents/${THU_MUC_BAI}/${m}/_muc.json?ref=${encodeURIComponent(nhanh(env))}`);
+    let cau = {}, sha = null;
+    if (r.ma === 200 && r.du && r.du.content) {
+      sha = r.du.sha;
+      try { cau = JSON.parse(giaiB64(r.du.content)) || {}; } catch (e) { cau = {}; }
+    }
+    return {
+      muc: m, sha,
+      title: String(cau.title || m),
+      description: String(cau.description || ''),
+      thuTu: Number.isFinite(cau.thuTu) ? cau.thuTu : null,
+      soBai: dem[m] || 0
+    };
+  }));
+  return { ma: 200, ds: muc };
 }
 
 /* ══════════ ĐỌC FRONT MATTER Ở PHÍA MÁY CHỦ ══════════
@@ -401,6 +476,17 @@ export async function onRequestGet({ request, env }) {
      và ba việc này dùng chung y hệt bộ canh ở trên. */
   const u = new URL(request.url);
   if (u.searchParams.get('ds') === '1') return danhSachBai(env, u.searchParams.get('tu'));
+  /* Bảng chuyên mục cho ngăn Category. Đi chung endpoint với bài vì nó dùng
+     đúng cặp khoá ấy, đúng kho mã ấy, và đọc đúng cái cây thư mục ấy — tách
+     ra một hàm riêng là thêm một chỗ nữa phải nhớ cấu hình. */
+  if (u.searchParams.get('muc') === '1') {
+    const { ma: m2, ds } = await danhSachMucDayDu(env);
+    if (!ds) {
+      return ra({ ok: false, loi: 'github',
+                  chiTiet: `không đọc được cây kho mã (GitHub trả ${m2})` }, 502);
+    }
+    return ra({ ok: true, muc: ds });
+  }
   const mo = u.searchParams.get('doc');
   if (mo) return docMotBai(env, mo);
 
@@ -453,13 +539,13 @@ export async function onRequestPost({ request, env }) {
      chút là ai có khoá cũng ghi đè được worker.js hay .github/workflows/ —
      tức là chạy được mã tuỳ ý trên kho mã. Nên: chỉ chữ thường, số và gạch
      ngang, không gì khác. Dấu chấm cũng cấm, vì ".." là đủ để đi ngược lên. */
-  const HOP_LE = /^[a-z0-9][a-z0-9-]{0,80}$/;
-
   const muc = String(b.muc || '').trim();
-  if (muc && !HOP_LE.test(muc)) loi.push('tên chuyên mục chỉ được có chữ thường, số và dấu gạch ngang');
+  if (muc && !MUC_HOP_LE.test(muc)) {
+    loi.push('chuyên mục chỉ được có chữ thường, số, gạch ngang, và tối đa một dấu /');
+  }
 
   const slug = slugify(b.slug || title);
-  if (!HOP_LE.test(slug)) loi.push('không rút được đường dẫn từ tiêu đề này');
+  if (!HOP_LE_SLUG.test(slug)) loi.push('không rút được đường dẫn từ tiêu đề này');
 
   const dsTag = rangTag(Array.isArray(b.tags) ? b.tags : String(b.tags || '').split(','));
   if (dsTag.length > 8) loi.push(`${dsTag.length} tag là nhiều quá — tối đa 8`);
@@ -691,7 +777,49 @@ export async function onRequestPut({ request, env }) {
   const tagDai = dsTag.find((t) => t.length > 40);
   if (tagDai) loi.push(`tag "${tagDai.slice(0, 20)}…" dài quá 40 ký tự`);
 
-  if (loi.length) return ra({ ok: false, loi: 'kiem', chiTiet: loi }, 400);
+  /* ── ĐỔI CHUYÊN MỤC / ĐƯỜNG DẪN / NGÀY = DỜI FILE ──
+     Đường dẫn của một bài tính từ CHỖ ĐẶT FILE: content/posts/<mục>/<ngày>-<slug>.md.
+     Nên đổi chuyên mục, đổi slug hay đổi ngày đều là dời file sang tên khác —
+     GitHub không có phép "đổi tên", nên nó là GHI MỚI rồi XOÁ CŨ.
+
+     Thứ tự bắt buộc: ghi bản mới TRƯỚC, xoá bản cũ SAU. Làm ngược lại thì giữa
+     hai lượt gọi bài không tồn tại ở đâu cả, và nếu lượt thứ hai hỏng thì mất
+     hẳn. Theo thứ tự này, hỏng ở bước nào cũng còn ít nhất một bản:
+       · ghi mới hỏng  → bản cũ nguyên vẹn, báo lỗi, không mất gì;
+       · xoá cũ hỏng   → có hai bản, báo rõ để chủ trang xoá tay một bản.
+     Hai bản thì xấu; không bản nào thì mất bài. */
+  const slugMoi = slugify(b.slug || title);
+  const mucMoi  = String(b.muc || '').trim();
+  const loiDuong = [];
+  if (!HOP_LE_SLUG.test(slugMoi)) loiDuong.push('đường dẫn bài không hợp lệ');
+  if (mucMoi && !MUC_HOP_LE.test(mucMoi)) {
+    loiDuong.push('chuyên mục chỉ được có chữ thường, số, gạch ngang, và tối đa một dấu /');
+  }
+  if (loiDuong.length) return ra({ ok: false, loi: 'kiem', chiTiet: loiDuong }, 400);
+
+  const duongMoi = (b.muc === undefined && b.slug === undefined)
+    ? duong
+    : [THU_MUC_BAI, mucMoi, `${date}-${slugMoi}.md`].filter(Boolean).join('/');
+  const doiCho = duongMoi !== duong;
+
+  if (doiCho) {
+    if (!ANTOAN_DUONG.test(duongMoi)) return ra({ ok: false, loi: 'duong' }, 400);
+    /* Chuyên mục phải là thư mục ĐANG CÓ — cùng luật với lượt đăng mới. */
+    if (mucMoi) {
+      const { ds: dsMuc } = await danhSachMuc(env);
+      if (dsMuc && !dsMuc.includes(mucMoi)) {
+        return ra({ ok: false, loi: 'muc',
+                    chiTiet: `chưa có chuyên mục "${mucMoi}"`, muc: dsMuc }, 400);
+      }
+    }
+    const { ma: maCo } = await goiGH(env,
+      `/repos/${env.GH_REPO}/contents/${duongMoi}?ref=${encodeURIComponent(nhanh(env))}`);
+    if (maCo === 200) {
+      return ra({ ok: false, loi: 'trung',
+                  chiTiet: `đã có ${duongMoi} — đổi đường dẫn hoặc đổi ngày`,
+                  duong: duongMoi }, 409);
+    }
+  }
 
   const file = dungFile({
     title, date, noiDung, tags: dsTag,
@@ -703,12 +831,16 @@ export async function onRequestPut({ request, env }) {
     khoaKhac: b.khoaKhac
   });
 
-  const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duong}`, {
+  /* Dời chỗ thì KHÔNG gửi `sha`: sha là mã băm của file ở đường dẫn CŨ, mà
+     đây là một file mới toanh ở đường dẫn khác — gửi kèm là GitHub từ chối. */
+  const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duongMoi}`, {
     method: 'PUT',
     body: JSON.stringify({
-      message: (b.hidden === true ? 'ẩn bài: ' : b.draft === true ? 'sửa nháp: ' : 'sửa bài: ') + title,
+      message: (doiCho ? 'dời bài: ' :
+                b.hidden === true ? 'ẩn bài: ' :
+                b.draft === true ? 'sửa nháp: ' : 'sửa bài: ') + title,
       content: b64(file),
-      sha,
+      ...(doiCho ? {} : { sha }),
       branch: nhanh(env)
     })
   });
@@ -722,11 +854,153 @@ export async function onRequestPut({ request, env }) {
                 chiTiet: (du && du.message) || 'GitHub từ chối ghi file' }, 502);
   }
 
+  /* ── XOÁ BẢN CŨ, SAU KHI BẢN MỚI ĐÃ NẰM YÊN ──
+     Tới đây bản mới chắc chắn đã ghi xong. Xoá hỏng thì bài vẫn còn — chỉ là
+     còn ở HAI chỗ — nên đây là lỗi phải NÓI RA chứ không phải lỗi phải chặn:
+     người ta cần biết để vào kho mã xoá tay một bản, không thì trang mọc ra
+     hai bài trùng nội dung ở hai đường dẫn. */
+  let soTay = null;
+  if (doiCho) {
+    const { ma: maXoa } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duong}`, {
+      method: 'DELETE',
+      body: JSON.stringify({
+        message: `dời bài — bỏ bản cũ: ${title}`, sha, branch: nhanh(env)
+      })
+    });
+    if (maXoa !== 200) soTay = duong;
+  }
+
   return ra({
-    ok: true, duong,
+    ok: true,
+    duong: duongMoi,
+    duongCu: doiCho ? duong : null,
+    /* Đường dẫn CÔNG KHAI của bài sau khi dời — thứ giao diện cần để nói
+       "link cũ sẽ gãy, đây là link mới". */
+    duongBai: '/posts/' + (mucMoi ? mucMoi + '/' : '') + slugMoi + '/',
+    soTay,
     sha: du && du.content ? du.content.sha : null,
     commit: du && du.commit ? du.commit.html_url : null,
     trang: b.hidden === true ? 'an' : b.draft === true ? 'nhap' : 'hien',
+    nhac: soTay
+      ? `Bản mới đã ghi, nhưng KHÔNG xoá được bản cũ ở ${soTay}. Vào kho mã xoá tay file ấy, không thì trang có hai bài trùng nhau.`
+      : 'Cloudflare đang dựng lại. Thay đổi lên sau khoảng một phút.'
+  });
+}
+
+/* ══════════ CHUYÊN MỤC: GHI VÀ XOÁ ══════════
+
+   Một chuyên mục KHÔNG phải một bản ghi trong cơ sở dữ liệu — nó là một thư
+   mục trong kho mã, và Git thì không có thư mục rỗng. Nên:
+
+     · TẠO một chuyên mục = ghi ra `content/posts/<tên>/_muc.json`. Chính file
+       ấy làm thư mục tồn tại.
+     · SỬA = ghi đè đúng file ấy (kèm `sha` để không đè mất bản người khác vừa
+       sửa).
+     · XOÁ = xoá file ấy, và CHỈ khi chuyên mục không còn bài nào. Xoá một
+       chuyên mục còn bài thì bài vẫn nằm đó, chỉ mất cái tên đẹp và câu mô tả
+       — một cách âm thầm.
+
+   Đặt chung endpoint /api/bai vì nó dùng đúng cặp khoá ấy và đúng kho mã ấy;
+   phân biệt bằng `?muc=`, nên POST/PUT của BÀI không bị đụng tới. */
+export async function onRequestPatch({ request, env }) {
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
+  if (!laChuTrang(request, env)) return ra({ ok: false, loi: 'khoa' }, 401);
+
+  const thieu = thieuCauHinh(env);
+  if (thieu.length) return ra({ ok: false, loi: 'cauhinh', thieu }, 503);
+
+  let b;
+  try { b = await request.json(); } catch (e) { return ra({ ok: false, loi: 'json' }, 400); }
+
+  const muc = String(b.muc || '').trim();
+  if (!MUC_HOP_LE.test(muc)) {
+    return ra({ ok: false, loi: 'kiem',
+                chiTiet: ['chuyên mục chỉ được có chữ thường, số, gạch ngang, và tối đa một dấu /'] }, 400);
+  }
+
+  const title = String(b.title || '').replace(/[\r\n]+/g, ' ').trim();
+  const moTa  = String(b.description || '').replace(/[\r\n]+/g, ' ').trim();
+  const loi = [];
+  if (!title) loi.push('chuyên mục phải có tên hiện ra trên trang');
+  if (title.length > 80) loi.push('tên chuyên mục dài quá 80 ký tự');
+  if (moTa.length > 300) loi.push('câu mô tả dài quá 300 ký tự');
+  const thuTu = b.thuTu === '' || b.thuTu == null ? null : Number(b.thuTu);
+  if (thuTu !== null && !Number.isFinite(thuTu)) loi.push('thứ tự phải là một con số');
+  if (loi.length) return ra({ ok: false, loi: 'kiem', chiTiet: loi }, 400);
+
+  const duong = `${THU_MUC_BAI}/${muc}/_muc.json`;
+  const cau = { title, description: moTa };
+  if (thuTu !== null) cau.thuTu = thuTu;
+  /* Xuống dòng ở cuối: file JSON trong kho mã nào cũng nên kết thúc bằng một
+     dòng trống, không thì `git diff` của lượt sửa sau hiện thêm một dòng
+     "\ No newline at end of file" chẳng liên quan gì tới thứ vừa đổi. */
+  const van = JSON.stringify(cau, null, 2) + '\n';
+
+  /* `sha` chỉ gửi khi SỬA. Tạo mới mà gửi kèm sha thì GitHub từ chối; sửa mà
+     KHÔNG gửi thì GitHub cũng từ chối. Giao diện đọc sha từ bảng chuyên mục,
+     nên nó biết mình đang ở ca nào. */
+  const sha = String(b.sha || '').trim();
+  const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${duong}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: `${sha ? 'sửa' : 'thêm'} chuyên mục: ${title}`,
+      content: b64(van),
+      ...(sha ? { sha } : {}),
+      branch: nhanh(env)
+    })
+  });
+  if (ma === 409 || ma === 422) {
+    return ra({ ok: false, loi: 'lechban',
+                chiTiet: 'Chuyên mục này vừa đổi ở chỗ khác. Tải lại bảng rồi sửa tiếp.' }, 409);
+  }
+  if (ma !== 200 && ma !== 201) {
+    return ra({ ok: false, loi: 'github', maGH: ma,
+                chiTiet: (du && du.message) || 'GitHub từ chối ghi file' }, 502);
+  }
+  return ra({
+    ok: true, muc,
+    sha: du && du.content ? du.content.sha : null,
+    commit: du && du.commit ? du.commit.html_url : null,
     nhac: 'Cloudflare đang dựng lại. Thay đổi lên sau khoảng một phút.'
   });
+}
+
+export async function onRequestDelete({ request, env }) {
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
+  if (!laChuTrang(request, env)) return ra({ ok: false, loi: 'khoa' }, 401);
+
+  const thieu = thieuCauHinh(env);
+  if (thieu.length) return ra({ ok: false, loi: 'cauhinh', thieu }, 503);
+
+  const u = new URL(request.url);
+  const muc = String(u.searchParams.get('muc') || '').trim();
+  if (!MUC_HOP_LE.test(muc)) return ra({ ok: false, loi: 'kiem', chiTiet: ['chuyên mục không hợp lệ'] }, 400);
+
+  /* ── CÒN BÀI THÌ KHÔNG XOÁ ──
+     Xoá `_muc.json` của một chuyên mục đang có bài không làm bài biến mất —
+     nó làm chuyên mục mất tên đẹp và mất câu mô tả, còn bài thì vẫn nằm đó
+     dưới một cái tên rút từ tên thư mục. Hỏng âm thầm, và phải mở trang Posts
+     mới thấy. Nên chặn ngay, kèm con số để người ta biết phải dọn bao nhiêu. */
+  const { ds } = await danhSachMucDayDu(env);
+  const cai = (ds || []).find((x) => x.muc === muc);
+  if (!cai) return ra({ ok: false, loi: 'kiem', chiTiet: [`chưa có chuyên mục "${muc}"`] }, 404);
+  if (cai.soBai > 0) {
+    return ra({ ok: false, loi: 'conbai', soBai: cai.soBai,
+                chiTiet: `chuyên mục này còn ${cai.soBai} bài — dời chúng sang chỗ khác trước đã` }, 409);
+  }
+  if (!cai.sha) {
+    return ra({ ok: false, loi: 'kiem',
+                chiTiet: ['chuyên mục này chưa có _muc.json để xoá'] }, 404);
+  }
+
+  const { ma, du } = await goiGH(env, `/repos/${env.GH_REPO}/contents/${THU_MUC_BAI}/${muc}/_muc.json`, {
+    method: 'DELETE',
+    body: JSON.stringify({ message: `bỏ chuyên mục: ${muc}`, sha: cai.sha, branch: nhanh(env) })
+  });
+  if (ma !== 200) {
+    return ra({ ok: false, loi: 'github', maGH: ma,
+                chiTiet: (du && du.message) || 'GitHub từ chối xoá file' }, 502);
+  }
+  return ra({ ok: true, muc, commit: du && du.commit ? du.commit.html_url : null,
+              nhac: 'Cloudflare đang dựng lại. Thay đổi lên sau khoảng một phút.' });
 }
