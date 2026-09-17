@@ -1591,3 +1591,95 @@ hai số ấy khớp nhau.
 Bật "giảm chuyển động" thì dừng hẳn ở hình đủ, không dừng ở một chặng giữa
 chừng. Hình đủ của logo này là **bông tám cánh**, nên mandala được giữ lại —
 dừng ở bốn cánh là dừng giữa chừng.
+
+---
+
+## 20 · BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH QUẢN TRỊ
+
+`/z-admin/` có ba ngăn, và cả ba làm cùng một loại việc: bày một danh sách để
+**điểm danh** rồi thao tác trên từng mục.
+
+| Ngăn | Mỗi hàng là | Nút trên hàng |
+|---|---|---|
+| Post | một bài đã đăng | Edit · Hide |
+| Category | một chuyên mục | Edit · Delete |
+| Comment | một bình luận chờ duyệt | Approve · Hide |
+
+### Chuyện đã xảy ra khi không có khuôn chung
+
+Ba ngăn ấy từng có ba bộ luật CSS riêng, viết ở hai file khác nhau. Chúng trôi
+xa nhau đúng như mọi bản sao vẫn trôi:
+
+- Post và Category ra **danh sách dòng**, mười lăm mục một màn.
+- Comment ra **một cọc thẻ có viền**, mỗi thẻ một nút bấm tô đầy, bốn mục một màn.
+
+Và một lỗi không ai nhìn ra bằng mắt thường: bàn duyệt gọi mỗi hàng là
+`.bl-dong` — **dòng**. Nút Back của khung bình luận cũng tên `.bl-dong` —
+**đóng**. Bỏ dấu đi thì hai từ ấy là một, nên mọi hàng ở bàn duyệt nhận trọn
+bộ luật của một cái nút: viền `inset` quanh người, lề trong 12px, hover thì
+sáng lên như sắp bấm được. Mấy cái khung hộp bao quanh từng bình luận là như
+thế mà ra — không ai cố ý vẽ chúng.
+
+> **Luật rút ra:** tên class tiếng Việt không dấu phải được đọc to lên trước
+> khi đặt. `dòng · đóng`, `mục · mực`, `tủ · tú` là một khi bỏ dấu.
+
+### Khuôn
+
+Khai một chỗ: khối `.ad-*` ở cuối `src/styles/list.css`.
+
+```
+.ad-thanh                 thanh trên: nút chính · ô tìm · ô chọn · chip lọc
+  .ad-tim                   ô lọc theo chữ  (.ad-tim--chon cho <select>)
+  .ad-loc                   hàng chip lọc — dùng .chip, xem components.css
+.ad-bang                  thân danh sách
+  .ad-dong                MỘT hàng — lưới 4 cột
+    .ad-phu                 cột 1 · ngày, mã chuyên mục, tên người gửi (mono, nhạt)
+    .ad-chinh               cột 2 · tiêu đề bài, tên mục, nội dung bình luận
+      .ad-mo                  dòng hai trong cột 2 — chuyên mục, mô tả, đường dẫn
+    .ad-cd                  cột 3 · trạng thái, LUÔN chiếm chỗ kể cả khi rỗng
+    .ad-nut-hang            cột 4 · các nút của hàng
+      .ad-nut                 nút chữ, không viền (.ad-nut--chinh cho nút chính)
+.ad-chan                  "đã tải 20 trên 63" + nút tải thêm
+```
+
+Biến thể: `.ad-dong--hai` (hàng chở hai tầng chữ), `.ad-dong--roi` (đã xử lý,
+mờ đi), `.ad-dong--xong` (đang trượt ra khỏi danh sách).
+
+### Bốn quyết định, và vì sao
+
+**Một DÒNG một mục, không phải một THẺ một mục.** Đây là bảng làm việc; ở bảng
+làm việc thì mật độ quan trọng hơn dáng vẻ. Nhìn một màn phải thấy mười lăm mục
+chứ không phải bốn — vì việc ở đây là *quét qua rồi quyết*, không phải *đọc*.
+
+**Nút trên hàng là nút CHỮ, không viền.** Hai nút mỗi hàng × mười lăm hàng =
+ba mươi cái viền, và lúc ấy bảng đọc ra là một cái lưới chứ không phải một danh
+sách. Nút chính (Approve) nổi hơn bằng **màu**, không bằng nền tô: một viên
+thuốc tô đầy trên mỗi hàng thì mười lăm hàng ra mười lăm viên thuốc.
+
+**Cột trạng thái luôn chiếm chỗ**, kể cả khi ô rỗng — không thì mỗi dòng một bề
+rộng khác nhau và hàng nút bên phải nhảy lung tung khi cuộn.
+
+**Khổ hẹp: gộp hai cột, nới vùng bấm.** Dưới 640px thì cột chính và hàng nút
+xuống dòng riêng, và mỗi nút chữ được nới vùng bấm bằng lề trong âm. Đo trên
+màn 390px: một nút chữ ra chừng 24px, mà ngón tay phủ tới 45px — và cái dễ bấm
+nhầm lại là cái **giấu hẳn** một bình luận.
+
+### Thẻ bình luận trên trang bài cũng theo nếp này
+
+`.bl-item` thôi mang `.card`. Ba lý do, nặng dần:
+
+1. **Mật độ** — bình luận ở blog này phần lớn dài một dòng; một dòng chữ trong
+   thẻ lề trong 24px bo góc 16px là một cái hộp gần trống.
+2. **Thứ bậc** — tấm thẻ kính là khuôn của thứ **bấm được** (thẻ bài, ô bento).
+   Bình luận không bấm được, nên nó mượn một tín hiệu không thuộc về mình.
+3. **Đồng bộ** — mọi danh sách khác trên trang đều là hàng-có-kẻ-ngăn.
+
+Bình luận của chủ trang: một **vạch dọc bên trái**, không tô nền cả khối. Nền
+tô làm khối ấy đọc ra như một ô nhấn (`:::note`) — tức là "đọc cái này trước",
+trong khi ý thật chỉ là "người này là chủ nhà".
+
+### Thêm một ngăn mới thì làm gì
+
+Dùng lại đúng bộ tên trên. Cần khác thì thêm **một lớp phụ**, không dựng bộ
+luật thứ hai. `npm run kiem` có một phép kiểm canh đúng chuyện này: mọi file
+quản trị dựng ra danh sách đều phải đi qua `.ad-dong`.

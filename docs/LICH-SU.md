@@ -33,6 +33,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V15.06 | 2026-09-17 | 06 | ô trích dẫn xin cả chùm câu, F5 là có câu mới; sửa ba hằng số đọc trước lúc gán làm lớp AI chưa từng chạy; thêm tác giả Việt vào kho nguồn |
+| V15.05 | 2026-09-17 | 05 | thẻ bình luận gọn lại thành hàng có kẻ ngăn; sửa hai tên lớp trùng nhau làm bàn duyệt mọc khung hộp |
+| V15.04 | 2026-09-17 | 04 | ba ngăn quản trị dùng chung một khuôn hàng; bàn duyệt bày theo dòng, hết cọc thẻ có viền; bảng bài lọc được theo chuyên mục |
 | V15.03 | 2026-09-17 | 03 | ô ảnh bìa ngay trong trang viết bài; bảng đo tiêu đề · tóm tắt · ảnh lúc đang gõ; thẻ chia sẻ khai đủ khổ ảnh để Messenger và Zalo vẽ được ô xem trước |
 | V15.02 | 2026-09-17 | 02 | mọi khối viết được đều có nút, không còn gì phải gõ tay; cú pháp hiện ngay cạnh từng nút; thêm khối tràn hết bề ngang màn hình |
 | V15.01 | 2026-09-17 | 01 | kéo thả ảnh thẳng vào khung soạn thảo; ảnh tự thu nhỏ và đổi định dạng ngay trên máy; bấm đúp vào ảnh để gõ dòng tả |
@@ -158,6 +161,61 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V15.06 — 17-Sep-2026
+
+- **Ba hằng số đọc trước lúc được gán — lớp AI của ô trích dẫn chưa từng chạy
+  một lần nào.** `var` được cất chỗ trước nhưng chưa gán giá trị, mà cả ba đều
+  khai BÊN DƯỚI dòng gọi. Hậu quả chia làm hai kiểu, và kiểu thứ hai mới đáng
+  sợ: một cái ném lỗi ngay (`undefined[3]`), hai cái kia **không ném gì cả** —
+  khoá kho đệm thành `undefined` nên kho không bao giờ được đọc, và địa chỉ gửi
+  đi thành `so=undefined` nên mỗi lượt chỉ xin được một câu. Ô trích dẫn vẫn có
+  chữ suốt thời gian đó, vì kho câu nhúng sẵn đã vẽ xong từ trước.
+- **F5 là có câu mới.** Lượt gọi đầu xin cả chùm năm câu rồi cất vào máy người
+  đọc; mỗi lần tải trang rút ra câu kế tiếp, hết chùm thì quay vòng. Đo bốn
+  lượt tải liên tiếp: một lượt gọi mạng, bốn câu khác nhau.
+- **Kho nguồn thêm tác giả Việt** — Trần Hưng Đạo, Phan Châu Trinh, Quang
+  Trung… kèm một dòng dặn riêng: nhân vật Việt thì chỉ trích câu có nguồn rõ,
+  không chắc thì bỏ qua người đó. Lời dặn cũng đổi để xin nhiều câu một lượt,
+  và `npm run kiem` có phép kiểm bắt lúc nó thiếu chỗ điền số câu.
+
+## V15.05 — 17-Sep-2026
+
+- **Một tên lớp đè lên một tên lớp khác, và không có gì báo.** Bàn duyệt gọi
+  mỗi hàng bình luận là `.bl-dong` — *dòng*. Nút Back của khung bình luận cũng
+  tên `.bl-dong` — *đóng*. Bỏ dấu thì hai từ ấy là một, nên mọi hàng ở bàn duyệt
+  nhận trọn bộ luật của một cái nút: viền quanh người, lề trong 12px, hover thì
+  sáng lên như sắp bấm được. **Mấy cái khung hộp bao quanh từng bình luận là
+  như thế mà ra** — không ai cố ý vẽ chúng. Luật rút ra, ghi vào tài liệu: tên
+  lớp tiếng Việt không dấu phải đọc to lên trước khi đặt.
+- **Thẻ bình luận thành hàng có kẻ ngăn.** Bình luận ở đây phần lớn dài một
+  dòng; một dòng chữ trong tấm thẻ kính lề trong 24px là một cái hộp gần trống.
+  Thêm nữa, thẻ kính là khuôn của thứ BẤM ĐƯỢC trên trang này — bình luận thì
+  không, nên nó đang mượn một tín hiệu không thuộc về mình.
+- **Bình luận của chủ trang: một vạch dọc bên trái**, thôi tô nền cả khối. Nền
+  tô làm khối ấy đọc ra như một ô nhấn — tức là "đọc cái này trước", trong khi
+  ý thật chỉ là "người này là chủ nhà". Huy hiệu AUTHOR cũng thôi làm viên
+  thuốc: nó đứng cạnh một cái tên cỡ 14px mà nặng hơn chính cái tên ấy.
+
+## V15.04 — 17-Sep-2026
+
+- **Ba ngăn quản trị, ba bộ luật CSS riêng — nay còn một.** Post, Category và
+  Comment đều bày một danh sách để điểm danh rồi thao tác, nhưng chúng được
+  viết ở hai file khác nhau và đã trôi xa nhau: hai ngăn ra danh sách dòng
+  **mười lăm mục một màn**, ngăn Comment ra một cọc thẻ có viền **bốn mục một
+  màn**. Khuôn chung `.ad-*` khai một chỗ; thêm ngăn mới thì dùng lại, cần khác
+  thì thêm một lớp phụ.
+- **Bàn duyệt duyệt theo dòng.** Tên người gửi · nội dung và đường dẫn · trạng
+  thái · Approve và Hide, tất cả trên một hàng. Approve thôi là nút tô đầy —
+  mười lăm hàng là mười lăm viên thuốc, và lúc ấy bảng đọc ra là một cái lưới
+  nút chứ không phải một danh sách. Nó vẫn nổi hơn Hide, bằng màu.
+- **Bảng bài lọc được theo chuyên mục.** Ô gõ cũ chỉ soi tiêu đề, nên câu hỏi
+  "mục tản mạn có những bài nào" không trả lời được — chuyên mục không nằm
+  trong tiêu đề. Nay có ô chọn kèm số bài từng mục, và mỗi hàng bày luôn bài đó
+  nằm ở mục nào (trước đây bảng không hề nói ra điều ấy).
+- **Luật này nay có phép kiểm canh.** `npm run kiem` bắt ngăn nào dựng danh
+  sách mà không đi qua khuôn chung, còn dùng tên đã bỏ, hay gõ một tên lớp
+  không có luật CSS nào. Đầy đủ ở `docs/DESIGN-SYSTEM.md` §20.
 
 ## V15.03 — 17-Sep-2026
 

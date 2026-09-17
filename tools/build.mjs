@@ -347,7 +347,10 @@ const NHAN = {
      chữa được, nên nó phải nói khác hẳn câu kia. */
   vbShown     : 'Loaded {n} of {t}.',
   vbMore      : 'Load more',
-  vbFind      : 'Filter by title',
+  vbFind      : 'Filter by title or category',
+  vbFindMuc   : 'Filter by category',
+  vbAllMuc    : 'All categories',
+  vbNoMuc     : '(none)',
   vbNoMatch   : 'Nothing matches, in what is loaded so far.',
   vbCapped    : 'The repository is too large to list in full.',
   /* ── ĐƯỜNG DẪN BÀI ──
@@ -546,6 +549,12 @@ const NHAN = {
   queue       : 'Waiting for review',
   /* Ba chip lọc của bàn duyệt. Mặc định bật "Pending": bàn duyệt là chỗ LÀM
      XONG một việc, không phải chỗ xem lại thứ đã xong. */
+  /* Cột trạng thái của mỗi hàng ở bàn duyệt. Khác hai nhãn chip ngay dưới:
+     chip là BỘ LỌC ("cho tôi xem những cái đang chờ"), còn hai nhãn này nói
+     hàng NÀY đang ở trạng thái nào. Dùng chung một chữ thì lúc lọc "Approved"
+     mà mọi hàng cũng ghi "Approved", đọc ra như bảng bị kẹt. */
+  blStateOff  : 'Pending',
+  blStateOn   : 'Live',
   blFPending  : 'Pending',
   blFDone     : 'Approved',
   blFAll      : 'All',
@@ -1046,7 +1055,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         badKey: NHAN.badKey, netErr: NHAN.netErr,
                         anon: NHAN.anon,
                         fPending: NHAN.blFPending, fDone: NHAN.blFDone,
-                        fAll: NHAN.blFAll, more: NHAN.vbMore
+                        fAll: NHAN.blFAll, more: NHAN.vbMore,
+                        stateOff: NHAN.blStateOff, stateOn: NHAN.blStateOn
                       }))}"`
                    : '',
                  /* ── NHÃN CỦA KHUNG ĐĂNG NHẬP ──
@@ -1096,6 +1106,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         empty: NHAN.vbEmptyList, capped: NHAN.vbCapped, clash: NHAN.vbClash,
                         shown: NHAN.vbShown, more: NHAN.vbMore,
                         find: NHAN.vbFind, noMatch: NHAN.vbNoMatch,
+                        findMuc: NHAN.vbFindMuc, allMuc: NHAN.vbAllMuc,
+                        noMuc: NHAN.vbNoMuc,
                         slug: NHAN.vbSlug, slugAuto: NHAN.vbSlugAuto,
                         slugMoved: NHAN.vbSlugMoved, slugLong: NHAN.vbSlugLong,
                         mucNew: NHAN.mucNew, mucAdd: NHAN.mucAdd,
@@ -2098,7 +2110,7 @@ function binhLuanHTML(bai) {
             thứ nó đối lập. */''}
       <div class="bl-chan">
         <span class="bl-con"></span>
-        <button type="button" class="btn btn--ghost bl-dong">${escapeHtml(NHAN.vbBack)}</button>
+        <button type="button" class="btn btn--ghost bl-lui">${escapeHtml(NHAN.vbBack)}</button>
         <button class="btn" type="submit">${NHAN.send}</button>
       </div>
     </form>

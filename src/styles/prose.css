@@ -742,13 +742,13 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
    đọc ra ngay là "chỗ làm việc" chứ không phải nội dung. Cùng khuôn với ô viết
    ghi chú ở /notes/#viet — hai chỗ làm cùng một loại việc thì nên trông giống
    nhau, để nhận ra ngay mình đang ở chế độ chủ trang. */
-.bl-duyet{
-  margin-bottom:var(--s7);
-  padding:var(--s5);
-  border-radius:var(--r-md);
-  border:1px dashed var(--line-strong);
-  background:var(--surface-sunken);
-}
+/* ── KHÔNG CÒN KHUNG HỘP NÉT ĐỨT ──
+   Nét đứt và nền chìm là để khối này đọc ra "chỗ làm việc" hồi nó còn mọc
+   được ngay giữa một trang bài (lối tắt `#duyet`, đã bỏ — xem đầu
+   src/js/duyet.js). Nay nó chỉ mọc trong một NGĂN ở /z-admin/, nơi cả trang
+   đã là chỗ làm việc: thêm một cái hộp nữa quanh nó là một tầng khung thừa,
+   và nó thành ngăn duy nhất trong ba ngăn có hộp riêng. */
+.bl-duyet{display:flex;flex-direction:column;gap:var(--s3)}
 .bl-duyet-de{
   margin:0 0 var(--s4);
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
@@ -770,52 +770,13 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
   outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);
 }
 
-/* Một dòng chờ duyệt. Dòng ĐÃ duyệt vẫn ở lại danh sách nhưng mờ đi — để còn
-   bỏ duyệt lại được nếu lỡ tay, mà không tranh chỗ với những dòng đang chờ. */
-.bl-dong{
-  padding:var(--s4) 0;
-  border-top:1px solid var(--line);
-  display:flex;flex-direction:column;gap:var(--s2);
-}
-.bl-dong--roi{opacity:.5}
+/* Hàng ở bàn duyệt nay dùng chung `.ad-dong` với ngăn Post và ngăn Category —
+   khai một chỗ, ở đầu khối `.ad-*` trong list.css. */
 /* ── HÀNG CHIP LỌC CỦA BÀN DUYỆT ──
    Cùng khuôn với hàng chip ở ngăn Post: hai bàn làm việc cạnh nhau thì không
    nên có hai kiểu lọc khác nhau. */
 .bl-duyet-loc{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 var(--s4)}
 .bl-duyet-them{display:block;margin:var(--s5) auto 0}
-/* Dòng vừa duyệt xong hoặc vừa ẩn: mờ và trượt đi trước khi rút khỏi danh
-   sách. Biến mất phụt một cái thì mắt không kịp thấy dòng nào vừa đi, và cả
-   danh sách nhảy lên một nấc mà không rõ vì sao. */
-.bl-dong--xong{
-  opacity:0;transform:translateX(12px);
-  transition:opacity .28s var(--ease-glass),transform .28s var(--ease-glass);
-}
-@media (prefers-reduced-motion:reduce){.bl-dong--xong{transition:none}}
-.bl-dong-dau{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:baseline}
-.bl-dong-trang{
-  font-family:var(--font-mono);font-size:var(--fs-2xs);
-  color:var(--text-faint);text-decoration:none;
-}
-.bl-dong-trang:hover{color:var(--accent-ink);text-decoration:underline}
-.bl-dong-nut{display:flex;gap:var(--s3);align-items:center}
-/* ── "HIDE" PHẢI BẤM TRÚNG ĐƯỢC BẰNG NGÓN TAY ──
-   Đo trên màn 390px: nút này ra đúng 24×18px, nằm ngay cạnh một nút Approve
-   rộng 106px. Ngón tay cỡ trung bình phủ chừng 45px, nên hai nút ấy là một cái
-   bẫy — và cái dễ bấm nhầm lại là cái GIẤU HẲN một bình luận.
-
-   Giữ nguyên dáng chữ gạch chân (nó là hành động phụ, không phải nút chính),
-   chỉ nới vùng bấm ra bằng lề trong. Trên máy có con trỏ thì 18px đã đủ, nên
-   phần nới này chỉ có ở khổ hẹp. */
-.bl-dong-an{
-  font:inherit;font-size:var(--fs-2xs);cursor:pointer;
-  background:none;border:none;padding:0;color:var(--text-faint);
-  text-decoration:underline;text-underline-offset:3px;
-}
-.bl-dong-an:hover{color:var(--bad)}
-@media (max-width:640px){
-  .bl-dong-nut{gap:var(--s5)}
-  .bl-dong-an{padding:13px var(--s3);margin:-13px 0}
-}
 .bl-duyet-quen{
   margin-top:var(--s4);
   font:inherit;font-size:var(--fs-2xs);cursor:pointer;
@@ -907,18 +868,39 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 .bl-bao--loi{color:var(--bad)}
 .bl-bao--cho{color:var(--text-faint);font-style:italic}
 
-.bl-ds{list-style:none;padding:0;margin:var(--s7) 0 0;
-  display:flex;flex-direction:column;gap:var(--s4)}
+/* ══════════ MỘT BÌNH LUẬN ══════════
+   Hàng có đường kẻ ngăn, không phải thẻ có khung. Ba lý do, theo thứ tự nặng
+   dần:
+
+   · Mật độ. Bình luận trên blog này phần lớn dài một dòng. Một dòng chữ trong
+     một tấm thẻ lề trong 24px, bo góc 16px, là một cái hộp gần trống — và
+     mười cái hộp như thế thì phần đọc được chiếm chưa tới một phần ba chiều
+     cao khối.
+   · Thứ bậc. Tấm thẻ kính là khuôn của một thứ BẤM ĐƯỢC ở trang này (thẻ bài,
+     ô bento). Bình luận thì không bấm được, nên nó mượn một tín hiệu không
+     thuộc về mình.
+   · Đồng bộ. Mọi danh sách khác — bảng bài, bảng chuyên mục, bàn duyệt — đều
+     là hàng-có-kẻ-ngăn. Chỉ riêng chỗ này là cọc thẻ. */
+.bl-ds{list-style:none;padding:0;margin:var(--s6) 0 0;
+  display:flex;flex-direction:column}
 .bl-ds:empty{margin:0}
-.bl-item{gap:var(--s2);padding:var(--s5)}
-.bl-dau{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3)}
-.bl-ten{font-weight:600;font-size:calc(var(--fs-base) * .94)}
-.bl-luc{font-size:var(--fs-sm);color:var(--text-faint);
+.bl-item{
+  display:flex;flex-direction:column;gap:5px;
+  padding:var(--s4) 0;
+  border-top:1px solid var(--line);
+}
+.bl-ds > .bl-item:first-child{border-top:0;padding-top:0}
+.bl-dau{display:flex;align-items:baseline;gap:var(--s3)}
+/* Tên nhỏ hơn thân chữ một bậc và không in đậm hẳn: nó là NHÃN của đoạn chữ
+   dưới nó, không phải một tiêu đề. Đậm bằng cỡ tiêu đề thì mắt đọc tên trước,
+   rồi mới tới thứ người ta thật sự muốn đọc. */
+.bl-ten{font-weight:600;font-size:var(--fs-sm);color:var(--text)}
+.bl-luc{font-size:var(--fs-2xs);color:var(--text-faint);
   font-variant-numeric:tabular-nums;flex:none}
 /* pre-line giữ lại chỗ người ta xuống dòng, nhưng KHÔNG giữ khoảng trắng thừa —
    nên không ai đẩy được nội dung lệch đi bằng một dãy dấu cách. */
-.bl-nd{margin:0;white-space:pre-line;font-size:calc(var(--fs-base) * .96);
-  line-height:1.7;color:var(--text-muted);overflow-wrap:break-word}
+.bl-nd{margin:0;white-space:pre-line;font-size:calc(var(--fs-base) * .94);
+  line-height:1.62;color:var(--text-muted);overflow-wrap:break-word}
 
 /* ── ĐẦU KHỐI ──
    Nút đóng mở nay là một trong hai cái nút tròn ở `.bl-dau`, nên nó thôi
@@ -934,22 +916,32 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 }
 
 /* ── HUY HIỆU TÁC GIẢ ── */
+/* Huy hiệu tác giả: chỉ còn chữ, không còn viên thuốc. Nó đứng cạnh một cái
+   tên cỡ 14px, nên một viên thuốc có nền và viền quanh nó nặng hơn chính cái
+   tên nó đi kèm — và trên một khối mười bình luận của chủ trang thì mười viên
+   thuốc ấy là thứ đập vào mắt trước cả nội dung. */
 .bl-hh{
-  flex:none;padding:2px 8px 3px;border-radius:var(--r-pill);
-  background:var(--accent-wash);box-shadow:inset 0 0 0 1px var(--line);
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+  flex:none;padding:0;background:none;box-shadow:none;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
 }
 /* Dòng đầu là  tên · huy hiệu ·········· ngày. `margin-left:auto` trên thẻ
    thời gian đẩy nó sang hẳn mép phải, chừa tên và huy hiệu đứng liền nhau bên
    trái. Không có nó thì justify-content dàn đều ba thứ và huy hiệu trôi ra
    giữa dòng, trông như một cái tag lạc chỗ. */
 .bl-dau .bl-luc{margin-left:auto}
-.bl-item--chu{box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-wash)}
+/* Bình luận của chủ trang: một vạch dọc bên trái, không tô nền cả khối. Nền
+   tô làm khối ấy đọc ra như một ô nhấn (kiểu `:::note`), tức là "đọc cái này
+   trước" — mà ý thật chỉ là "người này là chủ nhà". */
+.bl-item--chu{
+  padding-left:var(--s4);
+  border-left:2px solid var(--accent);
+  box-shadow:none;background:none;
+}
 
 /* ── NÚT TRẢ LỜI ── */
 .bl-tra,.bl-them{
-  align-self:flex-start;padding:2px 0;margin-top:var(--s1);
+  align-self:flex-start;padding:2px 0;margin-top:0;
   background:none;border:none;cursor:pointer;
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;
@@ -967,7 +959,7 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
   border-left:2px solid var(--line);
 }
 .bl-ds--con{margin:0;gap:var(--s3)}
-.bl-item--con{padding:var(--s4) 0 0;background:none;box-shadow:none}
+.bl-item--con{padding:var(--s4) 0 0;background:none;box-shadow:none;border-top:0}
 .bl-item--con .bl-nd{font-size:calc(var(--fs-base) * .92)}
 /* Trả lời của chủ trang trong nhánh: không dựng lại cả tấm kính, chỉ đổi màu
    đường kẻ bên trái — tấm kính lồng trong tấm kính nhìn rối. */
@@ -1071,7 +1063,17 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 
    Viền rõ, cùng cỡ cùng bo góc với Send, chỉ khác chỗ không tô đầy: hai ngã
    của một quyết định thì phải cùng hình dạng, và khác nhau đúng ở SỨC NẶNG. */
-.bl-dong{
+/* ── TÊN CŨ `.bl-dong` ĐÃ ĐÈ LÊN MỘT THỨ KHÁC SUỐT MẤY BẢN ──
+   Bàn duyệt gọi mỗi hàng bình luận là `.bl-dong` — DÒNG. Nút này gọi mình là
+   `.bl-dong` — ĐÓNG. Bỏ dấu đi thì hai từ ấy là một, nên mọi hàng ở bàn duyệt
+   nhận trọn bộ luật của một cái nút: viền `inset` quanh người, lề trong 12px,
+   và hover thì sáng lên như sắp bấm được. Đó chính là mấy cái khung hộp bao
+   quanh từng bình luận — không ai cố ý vẽ chúng ra cả.
+
+   Không có gì báo, vì cả hai tên đều "đúng" ở chỗ của mình. Nay nút là
+   `.bl-lui`, còn hàng ở bàn duyệt là `.ad-dong` dùng chung với hai ngăn kia —
+   cái tên `.bl-dong` không còn ai mang, nên không đụng nhau được nữa. */
+.bl-lui{
   /* Lề trong và bo góc gõ thẳng cho khớp `.btn`: nút này thừa kế từ một luật
      khác ở đâu đó đặt `padding-inline:0`, nên vòng viền bó sát chữ và cái pill
      cao hơn Send 9px — hai nút cạnh nhau mà lệch chiều cao thì đọc ra là hỏng. */
@@ -1079,7 +1081,7 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
   box-shadow:inset 0 0 0 1px var(--line-strong);
   background:none;color:var(--text-muted);
 }
-.bl-dong:hover{
+.bl-lui:hover{
   box-shadow:inset 0 0 0 1px var(--accent);
   color:var(--accent-ink);background:var(--accent-wash);
 }

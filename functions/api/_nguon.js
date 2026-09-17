@@ -75,7 +75,18 @@ export default {
     "Annie Dillard",
     "Mary Oliver",
     "John Berger",
-    "Susan Sontag"
+    "Susan Sontag",
+    "Hồ Chí Minh",
+    "Võ Nguyên Giáp",
+    "Trần Hưng Đạo",
+    "Lý Thường Kiệt",
+    "Quang Trung",
+    "Lê Lợi",
+    "Phan Châu Trinh",
+    "Phan Bội Châu",
+    "Miyamoto Musashi",
+    "Carl von Clausewitz",
+    "Niccolò Machiavelli"
   ],
-  "nhac": "Chọn MỘT câu nói CÓ THẬT về chủ đề: {{chuDe}}.\n\nChỉ lấy của một trong những người sau: {{nguon}}.\n\nDịch sang tiếng Việt gọn gàng, TRỌN VẸN một ý, dài 60 đến 115 ký tự — kể cả\nphần tên tác giả thì đừng vượt 150. Ưu tiên câu có hai vế: câu quá ngắn thì ô\ntrích dẫn chừa một mảng trống bên phải, nhìn như bị cắt.\n\nTrả về đúng một dòng theo khuôn: Nội dung câu nói — Tên tác giả\n\nChỉ dùng câu CÓ THẬT, KHÔNG bịa, không gán nhầm tác giả — không chắc ai nói thì\nchọn câu khác. Không emoji, không dấu ngoặc kép, không lời dẫn, không giải\nthích, không xuống dòng."
+  "nhac": "Chọn {{so}} câu nói CÓ THẬT và KHÁC NHAU về chủ đề: {{chuDe}}.\n\nChỉ lấy của những người sau: {{nguon}}. Mỗi câu một tác giả khác nhau.\n\nDịch sang tiếng Việt gọn gàng, TRỌN VẸN một ý, dài 60 đến 115 ký tự — kể cả\nphần tên tác giả thì đừng vượt 150. Ưu tiên câu có hai vế: câu quá ngắn thì ô\ntrích dẫn chừa một mảng trống bên phải, nhìn như bị cắt.\n\nTrả về đúng {{so}} dòng, mỗi dòng một câu theo khuôn:\nNội dung câu nói — Tên tác giả\n\nKhông đánh số, không gạch đầu dòng, không chừa dòng trống giữa các câu.\n\nChỉ dùng câu CÓ THẬT, KHÔNG bịa, không gán nhầm tác giả — không chắc ai nói thì\nchọn câu khác. Với các nhân vật Việt Nam, chỉ trích câu có nguồn rõ ràng; không\nchắc thì bỏ qua người đó và chọn tác giả khác trong danh sách. Không emoji,\nkhông dấu ngoặc kép, không lời dẫn, không giải thích."
 };

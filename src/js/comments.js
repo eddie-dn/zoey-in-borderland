@@ -241,7 +241,7 @@
        nhất, nên trạng thái `aria-expanded`, việc dời chỗ và cú cuộn đều đi qua
        cùng một chỗ. Dựng riêng một đường đóng thứ hai là sớm muộn có một đường
        quên cập nhật một thứ. */
-    var nutDong = than.querySelector('.bl-dong');
+    var nutDong = than.querySelector('.bl-lui');
     if (nutDong) nutDong.addEventListener('click', function () { nutMo.click(); });
 
     nutMo.addEventListener('click', function () {
@@ -372,7 +372,12 @@
 
   function veMot(c, laCon) {
     var li = document.createElement('li');
-    li.className = 'bl-item' + (laCon ? ' bl-item--con' : ' card');
+    /* Thôi mang `.card`. Một bình luận ba chữ ("hay quá chị") trong một tấm
+       thẻ kính bo góc lớn với lề trong 24px là một cái hộp gần trống, và mười
+       cái hộp như thế xếp dọc thì phần đọc được chiếm chưa tới một phần ba
+       chiều cao. Nay là một HÀNG có đường kẻ ngăn — cùng nếp với bảng làm việc
+       ở /z-admin/, và cùng nếp với mọi danh sách khác trên trang. */
+    li.className = 'bl-item' + (laCon ? ' bl-item--con' : '');
     if (c.chu) li.className += ' bl-item--chu';
 
     var dau = document.createElement('div');

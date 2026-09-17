@@ -622,6 +622,14 @@ const KIEM = [
       if (k.nhac && !/\{\{nguon\}\}/.test(k.nhac)) {
         r.push('content/quote-nguon.md: `### Lời dặn` thiếu {{nguon}} — bốc tác giả xong không gửi đi đâu cả');
       }
+      /* Thiếu {{so}} thì hàm vẫn chạy — nó tự hiểu là xin một câu. Nhưng lúc ấy
+         mỗi lượt gọi chỉ về đúng một câu, kho đệm trong máy người đọc chỉ có
+         một phần tử, và F5 lại gặp y câu cũ. Hỏng đúng thứ vừa dựng ra, mà
+         không một dòng lỗi nào. */
+      if (k.nhac && !/\{\{so\}\}/.test(k.nhac)) {
+        r.push('content/quote-nguon.md: `### Lời dặn` thiếu {{so}} — mỗi lượt gọi ' +
+               'chỉ xin được một câu, nên F5 lại gặp câu cũ');
+      }
       return r;
     }
   },
@@ -929,6 +937,76 @@ const KIEM = [
       const g = dungMD('~~bỏ~~ và H~2~O').html;
       if (!g.includes('<del>bỏ</del>') || !g.includes('<sub>2</sub>')) {
         ra.push('`~~gạch~~` và `~dưới~` đang ăn nhau — kiểm lại hai chốt [^~] và (?!~)');
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── BA NGĂN QUẢN TRỊ PHẢI ĐI CHUNG MỘT KHUÔN HÀNG ──
+       Post, Category và Comment đều bày một danh sách để điểm danh rồi thao
+       tác. Ba ngăn ấy TỪNG có ba bộ luật CSS riêng ở hai file khác nhau, và
+       chúng trôi xa nhau: hai ngăn ra danh sách dòng mười lăm mục một màn,
+       ngăn còn lại ra một cọc thẻ có viền bốn mục một màn. Không có gì báo,
+       vì mỗi bộ luật đều "đúng" trong phạm vi của nó.
+
+       Phép kiểm này canh ba điều, và cả ba đều là chuyện đã xảy ra thật:
+
+       1. Ngăn nào dựng danh sách cũng phải đi qua `.ad-dong`. Thiếu là có
+          người vừa dựng bộ luật thứ hai.
+       2. Không file nào còn dùng tên của mấy bộ luật đã bỏ. Sót một tên là
+          ngăn ấy lặng lẽ không có luật nào, hoặc tệ hơn: nhặt phải luật của
+          một thứ khác trùng tên (xem `.bl-dong` ở §20 DESIGN-SYSTEM).
+       3. Mọi tên `.ad-*` gõ trong JS phải có luật CSS đi kèm — gõ sai một chữ
+          thì hàng ấy mất đúng một thuộc tính, và mắt không bắt được.
+
+       Đầy đủ: docs/DESIGN-SYSTEM.md §20. */
+    ten: 'Ba ngăn quản trị dùng chung một khuôn hàng .ad-*',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const NGAN = ['viet-bai.js', 'muc.js', 'duyet.js'];
+      /* Tên của mấy bộ luật cũ. `bl-dong` nằm đây vì nó vừa là tên hàng cũ của
+         bàn duyệt, vừa là tên một cái NÚT — đúng cặp đã đụng nhau. */
+      const BO = ['vb-dong', 'vb-cd', 'vb-nho', 'vb-bang', 'vb-chan', 'vb-loc',
+                  'vb-tim', 'vb-thanh', 'mc-dong-ql', 'ql-mo', 'bl-dong'];
+      const ra = [];
+
+      const css = ['list.css', 'prose.css', 'components.css']
+        .map((f) => {
+          const d = path.join(goc, 'src', 'styles', f);
+          return fs.existsSync(d) ? fs.readFileSync(d, 'utf8') : '';
+        })
+        .join('\n')
+        /* Bỏ chú thích TRƯỚC khi dò: file CSS ở đây chú thích dày hơn mã, và
+           gần như mọi tên lớp đều được nhắc trong một câu giải thích nào đó.
+           Không bỏ thì phép kiểm không bao giờ đỏ được — đã vấp đúng bẫy này
+           một lần ở phép kiểm nét-có-nút. */
+        .replace(/\/\*[\s\S]*?\*\//g, ' ');
+      const coLuat = (lop) =>
+        new RegExp('\\.' + lop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\w-])').test(css);
+
+      for (const ten of NGAN) {
+        const f = path.join(goc, 'src', 'js', ten);
+        if (!fs.existsSync(f)) { ra.push(`thiếu src/js/${ten}`); continue; }
+        const ma = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
+
+        if (!/\bad-dong\b/.test(ma)) {
+          ra.push(`src/js/${ten} dựng danh sách mà không dùng .ad-dong — ` +
+                  'xem docs/DESIGN-SYSTEM.md §20');
+        }
+        for (const cu of BO) {
+          if (new RegExp('(?<![\\w-])' + cu + '(?![\\w-])').test(ma)) {
+            ra.push(`src/js/${ten} còn dùng tên đã bỏ "${cu}" — đổi sang bộ .ad-*`);
+          }
+        }
+        /* Tên gõ ghép động (`'ad-cd ad-cd--' + trang`) để lại một đuôi `--`;
+           cắt đi rồi mới tra, vì phần biến thiên nằm ở CSS dưới dạng nhiều
+           luật riêng và không đoán được từ đây. */
+        const dung = new Set(
+          [...ma.matchAll(/\bad-[a-z0-9-]+/g)].map((m) => m[0].replace(/-+$/, ''))
+        );
+        for (const lop of dung) {
+          if (!coLuat(lop)) ra.push(`src/js/${ten} gõ .${lop} nhưng không có luật CSS nào`);
+        }
       }
       return ra;
     }
@@ -1716,7 +1794,7 @@ const KIEM = [
         if (/class="cum-nhan"/.test(t.html)) {
           ra.push(`${t.url} — còn nhãn "Leave a note"; ba icon đã nói thay nó`);
         }
-        if (!/class="btn btn--ghost bl-dong"/.test(t.html)) {
+        if (!/class="btn btn--ghost bl-lui"/.test(t.html)) {
           ra.push(`${t.url} — khung bình luận thiếu nút Back`);
         }
 

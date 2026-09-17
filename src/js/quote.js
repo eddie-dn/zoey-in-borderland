@@ -138,6 +138,22 @@
               khác thường.
            3. BỎ CUỘC SAU 3 GIÂY. Lâu hơn thì thà giữ câu sẵn: không ai chờ
               một ô trích dẫn. */
+      /* ── HAI HẰNG SỐ NÀY PHẢI ĐỨNG TRÊN DÒNG GỌI ──
+         Chúng từng khai ở giữa khối, BÊN DƯỚI dòng ngay sau đây. `var` được
+         cất chỗ trước nhưng chưa gán, nên lúc `xinGemini()` chạy thì cả hai
+         còn là `undefined` — và cái giá phải trả im lặng đúng hai chỗ:
+
+           · `localStorage.getItem(undefined)` luôn trả null, nên kho đệm KHÔNG
+             BAO GIỜ được đọc: mỗi lượt tải trang là một lượt gọi Gemini nữa,
+             đúng thứ cả cơ chế này sinh ra để tránh;
+           · địa chỉ gửi đi thành `...&so=undefined`, hàm rơi về mặc định 1 câu,
+             nên chùm chỉ có một phần tử và F5 lại gặp y câu cũ.
+
+         Cả hai đều KHÔNG ném lỗi và không đổi gì trên màn hình. Xem thêm chú
+         thích cùng loại trong `moc()` ngay dưới. */
+      var KHO    = 'zib-quote-kho';
+      var SO_XIN = 5;   /* xin mấy câu một lượt — đủ cho vài lần F5, chưa tốn */
+
       if (hop.dataset.api) xinGemini(hop.dataset.api);
 
       /* ══════════ MỐC GIỜ CHIA KHUNG ══════════
@@ -160,8 +176,6 @@
          Số này do build in ra `data-khung` từ `quoteAI.khung`. Thiếu thẻ ấy
          (chưa bật lớp Gemini, hoặc HTML dựng từ bản cũ) thì rơi về 1 — tức là
          y hệt nếp cũ, không phải hỏng. */
-      var MOC_KHUNG = { 1: [0], 2: [5, 17], 3: [5, 12, 18], 4: [5, 11, 15, 20] };
-
       function p2(n) { return (n < 10 ? '0' : '') + n; }
 
       /* Dạng YYYY-MM-DD theo GIỜ MÁY người đọc. Không dùng toISOString(): hàm
@@ -183,6 +197,22 @@
          Với số khung = 1 thì mốc là [0], `gio >= 0` luôn đúng, không bao giờ
          lùi ngày — nếp cũ giữ nguyên từng chi tiết. */
       function moc() {
+        /* ── BẢNG NẰM TRONG HÀM, KHÔNG NẰM NGOÀI ──
+           Nó từng là `var MOC_KHUNG` khai ở giữa khối, BÊN DƯỚI dòng gọi
+           `xinGemini()`. `var` thì được cất chỗ trước nhưng CHƯA gán, nên lúc
+           `moc()` chạy thì nó còn là `undefined`, và `undefined[3]` ném lỗi
+           ngay dòng đầu.
+
+           Hậu quả không nhìn ra được bằng mắt: ô trích dẫn vẫn có câu — kho
+           câu nhúng sẵn đã vẽ xong từ trước — nên trang trông bình thường,
+           trong khi CẢ lớp Gemini chưa từng chạy một lần nào. Lỗi chỉ hiện
+           trong bảng điều khiển của trình duyệt, chỗ không ai mở ra xem.
+
+           Đây là lần thứ hai đúng lỗi này trong dự án (lần trước: bảng khối ở
+           src/js/soan.js). Khai báo HÀM thì được đưa lên trước; khai báo BIẾN
+           thì không. Bảng nào chỉ một hàm dùng thì để hẳn trong hàm ấy — chỗ
+           duy nhất không thể đọc trước lúc gán. */
+        var MOC_KHUNG = { 1: [0], 2: [5, 17], 3: [5, 12, 18], 4: [5, 11, 15, 20] };
         var so = parseInt(hop.getAttribute('data-khung'), 10) || 1;
         var mo = MOC_KHUNG[so] || MOC_KHUNG[3];
         var d = new Date();
@@ -193,10 +223,21 @@
         return { ngay: ymd(d), khung: i, so: mo.length };
       }
 
-      /* Cả hai đường (tự xin lúc tải trang, và bấm nút) đều cất qua đây, nên
-         chỉ có MỘT chỗ biết hình dạng của bản lưu. */
-      function luu(x) {
-        try { localStorage.setItem('zib-quote', JSON.stringify(x)); } catch (e) {}
+      /* ══════════ KHO ĐỆM TRONG MÁY NGƯỜI ĐỌC ══════════
+
+         Bản trước cất ĐÚNG MỘT câu cho mỗi khung giờ, nên F5 bao nhiêu lần
+         cũng gặp lại nó. Nay lượt gọi đầu xin cả CHÙM câu rồi cất vào đây, và
+         mỗi lần tải trang rút ra câu kế tiếp.
+
+         Được hai thứ cùng lúc: người đọc quay lại là có câu mới, mà cả khung
+         giờ vẫn chỉ tốn ĐÚNG MỘT lượt gọi Gemini trên một máy.
+
+         Hết chùm thì QUAY VÒNG lại từ đầu chứ không xin thêm — xin thêm nghĩa
+         là ai bấm F5 nhiều thành ra tốn nhiều lượt gọi, đúng cái vừa tránh
+         được. Sang khung giờ mới thì khoá đổi, chùm cũ thành vô hiệu, và lượt
+         gọi tiếp theo lấy chùm mới. */
+      function luuKho(x) {
+        try { localStorage.setItem(KHO, JSON.stringify(x)); } catch (e) {}
         return x;
       }
 
@@ -208,24 +249,42 @@
         ve(0, true);
       }
 
+      /* Chuẩn hoá một câu từ hàm về hình dạng mà `ve()` dùng. Một chỗ duy nhất
+         biết hàm gọi tên trường là `tacGia` còn trong này là `ai`. */
+      function nan(x) { return { q: x.q, ai: x.tacGia || x.ai || '' }; }
+
       function xinGemini(api) {
         var m = moc();
 
-        /* Đã có câu của đúng khung giờ này thì dùng luôn, khỏi gọi mạng */
+        /* Kho còn hàng cho ĐÚNG khung giờ này thì rút câu kế tiếp, khỏi gọi mạng */
         try {
-          var cu = JSON.parse(localStorage.getItem('zib-quote') || 'null');
-          if (cu && cu.ngay === m.ngay && cu.khung === m.khung && cu.q) { dat(cu); return; }
+          var kho = JSON.parse(localStorage.getItem(KHO) || 'null');
+          if (kho && kho.ngay === m.ngay && kho.khung === m.khung
+              && kho.ds && kho.ds.length) {
+            var vt = (kho.i || 0) % kho.ds.length;
+            kho.i = vt + 1;
+            luuKho(kho);
+            dat(kho.ds[vt]);
+            return;
+          }
         } catch (e) {}
 
         var ac = new AbortController();
         var boCuoc = setTimeout(function () { ac.abort(); }, 3000);
 
-        fetch(api + '?ngay=' + m.ngay + '&khung=' + m.khung + '&sokhung=' + m.so,
+        fetch(api + '?ngay=' + m.ngay + '&khung=' + m.khung + '&sokhung=' + m.so
+                  + '&so=' + SO_XIN,
               { signal: ac.signal, cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (kq) {
-            if (!kq || !kq.ok || !kq.q) return;
-            dat(luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' }));
+            if (!kq || !kq.ok) return;
+            /* Hàm bản cũ chỉ trả `q`/`tacGia`, chưa có `ds` — vẫn nhận, coi như
+               chùm một câu. Nhờ vậy trang mới chạy được với hàm chưa kịp lên. */
+            var chum = (kq.ds && kq.ds.length ? kq.ds : [kq]).map(nan)
+                         .filter(function (x) { return x.q; });
+            if (!chum.length) return;
+            luuKho({ ngay: m.ngay, khung: m.khung, ds: chum, i: 1 });
+            dat(chum[0]);
           })
           .catch(function () { /* im lặng — câu từ kho sẵn vẫn đang hiện */ })
           .finally(function () { clearTimeout(boCuoc); });
@@ -265,13 +324,20 @@
             .then(function (r) { return r.json(); })
             .then(function (kq) {
               if (!kq || !kq.ok || !kq.q) return;
-              /* Cất luôn vào localStorage đè lên câu của khung giờ này. Bản
-                 trước không cất: bấm nút xin được câu mới, F5 một cái là mất,
-                 và lần tải sau còn gọi mạng thêm một lượt nữa cho đúng cái
-                 khung vừa xin xong. Người bấm nút là người đang muốn câu ĐÓ —
-                 giữ lấy nó mới phải. */
-              luu({ ngay: m.ngay, khung: m.khung, q: kq.q, ai: kq.tacGia || '' });
-              ds.push({ chu: kq.q, ai: kq.tacGia || '' });
+              /* NHÉT THÊM vào kho đệm chứ không đè. Bản trước cất đúng một câu
+                 và ghi đè, nên bấm nút xong là mất cả chùm đã xin lúc tải
+                 trang. Nay câu vừa xin nằm lại trong kho, F5 sau vẫn gặp —
+                 người bấm nút là người đang muốn câu ĐÓ, giữ lấy mới phải. */
+              var moiCau = nan(kq);
+              try {
+                var k = JSON.parse(localStorage.getItem(KHO) || 'null');
+                if (!k || k.ngay !== m.ngay || k.khung !== m.khung || !k.ds) {
+                  k = { ngay: m.ngay, khung: m.khung, ds: [], i: 0 };
+                }
+                if (!k.ds.some(function (x) { return x.q === moiCau.q; })) k.ds.push(moiCau);
+                luuKho(k);
+              } catch (e) {}
+              ds.push({ chu: moiCau.q, ai: moiCau.ai });
               if (!xong) { xong = true; clearTimeout(henLat); dangO = ds.length - 1; ve(dangO, true); }
             })
             .catch(function () { /* im lặng — đã hoặc sắp lật sang câu trong kho */ })

@@ -100,26 +100,26 @@
   function veBang() {
     dangSua = null;
     hop.innerHTML =
-      '<div class="vb-thanh">' +
+      '<div class="ad-thanh">' +
         '<button type="button" class="btn btn--chinh" data-moi>' +
           tho(L('mucNew', 'New category')) + '</button>' +
       '</div>' +
-      '<div class="vb-bang">' +
+      '<div class="ad-bang">' +
         (ds.length
           ? ds.map(function (m) {
               /* Chuyên mục con in kèm tầng cha, vì tên ngắn của nó ("ha-noi")
                  không nói được nó nằm ở đâu. */
-              return '<div class="vb-dong mc-dong-ql" data-m="' + tho(m.muc) + '">' +
-                '<span class="vb-dong-ngay">' + tho(m.muc) + '</span>' +
-                '<span class="vb-dong-ten">' + tho(m.title) +
-                  (m.description ? '<em class="ql-mo">' + tho(m.description) + '</em>' : '') +
+              return '<div class="ad-dong ad-dong--hai" data-m="' + tho(m.muc) + '">' +
+                '<span class="ad-phu">' + tho(m.muc) + '</span>' +
+                '<span class="ad-chinh">' + tho(m.title) +
+                  (m.description ? '<em class="ad-mo">' + tho(m.description) + '</em>' : '') +
                 '</span>' +
-                '<span class="vb-cd">' +
+                '<span class="ad-cd">' +
                   tho(L('mucCount', '{n} posts').replace('{n}', m.soBai)) + '</span>' +
-                '<span class="vb-dong-nut">' +
-                  '<button type="button" class="vb-nho" data-sua>' +
+                '<span class="ad-nut-hang">' +
+                  '<button type="button" class="ad-nut" data-sua>' +
                     tho(L('edit', 'Edit')) + '</button>' +
-                  '<button type="button" class="vb-nho" data-xoa' +
+                  '<button type="button" class="ad-nut" data-xoa' +
                     (m.soBai > 0 || !m.sha ? ' disabled' : '') + '>' +
                     tho(L('mucDel', 'Delete')) + '</button>' +
                 '</span>' +
@@ -130,7 +130,7 @@
       '<p class="vb-noi"></p>';
 
     hop.querySelector('[data-moi]').addEventListener('click', function () { khung(null); });
-    [].slice.call(hop.querySelectorAll('.mc-dong-ql')).forEach(function (d) {
+    [].slice.call(hop.querySelectorAll('.ad-dong--hai')).forEach(function (d) {
       var ten = d.getAttribute('data-m');
       var cai = ds.filter(function (x) { return x.muc === ten; })[0];
       d.querySelector('[data-sua]').addEventListener('click', function () { khung(cai); });
@@ -173,7 +173,7 @@
           tho(L('mucLocked', 'The folder name cannot be changed here — it is part of every link in this category. Move the posts one by one from the Post tab instead.')) +
         '</p>') +
       '<div class="vb-nut">' +
-        '<button type="button" class="vb-nho" data-ve>' + tho(L('back', 'Back')) + '</button>' +
+        '<button type="button" class="ad-nut" data-ve>' + tho(L('back', 'Back')) + '</button>' +
         '<button type="button" class="btn" data-luu>' +
           tho(moi ? L('mucAdd', 'Add') : L('save', 'Save')) + '</button>' +
       '</div>' +

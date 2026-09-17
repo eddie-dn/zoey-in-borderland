@@ -190,7 +190,7 @@
     /* Hàng chip cùng khuôn với ngăn Post — hai bàn làm việc cạnh nhau thì
        không nên có hai kiểu lọc khác nhau. */
     var hangChip = document.createElement('div');
-    hangChip.className = 'vb-loc bl-duyet-loc';
+    hangChip.className = 'ad-loc bl-duyet-loc';
     [['cho', L('fPending'), cho.length],
      ['roi', L('fDone'), roi],
      ['',    L('fAll'), ds.length]].forEach(function (x) {
@@ -229,7 +229,7 @@
     if (loc1.length > hienToi) {
       var them = document.createElement('button');
       them.type = 'button';
-      them.className = 'vb-nho bl-duyet-them';
+      them.className = 'ad-nut bl-duyet-them';
       them.textContent = L('more') + ' (' + (loc1.length - hienToi) + ')';
       them.addEventListener('click', function () {
         hienToi += MOI_LUOT; veHang(dsHienTai);
@@ -240,31 +240,51 @@
     batDongHo();
   }
 
+  /* ── MỘT HÀNG BÌNH LUẬN, ĐÚNG KHUÔN BẢNG LÀM VIỆC ──
+     Đời trước mỗi bình luận là một KHỐI XẾP DỌC: tên và đường dẫn một hàng,
+     nội dung một hàng, rồi một nút Approve tô đầy chiếm gần nửa bề ngang. Bốn
+     bình luận là hết một màn hình — mà bàn duyệt là chỗ cần liếc qua hai chục
+     cái một lượt rồi mới quyết.
+
+     Nay dùng chung `.ad-dong` với ngăn Post và ngăn Category: bốn cột, một
+     hàng một bình luận. Bản đồ cột ở đầu khối `.ad-*` trong list.css.
+
+       phụ     → tên người gửi
+       chính   → nội dung, và đường dẫn trang ở dòng dưới
+       cd      → chờ / đã duyệt
+       nút     → Approve · Hide
+
+     Approve thôi là nút tô đầy: mười lăm hàng là mười lăm viên thuốc, và lúc
+     ấy bảng đọc ra là một cái lưới nút chứ không phải một danh sách. Nó vẫn
+     nổi hơn Hide, bằng màu (`.ad-nut--chinh`). */
   function veDong(c) {
     var d = document.createElement('div');
-    d.className = 'bl-dong' + (c.duyet ? ' bl-dong--roi' : '');
+    d.className = 'ad-dong' + (c.duyet ? ' ad-dong--roi' : '');
 
-    var dau = document.createElement('div');
-    dau.className = 'bl-dong-dau';
     var ai = document.createElement('span');
-    ai.className = 'bl-ten';
+    ai.className = 'ad-phu';
     ai.textContent = c.ten || L('anon');
-    var o = document.createElement('a');
-    o.className = 'bl-dong-trang';
-    o.href = c.trang; o.textContent = c.trang;
-    dau.appendChild(ai); dau.appendChild(o);
 
-    var nd = document.createElement('p');
-    nd.className = 'bl-nd';
+    var giua = document.createElement('span');
+    giua.className = 'ad-chinh';
     /* textContent, KHÔNG BAO GIỜ innerHTML — chữ này do người lạ gõ. Luật ấy
        đúng ở đây gấp đôi: "chỗ chỉ mình đọc" mới là chỗ kẻ gửi spam nhắm tới. */
-    nd.textContent = c.chu;
+    giua.textContent = c.chu;
 
-    var nut = document.createElement('div');
-    nut.className = 'bl-dong-nut';
+    var o = document.createElement('a');
+    o.className = 'ad-mo';
+    o.href = c.trang; o.textContent = c.trang;
+    giua.appendChild(o);
+
+    var cd = document.createElement('span');
+    cd.className = 'ad-cd ad-cd--' + (c.duyet ? 'roi' : 'cho');
+    cd.textContent = c.duyet ? L('stateOn', 'Live') : L('stateOff', 'Pending');
+
+    var nut = document.createElement('span');
+    nut.className = 'ad-nut-hang';
 
     var bDuyet = document.createElement('button');
-    bDuyet.type = 'button'; bDuyet.className = 'btn';
+    bDuyet.type = 'button'; bDuyet.className = 'ad-nut ad-nut--chinh';
     bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
     bDuyet.addEventListener('click', function () {
       bDuyet.disabled = true;
@@ -272,15 +292,19 @@
     });
 
     var bAn = document.createElement('button');
-    bAn.type = 'button'; bAn.className = 'bl-dong-an';
+    bAn.type = 'button'; bAn.className = 'ad-nut';
     bAn.textContent = L('hide');
     bAn.addEventListener('click', function () {
       bAn.disabled = true;
-      doi({ ma: c.ma, an: 1 }, function () { d.remove(); xin(true); });
+      /* Trượt đi rồi mới rút khỏi danh sách — cùng nhịp với mọi hàng khác ở
+         bảng làm việc. Biến mất phụt một cái thì mắt không kịp thấy hàng nào
+         vừa đi, và cả bảng nhảy lên một nấc mà không rõ vì sao. */
+      d.classList.add('ad-dong--xong');
+      setTimeout(function () { d.remove(); xin(true); }, 280);
     });
 
     nut.appendChild(bDuyet); nut.appendChild(bAn);
-    d.appendChild(dau); d.appendChild(nd); d.appendChild(nut);
+    d.appendChild(ai); d.appendChild(giua); d.appendChild(cd); d.appendChild(nut);
     return d;
   }
 

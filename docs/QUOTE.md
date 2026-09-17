@@ -99,9 +99,9 @@ Cách bật, cách lấy khoá, cách khai biến môi trường: xem **`docs/CA
 
 ### 2.1 · Ba luật của lớp này
 
-1. **Mỗi khung giờ gọi đúng một lần.** Cloudflare cache tới hết khung; trình
-   duyệt còn cất thêm một bản trong `localStorage` theo cặp ngày+khung. Tải lại
-   trang không gọi mạng lần nữa.
+1. **Mỗi khung giờ gọi đúng một lần.** Lượt gọi ấy xin cả một CHÙM câu; trình
+   duyệt cất chùm vào `localStorage` theo cặp ngày+khung, rồi mỗi lần tải trang
+   rút ra câu kế tiếp. Cloudflare còn cache tới hết khung ở phía ngoài.
 2. **Hỏng thì im.** Không mạng, chưa deploy, chưa khai khoá, Gemini chậm — câu
    từ kho sẵn vẫn đang nằm đó, người đọc không thấy gì khác thường.
 3. **Bỏ cuộc sau 3 giây.** Lâu hơn thì thà giữ câu sẵn: không ai đứng chờ một ô
@@ -139,6 +139,37 @@ hiện tại thừa sức cho tối đa bốn khung.
 
 Trần là 4. Dày hơn thì ô "câu của hôm nay" lại thành cái máy xổ số — đúng thứ
 cơ chế này sinh ra để tránh. Build kêu lên và tạm dùng 4 nếu khai quá.
+
+### 2.1c · Kho đệm trong máy người đọc — F5 là có câu mới
+
+Bản đầu cất **đúng một câu** cho mỗi khung giờ, nên F5 bao nhiêu lần cũng gặp
+lại nó. Đúng với cái tên "câu của buổi này", nhưng người quay lại trong buổi
+không có gì mới để đọc.
+
+Nay lượt gọi đầu xin cả chùm — mặc định **5 câu** (`?so=5`, hàm kẹp 1–8) —
+rồi cất vào `localStorage` khoá `zib-quote-kho`:
+
+```json
+{ "ngay": "2026-09-17", "khung": 1, "i": 3,
+  "ds": [ {"q":"…","ai":"…"}, … ] }
+```
+
+Mỗi lần tải trang rút `ds[i]` rồi tăng `i`. Được hai thứ cùng lúc: người đọc
+quay lại là có câu mới, mà cả khung giờ vẫn chỉ tốn **đúng một lượt gọi Gemini
+trên một máy**.
+
+**Hết chùm thì quay vòng lại từ đầu, không xin thêm.** Xin thêm nghĩa là ai bấm
+F5 nhiều thì tốn nhiều lượt gọi — đúng cái vừa tránh được. Sang khung giờ mới
+thì khoá đổi, chùm cũ thành vô hiệu, lượt gọi kế lấy chùm mới.
+
+Đo trên bộ kiểm: **8 lần F5 trong một khung giờ → 1 lượt gọi mạng**, năm câu
+đầu khác nhau rồi quay vòng.
+
+:::note Hàm cũ vẫn dùng được
+Trả về giữ cả `q`/`tacGia` trỏ vào câu đầu chùm, nên bản trang cũ (chỉ đọc hai
+khoá ấy) chạy y nguyên. Chiều ngược lại cũng vậy: trang mới gặp hàm chưa có
+`ds` thì coi như chùm một câu.
+:::
 
 ### 2.2 · Sàn và trần độ dài
 

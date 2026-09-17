@@ -43,10 +43,15 @@
  *    cái tên vào một lời dặn, và Gemini gần như lúc nào cũng rơi vào mấy cái
  *    tên quen nhất. Ở đây mỗi ngày bốc MỘT chủ đề và 12 tác giả rồi mới hỏi.
  *
- * Gọi:  GET /api/quote?ngay=YYYY-MM-DD&khung=N&sokhung=M   câu của khung (cache)
- *       thêm &moi=1                                        xin câu khác (không cache)
+ * Gọi:  GET /api/quote?ngay=YYYY-MM-DD&khung=N&sokhung=M&so=K
+ *         so=K    xin K câu một lượt (1–8, mặc định 1) — trang cất cả chùm vào
+ *                 máy người đọc rồi mỗi lần F5 rút một câu, nên một lượt gọi
+ *                 đủ dùng cho cả khung giờ.
+ *         moi=1   xin câu khác, không cache.
  *       thiếu khung/sokhung ⇒ coi như cả ngày một câu, y như bản trước.
- * Trả:  { ok, q, tacGia, chuDe, khung, src }  ·  ok:false ⇒ trang dùng kho sẵn.
+ * Trả:  { ok, q, tacGia, ds, chuDe, khung, src }
+ *         ds      cả chùm; q/tacGia trỏ câu đầu để bản trang cũ vẫn chạy.
+ *       ok:false ⇒ trang dùng kho sẵn.
  *
  * KHÔNG CẦN file này thì blog vẫn chạy: ô trích dẫn luôn có câu lấy từ
  * `### Câu sẵn` đã nhúng vào HTML lúc build.
@@ -208,9 +213,19 @@ export async function onRequest(context) {
     return traLoi({ ok: false, ly_do: key ? 'thieu-loi-dan' : 'chua-khai-khoa' }, 'no-store');
   }
 
+  /* ── XIN CẢ CHÙM, KHÔNG XIN TỪNG CÂU ──
+     Trang cất chùm này vào máy người đọc rồi mỗi lần F5 rút ra một câu, nên
+     một lượt gọi đủ dùng cho cả khung giờ thay vì gọi lại mỗi lần tải trang.
+
+     Kẹp 1..8: nằm trong địa chỉ nên ai gõ gì vào cũng được, mà xin 500 câu thì
+     vừa lâu vừa tràn trần token rồi hỏng cả lượt. Trần 8 cũng là chỗ vừa —
+     nhiều hơn thì Gemini bắt đầu lặp ý trong cùng một chùm. */
+  const soCau = Math.min(8, Math.max(1, parseInt(p.get('so'), 10) || 1));
+
   const nhac = NGUON.nhac
     .replace(/\{\{chuDe\}\}/g, chuDe.ta ? `${chuDe.ten} — ${chuDe.ta}` : chuDe.ten)
-    .replace(/\{\{nguon\}\}/g, nhomTG.join(' · '));
+    .replace(/\{\{nguon\}\}/g, nhomTG.join(' · '))
+    .replace(/\{\{so\}\}/g, String(soCau));
 
   const goi = (model, tatNghi) => fetch(
     'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
@@ -308,24 +323,37 @@ export async function onRequest(context) {
     const j = await kq.json();
     const ungVien = (j.candidates || [])[0] || {};
     const parts = (ungVien.content || {}).parts || [];
-    let cau = parts.map((x) => x.text || '').join('')
-      .trim()
-      .replace(/^["'“”]+|["'“”]+$/g, '')
-      .replace(/\s+/g, ' ');
+    const tho = parts.map((x) => x.text || '').join('');
 
-    if (!cau || cau.length > TRAN || cau.length < SAN) {
-      /* Kèm `finishReason`: câu rỗng vì bị chặn nội dung (SAFETY), vì hết token
+    /* MỖI DÒNG MỘT CÂU. Gemini hay kèm thêm số thứ tự hoặc gạch đầu dòng dù lời
+       dặn đã cấm, nên gọt luôn ở đây thay vì tin nó nghe lời. */
+    const ds = tho.split('\n')
+      .map((d) => d
+        .replace(/^\s*(?:\d+[.)]|[-–—*•])\s*/, '')
+        .trim()
+        .replace(/^["'“”]+|["'“”]+$/g, '')
+        .replace(/\s+/g, ' '))
+      .filter((d) => d.length >= SAN && d.length <= TRAN)
+      /* Tách tên tác giả ở dấu — CUỐI CÙNG. Tách ở dấu đầu tiên thì câu có em
+         dash giữa chừng bị cụt mất nửa sau. */
+      .map((d) => {
+        const i = d.lastIndexOf('—');
+        return i > 0 ? { q: d.slice(0, i).trim(), tacGia: d.slice(i + 1).trim() }
+                     : { q: d, tacGia: '' };
+      })
+      /* Bỏ câu trùng: xin 5 câu mà Gemini trả về 2 câu giống nhau thì kho đệm
+         của người đọc ngắn đi mà không ai biết. */
+      .filter((x, i, a) => a.findIndex((y) => y.q === x.q) === i);
+
+    if (!ds.length) {
+      /* Kèm `finishReason`: rỗng vì bị chặn nội dung (SAFETY), vì hết token
          (MAX_TOKENS) hay vì model nghĩ hết sạch phần được nói là ba chuyện sửa
-         ở ba chỗ khác hẳn nhau — mà nhìn "0 ký tự" thì không phân biệt nổi. */
-      throw new Error('câu không dùng được (' + cau.length + ' ký tự'
+         ở ba chỗ khác hẳn nhau — mà nhìn "0 câu" thì không phân biệt nổi.
+         Kèm cả độ dài bản thô: 0 ký tự là không nói gì, còn vài trăm ký tự mà
+         không lọt câu nào thì là sai KHUÔN, phải đi sửa lời dặn. */
+      throw new Error('không câu nào dùng được (thô ' + tho.trim().length + ' ký tự'
         + (ungVien.finishReason ? ', ' + ungVien.finishReason : '') + ')');
     }
-
-    /* Tách tên tác giả ở dấu — CUỐI CÙNG. Tách ở dấu đầu tiên thì câu có em
-       dash giữa chừng bị cụt mất nửa sau. */
-    let tacGia = '';
-    const i = cau.lastIndexOf('—');
-    if (i > 0) { tacGia = cau.slice(i + 1).trim(); cau = cau.slice(0, i).trim(); }
 
     /* Giữ nguyên câu trả lời tới hết khung giờ, rồi cho dùng bản cũ thêm một
        ngày trong lúc lấy bản mới — nhờ vậy người mở trang đúng lúc sang khung
@@ -334,7 +362,10 @@ export async function onRequest(context) {
       : 'public, s-maxage=' + (HAN_CACHE[soKhung] || conLaiTrongNgay())
         + ', stale-while-revalidate=86400';
 
-    return traLoi({ ok: true, q: cau, tacGia, chuDe: chuDe.ten, khung, src: 'gemini' }, cache);
+    /* Trả về CẢ CHÙM ở `ds`, và giữ `q`/`tacGia` trỏ vào câu đầu — bản trang
+       cũ chỉ đọc hai khoá ấy, nên nó vẫn chạy y nguyên sau khi hàm này lên. */
+    return traLoi({ ok: true, q: ds[0].q, tacGia: ds[0].tacGia, ds,
+                    chuDe: chuDe.ten, khung, src: 'gemini' }, cache);
   } catch (e) {
     return traLoi({ ok: false, ly_do: String((e && e.message) || e) }, 'no-store');
   }

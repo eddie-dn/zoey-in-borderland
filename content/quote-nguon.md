@@ -1,37 +1,18 @@
 # NGUỒN TRÍCH DẪN
 
-> **File này tả CHỖ LẤY CÂU, không phải chỉ chứa câu.** Ô "Quote of the day"
-> đọc nó theo hai đường:
->
-> | Đường | Ai đọc | Lúc nào | Lấy mục nào |
-> |---|---|---|---|
-> | Ngoại tuyến | `tools/build.mjs` | lúc dựng trang | `### Câu sẵn` |
-> | Có Gemini | `api/quote.js` | mỗi khung giờ một lần | `### Chủ đề` · `### Nguồn` · `### Lời dặn` |
->
-> Đường ngoại tuyến LUÔN CHẠY, không cần mạng, không cần khoá. Đường Gemini chỉ
-> là lớp thêm nếm: bật nó thì mỗi khung giờ có một câu viết mới thay vì xoay
-> vòng trong kho — mặc định ba khung một ngày (sáng · chiều · tối). Tắt, hỏng,
-> hay chưa deploy thì ô vẫn có câu — người đọc không bao giờ thấy lỗi cấu hình.
->
-> **Sửa thế nào:** gõ như gõ văn bản thường, lưu, rồi chạy `npm run build`.
-> Bước build là bắt buộc nếu bật Gemini: hàm chạy trên Cloudflare Workers không
-> đọc được file này lúc chạy (Workers không có đĩa), nó dùng bản nướng sẵn ở
+> **Sửa xong phải chạy `npm run build`.** Hàm trên Cloudflare không đọc được
+> file này lúc chạy (Workers không có đĩa) — nó dùng bản nướng sẵn ở
 > `functions/api/_nguon.js` mà build sinh ra. Đẩy lên GitHub thì Cloudflare tự
 > chạy build nên cũng xong.
 >
-> Đây là markdown thuần, gõ sai cũng không làm sập trang — mục nào đọc không ra
-> thì phần đó lặng lẽ dùng bản dự phòng. Chính vì lặng lẽ nên có một phép kiểm
-> riêng cho chuyện đó: `npm run kiem` báo ngay nếu một mục đọc không ra.
+> **Đừng đổi tên bốn dòng `###`.** Bộ đọc chỉ bám vào đúng bốn chữ đó; chữ
+> nghĩa xung quanh gõ kiểu gì cũng được.
 >
-> **Đừng đổi tên bốn dòng `###`.** Bộ đọc chỉ bám vào đúng bốn chữ đó; chữ nghĩa
-> xung quanh gõ kiểu gì cũng được. Mọi dòng bắt đầu bằng `>` là nói với NGƯỜI
-> đọc file, bộ đọc bỏ hết.
+> **Gạch đầu dòng phải là `-`, không phải `*`.** Nhờ vậy viết `**đậm**` ở đâu
+> cũng an toàn. Tiêu đề phụ trong kho câu thì dùng `####`.
 >
-> **Gạch đầu dòng phải là dấu `-`, không phải dấu `*`.** Đây là chỗ bản gốc bên
-> dongchibinh-33 đã vấp: bộ đọc bên đó nhận cả `-` lẫn `*`, nên một dòng tiêu đề
-> in đậm `**Tự biết mình**` bị hiểu thành một câu trích dẫn tên là
-> "*Tự biết mình**". Bộ đọc ở đây chỉ nhận `-`, nên viết `**đậm**` ở đâu cũng
-> được. Tiêu đề phụ trong kho câu thì dùng `####`.
+> Gõ sai không làm sập trang — mục nào đọc không ra thì lặng lẽ dùng bản dự
+> phòng. Chính vì lặng lẽ nên `npm run kiem` có một phép kiểm riêng cho nó.
 
 ## quote
 
@@ -107,25 +88,44 @@
 - Mary Oliver
 - John Berger
 - Susan Sontag
+- Hồ Chí Minh
+- Võ Nguyên Giáp
+- Trần Hưng Đạo
+- Lý Thường Kiệt
+- Quang Trung
+- Lê Lợi
+- Phan Châu Trinh
+- Phan Bội Châu
+- Miyamoto Musashi
+- Carl von Clausewitz
+- Niccolò Machiavelli
 
 ### Lời dặn
 
-> Phần gửi thẳng cho Gemini. Hai chỗ `{{chuDe}}` và `{{nguon}}` được thay bằng
-> chủ đề và nhóm tác giả bốc được của ngày hôm đó.
+> Phần gửi thẳng cho Gemini. Ba chỗ `{{chuDe}}`, `{{nguon}}` và `{{so}}` được
+> thay bằng chủ đề, nhóm tác giả, và SỐ CÂU xin về trong một lượt gọi.
+>
+> Xin cả chùm chứ không xin từng câu: trang cất chùm ấy vào máy người đọc rồi
+> mỗi lần F5 rút ra một câu, nên một lượt gọi đủ dùng cho cả khung giờ. Bỏ
+> `{{so}}` đi cũng không sao — hàm tự hiểu là xin một câu.
 
-Chọn MỘT câu nói CÓ THẬT về chủ đề: {{chuDe}}.
+Chọn {{so}} câu nói CÓ THẬT và KHÁC NHAU về chủ đề: {{chuDe}}.
 
-Chỉ lấy của một trong những người sau: {{nguon}}.
+Chỉ lấy của những người sau: {{nguon}}. Mỗi câu một tác giả khác nhau.
 
 Dịch sang tiếng Việt gọn gàng, TRỌN VẸN một ý, dài 60 đến 115 ký tự — kể cả
 phần tên tác giả thì đừng vượt 150. Ưu tiên câu có hai vế: câu quá ngắn thì ô
 trích dẫn chừa một mảng trống bên phải, nhìn như bị cắt.
 
-Trả về đúng một dòng theo khuôn: Nội dung câu nói — Tên tác giả
+Trả về đúng {{so}} dòng, mỗi dòng một câu theo khuôn:
+Nội dung câu nói — Tên tác giả
+
+Không đánh số, không gạch đầu dòng, không chừa dòng trống giữa các câu.
 
 Chỉ dùng câu CÓ THẬT, KHÔNG bịa, không gán nhầm tác giả — không chắc ai nói thì
-chọn câu khác. Không emoji, không dấu ngoặc kép, không lời dẫn, không giải
-thích, không xuống dòng.
+chọn câu khác. Với các nhân vật Việt Nam, chỉ trích câu có nguồn rõ ràng; không
+chắc thì bỏ qua người đó và chọn tác giả khác trong danh sách. Không emoji,
+không dấu ngoặc kép, không lời dẫn, không giải thích.
 
 ### Câu sẵn
 

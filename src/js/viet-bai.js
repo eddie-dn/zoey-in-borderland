@@ -62,6 +62,8 @@
   oSan.appendChild(hop);
 
   var dsMuc = null;
+  /* Chuyên mục đang lọc ở bảng bài. Rỗng = tất cả. */
+  var locMuc = '';
 
   function noi(chu, kieu) {
     var o = hop.querySelector('.vb-noi');
@@ -133,24 +135,47 @@
     } catch (e) { return String(x).toLowerCase(); }
   }
 
+  /* Chuỗi để SO KHỚP khi tìm: bỏ dấu, rồi quy mọi thứ ngăn từ — gạch ngang,
+     gạch chéo, gạch dưới — về dấu cách. Dùng cho chuyên mục, vì chuyên mục là
+     slug còn chữ người ta gõ thì không.
+
+     Cả HAI vế của phép so đều phải đi qua đây, kể cả tiêu đề: quy một vế thôi
+     thì gõ "e-mail" không còn khớp một tiêu đề có chữ "e-mail" — sửa một ca
+     khó chịu bằng cách đẻ ra một ca khác. */
+  function nhatChu(x) { return khongDau(x).replace(/[-_/]+/g, ' '); }
+
   var TEN_TRANG = { hien: 'Live', nhap: 'Draft', an: 'Hidden' };
 
   function veBang() {
     soan = null;
     hop.innerHTML =
-      '<div class="vb-thanh">' +
+      '<div class="ad-thanh">' +
         '<button type="button" class="btn btn--chinh" data-moi>' +
           tho(L('newPost', 'New post')) + '</button>' +
-        '<label class="vb-tim">' +
+        '<label class="ad-tim">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true">' +
             '<circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/></svg>' +
           '<input type="search" data-tim autocomplete="off" spellcheck="false" ' +
                  'placeholder="' + tho(L('find', 'Filter by title')) + '" ' +
                  'aria-label="' + tho(L('find', 'Filter by title')) + '">' +
         '</label>' +
-        '<div class="vb-loc" data-loc></div>' +
+        /* ── LỌC THEO CHUYÊN MỤC ──
+           Ô gõ ở trên lọc theo TÊN BÀI; nó không giúp gì khi câu hỏi là "mục
+           tản mạn có những bài nào". Gõ tên mục vào ô ấy cũng không ra, vì
+           chuyên mục không nằm trong tiêu đề.
+
+           Một ô chọn chứ không phải một ô gõ nữa: chuyên mục là một tập ĐÓNG
+           và ngắn, nên bày sẵn cả tập ra thì vừa nhanh hơn gõ vừa nói luôn có
+           những mục nào — kể cả mục mình quên mất là có. Số bài in ngay trong
+           từng dòng chọn. */
+        '<label class="ad-tim ad-tim--chon">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>' +
+          '<select data-muc aria-label="' + tho(L('findMuc', 'Filter by category')) + '"></select>' +
+        '</label>' +
+        '<div class="ad-loc" data-loc></div>' +
       '</div>' +
-      '<div class="vb-bang" data-bang>' +
+      '<div class="ad-bang" data-bang>' +
         '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>' +
       '</div>' +
       '<p class="vb-noi"></p>';
@@ -172,7 +197,22 @@
       });
     }
 
+    var oMuc = hop.querySelector('[data-muc]');
+    if (oMuc) {
+      oMuc.addEventListener('change', function () {
+        locMuc = oMuc.value;
+        veHang();
+      });
+    }
+
     if (bangDS) veHang(); else taiBang(0);
+  }
+
+  /* Chuyên mục của một bài, rút từ chỗ đặt file — đúng cách `khungViet` vẫn
+     rút khi mở bài ra sửa. Bài nằm thẳng trong `content/posts/` thì không có
+     chuyên mục, và trả về chuỗi rỗng là đúng: nó sẽ vào nhóm "(không có)". */
+  function mucCua(b) {
+    return String(b.duong || '').split('/').slice(2, -1).join('/');
   }
 
   /* `tu = 0` là tải lại từ đầu; lớn hơn 0 là xin thêm một trang và CỘNG vào
@@ -239,10 +279,43 @@
       });
     }
 
-    var chu = locChu ? khongDau(locChu) : '';
+    /* ── ĐỔ Ô CHỌN CHUYÊN MỤC ──
+       Danh sách dựng từ chính phần bảng ĐÃ TẢI, không từ `dsMuc` của máy chủ:
+       `dsMuc` có cả những mục chưa bài nào, và bày một mục rỗng ra ô lọc thì
+       chọn vào là ra bảng trắng — đúng nhưng vô ích. Cộng thêm một dòng cho
+       mục đang chọn nếu nó vừa rơi khỏi tầm (lọc trạng thái làm sạch nó), để
+       ô không tự nhảy về "tất cả" sau lưng người dùng. */
+    var oMuc = hop.querySelector('[data-muc]');
+    if (oMuc) {
+      var demMuc = {};
+      bangDS.forEach(function (b) {
+        var m = mucCua(b);
+        demMuc[m] = (demMuc[m] || 0) + 1;
+      });
+      if (locMuc && demMuc[locMuc] == null) demMuc[locMuc] = 0;
+      var ten = Object.keys(demMuc).sort();
+      var hm = '<option value="">' + tho(L('allMuc', 'All categories')) +
+               ' (' + bangDS.length + ')</option>';
+      ten.forEach(function (m) {
+        hm += '<option value="' + tho(m) + '"' + (locMuc === m ? ' selected' : '') + '>' +
+              tho(m || L('noMuc', '(none)')) + ' (' + demMuc[m] + ')</option>';
+      });
+      oMuc.innerHTML = hm;
+    }
+
+    var chu = locChu ? nhatChu(locChu) : '';
     var ds = bangDS.filter(function (b) {
       if (locTrang && b.trang !== locTrang) return false;
-      if (chu && khongDau(b.title).indexOf(chu) < 0) return false;
+      if (locMuc && mucCua(b) !== locMuc) return false;
+      /* Gõ vào ô tìm thì soi CẢ tiêu đề lẫn chuyên mục: người ta gõ "tarot"
+         mà không nhớ đó là tên mục hay một chữ trong tiêu đề.
+
+         Chuyên mục là một SLUG — `doi-thuong/ha-noi` — còn người ta gõ bằng
+         chữ thường: "ha noi". Không quy gạch ngang và gạch chéo về dấu cách
+         thì gõ đúng tên mục vẫn ra bảng trắng, và đó là ca khó chịu nhất vì
+         người gõ tin chắc mình gõ đúng. */
+      if (chu && nhatChu(b.title).indexOf(chu) < 0 &&
+                 nhatChu(mucCua(b)).indexOf(chu) < 0) return false;
       return true;
     });
 
@@ -261,15 +334,20 @@
     }
 
     oBang.innerHTML = ds.map(function (b) {
-      return '<div class="vb-dong" data-d="' + tho(b.duong) + '">' +
-        '<span class="vb-dong-ngay">' + tho(b.date) + '</span>' +
-        '<span class="vb-dong-ten">' + tho(b.title) + '</span>' +
+      /* Chuyên mục ở dòng dưới tiêu đề: đang lọc theo mục thì nó xác nhận mình
+         lọc đúng chỗ, còn không lọc thì nó là thứ duy nhất trên hàng nói bài
+         này nằm ở đâu — trước bản này bảng không hề bày ra điều đó. */
+      var m = mucCua(b);
+      return '<div class="ad-dong ad-dong--hai" data-d="' + tho(b.duong) + '">' +
+        '<span class="ad-phu">' + tho(b.date) + '</span>' +
+        '<span class="ad-chinh">' + tho(b.title) +
+          '<span class="ad-mo">' + tho(m || L('noMuc', '(none)')) + '</span></span>' +
         (b.trang !== 'hien'
-          ? '<span class="vb-cd vb-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
-          : '<span class="vb-cd"></span>') +
-        '<span class="vb-dong-nut">' +
-          '<button type="button" class="vb-nho" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
-          '<button type="button" class="vb-nho" data-an>' +
+          ? '<span class="ad-cd ad-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
+          : '<span class="ad-cd"></span>') +
+        '<span class="ad-nut-hang">' +
+          '<button type="button" class="ad-nut" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
+          '<button type="button" class="ad-nut" data-an>' +
             tho(b.trang === 'an' ? L('unhide', 'Unhide') : L('hide', 'Hide')) + '</button>' +
         '</span>' +
       '</div>';
@@ -277,7 +355,7 @@
 
     noiNutThem();
 
-    [].slice.call(oBang.querySelectorAll('.vb-dong')).forEach(function (d) {
+    [].slice.call(oBang.querySelectorAll('.ad-dong')).forEach(function (d) {
       var duong = d.getAttribute('data-d');
       d.querySelector('[data-sua]').addEventListener('click', function () { moSua(duong); });
       d.querySelector('[data-an]').addEventListener('click', function (e) {
@@ -294,11 +372,11 @@
     if (!bangDS) return '';
     var h = '';
     if (bangDS.tong > bangDS.length) {
-      h += '<p class="vb-cho vb-chan">' +
+      h += '<p class="vb-cho ad-chan">' +
              tho(L('shown', 'Loaded {n} of {t}.')
                    .replace('{n}', bangDS.length).replace('{t}', bangDS.tong)) +
              (bangDS.con
-               ? ' <button type="button" class="vb-nho" data-them>' +
+               ? ' <button type="button" class="ad-nut" data-them>' +
                    tho(L('more', 'Load more')) + '</button>'
                : '') +
            '</p>';
@@ -433,7 +511,7 @@
                      'placeholder="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '" ' +
                      'aria-label="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '">' +
               '<code class="vb-bia-duong" data-bia-duong></code>' +
-              '<button type="button" class="vb-nho" data-bia-bo hidden>' +
+              '<button type="button" class="ad-nut" data-bia-bo hidden>' +
                 tho(L('coverOff', 'Remove')) + '</button>' +
             '</div>' +
             '<input type="hidden" name="cover">' +
@@ -462,7 +540,7 @@
                  'maxlength="80" aria-label="' + tho(L('slug', 'Link')) + '">' +
           '<code>/</code>' +
         '</span>' +
-        '<button type="button" class="vb-nho" data-slug-lai hidden>' +
+        '<button type="button" class="ad-nut" data-slug-lai hidden>' +
           tho(L('slugAuto', 'From title')) + '</button>' +
       '</div>' +
       '<p class="vb-duong-bao" data-duong-bao></p>' +
@@ -491,7 +569,7 @@
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
-        (cu ? '<button type="button" class="vb-nho" data-ve>' +
+        (cu ? '<button type="button" class="ad-nut" data-ve>' +
                 tho(L('back', 'Back')) + '</button>' : '') +
         '<button type="button" class="btn" data-dang>' +
           tho(cu ? L('save', 'Save') : L('publish', 'Post')) + '</button>' +
@@ -1106,7 +1184,7 @@
         '<p class="vb-noi">' + tho(d.nhac || L('building',
           'Cloudflare is rebuilding. The post goes live in about a minute.')) + '</p>' +
         '<div class="vb-nut">' +
-          '<button type="button" class="vb-nho" data-ve>' + tho(L('back', 'Back')) + '</button>' +
+          '<button type="button" class="ad-nut" data-ve>' + tho(L('back', 'Back')) + '</button>' +
           '<button type="button" class="btn" data-nua>' +
             tho(L('another', 'Write another')) + '</button>' +
         '</div>' +
