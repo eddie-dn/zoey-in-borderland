@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.7.2 | 2026-09-17 | 02 | chọn bản nền 霜降 bằng địa chỉ ?nen=thac hoặc ?nen=mattroi, khỏi phải mở Console |
+| V2.7.1 | 2026-09-17 | 01 | logo kể lại từ đầu khi người đọc quay lại tab sau hơn tám giây |
+| V2.7.0 | 2026-09-17 | 00 | nền 霜降 vẽ lại thành bức sơn thuỷ: thác đổ làm phần động, sương vẽ tĩnh, điểm một sắc lục trúc; kèm bản thứ hai mặt trời và đàn chim để chọn |
 | V2.6.9 | 2026-09-17 | 09 | thanh nút ô soạn chia hai hàng cố định theo nghĩa; đường kẻ đọc tiếp ở cột bên thôi thò thụt; khung trả lời gấp hai ô tên email thành một dòng |
 | V2.6.8 | 2026-09-17 | 08 | nền 霜降: thêm hai ngọn núi cao xa, và sương nay XOÁ mực thay vì tô trắng nên mới thấy được |
 | V2.6.7 | 2026-09-17 | 07 | sửa lỗi bàn duyệt báo rỗng: câu truy vấn chọn cột soSua trước khi cột ấy được thêm; và thôi biến mọi lỗi truy vấn thành không có gì |
@@ -219,6 +222,41 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.7.2 — 17-Sep-2026
+
+- **Chọn bản nền 霜降 bằng địa chỉ.** `?nen=thac` hoặc `?nen=mattroi`, bấm một
+  lần là nhớ luôn. Bản trước bảo mở Console gõ `localStorage.setItem(...)` —
+  và đúng lần đầu tiên thì câu lệnh ấy bị dán nhầm vào terminal. Một đường dẫn
+  bấm được thì không nhầm vào đâu được. (Tạm thời, cùng số phận với `nenFrost`:
+  chọn xong thì xoá cả hai.)
+
+## V2.7.1 — 17-Sep-2026
+
+- **Logo kể lại từ đầu khi quay lại tab.** Vòng logo là một câu chuyện 27 giây
+  có mở có kết. Đi tab khác mươi phút rồi quay về thì đồng hồ đã chạy qua ba
+  bốn vòng, và cái đập vào mắt là một mẩu giữa chuyện — hình đang nổ tung, hay
+  đang nằm im ở chặng nghỉ. Nay vắng quá **8 giây** thì kéo cả hai đồng hồ
+  (CSS và SMIL) về 0. Dưới ngưỡng ấy thì chỉ chỉnh cho khớp như cũ: liếc sang
+  cửa sổ khác hai giây là chuyện xảy ra suốt trong lúc đọc, và reset ở đó thì
+  cú giật còn phá hơn hẳn việc bắt gặp giữa chuyện.
+
+## V2.7.0 — 17-Sep-2026
+
+- **Nền 霜降 vẽ lại thành một bức sơn thuỷ.** Núi đá dựng đứng, một dòng THÁC
+  đổ xuống mặt nước, sương mờ nằm giữa các lớp núi xa, mấy đốt trúc ở tiền
+  cảnh. Sắc lục trúc là chỗ duy nhất có màu, và rất trầm.
+- **Phần chuyển động đổi từ sương sang thác.** Sương trôi ngang gần như không
+  thấy được, và lý do không nằm ở chỗ vẽ sai: một MẢNG mờ trôi ngang buộc mắt
+  so sánh hai vùng gần như cùng màu ở hai thời điểm — thứ mắt người rất kém.
+  Nước rơi là những NÉT DỌC mảnh trong một dải hẹp, và mắt bắt chuyển động dọc
+  ở độ tương phản thấp hơn hẳn (cùng cơ chế giúp ta thấy mưa qua cửa kính lúc
+  trời xám). Sương nay vẽ MỘT LẦN vào tấm nền — nó là thứ tách các lớp núi ra,
+  đứng yên cũng không ai thấy thiếu.
+- **Kèm một bản thứ hai để chọn: mặt trời và đàn chim.** Cùng bộ núi và sương,
+  đổi phần động thành một đàn chim bay ngang rất chậm, và chỗ điểm màu thành
+  một vầng mặt trời thấp. Đổi qua lại bằng `localStorage` — xem `nenFrost`
+  trong src/js/nen.js. **Chọn xong thì xoá bản không dùng.**
 
 ## V2.6.9 — 17-Sep-2026
 

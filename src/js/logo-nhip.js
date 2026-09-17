@@ -61,16 +61,57 @@
     svg.setCurrentTime(t);
   }
 
+  /* ══════════ QUAY LẠI SAU MỘT LÚC THÌ KỂ LẠI TỪ ĐẦU ══════════
+
+     Vòng logo là một CÂU CHUYỆN 27 giây có mở có kết: nét dựng, xoay, nở, nổ,
+     rồi nghỉ. Đi tab khác mươi phút rồi quay về thì đồng hồ đã chạy qua ba
+     bốn vòng, và cái đập vào mắt là một mẩu giữa chuyện — hình đang nổ tung,
+     hay đang nằm im ở chặng nghỉ. Không sai nhịp, nhưng đọc ra là lộn xộn.
+
+     Nên: vắng mặt QUÁ NGƯỠNG thì kéo cả hai đồng hồ về 0 và kể lại từ đầu.
+
+     ── VÌ SAO CÓ NGƯỠNG, KHÔNG PHẢI CỨ QUAY LẠI LÀ RESET ──
+     Liếc sang cửa sổ khác hai giây rồi quay lại là chuyện xảy ra suốt trong
+     lúc đọc — reset ở đó thì logo giật về đầu mỗi lần người ta đổi cửa sổ,
+     và cái giật ấy còn phá hơn hẳn việc bắt gặp giữa chuyện.
+
+     8 giây: dưới đó là "vẫn đang ở đây, chỉ ngó đi một cái" — chỉ chỉnh lại
+     cho hai đồng hồ khớp nhau như cũ. Trên đó là "đã đi chỗ khác rồi quay
+     lại", và lúc ấy kể lại từ đầu mới đúng. */
+  var NGUONG_LAI = 8000;
+  var lucAn = 0;
+
+  function batDauLai() {
+    /* Kéo MỌI hoạt hình CSS trong logo về 0, rồi đặt đồng hồ SVG theo. Phải
+       làm cả hai: mỗi cái kéo một nửa hình, đặt lại một nửa thì nửa kia vẫn
+       ở giữa chuyện — đúng cái lệch mà cả khối này sinh ra để chữa. */
+    var ds = svg.getAnimations({ subtree: true });
+    for (var i = 0; i < ds.length; i++) {
+      try { ds[i].currentTime = 0; } catch (e) {}
+    }
+    try { svg.setCurrentTime(0); } catch (e) {}
+  }
+
+  function veLai() {
+    var vang = lucAn ? Date.now() - lucAn : 0;
+    lucAn = 0;
+    if (vang > NGUONG_LAI) batDauLai();
+    else dongBo();
+  }
+
   /* Ba cửa, vì ba trình duyệt báo một chuyện bằng ba sự kiện khác nhau:
        pageshow(persisted)  lấy lại từ bộ nhớ đệm back/forward (Safari, Firefox)
        visibilitychange     đổi tab, thu nhỏ cửa sổ (mọi trình duyệt)
        focus                lấy lại tiêu điểm cửa sổ — lưới an toàn cuối
-     Gọi thừa vài lần không sao: hàm trên tự bỏ qua khi hai đồng hồ đã khớp. */
-  window.addEventListener('pageshow', function (e) { if (e.persisted) dongBo(); });
+     Gọi thừa vài lần không sao: `dongBo` tự bỏ qua khi hai đồng hồ đã khớp,
+     còn `batDauLai` chỉ chạy khi `lucAn` còn được ghi — và nó bị xoá ngay ở
+     lượt gọi đầu tiên. */
+  window.addEventListener('pageshow', function (e) { if (e.persisted) batDauLai(); });
   document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) dongBo();
+    if (document.hidden) lucAn = Date.now();
+    else veLai();
   });
-  window.addEventListener('focus', dongBo);
+  window.addEventListener('focus', veLai);
 })();
 
 /* ══════════ 2 · ĐỔI QUA LẠI GIỮA CHỮ VÀ LOGO ══════════
