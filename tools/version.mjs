@@ -3,11 +3,13 @@
    VERSION — ghi một dòng vào sổ phiên bản docs/LICH-SU.md.
 
    Chạy:
-     npm run ver -- "chỉnh hệ chữ · nền kính"     thêm bản vá  V1.00 → V1.01
-                                                  (đuôi chỉ chạy 00..09; chạm 09
-                                                   thì bản kế tự mở build mới)
-     npm run ver -- --lon "dựng trang tag"         mở build mới V1.03 → V2.00
-     npm run ver                                   chỉ xem bản hiện tại
+     npm run ver -- "chỉnh hệ chữ"          bản vá     V2.4.9 → V2.5.0
+     npm run ver -- --vua "dựng trang tag"   đợt mới    V2.4.x → V2.5.0
+     npm run ver -- --lon "đổi bộ khung"     build mới  V2.x.x → V3.0.0
+     npm run ver                             chỉ xem bản hiện tại
+
+   BA TẦNG, mỗi tầng chạy 0..9. Chạm 9 thì tầng trên tự lên và tầng dưới về 0 —
+   không cần nhớ gõ cờ. Không đệm số 0: `V2.4.9`, không phải `V2.04.09`.
 
    Cột "Sửa chính" chỉ ghi LOẠI VIỆC. Không ghi tên biến, tên endpoint, đường
    dẫn nội bộ hay mã gì — sổ này người đọc blog mở ra xem được.
@@ -25,6 +27,7 @@ const mau = {
 
 const tho = process.argv.slice(2);
 const lon = tho.includes('--lon') || tho.includes('--major');
+const vua = tho.includes('--vua') || tho.includes('--minor');
 const suaChinh = tho.filter((x) => !x.startsWith('--')).join(' ').trim();
 
 const so = docSo(GOC);
@@ -37,8 +40,9 @@ if (!suaChinh) {
     const dau = i === 0 ? mau.tim('▸') : mau.mo('·');
     console.log(`  ${dau} ${mau.dam(b.ten.padEnd(7))} ${mau.mo(temNgay(b.ngay).padEnd(12))} ${b.suaChinh}`);
   });
-  console.log(`\n  ${mau.mo('ghi thêm:')} npm run ver -- "mô tả loại việc"`);
-  console.log(`  ${mau.mo('build mới:')} npm run ver -- --lon "mô tả"\n`);
+  console.log(`\n  ${mau.mo('bản vá :')} npm run ver -- "mô tả loại việc"`);
+  console.log(`  ${mau.mo('đợt mới:')} npm run ver -- --vua "mô tả"`);
+  console.log(`  ${mau.mo('build  :')} npm run ver -- --lon "mô tả"\n`);
   process.exit(0);
 }
 
@@ -83,12 +87,16 @@ if (soViec > 4) {
   process.exit(1);
 }
 
-const kq = ghiSo(GOC, suaChinh, { lon });
+const kq = ghiSo(GOC, suaChinh, { lon, vua });
 console.log(`
   ${mau.xanh('✓ Đã ghi sổ')}   ${mau.dam(kq.ten)}  ${mau.mo(temNgay(kq.ngay))}
     ${kq.suaChinh}
-  ${mau.mo(kq.tuCuon ? `build mới — bản vá của build ${kq.buildTruoc} đã chạm 09`
-           : kq.lon ? 'build mới' : `bản vá thứ ${kq.va} của build ${kq.build}`)}
+  ${mau.mo(
+    kq.lon      ? (kq.tuCuon ? `build mới — đợt ${kq.buildTruoc}.${kq.dotTruoc} đã chạm 9.9`
+                             : 'build mới')
+    : kq.tuCuon ? `đợt mới — bản vá của đợt ${kq.buildTruoc}.${kq.dotTruoc} đã chạm 9`
+    : kq.vua    ? `đợt mới của build ${kq.build}`
+                : `bản vá thứ ${kq.va} của đợt ${kq.build}.${kq.dot}`)}
 
   ${mau.mo('Đừng quên viết mấy dòng tóm tắt cho bản này ở phần dưới docs/LICH-SU.md')}
   ${mau.mo('— tối đa 3–4 gạch đầu dòng, ghi cái người đọc thấy khác, không phải tên file.')}

@@ -416,7 +416,14 @@
          nội dung; ở đây bỏ qua nó bằng cách đọc `data-nhan` thay vì đọc chữ. */
       if (the === 'DIV' && c.getAttribute && c.getAttribute('data-khoi')) {
         var loai = c.getAttribute('data-khoi');
-        var nhanK = (c.getAttribute('data-nhan') || '').trim();
+        /* ── TIÊU ĐỀ ĐỌC TỪ CHÍNH Ô GÕ, KHÔNG TỪ `data-nhan` ──
+           Từ V16.08 tiêu đề khối sửa được ngay tại chỗ (xem `chenKhoi`), nên
+           nguồn đúng là chữ trong ô ấy. `data-nhan` chỉ còn là đường lùi cho
+           khối dựng bằng bản cũ — bỏ hẳn thì một bài đang mở dở trong tab kia
+           lưu lại là mất tiêu đề. */
+        var oDe = c.querySelector('.sz-khoi-de');
+        var nhanK = (oDe ? oDe.textContent : (c.getAttribute('data-nhan') || ''))
+                      .replace(/[\r\n]+/g, ' ').trim();
         var trongK = [];
         khoi(c, trongK, '');
         ra.push(thut + ':::' + loai + (nhanK ? ' ' + nhanK : '') + '\n\n' +
@@ -704,10 +711,13 @@
           thanK.push(dong[i]); i++;
         }
         var ten = moKhoi[1], nhanK = (moKhoi[2] || '').trim();
-        ra.push('<div class="sz-khoi" data-khoi="' + ten.replace(/"/g, '') + '"' +
-                (nhanK ? ' data-nhan="' + nhanK.replace(/"/g, '&quot;') + '"' : '') + '>' +
-                '<div class="sz-khoi-nhan" contenteditable="false">' +
-                  thoatHTML(ten + (nhanK ? ' · ' + nhanK : '')) + '</div>' +
+        ra.push('<div class="sz-khoi" data-khoi="' + ten.replace(/"/g, '') + '">' +
+                '<div class="sz-khoi-nhan">' +
+                  '<span class="sz-khoi-loai" contenteditable="false">' +
+                    thoatHTML(ten) + '</span>' +
+                  '<span class="sz-khoi-de" data-cho="Title — type here">' +
+                    thoatHTML(nhanK) + '</span>' +
+                '</div>' +
                 tuMD(thanK.join('\n')) + '</div>');
         continue;
       }
@@ -1337,13 +1347,30 @@
        DOM rồi nhét vào: `insertHTML` đi qua đúng cỗ máy hoàn tác của trình
        duyệt, nên Ctrl+Z gỡ được — dựng tay thì cú bấm ấy nằm ngoài lịch sử và
        người ta mất đường lùi. */
+    /* ── TIÊU ĐỀ KHỐI: GÕ THẲNG VÀO ĐÓ, KHÔNG HỎI BẰNG HỘP THOẠI ──
+       Bản trước bật `window.prompt` để hỏi tiêu đề. Hộp thoại ấy nhảy lên
+       ĐỈNH MÀN HÌNH — cách chỗ đang gõ cả một chiều dài trang — và nó CHẶN cả
+       trang cho tới khi trả lời. Người ta phải quyết một cái tiêu đề trước cả
+       khi viết một chữ nào trong khối, mà lúc đó thì chưa biết khối ấy sẽ nói
+       gì; bấm Cancel thì khối ra không có tiêu đề và không có đường nào thêm
+       vào sau.
+
+       Nay chèn thẳng khối, và cái tên nằm ngay trên nó là một ô GÕ ĐƯỢC, có
+       sẵn dòng mờ "sửa ở đây". Không hộp thoại, không chặn gì, và sửa lại lúc
+       nào cũng được — kể cả khi mở một bài cũ ra.
+
+       Phần TÊN LOẠI (`note`, `tip`…) vẫn khoá: nó do cái nút vừa bấm quyết,
+       gõ đè lên nó thì bộ dựng không nhận ra khối nữa. */
     function chenKhoi(ma, ten) {
       khung.focus();
-      var nhanHTML = ma + (ten ? ' · ' + ten : '');
       document.execCommand('insertHTML', false,
-        '<div class="sz-khoi" data-khoi="' + ma + '"' +
-          (ten ? ' data-nhan="' + ten.replace(/"/g, '&quot;') + '"' : '') + '>' +
-          '<div class="sz-khoi-nhan" contenteditable="false">' + nhanHTML + '</div>' +
+        '<div class="sz-khoi" data-khoi="' + ma + '">' +
+          '<div class="sz-khoi-nhan">' +
+            '<span class="sz-khoi-loai" contenteditable="false">' + ma + '</span>' +
+            '<span class="sz-khoi-de" data-cho="' +
+              thoatHTML(L('bDeCho', 'Title — type here')) + '">' +
+              (ten ? thoatHTML(ten) : '') + '</span>' +
+          '</div>' +
           '<p><br></p>' +
         '</div><p><br></p>');
       capNhat();
@@ -1429,11 +1456,7 @@
             /* Nhãn của khối ghi chú là thứ hiện ra ở đầu ô trên trang đã dựng —
                để trống thì bộ dựng lấy tên mặc định theo loại. Hỏi ngay lúc chèn
                thì người ta khỏi phải tìm ra chỗ sửa nó sau. */
-            var t = '';
-            if (k.nhom === 'nhan') {
-              t = window.prompt(L('bAsk', 'Title for the box — leave empty for the default:'), '') || '';
-            }
-            chenKhoi(k.ma, t.trim());
+            chenKhoi(k.ma, '');
           }, k.cham);
         });
       }
@@ -1880,10 +1903,186 @@
         bao(L('upNo', 'Uploading is off — sign in with the owner key first.'), true);
         return;
       }
+      var anh = [];
       for (var i = 0; i < ds.length; i++) {
-        if (/^image\//i.test(ds[i].type)) hangAnh.push(ds[i]);
+        if (/^image\//i.test(ds[i].type)) anh.push(ds[i]);
       }
+      if (!anh.length) return;
+
+      /* ── CẮT ẢNH: CHỈ HỎI KHI THẢ ĐÚNG MỘT TẤM ──
+         Thả một tấm là một quyết định về tấm ấy — mở khung cắt ra là đúng lúc.
+         Thả năm tấm là "đưa hết vào bài": hỏi năm lần liên tiếp thì bốn lần
+         sau người ta bấm bỏ qua cho xong, và cái khung ấy thành một cửa phải
+         đóng chứ không phải một công cụ.
+
+         Ảnh động .gif cũng bỏ qua: cắt bằng canvas chỉ giữ được khung đầu. */
+      if (anh.length === 1 && anh[0].type !== 'image/gif') {
+        moKhungCat(anh[0], function (ra) {
+          hangAnh.push(ra || anh[0]);
+          chayHang();
+        });
+        return;
+      }
+      for (var j = 0; j < anh.length; j++) hangAnh.push(anh[j]);
       chayHang();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       KHUNG CẮT ẢNH
+
+       ── VÌ SAO CẮT Ở ĐÂY, KHÔNG PHẢI SAU KHI ĐĂNG ──
+       Cú pháp Markdown của trang không có chỗ nào diễn đạt "cắt": `{.wide}` và
+       `{.full}` chỉ nói BỀ NGANG, còn phần bị cắt bỏ thì không ghi ra được.
+       Muốn cắt sau khi đăng thì phải sinh ra một file ảnh thứ hai và sửa lại
+       đường dẫn trong bài — hai việc, hai chỗ hỏng.
+
+       Cắt TRƯỚC KHI GỬI thì file lên kho mã đã là tấm đã cắt: bài chỉ có một
+       đường dẫn, và không có tấm gốc nào nằm lại làm ảnh mồ côi.
+
+       ── KHUNG CẮT LÀ MỘT HÌNH CHỮ NHẬT, KHÔNG PHẢI MỘT BỘ ẢNH ──
+       Kéo trong lòng để dời, kéo bốn góc để co giãn, hoặc bấm một tỉ lệ có
+       sẵn. Không có xoay, không có phóng to, không có bộ lọc — mỗi thứ ấy là
+       một thanh công cụ nữa cho một việc mỗi tháng làm vài lần.
+       ══════════════════════════════════════════════════════════════ */
+    function moKhungCat(file, xong) {
+      var xem = URL.createObjectURL(file);
+      var img = new Image();
+      img.onerror = function () { URL.revokeObjectURL(xem); xong(null); };
+      img.onload = function () {
+        var hop = el('dialog', 'sz-cat');
+        var khungAnh = el('div', 'sz-cat-anh');
+        img.className = 'sz-cat-goc';
+        khungAnh.appendChild(img);
+        var o = el('div', 'sz-cat-o');
+        ['tt', 'tp', 'dt', 'dp'].forEach(function (g) {
+          o.appendChild(el('span', 'sz-cat-goc-' + g));
+        });
+        khungAnh.appendChild(o);
+
+        var thanh = el('div', 'sz-cat-thanh');
+        var TI = [[L('cropFree', 'Original'), 0], ['16:9', 16 / 9], ['3:2', 3 / 2],
+                  ['1:1', 1], ['4:5', 4 / 5]];
+        var tiNay = 0;
+
+        /* Khung cắt giữ theo TỈ LỆ 0..1 của tấm ảnh, không theo pixel màn hình:
+           cửa sổ đổi cỡ hay xoay điện thoại thì khung vẫn trùm đúng chỗ cũ. */
+        var v = { x: 0, y: 0, w: 1, h: 1 };
+
+        function ve() {
+          o.style.left   = (v.x * 100) + '%';
+          o.style.top    = (v.y * 100) + '%';
+          o.style.width  = (v.w * 100) + '%';
+          o.style.height = (v.h * 100) + '%';
+        }
+        function datTi(t) {
+          tiNay = t;
+          if (!t) { v = { x: 0, y: 0, w: 1, h: 1 }; ve(); return; }
+          /* Tỉ lệ tính trên PIXEL THẬT của ảnh, rồi đổi về tỉ lệ 0..1 — nên
+             một khung "1:1" ra hình vuông thật, không phải vuông trên màn. */
+          var W = img.naturalWidth, H = img.naturalHeight;
+          var w = W, h = w / t;
+          if (h > H) { h = H; w = h * t; }
+          v.w = w / W; v.h = h / H;
+          v.x = (1 - v.w) / 2; v.y = (1 - v.h) / 2;
+          ve();
+        }
+        TI.forEach(function (x) {
+          var b = el('button', 'sz-cat-ti', x[0]);
+          b.type = 'button';
+          b.addEventListener('click', function () {
+            thanh.querySelectorAll('.sz-cat-ti').forEach(function (n) {
+              n.classList.remove('sz-cat-ti--nay');
+            });
+            b.classList.add('sz-cat-ti--nay');
+            datTi(x[1]);
+          });
+          thanh.appendChild(b);
+        });
+
+        var day = el('span', 'sz-day');
+        thanh.appendChild(day);
+        var bBo = el('button', 'sz-cat-nut', L('cropSkip', 'Use as is'));
+        bBo.type = 'button';
+        var bOk = el('button', 'sz-cat-nut sz-cat-nut--chinh', L('cropDo', 'Crop'));
+        bOk.type = 'button';
+        thanh.appendChild(bBo); thanh.appendChild(bOk);
+
+        /* ── KÉO ──
+           Một trình nghe cho cả bốn góc lẫn phần trong: chỗ bắt đầu bấm quyết
+           định đang làm gì. Dùng Pointer Events nên chuột và ngón tay đi chung
+           một đường — không phải viết hai lần cho `mouse` và `touch`. */
+        var keo = null;
+        khungAnh.addEventListener('pointerdown', function (e) {
+          var hop2 = khungAnh.getBoundingClientRect();
+          var g = e.target.className && String(e.target.className).match(/sz-cat-goc-(\w\w)/);
+          keo = { g: g ? g[1] : null, x: e.clientX, y: e.clientY,
+                  W: hop2.width, H: hop2.height, v0: { x: v.x, y: v.y, w: v.w, h: v.h } };
+          khungAnh.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+        khungAnh.addEventListener('pointermove', function (e) {
+          if (!keo) return;
+          var dx = (e.clientX - keo.x) / keo.W, dy = (e.clientY - keo.y) / keo.H;
+          var a2 = keo.v0;
+          if (!keo.g) {
+            /* Dời cả khung, và chặn ở mép — kéo ra ngoài ảnh thì phần thừa là
+               nền trắng, không ai muốn thế. */
+            v.x = Math.max(0, Math.min(1 - a2.w, a2.x + dx));
+            v.y = Math.max(0, Math.min(1 - a2.h, a2.y + dy));
+          } else {
+            var trai = keo.g[1] === 't', tren = keo.g[0] === 't';
+            var x1 = trai ? a2.x + dx : a2.x, x2 = trai ? a2.x + a2.w : a2.x + a2.w + dx;
+            var y1 = tren ? a2.y + dy : a2.y, y2 = tren ? a2.y + a2.h : a2.y + a2.h + dy;
+            x1 = Math.max(0, Math.min(x1, x2 - .05)); x2 = Math.min(1, Math.max(x2, x1 + .05));
+            y1 = Math.max(0, Math.min(y1, y2 - .05)); y2 = Math.min(1, Math.max(y2, y1 + .05));
+            v.x = x1; v.y = y1; v.w = x2 - x1; v.h = y2 - y1;
+            if (tiNay) {
+              /* Giữ tỉ lệ: sửa chiều cao theo chiều ngang vừa kéo. */
+              var W2 = img.naturalWidth, H2 = img.naturalHeight;
+              var hMoi = (v.w * W2 / tiNay) / H2;
+              if (v.y + hMoi > 1) hMoi = 1 - v.y;
+              v.h = hMoi;
+            }
+          }
+          ve();
+        });
+        khungAnh.addEventListener('pointerup', function () { keo = null; });
+        khungAnh.addEventListener('pointercancel', function () { keo = null; });
+
+        function dong(ra) {
+          URL.revokeObjectURL(xem);
+          hop.close();
+          hop.remove();
+          xong(ra);
+        }
+        bBo.addEventListener('click', function () { dong(null); });
+        hop.addEventListener('cancel', function (e) { e.preventDefault(); dong(null); });
+        bOk.addEventListener('click', function () {
+          var W = img.naturalWidth, H = img.naturalHeight;
+          var sx = Math.round(v.x * W), sy = Math.round(v.y * H);
+          var sw = Math.max(1, Math.round(v.w * W)), sh = Math.max(1, Math.round(v.h * H));
+          if (sw === W && sh === H) { dong(null); return; }   /* không cắt gì */
+          var c = document.createElement('canvas');
+          c.width = sw; c.height = sh;
+          try {
+            c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+          } catch (e2) { dong(null); return; }
+          c.toBlob(function (b) {
+            if (!b) { dong(null); return; }
+            /* Giữ tên gốc để đường dẫn trên kho mã vẫn đọc ra được là ảnh nào. */
+            b.name = file.name;
+            dong(new File([b], file.name, { type: b.type }));
+          }, 'image/webp', 0.9);
+        });
+
+        hop.appendChild(el('p', 'sz-cat-de', L('cropHint', 'Drag inside to move, corners to resize')));
+        hop.appendChild(khungAnh);
+        hop.appendChild(thanh);
+        document.body.appendChild(hop);
+        hop.showModal();
+        ve();
+      };
+      img.src = xem;
     }
 
     function chayHang() {

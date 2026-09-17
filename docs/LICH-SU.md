@@ -7,173 +7,251 @@
 > **Cách ghi.** Đừng sửa bảng bằng tay. Chạy:
 >
 > ```bash
-> npm run ver -- "chỉnh hệ chữ · nền kính"      # thêm một bản vá  → V1.00 thành V1.01
-> npm run ver -- --lon "dựng trang tag"          # mở một build mới → V1.03 thành V2.00
+> npm run ver -- "chỉnh hệ chữ · nền kính"    # bản vá    → V2.4.9 thành V2.5.0
+> npm run ver -- --vua "dựng trang tag"        # đợt mới   → V2.4.x thành V2.5.0
+> npm run ver -- --lon "đổi hẳn bộ khung"      # build mới → V2.x.x thành V3.0.0
 > ```
 >
-> **Đuôi bản vá chỉ chạy 00 → 09.** Không có `V1.10`. Chạm `V1.09` rồi thì bản
-> kế tự mở build mới thành `V2.00` — `npm run ver` lo việc đó, không phải nhớ gõ
-> `--lon`. Bộ kiểm định có một phép kiểm canh luật này.
+> **BA TẦNG, mỗi tầng chạy 0 → 9.**
+>
+> | | Là gì | Lên khi nào |
+> |---|---|---|
+> | `z` | một bản vá | mỗi lượt `npm run ver` |
+> | `y` | một đợt | `z` chạm 9 |
+> | `x` | một build | `y` **và** `z` cùng 9 |
+>
+> Không có `V1.0.10`. Chạm 9 thì tầng trên tự lên và tầng dưới về 0 —
+> `npm run ver` lo, không phải nhớ gõ cờ. Bộ kiểm định có phép kiểm canh.
+>
+> **Không đệm số 0.** `V2.4.9`, không phải `V2.04.09`. Riêng vế BUILD thì bao
+> nhiêu chữ số cũng được: `V10.9.1` hoàn toàn hợp lệ.
+>
+> **Vì sao ba tầng.** Đời trước chỉ có hai (`Vxx.yy`), nên mỗi build chỉ chở
+> được MƯỜI bản: làm một ngày là hết ba build, và con số đầu nở nhanh tới mức
+> nó thôi nói lên điều gì. Một build nay chở 100 bản, nên nó lại đánh dấu được
+> một chặng thay vì một buổi chiều.
+>
+> **Đợt đổi số (17-Sep-2026).** 137 bản cũ đã đánh lại theo đúng thứ tự: mỗi
+> BUILD cũ thành một ĐỢT mới, gói mười build cũ vào một build mới.
+> `V0.xx → V1.0.xx`, `V9.xx → V1.9.xx`, `V10.xx → V2.0.xx`, `V16.xx → V2.4.xx`.
+> Không dòng nào mất, không dòng nào đổi chỗ — chỉ đổi cách gọi tên.
 >
 > **Vài số build bị bỏ qua: 13 · 14 · 23 · 38 · 39 · 40 · 41.** Chủ trang kiêng
-> mấy số ấy, nên sổ nhảy thẳng qua — sau `V12.09` là `V15.00`, sau `V22.09` là
-> `V24.00`. Luật nằm trong `tools/lib/lichsu.mjs` (`BUILD_BO`), không nằm trong
-> trí nhớ ai: một số phiên bản đã in ra chân trang và đã lên kho mã thì sửa lại
-> là sửa lịch sử.
+> mấy số ấy. Luật nằm trong `tools/lib/lichsu.mjs` (`BUILD_BO`), không nằm
+> trong trí nhớ ai. Chỉ áp cho vế BUILD — hai vế sau chạy 0..9 nên không bao
+> giờ chạm tới.
 >
-> **Quy ước cột `#`** (giữ nguyên từ design system cũ): mỗi dòng là **MỘT BUILD
-> LỚN**, không phải một bản vá. Cột `#` là **số bản vá ghi lại được trong build
-> đó** — `V1.03` nghĩa là 04 bản, và nó luôn bằng đúng hai chữ số sau dấu chấm.
-> Không biết thì ghi `thiếu info` và **giữ nguyên số build**.
+> **Quy ước cột `#`**: số bản vá (`z`) của dòng đó, ghi hai chữ số cho thẳng
+> cột. Không biết thì ghi `thiếu info`.
 >
-> Cột **Sửa chính** chỉ ghi **loại việc**, không ghi tên biến, tên endpoint, hay
-> đường dẫn nội bộ — sổ này người đọc blog mở ra xem được.
+> Cột **Sửa chính** chỉ ghi **loại việc**, tối đa **4 việc** một dòng — sổ này
+> người đọc blog mở ra xem được.
+>
+> **Phần diễn giải dưới bảng: tối đa 3 gạch đầu dòng mỗi bản.** Ngăn phiên bản
+> ở chân trang đọc thẳng mấy gạch ấy ra màn hình; sáu bảy gạch thì nó phải
+> cuộn, và người bấm vào để xem "bản này đổi gì" nhận về một bài đọc. Nhiều
+> việc quá thì tách sang một bản vá nữa — đuôi chạy tới 9, chỗ thì có thừa.
+> Hai luật này đều có phép kiểm canh, và cả hai chỉ soi BẢN MỚI NHẤT: mấy trăm
+> mục cũ viết trước luật, sửa lại là sửa lịch sử.
 
 <!-- BANG-BAT-DAU · dòng ngay dưới hàng gạch là bản mới nhất, build đọc đúng dòng đó -->
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
-| V16.07 | 2026-09-17 | 07 | bàn duyệt tick chọn nhiều rồi làm một lượt; hàng ở cả ba ngăn quản trị gọn lại từ 62px còn 42px |
-| V16.06 | 2026-09-17 | 06 | sửa ba lỗi nút danh sách làm mất dòng và mất chữ; thụt vào và thụt ra chỉ chạy trong danh sách; ảnh thả vào rơi đúng chỗ thả |
-| V16.05 | 2026-09-17 | 05 | phông tự host, trang không còn gọi tài nguyên nào ngoài tên miền; bấm ảnh trong bài để xem to; bài khai ngày tương lai nay đợi tới ngày mới lên; sinh llms.txt |
-| V16.04 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; npm run bia thôi sinh ảnh mồ côi; ghi rõ trần lượt gọi GitHub của trang quản trị |
-| V16.03 | 2026-09-17 | 03 | tên file assets mang vân tay nội dung; cache assets một năm thay cho 14 vòng hỏi lại mỗi lượt xem trang; phép kiểm cache đảo chiều theo |
-| V16.02 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
-| V16.01 | 2026-09-17 | 01 | có trang 404 thật thay cho trang trắng; phép kiểm bản nháp từ nay đỏ được; Cloudflare trỏ vào đúng trang ấy |
-| V16.00 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS; sửa luật cache đang giữ ảnh bìa cũ một năm |
-| V15.09 | 2026-09-17 | 09 | thanh soạn thảo xếp lại chính trước phụ sau và bỏ nút chỉ dẫn; bảng Blocks chia bốn nhóm, bốn khung nhấn có chấm màu riêng; nút dọn nay gỡ được cả liên kết |
-| V15.08 | 2026-09-17 | 08 | thẻ bình luận gọn lại còn một dòng; bàn duyệt căn cột cố định, nhãn đổi cũng không so le; ngăn Category có ô lọc y như ngăn Post |
-| V15.07 | 2026-09-17 | 07 | ảnh bìa mang hoạ tiết mandala của logo; nét hoa văn tự đổi theo nền sáng hay tối; bớt tối bốn góc để giữ đúng bảng màu |
-| V15.06 | 2026-09-17 | 06 | ô trích dẫn xin cả chùm câu, F5 là có câu mới; sửa ba hằng số đọc trước lúc gán làm lớp AI chưa từng chạy; thêm tác giả Việt vào kho nguồn |
-| V15.05 | 2026-09-17 | 05 | thẻ bình luận gọn lại thành hàng có kẻ ngăn; sửa hai tên lớp trùng nhau làm bàn duyệt mọc khung hộp |
-| V15.04 | 2026-09-17 | 04 | ba ngăn quản trị dùng chung một khuôn hàng; bàn duyệt bày theo dòng, hết cọc thẻ có viền; bảng bài lọc được theo chuyên mục |
-| V15.03 | 2026-09-17 | 03 | ô ảnh bìa ngay trong trang viết bài; bảng đo tiêu đề · tóm tắt · ảnh lúc đang gõ; thẻ chia sẻ khai đủ khổ ảnh để Messenger và Zalo vẽ được ô xem trước |
-| V15.02 | 2026-09-17 | 02 | mọi khối viết được đều có nút, không còn gì phải gõ tay; cú pháp hiện ngay cạnh từng nút; thêm khối tràn hết bề ngang màn hình |
-| V15.01 | 2026-09-17 | 01 | kéo thả ảnh thẳng vào khung soạn thảo; ảnh tự thu nhỏ và đổi định dạng ngay trên máy; bấm đúp vào ảnh để gõ dòng tả |
-| V15.00 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài Vô thức tách phần demo xuống phụ lục; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
-| V12.09 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
-| V12.08 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
-| V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
-| V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
-| V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
-| V12.04 | 2026-09-17 | 04 | điện thoại: có menu ☰; tên blog thôi kẹt nửa vời ở lần mở thứ hai |
-| V12.03 | 2026-09-17 | 03 | ảnh chia sẻ mới: logo, tên blog, ba theme; sinh bằng npm run og |
-| V12.02 | 2026-09-17 | 02 | rà soát tài liệu: sửa chỗ nói sai, bỏ file thừa, thêm ba phép kiểm chống lệch |
-| V12.01 | 2026-09-17 | 01 | cụm tương tác xuống cột phải dưới Read next; cột bên thôi kẹp cuộn; nội dung bám mép logo |
-| V12.00 | 2026-09-17 | 00 | chip ở Notes và Search về đúng cỡ chip ở Posts |
-| V11.09 | 2026-09-17 | 09 | cột chữ trang bài căng tới mép logo |
-| V11.08 | 2026-09-17 | 08 | Leave a note xuống sau phần gợi ý bài; khung bình luận có nút Back và thôi giữ cú cuộn |
-| V11.07 | 2026-09-16 | 07 | đồng bộ đầu bài mọi khung: ba con số một hàng, cụm nút một chỗ; bỏ vạch trang trí thừa cuối bài |
-| V11.06 | 2026-09-16 | 06 | dọn: luật CSS chết và trùng, nhãn thừa, script chỉ nạp ở trang cần |
-| V11.05 | 2026-09-16 | 05 | ô quản trị sang tiếng Anh; nút Back đứng cạnh Save |
-| V11.04 | 2026-09-16 | 04 | bình luận nở ra cột phải ở khổ rộng; ô tìm kiếm thôi khựng ở phím gõ đầu |
-| V11.03 | 2026-09-16 | 03 | điện thoại: mục lục thành nút hamburger; tên blog mở ra thì dòng dưới nở theo |
-| V11.02 | 2026-09-16 | 02 | logo: giữ nhịp khi quay lại trang; thanh đầu trang đổi qua lại giữa tên blog và logo |
-| V11.01 | 2026-09-16 | 01 | Tĩnh lặng: bỏ nốt đường kẻ mặt nước trên màn đầu |
-| V11.00 | 2026-09-16 | 00 | trang Posts thành bảng mục lục gọn: mỗi chuyên mục một danh sách dòng, tối đa 6 mục một trang |
-| V10.09 | 2026-09-16 | 09 | tim · chia sẻ · bình luận gom thành một cụm ở cột phải; thêm nút chia sẻ / chép đường dẫn |
-| V10.08 | 2026-09-16 | 08 | Tĩnh lặng: trả nền về bản cũ, giữ phần mép; bỏ lằn nước, toé mềm hơn, mưa chạm sớm hơn |
-| V10.07 | 2026-09-16 | 07 | theme Tĩnh lặng: hạ nền một bậc, đậm màu trang trí và đường kẻ cho thẻ ra thẻ |
-| V10.06 | 2026-09-16 | 06 | điện thoại: màn đầu giữ trọn một màn sau khi mở danh sách; tên blog chạm để mở, hai dòng thẳng cột |
-| V10.05 | 2026-09-16 | 05 | bộ khung logo: dựng lại tấm lát cắt 14 chặng, đồng bộ trọn thư mục sang zoey-blog-logo |
-| V10.04 | 2026-09-16 | 04 | nền theme: mưa chạm mặt nước có nước hắt lên; ngân hà phủ trọn màn hình |
-| V10.03 | 2026-09-16 | 03 | chữa header dính ở trang chủ; chân trang liền mạch; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
-| V10.02 | 2026-09-16 | 02 | bình luận thành nút tim + icon; đếm tim đặt cạnh lượt xem ở đầu bài |
-| V10.01 | 2026-09-16 | 01 | logo: nét nối đứng thẳng rồi mới ngả vào nối; xuất lại bộ khung 14 chặng |
-| V10.00 | 2026-09-16 | 00 | cỡ chữ thân bài nhỏ một bậc; khối tag bỏ khung bao |
-| V9.09 | 2026-09-16 | 09 | điện thoại: danh sách bài chờ bấm Read on; tên blog nhỏ một bậc và có hiệu ứng mở màn |
-| V9.08 | 2026-09-16 | 08 | trang chủ: nền phủ trọn trang kể cả chân trang, bỏ tem phiên bản lặp |
-| V9.07 | 2026-09-16 | 07 | bảng bài đã đăng ở ngăn Post: sửa lại bài, ẩn và bỏ ẩn |
-| V9.06 | 2026-09-16 | 06 | logo: giữ hình nơ một nhịp rồi mới bo tròn |
-| V9.05 | 2026-09-16 | 05 | Đọc tiếp chuyển lên cột bên, dưới mục lục |
-| V9.04 | 2026-09-16 | 04 | tag thành một hàng chữ thường, bỏ viền và nền |
-| V9.03 | 2026-09-16 | 03 | nền cho sửa bài: trạng thái ẩn trong bộ dựng, và API đọc/ghi bài đã đăng |
-| V9.02 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
-| V9.01 | 2026-09-16 | 01 | trang chủ chỉ còn màn đầu; Read on đi thẳng sang Posts |
-| V9.00 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; vành đứt nét trở lại; xoáy nhoè rồi nổ; nghỉ 6,2 giây |
-| V8.09 | 2026-09-16 | 09 | ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
-| V8.08 | 2026-09-16 | 08 | gỡ hẳn lối #viet và #duyet cũ: trang ngoài thôi bị chèn ô đăng nhập |
-| V8.07 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
-| V8.06 | 2026-09-16 | 06 | màn đầu ở khổ dọc: tên blog cân giữa thay vì bám mép trái |
-| V8.05 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh; dừng hình cuối lâu gấp đôi |
-| V8.04 | 2026-09-16 | 04 | chân trang gọn còn một hàng; chữ chân trang khớp chữ đầu trang |
-| V8.03 | 2026-09-16 | 03 | đăng nhập gom về một cửa; ô soạn thảo gõ như văn bản; màu chữ trong bài |
-| V8.02 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
-| V8.01 | 2026-09-16 | 01 | trang quản lý gom thành ba ngăn; đăng bài thẳng từ đó; núm vặn gom về một chỗ |
-| V8.00 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
-| V7.09 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
-| V7.08 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
-| V7.07 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
-| V7.06 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
-| V7.05 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
-| V7.04 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
-| V7.03 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
-| V7.02 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
-| V7.01 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
-| V7.00 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
-| V6.05 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
-| V6.04 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
-| V6.03 | 2026-09-16 | 03 | logo lấy lại đoá mandala làm hình nghỉ; vòng kể ngắn lại, chặng xoay rõ hơn; tên blog ở khổ dọc cân hai dòng |
-| V6.02 | 2026-09-16 | 02 | ghi chú đăng thẳng từ điện thoại, không phải dựng lại trang; theme Tĩnh lặng ngả xanh trời |
-| V6.01 | 2026-09-16 | 01 | tên blog đúng phông; cột chữ hẹp lại còn 70 ký tự; bài cũ về cùng một khung |
-| V6.00 | 2026-09-16 | 00 | hoa Sakura nhỏ và mỏng lại, đông hơn; bỏ viền ở cánh xa |
-| V5.09 | 2026-09-16 | 09 | logo: nút thắt vô cực, chữ B vặn bụng, mandala xoay rồi vỡ thành bụi |
-| V5.08 | 2026-09-16 | 08 | theme thứ ba Tĩnh lặng: bảng màu xanh pastel, nền thác nước ở màn đầu |
-| V5.07 | 2026-09-16 | 07 | rà docs: ba khung, trang ghi chú, chương logo; thêm 4 phép kiểm |
-| V5.06 | 2026-09-16 | 06 | logo kể chuyện bằng nét biến hình, bỏ hẳn con chữ |
-| V5.05 | 2026-09-16 | 05 | băng ảnh lấy tỉ lệ theo tấm đầu, kẹp trong khoảng Instagram cho phép |
-| V5.04 | 2026-09-16 | 04 | màn đầu: Borderland to hơn, xén nửa chữ cuối, nhấc lên giữa khung |
-| V5.03 | 2026-09-16 | 03 | logo tự kể lại trình tự dựng hình, lặp ở trang chủ |
-| V5.02 | 2026-09-15 | 02 | logo đứng một mình to lên; ghi chú có đường vào từ chân trang |
-| V5.01 | 2026-09-15 | 01 | từ Borderland vừa đúng bề ngang cột, thêm phép kiểm canh việc đó |
-| V5.00 | 2026-09-15 | 00 | chân trang khổ dọc canh về cùng một mép trái |
-| V4.09 | 2026-09-15 | 09 | trang giới thiệu bỏ hiệu ứng nền cho đỡ rối |
-| V4.08 | 2026-09-15 | 08 | màn đầu: chữ Z che đúng một phần ba, in sát lại, Borderland giãn ra |
-| V4.07 | 2026-09-15 | 07 | dải ngân hà dày và sáng hơn, đậm trong loang ra ngoài |
-| V4.06 | 2026-09-15 | 06 | logo hai vòng vô cực; chỉ hiện ở trang chủ và giới thiệu |
-| V4.05 | 2026-09-15 | 05 | trang ghi chú ngắn thay Tags trên thanh điều hướng |
-| V4.04 | 2026-09-15 | 04 | khung xem ảnh cố định · khối chữ lùi vào trong khung |
-| V4.03 | 2026-09-15 | 03 | đếm lượt xem thật bằng cơ sở dữ liệu D1 |
-| V4.02 | 2026-09-15 | 02 | trích dẫn thành tab bên lề bài, đổi sau mỗi hai trang · nền động nhạt ở trang tĩnh |
-| V4.01 | 2026-09-15 | 01 | trang Posts thành thư mục chuyên mục, thôi trùng với Archive |
-| V4.00 | 2026-09-15 | 00 | dải ngân hà dựng lại có nền sao và nhánh thật · cân lại khối chữ |
-| V3.09 | 2026-09-15 | 09 | thẻ bài: kính trong hơn · cao bằng nhau · trang chủ giữ 3 bài |
-| V3.08 | 2026-09-15 | 08 | logo hình vô cực · tên blog sắp lại khi rê chuột |
-| V3.07 | 2026-09-15 | 07 | khung bài ảnh ngắn: băng ảnh bên trái, tản mạn bên phải |
-| V3.06 | 2026-09-15 | 06 | chữ thân bài đo lại · căn đều hai bên · đầu bài rộng hơn cột chữ |
-| V3.05 | 2026-09-15 | 05 | ngày đăng gốc kèm mốc cập nhật tự động · bỏ phút đọc |
-| V3.04 | 2026-09-15 | 04 | khổ dọc: màn đầu trọn một màn · bỏ danh sách ba bài · thẻ bài gọn lại |
-| V3.03 | 2026-09-15 | 03 | cánh hoa nét hơn có chiều sâu · thiên hà tràn cả hai mép màn hình |
-| V3.02 | 2026-09-15 | 02 | chữ giữa tách khỏi chữ đầu · hai dòng thôi đè nhau khi co lại |
-| V3.01 | 2026-09-15 | 01 | phân trang có số cho Posts và Archive · người đọc chọn số bài mỗi trang |
-| V3.00 | 2026-09-15 | 00 | trang chủ giữ tối đa 6 bài · hai lối đi sang Posts và Archive |
-| V2.09 | 2026-09-15 | 09 | khối chữ lớn căn giữa không mất chữ · gộp Zoey in cùng hàng khi co lại |
-| V2.08 | 2026-09-15 | 08 | hướng dẫn bật đo lượt xem từng bước |
-| V2.07 | 2026-09-15 | 07 | khối chữ lớn xén theo đường kẻ lưới · dựng lại bố cục khổ dọc |
-| V2.06 | 2026-09-15 | 06 | đo lượt xem không cookie · đoán trước trang kế |
-| V2.05 | 2026-09-15 | 05 | luật số phiên bản: đuôi chỉ chạy 00 đến 09 |
-| V2.04 | 2026-09-15 | 04 | khối chữ lớn ở màn đầu · cửa vào trang giới thiệu · trích dẫn chuyển ra trang chủ |
-| V2.03 | 2026-09-15 | 03 | soát lại toàn bộ tài liệu · viết mục hệ sinh thái Cloudflare · hướng dẫn nhập bài cũ |
-| V2.02 | 2026-09-15 | 02 | rà lại bộ kiểm định · gộp phép kiểm trùng · thêm phép kiểm cho JS và nhãn giao diện |
-| V2.01 | 2026-09-15 | 01 | phóng to nền thiên hà cho cân khung |
-| V2.00 | 2026-09-15 | 00 | nhập bài cũ từ bản xuất WordPress |
-| V1.09 | 2026-09-15 | 09 | trang chủ hai màn · nền động · quầng sáng theme tối · sửa tương phản chữ mờ |
-| V1.08 | 2026-09-15 | 08 | nhẹ đi 63% · nén ảnh · cắt chú thích CSS khi dựng · dọn nhãn và cấu hình chết |
-| V1.07 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
-| V1.06 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
-| V1.05 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
-| V1.04 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
-| V1.03 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
-| V1.02 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
-| V1.01 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
-| V1.00 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
-| V0.00 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
+| V2.5.0 | 2026-09-17 | 00 | CSS chia theo loại trang, mỗi trang chỉ tải phần của nó; số phiên bản đổi sang ba tầng Vx.y.z; bỏ mấy tên lớp không tạo ra luật nào |
+| V2.4.9 | 2026-09-17 | 09 | cắt ảnh ngay trước khi gửi đi: kéo bốn góc hoặc chọn tỉ lệ có sẵn |
+| V2.4.8 | 2026-09-17 | 08 | tiêu đề khối gõ thẳng tại chỗ, bỏ hộp thoại nhảy lên đỉnh màn; thanh nút về một khổ duy nhất; vạch ngăn trong khung gõ vẽ đúng thứ trang sẽ hiện |
+| V2.4.7 | 2026-09-17 | 07 | bàn duyệt tick chọn nhiều rồi làm một lượt; hàng ở cả ba ngăn quản trị gọn lại từ 62px còn 42px |
+| V2.4.6 | 2026-09-17 | 06 | sửa ba lỗi nút danh sách làm mất dòng và mất chữ; thụt vào và thụt ra chỉ chạy trong danh sách; ảnh thả vào rơi đúng chỗ thả |
+| V2.4.5 | 2026-09-17 | 05 | phông tự host, trang không còn gọi tài nguyên nào ngoài tên miền; bấm ảnh trong bài để xem to; bài khai ngày tương lai nay đợi tới ngày mới lên; sinh llms.txt |
+| V2.4.4 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; npm run bia thôi sinh ảnh mồ côi; ghi rõ trần lượt gọi GitHub của trang quản trị |
+| V2.4.3 | 2026-09-17 | 03 | tên file assets mang vân tay nội dung; cache assets một năm thay cho 14 vòng hỏi lại mỗi lượt xem trang; phép kiểm cache đảo chiều theo |
+| V2.4.2 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
+| V2.4.1 | 2026-09-17 | 01 | có trang 404 thật thay cho trang trắng; phép kiểm bản nháp từ nay đỏ được; Cloudflare trỏ vào đúng trang ấy |
+| V2.4.0 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS; sửa luật cache đang giữ ảnh bìa cũ một năm |
+| V2.3.9 | 2026-09-17 | 09 | thanh soạn thảo xếp lại chính trước phụ sau và bỏ nút chỉ dẫn; bảng Blocks chia bốn nhóm, bốn khung nhấn có chấm màu riêng; nút dọn nay gỡ được cả liên kết |
+| V2.3.8 | 2026-09-17 | 08 | thẻ bình luận gọn lại còn một dòng; bàn duyệt căn cột cố định, nhãn đổi cũng không so le; ngăn Category có ô lọc y như ngăn Post |
+| V2.3.7 | 2026-09-17 | 07 | ảnh bìa mang hoạ tiết mandala của logo; nét hoa văn tự đổi theo nền sáng hay tối; bớt tối bốn góc để giữ đúng bảng màu |
+| V2.3.6 | 2026-09-17 | 06 | ô trích dẫn xin cả chùm câu, F5 là có câu mới; sửa ba hằng số đọc trước lúc gán làm lớp AI chưa từng chạy; thêm tác giả Việt vào kho nguồn |
+| V2.3.5 | 2026-09-17 | 05 | thẻ bình luận gọn lại thành hàng có kẻ ngăn; sửa hai tên lớp trùng nhau làm bàn duyệt mọc khung hộp |
+| V2.3.4 | 2026-09-17 | 04 | ba ngăn quản trị dùng chung một khuôn hàng; bàn duyệt bày theo dòng, hết cọc thẻ có viền; bảng bài lọc được theo chuyên mục |
+| V2.3.3 | 2026-09-17 | 03 | ô ảnh bìa ngay trong trang viết bài; bảng đo tiêu đề · tóm tắt · ảnh lúc đang gõ; thẻ chia sẻ khai đủ khổ ảnh để Messenger và Zalo vẽ được ô xem trước |
+| V2.3.2 | 2026-09-17 | 02 | mọi khối viết được đều có nút, không còn gì phải gõ tay; cú pháp hiện ngay cạnh từng nút; thêm khối tràn hết bề ngang màn hình |
+| V2.3.1 | 2026-09-17 | 01 | kéo thả ảnh thẳng vào khung soạn thảo; ảnh tự thu nhỏ và đổi định dạng ngay trên máy; bấm đúp vào ảnh để gõ dòng tả |
+| V2.3.0 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài Vô thức tách phần demo xuống phụ lục; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
+| V2.2.9 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
+| V2.2.8 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
+| V2.2.7 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
+| V2.2.6 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
+| V2.2.5 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
+| V2.2.4 | 2026-09-17 | 04 | điện thoại: có menu ☰; tên blog thôi kẹt nửa vời ở lần mở thứ hai |
+| V2.2.3 | 2026-09-17 | 03 | ảnh chia sẻ mới: logo, tên blog, ba theme; sinh bằng npm run og |
+| V2.2.2 | 2026-09-17 | 02 | rà soát tài liệu: sửa chỗ nói sai, bỏ file thừa, thêm ba phép kiểm chống lệch |
+| V2.2.1 | 2026-09-17 | 01 | cụm tương tác xuống cột phải dưới Read next; cột bên thôi kẹp cuộn; nội dung bám mép logo |
+| V2.2.0 | 2026-09-17 | 00 | chip ở Notes và Search về đúng cỡ chip ở Posts |
+| V2.1.9 | 2026-09-17 | 09 | cột chữ trang bài căng tới mép logo |
+| V2.1.8 | 2026-09-17 | 08 | Leave a note xuống sau phần gợi ý bài; khung bình luận có nút Back và thôi giữ cú cuộn |
+| V2.1.7 | 2026-09-16 | 07 | đồng bộ đầu bài mọi khung: ba con số một hàng, cụm nút một chỗ; bỏ vạch trang trí thừa cuối bài |
+| V2.1.6 | 2026-09-16 | 06 | dọn: luật CSS chết và trùng, nhãn thừa, script chỉ nạp ở trang cần |
+| V2.1.5 | 2026-09-16 | 05 | ô quản trị sang tiếng Anh; nút Back đứng cạnh Save |
+| V2.1.4 | 2026-09-16 | 04 | bình luận nở ra cột phải ở khổ rộng; ô tìm kiếm thôi khựng ở phím gõ đầu |
+| V2.1.3 | 2026-09-16 | 03 | điện thoại: mục lục thành nút hamburger; tên blog mở ra thì dòng dưới nở theo |
+| V2.1.2 | 2026-09-16 | 02 | logo: giữ nhịp khi quay lại trang; thanh đầu trang đổi qua lại giữa tên blog và logo |
+| V2.1.1 | 2026-09-16 | 01 | Tĩnh lặng: bỏ nốt đường kẻ mặt nước trên màn đầu |
+| V2.1.0 | 2026-09-16 | 00 | trang Posts thành bảng mục lục gọn: mỗi chuyên mục một danh sách dòng, tối đa 6 mục một trang |
+| V2.0.9 | 2026-09-16 | 09 | tim · chia sẻ · bình luận gom thành một cụm ở cột phải; thêm nút chia sẻ / chép đường dẫn |
+| V2.0.8 | 2026-09-16 | 08 | Tĩnh lặng: trả nền về bản cũ, giữ phần mép; bỏ lằn nước, toé mềm hơn, mưa chạm sớm hơn |
+| V2.0.7 | 2026-09-16 | 07 | theme Tĩnh lặng: hạ nền một bậc, đậm màu trang trí và đường kẻ cho thẻ ra thẻ |
+| V2.0.6 | 2026-09-16 | 06 | điện thoại: màn đầu giữ trọn một màn sau khi mở danh sách; tên blog chạm để mở, hai dòng thẳng cột |
+| V2.0.5 | 2026-09-16 | 05 | bộ khung logo: dựng lại tấm lát cắt 14 chặng, đồng bộ trọn thư mục sang zoey-blog-logo |
+| V2.0.4 | 2026-09-16 | 04 | nền theme: mưa chạm mặt nước có nước hắt lên; ngân hà phủ trọn màn hình |
+| V2.0.3 | 2026-09-16 | 03 | chữa header dính ở trang chủ; chân trang liền mạch; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
+| V2.0.2 | 2026-09-16 | 02 | bình luận thành nút tim + icon; đếm tim đặt cạnh lượt xem ở đầu bài |
+| V2.0.1 | 2026-09-16 | 01 | logo: nét nối đứng thẳng rồi mới ngả vào nối; xuất lại bộ khung 14 chặng |
+| V2.0.0 | 2026-09-16 | 00 | cỡ chữ thân bài nhỏ một bậc; khối tag bỏ khung bao |
+| V1.9.9 | 2026-09-16 | 09 | điện thoại: danh sách bài chờ bấm Read on; tên blog nhỏ một bậc và có hiệu ứng mở màn |
+| V1.9.8 | 2026-09-16 | 08 | trang chủ: nền phủ trọn trang kể cả chân trang, bỏ tem phiên bản lặp |
+| V1.9.7 | 2026-09-16 | 07 | bảng bài đã đăng ở ngăn Post: sửa lại bài, ẩn và bỏ ẩn |
+| V1.9.6 | 2026-09-16 | 06 | logo: giữ hình nơ một nhịp rồi mới bo tròn |
+| V1.9.5 | 2026-09-16 | 05 | Đọc tiếp chuyển lên cột bên, dưới mục lục |
+| V1.9.4 | 2026-09-16 | 04 | tag thành một hàng chữ thường, bỏ viền và nền |
+| V1.9.3 | 2026-09-16 | 03 | nền cho sửa bài: trạng thái ẩn trong bộ dựng, và API đọc/ghi bài đã đăng |
+| V1.9.2 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
+| V1.9.1 | 2026-09-16 | 01 | trang chủ chỉ còn màn đầu; Read on đi thẳng sang Posts |
+| V1.9.0 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; vành đứt nét trở lại; xoáy nhoè rồi nổ; nghỉ 6,2 giây |
+| V1.8.9 | 2026-09-16 | 09 | ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
+| V1.8.8 | 2026-09-16 | 08 | gỡ hẳn lối #viet và #duyet cũ: trang ngoài thôi bị chèn ô đăng nhập |
+| V1.8.7 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
+| V1.8.6 | 2026-09-16 | 06 | màn đầu ở khổ dọc: tên blog cân giữa thay vì bám mép trái |
+| V1.8.5 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh; dừng hình cuối lâu gấp đôi |
+| V1.8.4 | 2026-09-16 | 04 | chân trang gọn còn một hàng; chữ chân trang khớp chữ đầu trang |
+| V1.8.3 | 2026-09-16 | 03 | đăng nhập gom về một cửa; ô soạn thảo gõ như văn bản; màu chữ trong bài |
+| V1.8.2 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
+| V1.8.1 | 2026-09-16 | 01 | trang quản lý gom thành ba ngăn; đăng bài thẳng từ đó; núm vặn gom về một chỗ |
+| V1.8.0 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
+| V1.7.9 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
+| V1.7.8 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
+| V1.7.7 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
+| V1.7.6 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
+| V1.7.5 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
+| V1.7.4 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
+| V1.7.3 | 2026-09-16 | 03 | mở bàn duyệt và ô viết là cuộn tới nơi; bỏ được dòng mời bình luận |
+| V1.7.2 | 2026-09-16 | 02 | bảng lượt xem tự tạo, không bắt chạy SQL tay |
+| V1.7.1 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
+| V1.7.0 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
+| V1.6.5 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
+| V1.6.4 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
+| V1.6.3 | 2026-09-16 | 03 | logo lấy lại đoá mandala làm hình nghỉ; vòng kể ngắn lại, chặng xoay rõ hơn; tên blog ở khổ dọc cân hai dòng |
+| V1.6.2 | 2026-09-16 | 02 | ghi chú đăng thẳng từ điện thoại, không phải dựng lại trang; theme Tĩnh lặng ngả xanh trời |
+| V1.6.1 | 2026-09-16 | 01 | tên blog đúng phông; cột chữ hẹp lại còn 70 ký tự; bài cũ về cùng một khung |
+| V1.6.0 | 2026-09-16 | 00 | hoa Sakura nhỏ và mỏng lại, đông hơn; bỏ viền ở cánh xa |
+| V1.5.9 | 2026-09-16 | 09 | logo: nút thắt vô cực, chữ B vặn bụng, mandala xoay rồi vỡ thành bụi |
+| V1.5.8 | 2026-09-16 | 08 | theme thứ ba Tĩnh lặng: bảng màu xanh pastel, nền thác nước ở màn đầu |
+| V1.5.7 | 2026-09-16 | 07 | rà docs: ba khung, trang ghi chú, chương logo; thêm 4 phép kiểm |
+| V1.5.6 | 2026-09-16 | 06 | logo kể chuyện bằng nét biến hình, bỏ hẳn con chữ |
+| V1.5.5 | 2026-09-16 | 05 | băng ảnh lấy tỉ lệ theo tấm đầu, kẹp trong khoảng Instagram cho phép |
+| V1.5.4 | 2026-09-16 | 04 | màn đầu: Borderland to hơn, xén nửa chữ cuối, nhấc lên giữa khung |
+| V1.5.3 | 2026-09-16 | 03 | logo tự kể lại trình tự dựng hình, lặp ở trang chủ |
+| V1.5.2 | 2026-09-15 | 02 | logo đứng một mình to lên; ghi chú có đường vào từ chân trang |
+| V1.5.1 | 2026-09-15 | 01 | từ Borderland vừa đúng bề ngang cột, thêm phép kiểm canh việc đó |
+| V1.5.0 | 2026-09-15 | 00 | chân trang khổ dọc canh về cùng một mép trái |
+| V1.4.9 | 2026-09-15 | 09 | trang giới thiệu bỏ hiệu ứng nền cho đỡ rối |
+| V1.4.8 | 2026-09-15 | 08 | màn đầu: chữ Z che đúng một phần ba, in sát lại, Borderland giãn ra |
+| V1.4.7 | 2026-09-15 | 07 | dải ngân hà dày và sáng hơn, đậm trong loang ra ngoài |
+| V1.4.6 | 2026-09-15 | 06 | logo hai vòng vô cực; chỉ hiện ở trang chủ và giới thiệu |
+| V1.4.5 | 2026-09-15 | 05 | trang ghi chú ngắn thay Tags trên thanh điều hướng |
+| V1.4.4 | 2026-09-15 | 04 | khung xem ảnh cố định · khối chữ lùi vào trong khung |
+| V1.4.3 | 2026-09-15 | 03 | đếm lượt xem thật bằng cơ sở dữ liệu D1 |
+| V1.4.2 | 2026-09-15 | 02 | trích dẫn thành tab bên lề bài, đổi sau mỗi hai trang · nền động nhạt ở trang tĩnh |
+| V1.4.1 | 2026-09-15 | 01 | trang Posts thành thư mục chuyên mục, thôi trùng với Archive |
+| V1.4.0 | 2026-09-15 | 00 | dải ngân hà dựng lại có nền sao và nhánh thật · cân lại khối chữ |
+| V1.3.9 | 2026-09-15 | 09 | thẻ bài: kính trong hơn · cao bằng nhau · trang chủ giữ 3 bài |
+| V1.3.8 | 2026-09-15 | 08 | logo hình vô cực · tên blog sắp lại khi rê chuột |
+| V1.3.7 | 2026-09-15 | 07 | khung bài ảnh ngắn: băng ảnh bên trái, tản mạn bên phải |
+| V1.3.6 | 2026-09-15 | 06 | chữ thân bài đo lại · căn đều hai bên · đầu bài rộng hơn cột chữ |
+| V1.3.5 | 2026-09-15 | 05 | ngày đăng gốc kèm mốc cập nhật tự động · bỏ phút đọc |
+| V1.3.4 | 2026-09-15 | 04 | khổ dọc: màn đầu trọn một màn · bỏ danh sách ba bài · thẻ bài gọn lại |
+| V1.3.3 | 2026-09-15 | 03 | cánh hoa nét hơn có chiều sâu · thiên hà tràn cả hai mép màn hình |
+| V1.3.2 | 2026-09-15 | 02 | chữ giữa tách khỏi chữ đầu · hai dòng thôi đè nhau khi co lại |
+| V1.3.1 | 2026-09-15 | 01 | phân trang có số cho Posts và Archive · người đọc chọn số bài mỗi trang |
+| V1.3.0 | 2026-09-15 | 00 | trang chủ giữ tối đa 6 bài · hai lối đi sang Posts và Archive |
+| V1.2.9 | 2026-09-15 | 09 | khối chữ lớn căn giữa không mất chữ · gộp Zoey in cùng hàng khi co lại |
+| V1.2.8 | 2026-09-15 | 08 | hướng dẫn bật đo lượt xem từng bước |
+| V1.2.7 | 2026-09-15 | 07 | khối chữ lớn xén theo đường kẻ lưới · dựng lại bố cục khổ dọc |
+| V1.2.6 | 2026-09-15 | 06 | đo lượt xem không cookie · đoán trước trang kế |
+| V1.2.5 | 2026-09-15 | 05 | luật số phiên bản: đuôi chỉ chạy 00 đến 09 |
+| V1.2.4 | 2026-09-15 | 04 | khối chữ lớn ở màn đầu · cửa vào trang giới thiệu · trích dẫn chuyển ra trang chủ |
+| V1.2.3 | 2026-09-15 | 03 | soát lại toàn bộ tài liệu · viết mục hệ sinh thái Cloudflare · hướng dẫn nhập bài cũ |
+| V1.2.2 | 2026-09-15 | 02 | rà lại bộ kiểm định · gộp phép kiểm trùng · thêm phép kiểm cho JS và nhãn giao diện |
+| V1.2.1 | 2026-09-15 | 01 | phóng to nền thiên hà cho cân khung |
+| V1.2.0 | 2026-09-15 | 00 | nhập bài cũ từ bản xuất WordPress |
+| V1.1.9 | 2026-09-15 | 09 | trang chủ hai màn · nền động · quầng sáng theme tối · sửa tương phản chữ mờ |
+| V1.1.8 | 2026-09-15 | 08 | nhẹ đi 63% · nén ảnh · cắt chú thích CSS khi dựng · dọn nhãn và cấu hình chết |
+| V1.1.7 | 2026-09-15 | 07 | dựng trang Posts · Tags · Archive · Search · bài Chiếc gương · sổ lịch sử gom theo build |
+| V1.1.6 | 2026-09-15 | 06 | chuyển sang Cloudflare · bình luận có trả lời · quote lấy từ file nguồn · sổ lịch sử ở chân trang |
+| V1.1.5 | 2026-09-14 | 05 | trang giới thiệu hai khung · ô trích dẫn mỗi ngày |
+| V1.1.4 | 2026-09-14 | 04 | bổ sung dữ liệu có cấu trúc · ảnh chia sẻ mặc định |
+| V1.1.3 | 2026-09-14 | 03 | nháp không lên mạng · chép dài kèm nguồn · tài liệu riêng tư |
+| V1.1.2 | 2026-09-14 | 02 | cấu hình Vercel · xem thử qua WiFi · tài liệu đưa lên mạng |
+| V1.1.1 | 2026-09-14 | 01 | xếp lại đầu bài · khung bình luận · công cụ đưa ảnh |
+| V1.1.0 | 2026-09-14 | 00 | dựng hệ chữ · nền kính · sổ phiên bản · file kiểm định |
+| V1.0.0 | 2026-09-14 | 00 | dựng khung sườn · design system · bộ dựng Markdown |
 
 <!-- BANG-KET-THUC -->
 
 ---
 
-## V16.07 — 17-Sep-2026
+## V2.5.0 — 17-Sep-2026
+
+- **CSS chia theo loại trang.** Trước đó mọi trang tải một file 122 KB, mà đo
+  bằng cách thử từng bộ chọn trên từng trang thì **64–79% số luật không khớp
+  được gì** — luật của ô soạn thảo gửi tới người đọc bài, luật của màn hero gửi
+  tới trang quản trị. Nay năm gói: nền · danh sách · bài · giới thiệu · quản
+  trị. Trung bình **122 → 89 KB**, trang bài còn **84 KB**. Kèm theo,
+  `list.css` 2457 dòng tách làm bốn file theo việc, vì phần quản trị vốn nằm
+  XEN KẼ giữa phần công khai.
+- **Số phiên bản đổi sang ba tầng `Vx.y.z`.** Hai tầng thì mỗi build chỉ chở
+  được mười bản — làm một ngày là hết ba build, và con số đầu nở tới mức thôi
+  nói lên điều gì. 137 bản cũ đã đánh lại đúng thứ tự: mỗi BUILD cũ thành một
+  ĐỢT mới (`V16.xx → V2.4.xx`). Không đệm số 0.
+- **Bỏ mấy tên lớp không tạo ra luật nào.** `btn--chinh` và `hd-dau` nằm trong
+  markup mà không có một dòng CSS nào — đọc mã thì tưởng có một biến thể nút
+  "chính", thật ra `.btn` đã là nó. (Thử gỡ luôn `brand--dong` và `bl-chia`
+  thì phép kiểm đỏ ngay: hai tên ấy không vẽ gì, nhưng là DẤU HIỆU mà bộ kiểm
+  định đếm. Đã trả lại.)
+
+## V2.4.9 — 17-Sep-2026
+
+- **Cắt ảnh ngay trong ô soạn thảo.** Thả một tấm ảnh vào thì khung cắt mở ra
+  trước khi gửi đi: kéo trong lòng để dời, kéo bốn góc để co giãn, hoặc bấm
+  một tỉ lệ có sẵn (16:9 · 3:2 · 1:1 · 4:5). Thử: ảnh 1400×600 chọn 1:1 ra
+  đúng 600×600 lấy ở giữa.
+- **Cắt TRƯỚC khi gửi, không phải sau khi đăng.** Cú pháp Markdown của trang
+  không có chỗ nào diễn đạt "cắt" — `{.wide}` và `{.full}` chỉ nói bề ngang.
+  Cắt sau thì phải sinh ra một file ảnh thứ hai rồi sửa đường dẫn trong bài;
+  cắt trước thì file lên kho mã đã là tấm đã cắt, bài chỉ có một đường dẫn, và
+  không có tấm gốc nào nằm lại làm ảnh mồ côi.
+- **Chỉ hỏi khi thả ĐÚNG MỘT tấm.** Thả năm tấm là "đưa hết vào bài": hỏi năm
+  lần liên tiếp thì bốn lần sau người ta bấm bỏ qua cho xong, và cái khung ấy
+  thành một cửa phải đóng chứ không phải một công cụ.
+
+## V2.4.8 — 17-Sep-2026
+
+- **Tiêu đề khối gõ thẳng tại chỗ.** Trước đó nó hỏi bằng `window.prompt` —
+  một hộp thoại nhảy lên ĐỈNH MÀN HÌNH, cách chỗ đang gõ cả một chiều dài
+  trang, và CHẶN cả trang cho tới khi trả lời. Phải quyết một cái tiêu đề
+  trước cả khi viết một chữ nào trong khối, mà lúc đó thì chưa biết khối ấy sẽ
+  nói gì; bấm Cancel thì khối ra không có tiêu đề và không có đường thêm vào
+  sau. Nay là một ô gõ được có sẵn dòng mờ *sửa ở đây*, sửa lúc nào cũng được.
+- **Thanh nút về một khổ duy nhất.** Đo được: 25 nút với **bảy** bề rộng khác
+  nhau — `¶` 20px, `x₂` 24px, `H2` 27px, `B` 28px, `</>` 36px — vì hai lớp nút
+  chữ khai `width:auto`. Mắt đọc ra một hàng lởm chởm chứ không phải một dãy
+  nút. Nay mọi nút cùng ô 28×28; chỉ nút Blocks rộng hơn vì nó mang cả chữ.
+- **Vạch ngăn trong khung gõ vẽ đúng thứ trang sẽ hiện.** Nút ấy in ra `---`,
+  mà trên trang `---` KHÔNG ra một đường kẻ — nó ra ba dấu sao ✦ ✦ ✦. Khung gõ
+  thì vẽ một đường kẻ ngang, nên gõ xong thấy một thứ mà đăng lên ra thứ khác.
+
+## V2.4.7 — 17-Sep-2026
 
 - **Bàn duyệt: tick nhiều dòng rồi làm một lượt.** Mở bàn duyệt ra thường có
   mươi cái spam giống hệt nhau và vài cái thật — bấm Approve từng dòng là mươi
@@ -186,7 +264,7 @@
 - **Hàng ở cả ba ngăn gọn lại: 62px → 42px.** Một màn 900px nay chứa 21 hàng
   thay vì 9. Đây là bảng để ĐIỂM DANH, mật độ quan trọng hơn dáng vẻ.
 
-## V16.06 — 17-Sep-2026
+## V2.4.6 — 17-Sep-2026
 
 - **Ba lỗi nút danh sách, cả ba đều mất chữ mà không báo.** Trình duyệt trả về
   HTML sai ở ba hình dạng khác nhau, và mỗi hình mất một thứ khi đổi ra
@@ -203,7 +281,7 @@
   trỏ đang ở đâu là chuyện của lần gõ trước — thả ảnh xuống cuối bài thì nó
   nhảy lên nối vào một dòng danh sách ở trên.
 
-## V16.05 — 17-Sep-2026
+## V2.4.5 — 17-Sep-2026
 
 - **Phông tự host.** Đo được: 27 file, 421 KB, từ hai tên miền của Google — và
   file CSS của họ nằm CHẮN NGANG, phải tải xong nó trình duyệt mới biết đường
@@ -219,14 +297,14 @@
 - **`llms.txt`** — bản đồ trang cho máy đọc: giới thiệu, rồi danh sách bài kèm
   một câu tóm tắt cho từng bài.
 
-## V16.04 — 17-Sep-2026
+## V2.4.4 — 17-Sep-2026
 
 - **86 luật CSS trỏ vào tên lớp không tồn tại ở đâu cả.** Cả một khuôn thẻ bài
   cũ (`.chu-the`), mấy tiện ích kính chưa bao giờ ai gọi (`.sheen`, `.lift`,
   `.ovp`, bốn biến thể `.glass--*`), và phần còn lại của bàn duyệt đời trước.
   Máy dò tự viết báo nhầm hai ca — `khung-b` và mấy lớp trạng thái dựng bằng
   ghép chuỗi — nên mỗi cái đều phải soi tay trước khi xoá.
-- **Ảnh bìa nhẹ đi 28%.** Hoạ tiết mandala thêm ở V15.07 làm ảnh nặng gấp ba
+- **Ảnh bìa nhẹ đi 28%.** Hoạ tiết mandala thêm ở V2.3.7 làm ảnh nặng gấp ba
   (74 KB → 212 KB): rìa nét mềm sinh ra hàng trăm nghìn sắc độ, mà zlib thì
   không nén được thứ không lặp lại. Bỏ bit cuối của mỗi kênh cắt 28% mà không
   tấm nào lộ vệt dải. Thử tiếp bước 3 và 4 thì dải màu bắt đầu gãy — dừng ở 2.
@@ -238,7 +316,7 @@
   ngoài mỗi request, nên 20 bài/trang là an toàn còn 50 thì hỏng — và hỏng theo
   kiểu nửa bảng hiện ra không một dòng báo.
 
-## V16.03 — 17-Sep-2026
+## V2.4.3 — 17-Sep-2026
 
 - **Tên file assets nay mang vân tay nội dung** — `comments.afa8a87e.js`.
 - **Mỗi lượt xem trang từng tốn 14 vòng hỏi lại máy chủ.** Một trang bài nạp
@@ -254,7 +332,7 @@
   cache DÀI; nay cache ngắn mới là lỗi. Kiểm cả hai vế để tên file và header
   không bên nào đổi một mình.
 
-## V16.02 — 17-Sep-2026
+## V2.4.2 — 17-Sep-2026
 
 - **Chủ trang thôi phải tự khai mình là ai.** Máy chủ nhận ra chủ trang từ lâu
   — nó đọc cặp khoá trong header rồi đóng dấu huy hiệu và cho bình luận vào
@@ -263,12 +341,12 @@
   một chữ thì huy hiệu AUTHOR đứng cạnh một cái tên khác. Nay hai ô ấy ẩn đi,
   thay bằng một dòng *Posting as Zoey*, và tên lấy thẳng từ `site.config.json`.
 
-## V16.01 — 17-Sep-2026
+## V2.4.1 — 17-Sep-2026
 
 - **Gõ sai một đường dẫn: trước đây ra một trang TRẮNG HOÀN TOÀN.** Không tên
   blog, không menu, không một đường nào quay về — kiểm bằng `curl` trên trang
   đang chạy thì thân phản hồi rỗng. Chuyện ấy vốn hiếm, nhưng nó vừa thôi hiếm
-  từ V15.00: chủ trang **sửa được đường dẫn bài đã đăng**, và mỗi lần sửa là
+  từ V2.3.0: chủ trang **sửa được đường dẫn bài đã đăng**, và mỗi lần sửa là
   mọi link cũ dẫn tới đó. Nay là một trang thật, và nó bày Ô TÌM KIẾM trước —
   người tới đây đang tìm một bài cụ thể, không cần một lời xin lỗi.
 - **Một phép kiểm chưa bao giờ đỏ được.** "Bản nháp không lọt vào bản dựng" soi
@@ -277,7 +355,7 @@
   NGUỒN: đọc front matter, lấy bài `draft: true`, rồi soi dist · sitemap · feed.
   Cắm lỗi thử (cho bộ dựng thôi loại nháp) thì nó đỏ và gọi đúng tên file.
 
-## V16.00 — 17-Sep-2026
+## V2.4.0 — 17-Sep-2026
 
 - **Trang chủ trượt ngang được 6px, ở mọi khổ màn.** Khối hero tràn lề bằng
   mẹo `calc(50% - 50vw)`, mà `vw` đo cả thanh cuộn còn `%` chỉ đo phần nội
@@ -299,7 +377,7 @@
   không đổi" — không đúng với `bia.png`, thứ `npm run bia --de` vẽ lại mà giữ
   nguyên tên. Nay ảnh bìa có luật riêng một ngày.
 
-## V15.09 — 17-Sep-2026
+## V2.3.9 — 17-Sep-2026
 
 - **Thanh soạn thảo xếp theo TẦN SUẤT, không theo loại kỹ thuật.** Bản trước
   gom "nét trong dòng" lại một chỗ, nên `Gạch ngang chữ` và `Mã` ngồi ngay
@@ -316,7 +394,7 @@
   đụng tới thẻ `<a>`, nên đặt nhầm một liên kết rồi thì không có đường nào gỡ
   ngoài hoàn tác — mà hoàn tác cuốn theo cả mấy thứ vừa gõ sau đó.
 
-## V15.08 — 17-Sep-2026
+## V2.3.8 — 17-Sep-2026
 
 - **Thẻ bình luận: ba dòng xuống còn một.** "love u chị iu~" dài bốn chữ mà
   chiếm ba dòng. Nay tên · nội dung · (ngày và Reply) là ba ô trên một hàng co
@@ -327,7 +405,7 @@
 - **Ngăn Category có ô lọc y như ngăn Post.** Trước đó đổi tab một cái là nửa
   thanh công cụ biến mất. Lọc theo mã, tên hiển thị hoặc câu mô tả.
 
-## V15.07 — 17-Sep-2026
+## V2.3.7 — 17-Sep-2026
 
 - **Ảnh bìa mang hoạ tiết mandala của logo.** Trước bản này nó là một dải màu
   pastel với mấy vệt sáng — đẹp như một tấm vải, nhưng dán lên Facebook thì là
@@ -342,7 +420,7 @@
 - **Bốn góc bớt tối.** Công thức cũ kéo góc phải dưới xuống gần đen tím; cả
   tấm đọc ra xám đục và lạc khỏi bảng màu pastel của trang.
 
-## V15.06 — 17-Sep-2026
+## V2.3.6 — 17-Sep-2026
 
 - **Ba hằng số đọc trước lúc được gán — lớp AI của ô trích dẫn chưa từng chạy
   một lần nào.** `var` được cất chỗ trước nhưng chưa gán giá trị, mà cả ba đều
@@ -359,7 +437,7 @@
   không chắc thì bỏ qua người đó. Lời dặn cũng đổi để xin nhiều câu một lượt,
   và `npm run kiem` có phép kiểm bắt lúc nó thiếu chỗ điền số câu.
 
-## V15.05 — 17-Sep-2026
+## V2.3.5 — 17-Sep-2026
 
 - **Một tên lớp đè lên một tên lớp khác, và không có gì báo.** Bàn duyệt gọi
   mỗi hàng bình luận là `.bl-dong` — *dòng*. Nút Back của khung bình luận cũng
@@ -377,7 +455,7 @@
   ý thật chỉ là "người này là chủ nhà". Huy hiệu AUTHOR cũng thôi làm viên
   thuốc: nó đứng cạnh một cái tên cỡ 14px mà nặng hơn chính cái tên ấy.
 
-## V15.04 — 17-Sep-2026
+## V2.3.4 — 17-Sep-2026
 
 - **Ba ngăn quản trị, ba bộ luật CSS riêng — nay còn một.** Post, Category và
   Comment đều bày một danh sách để điểm danh rồi thao tác, nhưng chúng được
@@ -397,7 +475,7 @@
   sách mà không đi qua khuôn chung, còn dùng tên đã bỏ, hay gõ một tên lớp
   không có luật CSS nào. Đầy đủ ở `docs/DESIGN-SYSTEM.md` §20.
 
-## V15.03 — 17-Sep-2026
+## V2.3.3 — 17-Sep-2026
 
 - **Ô ảnh bìa, ngay trong trang viết bài.** `cover` và `coverAlt` đã nằm trong
   front matter từ lâu, máy chủ đã nhận từ lâu, bộ dựng đã dùng chúng cho thẻ
@@ -414,7 +492,7 @@
   lớn bỏ luôn tấm ảnh thay vì chờ. Nay có `og:image:width/height`, cùng bộ thẻ
   `twitter:*` và `article:*` đầy đủ. Cách bắt Facebook · Zalo quét lại: `docs/SEO.md`.
 
-## V15.02 — 17-Sep-2026
+## V2.3.2 — 17-Sep-2026
 
 - **Mục "gõ tay — không có nút" biến mất, vì nó đã sai.** Danh sách ấy ra đời
   trước bảng Blocks; bảng Blocks sau đó nhận hết mười lăm thứ trong đó, nhưng
@@ -429,7 +507,7 @@
   Nút mở bảng trước đây chỉ có một hình chữ nhật: nó là cửa vào mười sáu thứ,
   mà không ai rê chuột lên đợi dòng chú thích thì không biết bên trong có gì.
 
-## V15.01 — 17-Sep-2026
+## V2.3.1 — 17-Sep-2026
 
 - **Kéo tấm ảnh vào khung soạn thảo là xong.** Hoặc `⌘V` sau khi chụp màn hình,
   hoặc bấm nút ảnh rồi chọn file. Trước bản này, viết bài thì không cần mở máy
@@ -448,9 +526,9 @@
   khoảng một phút. Trong khung thì thấy ngay: khung giữ bản xem tại chỗ, còn
   file `.md` mang đường dẫn thật.
 
-## V15.00 — 17-Sep-2026
+## V2.3.0 — 17-Sep-2026
 
-> Nhảy từ V12.09 lên đây là đúng luật, không phải sót: sổ bỏ qua build
+> Nhảy từ V2.2.9 lên đây là đúng luật, không phải sót: sổ bỏ qua build
 > 13 · 14 · 23 · 38 · 39 · 40 · 41. Xem phần đầu file.
 
 - **Chỉ số trên, chỉ số dưới, và phím — gõ được và có nút.** `m^2^` ra m²,
@@ -488,7 +566,7 @@
   kiểm vẫn xanh vì nó so chuỗi con, lần hai vẫn xanh vì tên lớp còn nằm trong
   một chú thích. Sửa xong mới bắt được cả hai.
 
-## V12.09 — 17-Sep-2026
+## V2.2.9 — 17-Sep-2026
 
 - **Bài dài: cụm tim · chia sẻ · bình luận đi theo người đọc.** Ở một bài ba
   nghìn chữ, hàng meta trôi khỏi màn hình sau một cú vuốt — ai đọc tới đoạn hay
@@ -540,7 +618,7 @@
   trang giới thiệu được khai đúng là trang hồ sơ của chính người ấy. Điền thêm
   `mangXaHoi` trong `site.config.json` thì mạnh hơn nữa.
 
-## V12.08 — 17-Sep-2026
+## V2.2.8 — 17-Sep-2026
 
 - **Tim · chia sẻ · bình luận về chung MỘT hàng với ngày đăng.** Trước là hai
   hàng, và hai hàng ấy còn nói lặp nhau: một trái tim ở hàng meta để ĐỌC số,
@@ -597,7 +675,7 @@
   phải giới hạn kỹ thuật. Nay mỗi lượt 20 bài, có nút tải thêm, có dòng "đã tải
   20 trên 63", và có ô lọc theo tên gõ không dấu cũng ra.
 
-## V12.07 — 16-Sep-2026
+## V2.2.7 — 16-Sep-2026
 
 - **Ô trích dẫn đổi câu ba lần một ngày.** Trước là một câu duy nhất từ 0h tới
   24h — đúng với cái tên "câu của hôm nay", nhưng người đọc quay lại buổi chiều
@@ -633,7 +711,7 @@
   đủ tên từng model cùng chỗ sai cụ thể, thay vì một câu chung chung không lần
   ra được.
 
-## V12.06 — 17-Sep-2026
+## V2.2.6 — 17-Sep-2026
 
 - **Trang Posts thành lưới bento.** Sáu chuyên mục xếp dọc là một trang phải
   cuộn ba bốn màn, và phải đi qua mục 1 mới thấy mục 4 — trong khi việc của
@@ -651,7 +729,7 @@
   vòng nét đứt và hai cánh mờ — ở 16px một nét dày 0,9 đơn vị chưa tới một phần
   ba pixel, nó không mảnh đi mà thành vệt bùn làm nhoè cả hình.
 
-## V12.05 — 17-Sep-2026
+## V2.2.5 — 17-Sep-2026
 
 - **Cột bên chỉ còn MỘT thang chữ.** Ba khối trong đó sinh ra ở ba chỗ khác
   nhau trong mã, nên "ON THIS PAGE" 11px xám, "READ NEXT" 12px TÍM và
@@ -666,7 +744,7 @@
   cuộn xuống đáy tìm nút. Bấm bình luận thì nhảy xuống khung viết. Hai khung
   kia là bài ĐỌC nên giữ cụm ở cuối hoặc trong cột bên.
 
-## V12.04 — 17-Sep-2026
+## V2.2.4 — 17-Sep-2026
 
 - **Điện thoại có menu.** Bốn mục Posts · Notes · Archive · About bị giấu từ
   lâu để chừa chỗ cho tên blog, còn cái nút mở chúng ra thì chưa bao giờ được
@@ -679,7 +757,7 @@
   theo lớp kia) co lại. Cụm kẹt ở một trạng thái không luật nào tả. Nay khối
   `:hover` chỉ tồn tại trên máy có con trỏ rê được.
 
-## V12.03 — 17-Sep-2026
+## V2.2.3 — 17-Sep-2026
 
 - **Ảnh chia sẻ có logo và tên blog.** Tấm cũ là một gradient trơn với hai vòng
   nét đứt rất mờ — không logo, không tên, không địa chỉ. Dán một đường dẫn lên
@@ -702,13 +780,13 @@
 - Ảnh xuất ra **JPEG thay vì PNG**: gần như toàn gradient mềm, đúng thứ PNG nén
   tệ nhất — 670KB xuống còn 72KB mà mắt không thấy khác.
 
-## V12.02 — 17-Sep-2026
+## V2.2.2 — 17-Sep-2026
 
 - **Tài liệu nói đúng lại.** `IA.md` còn tả `/posts/` là "tất cả bài, sắp theo
   ngày" và trang chủ là "hai màn" — cả hai đã đổi từ mấy bản trước. `CAI-DAT.md`
   còn bảo bấm **Đăng xuất** và **Duyệt**, mà ô quản trị nay nói tiếng Anh.
   README thì thiếu năm file trong `src/js/` và một cửa API.
-- **Bỏ `DOC-TRUOC.md`.** Nó là tờ ghi chú kèm gói cập nhật V8.03 → V10.00: hàng
+- **Bỏ `DOC-TRUOC.md`.** Nó là tờ ghi chú kèm gói cập nhật V1.8.3 → V2.0.0: hàng
   đợi bốn việc trong đó nay xong cả bốn, và lời khuyên về `GC_ID` đã bị chính
   `wrangler.jsonc` thay thế. Hàng đợi việc nay sống ở `docs/VIEC-DANG-CHO.md`.
 - **Ba phép kiểm mới** — cả ba đều canh đúng loại lệch vừa xảy ra:
@@ -719,7 +797,7 @@
 - **`quoteAI` thiếu trong `site.config.json` của bản chính** — phần chú thích tả
   nó đầy đủ mà khoá thật thì không có, nên tính năng im lặng tắt. Đã thêm lại.
 
-## V12.01 — 17-Sep-2026
+## V2.2.1 — 17-Sep-2026
 
 - **"Leave a note" xuống cột phải, dưới "Read next".** Thứ tự cột bên nay là:
   mục lục → gợi ý đọc tiếp → cụm tim · chia sẻ · bình luận. Đúng thứ tự câu hỏi
@@ -735,10 +813,10 @@
   162px, thẳng cột với logo; hai cột đệm dồn hết sang phải làm chỗ cho ảnh
   `{.wide}` và `{.full}` thò ra một bên.
 
-## V12.00 — 17-Sep-2026
+## V2.2.0 — 17-Sep-2026
 
 - **Chip ở Notes và Search về đúng cỡ chip ở Posts.** Chúng đã dùng chung một
-  bộ luật từ V11.00, nhưng trang Notes còn một dòng cũ đặt `font:inherit` cho
+  bộ luật từ V2.1.0, nhưng trang Notes còn một dòng cũ đặt `font:inherit` cho
   `<button>` — và `font` là shorthand, nó đặt lại cả phông, cỡ và độ đậm. Dòng
   ấy thắng luật chung (0,1,1 so với 0,1,0), nên chip ở Notes lấy phông thân bài
   15px thay vì phông nhãn 10px: cùng viền, cùng bo tròn, cùng chữ hoa giãn —
@@ -747,7 +825,7 @@
   chung đã khai đủ cả ba thuộc tính, nên không còn chỗ nào cho phông mặc định
   lọt qua.
 
-## V11.09 — 17-Sep-2026
+## V2.1.9 — 17-Sep-2026
 
 - **Cột chữ trang bài căng tới mép logo.** Lưới vốn khoá cột chữ đúng bằng làn
   chữ rồi đưa cả khối về giữa — đúng về lý thuyết đọc, nhưng nó đẩy mép trái
@@ -758,7 +836,7 @@
   khoảng 60–75 mà sách vở khuyên. Mép thẳng hàng đổi lấy dòng dài hơn — cách
   quay lại ghi ngay trong chú thích của luật ấy.
 
-## V11.08 — 17-Sep-2026
+## V2.1.8 — 17-Sep-2026
 
 - **"Leave a note" xuống SAU phần gợi ý bài.** Đọc xong một bài thì câu hỏi đầu
   tiên là "đọc gì nữa", không phải "viết gì" — đặt ô viết trước danh sách gợi ý
@@ -777,7 +855,7 @@
   họ chỉ thấy trang đơ.
 
 
-## V11.07 — 16-Sep-2026
+## V2.1.7 — 16-Sep-2026
 
 - **Ba con số của một bài về cùng một hàng.** Lượt xem và lượt thích vốn ở hàng
   meta đầu bài, còn số bình luận thì in ngay trên cái NÚT — nên hai cái đầu là
@@ -801,7 +879,7 @@
   bình luận do comments.js đổ số vào, mà file ấy chỉ chạy trên trang bài — trên
   trang danh sách chúng nằm đó rỗng và ẩn vĩnh viễn, nhân với số bài mỗi trang.
 
-## V11.06 — 16-Sep-2026
+## V2.1.6 — 16-Sep-2026
 
 - **Một luật CSS trùng đã chặn một tính năng.** `.post-layout.khung-a` được
   khai HAI lần, cùng chọn lọc, cùng giá trị — im lặng suốt cho tới lúc thêm
@@ -816,7 +894,7 @@
   trang danh sách, kể cả `/search/` — nơi không bao giờ phân trang. Nay nó chỉ
   đi kèm những trang có một danh sách bị cắt thật.
 
-## V11.05 — 16-Sep-2026
+## V2.1.5 — 16-Sep-2026
 
 - **Ô quản trị nói tiếng Anh.** 101 nhãn trong bảng chữ cộng 115 chuỗi dự phòng
   trong mã chạy ở trình duyệt. Ngoại lệ tiếng Việt trước đây có lý do của nó —
@@ -831,7 +909,7 @@
   hai ngã của cùng một quyết định — cách nhau cả bề ngang màn thì mắt phải đi
   một vòng mới thấy được ngã thứ hai.
 
-## V11.04 — 16-Sep-2026
+## V2.1.4 — 16-Sep-2026
 
 - **Khổ rộng: bấm bình luận thì khung viết chiếm luôn cột phải**, mục lục và
   "đọc tiếp" nhường chỗ, cột nới từ 280 lên 400px. Mở ở cuối bài nghĩa là phải
@@ -842,7 +920,7 @@
   tiếng Việt chạy lại SÁU lần cho MỖI bài trong MỖI lượt lọc, kể cả trên toàn
   văn thân bài. Nay tải ngay lúc mở trang, và bỏ dấu đúng một lần lúc tải xong.
 
-## V11.03 — 16-Sep-2026
+## V2.1.3 — 16-Sep-2026
 
 - **Mục lục trên điện thoại thành một nút hamburger.** Trước đây nó mở sẵn:
   sáu mục là chừng 240px chen giữa dòng tóm tắt và câu đầu tiên của bài — gần
@@ -853,7 +931,7 @@
   dòng dưới to thêm một nhịp và giãn chữ ra thì phần dôi chạy sang phải, kéo
   trọng tâm về giữa: lề phải từ 108px xuống 62px.
 
-## V11.02 — 16-Sep-2026
+## V2.1.2 — 16-Sep-2026
 
 - **Logo thôi chạy sai thứ tự sau khi đi đâu đó rồi quay lại.** Vòng kể do HAI
   đồng hồ kéo: thẻ `<animate>` của SVG lo phần biến hình, `@keyframes` của CSS
@@ -868,7 +946,7 @@
   chồng lên nhau nên bề rộng đứng yên: nếu co giãn theo thì cả hàng điều hướng
   bên phải nhích một cái mỗi hai mươi giây.
 
-## V11.01 — 16-Sep-2026
+## V2.1.1 — 16-Sep-2026
 
 - **Bỏ nốt đường kẻ mặt nước ở theme Tĩnh lặng.** Nó làm đúng việc nó sinh ra —
   nói rằng "từ đây trở xuống là nước" — và đó chính là vấn đề: nó nói bằng một
@@ -877,7 +955,7 @@
   ô nữa của bố cục. Mặt nước giờ nói bằng dải màu, vòng sóng và mấy hạt bắn
   lên — không cái nào là một đường thẳng.
 
-## V11.00 — 16-Sep-2026
+## V2.1.0 — 16-Sep-2026
 
 - **Trang Posts gọn lại gần bốn lần.** Mỗi bài trong một chuyên mục trước đây
   là một tấm thẻ chở tiêu đề, ngày, tóm tắt và hai tag — chiếm chỗ bằng bốn
@@ -895,7 +973,7 @@
   Luật đầy đủ ghi vào docs/DESIGN-SYSTEM.md §17.2b–c, kèm bảng "trang nào cắt
   gì, mỗi trang bao nhiêu".
 
-## V10.09 — 16-Sep-2026
+## V2.0.9 — 16-Sep-2026
 
 - **Tim, chia sẻ và bình luận gom thành MỘT cụm ở cột phải.** Chân bài không
   còn nút nào. Chân bài là chỗ người đọc vừa đọc xong và đang đi tiếp — ai đổi
@@ -914,9 +992,9 @@
   lỗi ấy vừa xảy ra khi thêm file chia sẻ — thẻ có, file không, nút bấm không
   ra gì, và không có gì báo.
 
-## V10.08 — 16-Sep-2026
+## V2.0.8 — 16-Sep-2026
 
-- **Nền Tĩnh lặng trở lại bản cũ.** Bản V10.07 hạ nền một bậc cho mọi chênh
+- **Nền Tĩnh lặng trở lại bản cũ.** Bản V2.0.7 hạ nền một bậc cho mọi chênh
   lệch cấu trúc tăng cùng lúc. Nó chữa đúng con số nhưng đổi luôn CHẤT của
   theme — thứ làm nên Tĩnh lặng là cái sáng mỏng, gần như trắng ra nước, và hạ
   một bậc là mất đúng cái ấy để đổi lấy 0,11 điểm tương phản.
@@ -932,7 +1010,7 @@
   hình hơn, và đó là chỗ "mềm" nằm. Giọt nay sinh ngay trên mép màn thay vì từ
   440px phía trên, nên không còn quãng lặng dài lúc mới mở trang.
 
-## V10.07 — 16-Sep-2026
+## V2.0.7 — 16-Sep-2026
 
 - **Theme Tĩnh lặng: thẻ ra thẻ, mép ra mép.** Chữ ở theme này chưa bao giờ
   thiếu tương phản — đo được 12:1, hơn cả Sakura. Thứ hỏng là lớp cấu trúc:
@@ -950,7 +1028,7 @@
   trang xanh lục, nên nền dưới một tấm thẻ đổi hẳn theo chỗ thẻ đang nằm. Nay
   ba quầng dao động quanh nền chứ không lôi nó lệch đi.
 
-## V10.06 — 16-Sep-2026
+## V2.0.6 — 16-Sep-2026
 
 - **Màn đầu trên điện thoại giữ đủ một màn, kể cả sau khi đã bấm "Read on".**
   Trước đây bấm một cái là danh sách bài hiện ra, tổng nội dung vượt một màn,
@@ -969,7 +1047,7 @@
   Cân giữa như đời trước thì riêng tiêu đề neo vào một trục không có gì khác
   dùng chung.
 
-## V10.05 — 16-Sep-2026
+## V2.0.5 — 16-Sep-2026
 
 - **`docs/logo/` có lại tấm lát cắt cả vòng kể.** 14 chặng trên một lưới 5 cột,
   mỗi ô ghi mốc phần trăm và tên chặng. Bản cũ đã xoá vì nó dựng từ 25 mốc của
@@ -981,7 +1059,7 @@
   trước mới chép mấy file khung; bộ trích, hai bộ dựng và README vẫn là bản cũ
   từ đầu chiều. Nay cả hai bên khớp từng byte.
 
-## V10.04 — 16-Sep-2026
+## V2.0.4 — 16-Sep-2026
 
 - **Ngân hà phủ trọn màn hình.** Ở khổ dọc, đĩa sao trước đây lấy bề NGANG làm
   mốc — màn hẹp thì đĩa co lại thành một dải nằm giữa, trên và dưới trống
@@ -997,10 +1075,10 @@
   gợn chỗ phẳng chứ không lượn đều.
 - **Mưa chậm thêm một nhịp nữa**, còn khoảng 40% tốc độ bản đầu.
 
-## V10.03 — 16-Sep-2026
+## V2.0.3 — 16-Sep-2026
 
 - **Thanh đầu trang dính lại ở trang chủ.** Luật đưa nền động phủ trọn trang
-  (V9.08) đè `position:sticky` của thanh đầu thành `relative` — hỏng lặng lẽ,
+  (V1.9.8) đè `position:sticky` của thanh đầu thành `relative` — hỏng lặng lẽ,
   và chỉ ở đúng một trang. Nó vốn đã có `z-index` riêng nên chẳng cần nâng.
 - **Chân trang trang chủ dính liền màn hero**, bỏ 56px trống ở giữa. Ở mọi
   trang khác quãng ấy là chỗ thở; ở trang chủ, hero đã cao đúng một màn và kết
@@ -1015,7 +1093,7 @@
   nó ở đó; khung B và C không có, và nhét vào `.ben` làm nó nằm CHỒNG LÊN băng
   ảnh. Ở hai khung ấy nó về lại dòng chảy, đứng sau khối bình luận.
 
-## V10.02 — 16-Sep-2026
+## V2.0.2 — 16-Sep-2026
 
 - **Cuối bài chỉ còn hai cái nút.** Trước đây là cả một khung bình luận bày
   sẵn: nhãn, danh sách, rồi một form ba ô to bằng nửa màn hình — mà chín phần
@@ -1031,7 +1109,7 @@
   trình duyệt. Chặn chặt hơn thì phải theo dấu người đọc, mà một con số đếm
   tim không đáng cái giá ấy.
 
-## V10.01 — 16-Sep-2026
+## V2.0.1 — 16-Sep-2026
 
 - **Nét nối đứng thẳng giữa khung trước, rồi mới ngả vào nối.** Đây là chữ "i"
   của *in* — một nét thẳng. Bản trước nó trượt vào từ góc và ĐÃ nằm sẵn ở
@@ -1044,7 +1122,7 @@
   `logo-dong.svg` dựng lại theo. `lat-cat.svg` xoá hẳn: nó dựng từ 25 khung của
   vòng kể cũ, và một bản lưu sai còn tệ hơn không có bản lưu nào.
 
-## V10.00 — 16-Sep-2026
+## V2.0.0 — 16-Sep-2026
 
 - **Cỡ chữ thân bài nhỏ một bậc** (16,5 → 15,5px ở màn rộng). Be Vietnam Pro
   có chiều cao chữ x lớn, nên cùng một con số px nó nhìn to hơn hẳn phông
@@ -1057,7 +1135,7 @@
   bài — chỉ đổi từ năm mảng nhỏ thành một mảng to. Nay nó là một dòng chữ,
   ngăn với phần trên bằng một sợi kẻ.
 
-## V9.09 — 16-Sep-2026
+## V1.9.9 — 16-Sep-2026
 
 - **Điện thoại: danh sách bài chờ bấm "Read on" mới hiện.** Bày sẵn thì màn
   đầu thôi là một màn — cuộn một nhịp là gặp ngay danh sách, và khoảng lặng
@@ -1070,7 +1148,7 @@
 - **Nhỏ một bậc** (17 → 15,5vw): cân giữa rồi thì cụm chữ tự đầy đặn hơn hẳn
   so với lúc bám mép trái, và ở cỡ cũ nó chạm gần sát hai lề.
 
-## V9.08 — 16-Sep-2026
+## V1.9.8 — 16-Sep-2026
 
 - **Nền động phủ TRỌN trang chủ, kể cả chân trang.** Trước đây nó bám vào
   riêng màn hero, nên cánh hoa rơi dừng đúng ở mép dưới hero. Hồi còn khối bài
@@ -1081,7 +1159,7 @@
   một con số cách nhau vài chục pixel thì cái nào cũng thành thừa. Chân trang
   giữ lại vì ở đó nó còn là cửa vào sổ lịch sử.
 
-## V9.07 — 16-Sep-2026
+## V1.9.7 — 16-Sep-2026
 
 - **Ngăn Post mở ra là một BẢNG BÀI, không phải ô viết trống.** Mỗi bài một
   dòng: ngày · tiêu đề · trạng thái · Sửa / Ẩn. Hàng chip trên đầu lọc theo
@@ -1098,7 +1176,7 @@
 - **Sửa cùng lúc ở hai máy thì máy sau bị từ chối**, không lặng lẽ đè mất bản
   kia. Câu báo nói rõ phải mở lại để lấy bản mới.
 
-## V9.06 — 16-Sep-2026
+## V1.9.6 — 16-Sep-2026
 
 - **Cái nơ được là chính nó một nhịp trước khi bo tròn.** Nét nối tới ở 30%, và
   tới đó thì chữ Z cộng nét nối đã khép thành một cái nơ bốn cạnh thẳng. Bản
@@ -1112,7 +1190,7 @@
   đổi xong tám phần mười, nên cái nơ vừa kịp khép là đã thành vô cực. Đoạn bo
   nay dùng đường đối xứng: nửa thời gian thì nửa đường.
 
-## V9.05 — 16-Sep-2026
+## V1.9.5 — 16-Sep-2026
 
 - **"Đọc tiếp" rời chân bài, lên cột bên dưới mục lục.** Dưới chân bài nó đứng
   sau hàng tag và khung bình luận — tức là sau hai thứ đã kết thúc bài rồi, và
@@ -1120,7 +1198,7 @@
   bài và đi theo suốt lúc cuộn, nên gợi ý có mặt đúng lúc người ta còn đang
   đọc. Khổ hẹp không có cột bên thì nó rơi xuống sau chân bài, đúng chỗ cũ.
 
-## V9.04 — 16-Sep-2026
+## V1.9.4 — 16-Sep-2026
 
 - **Tag thành một hàng chữ, không còn là dãy viên thuốc.** Năm cái viền bo
   tròn xếp cạnh nhau thành một dãy nút to ngang một khối nội dung — trong khi
@@ -1128,7 +1206,7 @@
   khoảng trắng như các từ trong một câu; dấu hiệu duy nhất nói "đây là tag" là
   dấu thăng và màu sáng hơn chữ xung quanh. Khối tag cuối bài cao bớt một nửa.
 
-## V9.03 — 16-Sep-2026
+## V1.9.3 — 16-Sep-2026
 
 - **Bài ẩn — trạng thái thứ ba, dùng được ngay.** Thêm `hidden: true` vào front
   matter là bài KHÔNG dựng ra file nào cả: đường dẫn cũ trả 404, không có trong
@@ -1150,7 +1228,7 @@
 > này là phần nền, và phần `hidden` thì dùng được ngay bằng cách sửa front
 > matter.
 
-## V9.02 — 16-Sep-2026
+## V1.9.2 — 16-Sep-2026
 
 - **Chip lọc nhỏ lại đúng cỡ của nó.** Ba thứ cùng phóng to một lúc: cỡ chữ
   11px, giãn chữ .22em và lề trong 13px. Giãn .22em là gần một phần tư bề
@@ -1170,7 +1248,7 @@
   cho cùng một mối nối.
 - **Điện thoại bỏ nút Profile** ở màn đầu: thanh đầu trang đã có "ABOUT".
 
-## V9.01 — 16-Sep-2026
+## V1.9.1 — 16-Sep-2026
 
 - **Trang chủ chỉ còn màn đầu.** Dưới hero từng có thêm một khối: bài nổi bật
   in to, lưới mấy bài còn lại, rồi hai đường dẫn sang Posts và Archive. Bỏ vì
@@ -1183,7 +1261,7 @@
   cao tối thiểu một màn rồi nở theo nội dung: mở lên vẫn đúng một màn tên
   blog, cuộn một nhịp là tới ba bài mới nhất.
 
-## V9.00 — 16-Sep-2026
+## V1.9.0 — 16-Sep-2026
 
 - **Xoay TRƯỚC rồi mới nối.** Bản trước nét nối quét vào lúc chữ Z còn đang
   đứng, rồi cả cụm mới xoay ngang — thứ tự ấy kể sai: cái nút thắt thành hình
@@ -1203,7 +1281,7 @@
   một tấm hình quay rồi mờ đi.
 - **Dừng ở hình cuối 6,2 giây** (bản trước 4,3; bản đầu 2,2).
 
-## V8.09 — 16-Sep-2026
+## V1.8.9 — 16-Sep-2026
 
 - **Ô soạn thảo nay ĐỌC được Markdown vào**, không chỉ nhả ra. Đây là nền móng
   cho việc sửa một bài đã đăng: không nạp lại được bài cũ vào khung thì không
@@ -1218,7 +1296,7 @@
   không còn bị nuốt; dấu câu ngay sau `ô mã` không còn mọc thêm dấu cách; và
   chú thích ảnh có `mã` lồng trong không còn biến thành chữ "undefined".
 
-## V8.08 — 16-Sep-2026
+## V1.8.8 — 16-Sep-2026
 
 - **Gỡ hẳn hai lối tắt cũ `#viet` và `#duyet`.** Chúng cho ô viết ghi chú và
   bàn duyệt mọc ra ở bất kỳ trang bài nào, và lúc chưa có khoá thì chèn một ô
@@ -1230,7 +1308,7 @@
 - Tài liệu (`CAI-DAT.md`, `BINH-LUAN.md`) sửa theo: mọi chỗ còn chỉ đường bằng
   dấu thăng nay chỉ về `/z-admin/`.
 
-## V8.07 — 16-Sep-2026
+## V1.8.7 — 16-Sep-2026
 
 - **"Haluuu, Zoey! — Đăng xuất" thay dòng phụ đề.** Câu cũ tả lại đúng thứ
   người ta đang nhìn thấy, tức là không nói thêm gì. Dòng mới nói hai điều
@@ -1245,7 +1323,7 @@
   viết mọc ra một khối dài chép lại đúng thứ trang /notes/ đã bày đầy đủ hơn.
   Tiêu đề "Viết ghi chú" cũng thôi in hai lần chồng nhau.
 
-## V8.06 — 16-Sep-2026
+## V1.8.6 — 16-Sep-2026
 
 - **Tên blog ở màn đầu điện thoại nay cân giữa.** Trước đây ba dòng bám mép
   trái rồi đẩy dần sang phải — cách ấy đúng ở khổ ngang, nơi hai đường kẻ dọc
@@ -1256,7 +1334,7 @@
 - Dòng "Borderland" to thêm một bậc để lấp chỗ vừa dôi ra, và ba dòng hở nhau
   hơn — đuôi chữ "y" thôi đè lên chữ "in" ngay dưới nó.
 
-## V8.05 — 16-Sep-2026
+## V1.8.5 — 16-Sep-2026
 
 - **Đoá hoa đanh nét lại trước khi xoay.** Thêm một nhịp vào cuối đường dựng
   hình: hoa nở ra với đầu cánh TRÒN, đứng yên một nhịp rồi các đầu cánh nhọn
@@ -1275,7 +1353,7 @@
   hình gọn lại còn hai phần ba thời lượng cũ, và chỗ tiết kiệm được dồn hết
   sang quãng đứng yên ở hình đủ — từ 2,2 giây lên 4,3 giây.
 
-## V8.04 — 16-Sep-2026
+## V1.8.4 — 16-Sep-2026
 
 - **Chân trang còn một hàng.** Dòng ký tên `© 2026 Zoey` rời khỏi tem bên phải
   về đứng đầu hàng trái, ngay trước RSS — nó là chủ của mấy đường ấy, đứng
@@ -1286,7 +1364,7 @@
   kiểu chữ trong một dải cao 40px, mà không kiểu nào khớp thanh đầu trang. Nay
   cả hàng dùng đúng một bộ; phân biệt giữa chúng nằm ở màu, không ở phông.
 
-## V8.03 — 16-Sep-2026
+## V1.8.3 — 16-Sep-2026
 
 - **Một cửa đăng nhập cho cả ba ngăn, và một nút ra.** Trước đây mỗi ngăn tự
   hỏi khoá, nên trang hỏi cùng một câu ba lần — và bấm "Quên khoá" ở ngăn này
@@ -1306,7 +1384,7 @@
 - **"Sai khoá" và "máy chủ chưa có khoá" nay là hai câu khác nhau.** Chúng
   từng ra cùng một dòng chữ, và đó là cách nhanh nhất để mất một buổi đi tìm
   lỗi ở chỗ không có lỗi.
-## V8.02 — 16-Sep-2026
+## V1.8.2 — 16-Sep-2026
 
 - **Điền kho mã thật vào cấu hình Worker**, thay chỗ trống mẫu. Không có nó thì
   ngăn Post không biết ghi bài vào đâu.
@@ -1315,7 +1393,7 @@
   Đăng mới nhận một câu báo lỗi của GitHub, mà câu ấy đọc ra như "khoá hỏng"
   chứ không như "bạn quên điền tên kho mã".
 
-## V8.01 — 16-Sep-2026
+## V1.8.1 — 16-Sep-2026
 
 - **Trang quản lý gom thành ba ngăn.** Trước đây ô viết ghi chú và hàng chờ
   duyệt bình luận đổ chung xuống một cột dọc. Với hai khối thì còn chịu được;
@@ -1337,7 +1415,7 @@
   viết ở cả CSS lẫn mã dựng, và có một phép kiểm canh cho chúng khớp nhau —
   canh được, nhưng vẫn là hai chỗ phải sửa.
 
-## V8.00 — 16-Sep-2026
+## V1.8.0 — 16-Sep-2026
 
 - **Một trang bài nặng 100 KB, nay còn 9 KB.** Sổ phiên bản — cái bảng mở ra khi
   bấm năm nhịp vào dòng chữ nhỏ ở chân trang — được nhét sẵn vào MỌI trang, dù
@@ -1357,7 +1435,7 @@
   tiếng động: trang nặng trở lại thì nhìn vẫn y hệt, còn một file JavaScript bị
   cắt hỏng thì trang vẫn hiện đủ, chỉ là bấm vào đâu cũng không có gì xảy ra.
 
-## V7.09 — 16-Sep-2026
+## V1.7.9 — 16-Sep-2026
 
 - **Dọn ba thứ đã chết mà vẫn nằm trong kho mã.** Máy chủ bình luận đời cũ chạy
   trên Google; một bản sao thừa của hàm trích dẫn nằm sai chỗ, không ai gọi tới
@@ -1374,14 +1452,14 @@
   nơi đặt khoá bí mật, số mục nhảy cóc, và bản mô tả cây thư mục còn thiếu mấy
   file mới.
 
-## V7.08 — 16-Sep-2026
+## V1.7.8 — 16-Sep-2026
 
 - **Trang quản lý đổi đường dẫn thành `/z-admin/`.** Tên cũ đọc ra là một trang
   nội dung bình thường; tên mới nói thẳng đó là chỗ làm việc, và gõ nhanh hơn
   trên bàn phím điện thoại. Cửa sau bấm năm nhịp ở trang giới thiệu vẫn trỏ
   đúng chỗ.
 
-## V7.07 — 16-Sep-2026
+## V1.7.7 — 16-Sep-2026
 
 - **Có một trang riêng để chủ trang làm việc.** Trước đó phải nhớ hai địa chỉ
   có dấu thăng — cái đó không phải đăng nhập, nó là bắt người ta học thuộc
@@ -1405,7 +1483,7 @@
 - **Dải sáng của theme Galaxy dày gấp đôi**, và mưa ở theme Tĩnh lặng chậm
   thêm một nhịp nữa.
 
-## V7.06 — 16-Sep-2026
+## V1.7.6 — 16-Sep-2026
 
 - **Bàn duyệt gom về một chỗ, và mở được ngay ở trang ghi chú.** Trước đó nó
   sống trong khối bình luận, mà khối ấy chỉ có ở trang bài — muốn duyệt thì
@@ -1423,7 +1501,7 @@
   danh sách — đọc ở đây, bấm ở kia. Nay mỗi bình luận mang thêm hai nút nhỏ,
   và chỉ hiện khi máy ấy có khoá.
 
-## V7.05 — 16-Sep-2026
+## V1.7.5 — 16-Sep-2026
 
 - **Model dự phòng của ô trích dẫn đã chết từ lúc nào không hay.** Nó ghim cứng
   vào một số hiệu cụ thể, với ý là "cái tên chắc chắn còn tồn tại". Tra lại
@@ -1436,7 +1514,7 @@
   bản gọn nhẹ, một bản đầy đủ. Google ra bản mới thì chúng tự trỏ theo. Ghim
   vào một số hiệu là hẹn trước một ngày phải quay lại sửa.
 
-## V7.04 — 16-Sep-2026
+## V1.7.4 — 16-Sep-2026
 
 - **Bật lớp trích dẫn viết mới mỗi ngày.** Ô trích dẫn vẫn chạy được không cần
   gì cả — nó xoay vòng kho câu sẵn trong `content/quote-nguon.md`. Nay có thêm
@@ -1444,7 +1522,7 @@
   khai sẵn trong chính file ấy. Hỏng hay chậm quá ba giây thì lặng lẽ giữ câu
   từ kho — người đọc không phân biệt được, và đó là chủ ý.
 
-## V7.03 — 16-Sep-2026
+## V1.7.3 — 16-Sep-2026
 
 - **Mở bàn duyệt hay ô viết là được đưa tới tận nơi.** Hai khối ấy nằm cuối
   trang — trên một bài dài, bàn duyệt rơi vào khoảng 4700px của một trang cao
@@ -1460,7 +1538,7 @@
   mất hẳn; bản trước để trống thì rơi về một câu mặc định khác, tức là không có
   cách nào tắt.
 
-## V7.02 — 16-Sep-2026
+## V1.7.2 — 16-Sep-2026
 
 - **Bảng đếm lượt xem tự tạo.** Trước đó tài liệu bắt chủ trang tự chạy một câu
   `CREATE TABLE` trong Console của cơ sở dữ liệu. Quên bước ấy thì `/api/xem`
@@ -1472,7 +1550,7 @@
   phần cũ nhất nên còn sót lại kiểu làm cũ. Nay cả ba giống nhau: cắm cơ sở dữ
   liệu vào là chạy, không có bước nào phải nhớ.
 
-## V7.01 — 16-Sep-2026
+## V1.7.1 — 16-Sep-2026
 
 - **Trang chạy được cả dưới dạng Worker, không riêng Pages.** Thư mục
   `functions/` là quy ước của RIÊNG Cloudflare Pages; dự án kiểu Worker
@@ -1488,7 +1566,7 @@
   thêm dòng tương ứng vào `worker.js` là `npm run kiem` báo đỏ — vì nếu không
   báo thì đường mới 404 lặng lẽ, đúng cái bẫy vừa sập một lần.
 
-## V7.00 — 16-Sep-2026
+## V1.7.0 — 16-Sep-2026
 
 - **Bình luận rời khỏi Google, về chạy trên Cloudflare.** Bản cũ để Google Apps
   Script lo hết, nghĩa là mỗi người mở một bài đều phải đợi một lượt gọi sang
@@ -1508,7 +1586,7 @@
 - **Email vẫn không bao giờ ra khỏi cơ sở dữ liệu.** Không câu lệnh nào đọc tới
   cột ấy, kể cả lượt gọi của chủ trang.
 
-## V6.05 — 16-Sep-2026
+## V1.6.5 — 16-Sep-2026
 
 - **Khối chữ ở màn đầu bị khuôn xén ở CẢ hai đầu.** Chữ "Z" vốn đã lấn qua
   đường kẻ trái và bị cắt mất một mảng — cố ý, để cả khối đọc ra là được đặt
@@ -1518,7 +1596,7 @@
   phần năm), vì dòng trên vẫn là dòng nhấn. Cỡ chữ dòng dưới phải giải lại theo
   để mép phải vẫn cắt đúng giữa chữ "d".
 
-## V6.04 — 16-Sep-2026
+## V1.6.4 — 16-Sep-2026
 
 - **Mục lục và ô trích dẫn bám theo bài dài.** Chúng vẫn được khai là "dính khi
   cuộn" từ lâu, nhưng ô lưới chứa chúng bị kéo cao đúng bằng cả bài — đo thật:
@@ -1536,7 +1614,7 @@
   Ba thẻ gợi ý rớt xuống hai hàng trong cột chữ hẹp, để lại một hàng lẻ. Và
   thác chảy xiết thì đọc ra là thác lũ, mà theme này tên là Tĩnh lặng.
 
-## V6.03 — 16-Sep-2026
+## V1.6.3 — 16-Sep-2026
 
 - **Logo lấy lại đoá mandala làm hình nghỉ.** Trước đó mandala chỉ thoáng qua ở
   chặng cuối rồi tan, nên chín phần mười thời gian — kể cả lúc vừa mở trang —
@@ -1555,7 +1633,7 @@
   nó đọc ra như dòng phụ chú dưới chữ "Zoey" chứ không phải nửa còn lại của
   cùng cái tên.
 
-## V6.02 — 16-Sep-2026
+## V1.6.2 — 16-Sep-2026
 
 - **Ghi chú đăng thẳng từ điện thoại.** Bắt gặp một quyển sách hay một ý thoáng
   qua thì mở `/notes/#viet`, gõ, xong — không phải mở máy, sửa file, dựng lại
@@ -1571,7 +1649,7 @@
   Nay nền, quầng nền và mọi sắc mực đều cộng thêm phần lam, chỉ chừa lại một
   nốt lục để bảng màu còn chỗ đổi màu. Chữ đọc rõ hơn bản cũ ở cả bốn mức.
 
-## V6.01 — 16-Sep-2026
+## V1.6.1 — 16-Sep-2026
 
 - **Tên blog ở thanh đầu trang về đúng phông của nó.** Một dấu ngoặc thừa sót
   lại giữa file kiểu dáng đã nuốt mất cả khối luật ngay sau nó, nên dòng tên
@@ -1589,7 +1667,7 @@
   những dòng không dẫn đi đâu. Nay tiêu đề là tiêu đề, câu văn là câu văn. Bài
   không có mục nào cũng không còn để trống một khoảng rộng bên phải.
 
-## V6.00 — 16-Sep-2026
+## V1.6.0 — 16-Sep-2026
 
 - **Hoa Sakura thôi thô.** Cánh từ 5–19px xuống 3,2–11,4px, độ đậm từ 0,46–0,96
   xuống 0,22–0,70, và số cánh tăng gần gấp rưỡi để bù diện tích. Cánh hoa là
@@ -1605,7 +1683,7 @@
   sang 0/0,62/0,88 nên phần trắng chiếm hơn nửa cánh — cánh hoa thật nhạt dần
   về phía gốc và chỉ ngả hồng ở rìa ngoài.
 
-## V5.09 — 16-Sep-2026
+## V1.5.9 — 16-Sep-2026
 
 - **Logo kể một câu chuyện dài hơn, và có kết.** Nét nối (chữ i) nay chạm đúng
   HAI ĐẦU TỰ DO của chữ Z nên nó *khép* hình lại thành một nút thắt vô cực dạng
@@ -1625,7 +1703,7 @@
   tay) nên nó im suốt; nay canh cả hai đầu, và đã cắm lại đúng lỗi cũ vào để
   thử xem nó có bắt không.
 
-## V5.08 — 16-Sep-2026
+## V1.5.8 — 16-Sep-2026
 
 - **Theme thứ ba: Tĩnh lặng.** Thác nước, suối, thiền — nền xanh pastel, nút
   chuyển theme thành vòng xoay ba nhịp (sáng → tối → tĩnh lặng) thay vì bập
@@ -1647,10 +1725,10 @@
   luật tổng quát: Galaxy và Tĩnh lặng phải khai cùng một bộ biến, và hai khối
   Galaxy phải giống nhau từng giá trị.
 
-## V5.07 — 16-Sep-2026
+## V1.5.7 — 16-Sep-2026
 
 - **Rà lại tài liệu.** Ba chỗ đang nói dối: hướng dẫn đăng bài và design system
-  đều ghi "hai khung trình bày" trong khi khung C đã có từ V3.07; bản đồ trang
+  đều ghi "hai khung trình bày" trong khi khung C đã có từ V1.3.7; bản đồ trang
   ghi trang chủ hiện "tối đa 6 bài" trong khi cấu hình để 3, và không nhắc trang
   ghi chú. Sửa hết, thêm chương **§19 · LOGO** vào design system.
 - **Bộ kiểm định lên 41 phép,** thêm bốn phép cho bốn kiểu hỏng-im-lặng mới:
@@ -1659,7 +1737,7 @@
   không được cùng hiện; tỉ lệ khung băng ảnh phải nằm trong khoảng Instagram
   cho phép. Cả bốn đều đã thử ngược — cố tình làm sai để xem nó có báo không.
 
-## V5.06 — 16-Sep-2026
+## V1.5.6 — 16-Sep-2026
 
 - **Bỏ hẳn con chữ khỏi logo.** Bản trước dựng chặng chữ bằng `<text>` thật, lấy
   đúng con chữ Z, i, B cùng phông nghiêng. Nhìn thì hỏng: một chữ serif có chân,
@@ -1672,7 +1750,7 @@
 - **Không còn phụ thuộc phông chữ** — Google Fonts tải chậm hay hỏng cũng không
   ảnh hưởng gì tới logo.
 
-## V5.05 — 16-Sep-2026
+## V1.5.5 — 16-Sep-2026
 
 - **Băng ảnh nhận ảnh dọc cho ra hồn.** Khung trước đây cao cố định và nằm
   ngang, nên ảnh dọc tuy vẫn vào trọn nhưng bé tí giữa hai dải nền. Nay khung
@@ -1685,7 +1763,7 @@
 - **`npm run bia -- <slug> --doc`** sinh ảnh dọc 1080×1350 cho băng ảnh, một tấm
   cho mỗi dòng trong `anh:`, hạt giống lấy theo chú thích nên mỗi tấm một hình.
 
-## V5.04 — 16-Sep-2026
+## V1.5.4 — 16-Sep-2026
 
 - **Hai đầu dòng chữ đều bị xén, và xén có con số.** Chữ đầu khuất một phần ba
   sau đường kẻ trái, chữ "d" cuối khuất một nửa sau đường kẻ phải. Xén đều hai
@@ -1697,7 +1775,7 @@
   cả cột thì khối chữ bị đẩy xuống nằm đè lên dải ấy. Chừa dải ra rồi mới căn,
   và chừa dư một nhịp vì khối này nặng đáy.
 
-## V5.03 — 16-Sep-2026
+## V1.5.3 — 16-Sep-2026
 
 - **Logo tự kể lại trình tự dựng hình, và lặp.** Ở trang chủ, cứ 20 giây một
   vòng: bốn cánh xoay rồi vỡ ra → *Zoey in Borderland* hiện lên → cả dòng bóp
@@ -1712,7 +1790,7 @@
   đọc. Trang giới thiệu giữ logo tĩnh, vẽ một lần rồi thôi. Bật "giảm chuyển
   động" thì dừng hẳn ở hình đủ.
 
-## V5.02 — 15-Sep-2026
+## V1.5.2 — 15-Sep-2026
 
 - **Logo đứng một mình thì to lên.** Ở trang chủ và trang giới thiệu, ô thương
   hiệu không còn dòng chữ nên logo nới từ 30px lên 36px — vẫn thấp hơn thanh
@@ -1720,7 +1798,7 @@
 - **Ghi chú có đường vào từ chân trang.** Nó đã thế chỗ Tags ở thanh trên; chân
   trang nay có cả hai, nên mấy chục trang tag không thành trang mồ côi.
 
-## V5.01 — 15-Sep-2026
+## V1.5.1 — 15-Sep-2026
 
 - **Từ "Borderland" không còn bị cắt cụt.** Cỡ chữ ở màn đầu tính theo bề ngang
   khung, và bản trước đặt quá tay: từ dài 914px trong cột rộng 712px, thò ra
@@ -1732,20 +1810,20 @@
   từ ra rồi so với bề ngang cột — bắt được ngay lúc build thay vì phải mở trình
   duyệt nhìn. Bộ kiểm định lên 37 phép.
 
-## V5.00 — 15-Sep-2026
+## V1.5.0 — 15-Sep-2026
 
 - **Chân trang khổ dọc canh về một mép.** Trên điện thoại, khối liên kết và
   khối tem phiên bản trước đó mỗi khối canh một kiểu — một bên trái, một bên
   giữa — nên nhìn như hai mảnh rời. Nay cả hai bắt đầu ở đúng cùng một mép
   trái với cột chữ phía trên. Đo lại: bốn khối đều mở ở x=20px.
 
-## V4.09 — 15-Sep-2026
+## V1.4.9 — 15-Sep-2026
 
 - **Trang giới thiệu bỏ hiệu ứng nền.** Trang ấy nhiều chữ nhất trong cả blog;
   thêm một lớp hạt bay phía sau thì mắt phải tự lọc hai thứ cùng lúc. Nền tĩnh,
   chữ đọc dễ hơn. Muốn bật lại thì sửa một dòng `nen:` trong front matter.
 
-## V4.08 — 15-Sep-2026
+## V1.4.8 — 15-Sep-2026
 
 - **Chữ Z che đúng một phần ba.** Che ở VIỀN CỘT chứ không phải viền ngoài màn
   hình — mép trái chữ dừng ở 270px so với mép cột 339px, tức 69/190px = 36%.
@@ -1754,14 +1832,14 @@
 - **"Borderland" giãn thêm.** Dòng dưới nay trải gần hết bề ngang cột, cân với
   khối chữ Z ở trên thay vì thụt vào giữa.
 
-## V4.07 — 15-Sep-2026
+## V1.4.7 — 15-Sep-2026
 
 - **Dải ngân hà dày và sáng hơn.** Gấp đôi số sao, thêm một lớp bụi, và quan
   trọng nhất: độ sáng giảm dần theo bán kính — đậm đặc ở lõi rồi loang nhạt ra
   ngoài, như ảnh thật. Trước đó sao sáng đều nhau nên nhìn ra một đám chấm chứ
   không ra một dải. Vẫn quay, vẫn một vòng ~2,5 phút.
 
-## V4.06 — 15-Sep-2026
+## V1.4.6 — 15-Sep-2026
 
 - **Logo hai vòng vô cực.** Dựng theo đúng thứ tự trong ý tưởng gốc: *Zoey in
   Borderland* thu lại còn chữ Z, Z xoay ngang, chữ *i* xoay ngang nối hai đầu —
@@ -1772,7 +1850,7 @@
   chữ *Zoey in Borderland*. Không bao giờ hiện cả hai cùng lúc — logo là chữ
   ấy viết lại, đặt cạnh nhau thì thành nói hai lần.
 
-## V4.05 — 15-Sep-2026
+## V1.4.5 — 15-Sep-2026
 
 - **Trang ghi chú ngắn.** Bắt gặp một quyển sách, một bản nhạc, một ý thoáng
   qua thì mở `content/ghi-chu.md` gõ vài dòng — không tiêu đề, không ảnh bìa,
@@ -1781,7 +1859,7 @@
   Loại (sách · nhạc · ý · …) muốn đặt gì cũng được, trang tự gom thành bộ lọc.
   Nó thay Tags trên thanh điều hướng; trang tag từng bài vẫn còn nguyên.
 
-## V4.04 — 15-Sep-2026
+## V1.4.4 — 15-Sep-2026
 
 - **Khung xem ảnh cố định.** Ảnh dùng `contain` chứ không `cover`: `cover`
   phóng ảnh cho lấp kín khung rồi CẮT phần thừa, mà với ảnh kỉ niệm thì phần bị
@@ -1799,7 +1877,7 @@
   tràn ngang 24px — và không phần tử nào lộ ra khi quét, vì pseudo-element không
   nằm trong danh sách phần tử. Lần thứ hai vấp đúng chỗ này.
 
-## V4.03 — 15-Sep-2026
+## V1.4.3 — 15-Sep-2026
 
 - **Đếm lượt xem thật.** Cloudflare Web Analytics đếm rất tốt nhưng KHÔNG có
   API đọc ngược — số liệu chỉ xem được trên bảng điều khiển, không in lên bài
@@ -1810,7 +1888,7 @@
   cùng phiên không cộng thêm nhưng mở tab mới thì tính lại; và không biết ai là
   ai — cố ý không biết. Mặc định TẮT, chưa gắn D1 thì trang lặng lẽ bỏ qua.
 
-## V4.02 — 15-Sep-2026
+## V1.4.2 — 15-Sep-2026
 
 - **Trích dẫn thành tab bên lề bài**, ngay dưới mục lục, cùng một khối dính khi
   cuộn. Đổi câu sau mỗi HAI trang: giữ nguyên cả phiên thì nó thành mảng trang
@@ -1821,7 +1899,7 @@
   là nhân vật chính; trang giới thiệu thì kín chữ, và cánh hoa rơi sau chữ ở độ
   đậm của màn hero làm mắt bị kéo đi liên tục.
 
-## V4.01 — 15-Sep-2026
+## V1.4.1 — 15-Sep-2026
 
 - **Trang Posts thành thư mục chuyên mục.** Đo ra thì nó đang liệt kê ĐÚNG cùng
   9 bài với Archive, chỉ khác là có tóm tắt và tag — hai trang cùng trả lời một
@@ -1832,7 +1910,7 @@
 - **Thẻ bài giữ hai tag.** Ba cái thì ở bề ngang một cột lưới thường không đủ
   chỗ, và luật giữ cho thẻ cao bằng nhau cắt cái thứ ba làm đôi — một chữ bị
   cắt giữa chừng đọc ra là trang hỏng.
-## V4.00 — 15-Sep-2026
+## V1.4.0 — 15-Sep-2026
 
 - **Dải ngân hà dựng lại từ đầu.** Bản trước cho ra một SỢI sao mảnh vắt chéo
   màn hình. Sai ở mô hình: nó rải sao dọc đường xoắn rồi thêm nhiễu vào GÓC —
@@ -1853,7 +1931,7 @@
   riêng đứng cạnh. Từ cuối lùi vào một bậc để hai dòng cài vào nhau, và khi co
   lại thì giãn chữ ra bù cho phần cỡ vừa mất.
 
-## V3.09 — 15-Sep-2026
+## V1.3.9 — 15-Sep-2026
 
 - **Kính trong hơn.** Ruột kính ở theme tối đang dày gần gấp đôi mức cần, cộng
   với mức nâng bão hoà 1,9 — nên thẻ bài đọc ra là những khối tím đặc chứ không
@@ -1868,7 +1946,7 @@
 - **Trang chủ giữ 3 bài** thay vì 6. Sáu thẻ dưới màn hero là một bức tường,
   không phải một lời mời.
 
-## V3.08 — 15-Sep-2026
+## V1.3.8 — 15-Sep-2026
 
 - **Có logo.** Chữ Z xoay ngang thì ba nét của nó thành vạch trái · chéo · vạch
   phải; nối hai đầu còn lại bằng một đường chéo nữa là ra một hình vô cực vẽ
@@ -1883,7 +1961,7 @@
   vào thì giãn ra và rõ hẳn. Ở trang chủ thì ẩn hẳn — màn hero ngay dưới đã in
   cái tên ấy ở cỡ khổng lồ. Tên vẫn nằm trong `aria-label` nên trình đọc màn
   hình luôn đọc được, kể cả ở trang chủ.
-## V3.07 — 15-Sep-2026
+## V1.3.7 — 15-Sep-2026
 
 - **Khung C — bài ảnh ngắn.** Vài tấm kỉ niệm bên trái, mấy dòng tản mạn bên
   phải. Kiểu bài này không hợp khung đọc dài: bốn dòng chữ bày ra giữa cột 66
@@ -1899,7 +1977,7 @@
 
 - **Ảnh nhận cả đường dẫn ngoài.** Ảnh đã up ở chỗ khác thì dán thẳng địa chỉ,
   không phải tải về bỏ vào kho chỉ để đăng một lần.
-## V3.06 — 15-Sep-2026
+## V1.3.6 — 15-Sep-2026
 
 - **Chữ thân bài đo lại.** Cảm giác "chữ to quá" hoá ra không phải lỗi của cỡ
   chữ: nó đến từ khoảng dòng 1,78 cộng cột chữ chỉ 58 ký tự — khối chữ nở ra,
@@ -1927,7 +2005,7 @@
   giờ cùng một kiểu. Bài nhập từ blog cũ mở đầu bằng khối trích dẫn — chính là
   câu dẫn — nay được bỏ khỏi thân bài sau khi đã lấy làm tóm tắt, thay vì bắt
   người đọc đọc một đoạn hai lần cách nhau chưa tới một màn.
-## V3.05 — 15-Sep-2026
+## V1.3.5 — 15-Sep-2026
 
 - **Ngày đăng gốc, và mốc cập nhật riêng.** Bài 2017 mãi là 2017 — ngày đăng
   không bao giờ đổi. Bên cạnh nó là mốc sửa gần nhất, ghi theo lối tương đối:
@@ -1944,7 +2022,7 @@
   Việt có cả thơ trích lẫn danh sách thì nó sai đều. Chỗ ấy để dành cho lượt
   xem — con số thật.
 
-## V3.04 — 15-Sep-2026
+## V1.3.4 — 15-Sep-2026
 
 - **Màn đầu ở khổ dọc trở lại đúng một màn.** Bản trước xếp dọc đủ bốn khối nên
   màn đầu dài hơn màn hình, chữ chen nhau, và nền động gần như không thấy đâu —
@@ -1957,7 +2035,7 @@
   siết lại. Một màn điện thoại trước chứa nổi hai bài, giờ là ba — và người đọc
   lấy lại được khả năng lướt.
 
-## V3.03 — 15-Sep-2026
+## V1.3.3 — 15-Sep-2026
 
 - **Cánh hoa có chiều sâu.** Mỗi cánh mang một "lớp xa gần", và cỡ, độ đậm, tốc
   độ rơi, độ dày viền đều suy ra từ đó: cánh gần thì to, rõ, rơi nhanh; cánh xa
@@ -1969,7 +2047,7 @@
   dải ngân hà. Nay đĩa rộng hơn nửa màn, sao dày gấp đôi, nhánh xoắn thu gọn lại
   cho ra dải rõ ràng, và lõi sáng nhỏ đi để nhánh làm chủ.
 
-## V3.02 — 15-Sep-2026
+## V1.3.2 — 15-Sep-2026
 
 - **Chữ giữa tách khỏi chữ đầu.** Nó đang nép sát quá, đọc ra như một dấu phụ
   của chữ Z chứ không phải một từ.
@@ -1978,7 +2056,7 @@
   đúng thân chữ "d" của dòng dưới — hai nét chồng nhau và mắt đọc ra là lỗi in.
   Chữ nghiêng kiểu Cormorant có đuôi rất dài nên khoảng dòng cũ không đủ; mở
   thêm một chút là vừa hở mà vẫn chưa thành hai dòng rời rạc.
-## V3.01 — 15-Sep-2026
+## V1.3.1 — 15-Sep-2026
 
 - **Posts và Archive có số trang.** Danh sách dài hơn 10 bài thì tự có bộ số
   ‹ 1 2 3 › ở cuối, và **người đọc chọn được số bài mỗi trang** — 10, 20, 50
@@ -1997,7 +2075,7 @@
   nào cả — bộ số trang chạy đúng, đếm đúng, mà trang vẫn ra đủ tám bài. Chỉ lộ
   ra khi đo màu sắc thật của phần tử thay vì tin vào thuộc tính.
 
-## V3.00 — 15-Sep-2026
+## V1.3.0 — 15-Sep-2026
 
 - **Trang chủ giữ tối đa 6 bài**, không kể bài nổi bật. Trang chủ là chỗ mời
   vào, không phải chỗ liệt kê kho bài: đổ hết bài ra đây thì cuộn mãi không hết
@@ -2006,7 +2084,7 @@
 - **Hai lối đi dưới lưới bài.** Posts xếp theo chuyên mục, Archive xếp theo
   năm — hai cách tìm khác nhau, nên để cả hai thay vì bắt người đọc đoán.
 
-## V2.09 — 15-Sep-2026
+## V1.2.9 — 15-Sep-2026
 
 - **Chữ Z thôi bay lên và thôi bị cắt.** Bản trước cho mỗi dòng một toạ độ
   riêng, và dòng đầu lấy toạ độ âm để bị viền trên xén — kết quả là chữ Z bay
@@ -2023,14 +2101,14 @@
   font và theo cỡ. Lúc nghỉ nó bị đẩy lệch sang phải bằng phép dịch hình, tức
   là dịch chỗ NHÌN mà không dịch chỗ NẰM, nên lúc co lại chỉ cần trả phép dịch
   về 0 là nó tự về hàng.
-## V2.08 — 15-Sep-2026
+## V1.2.8 — 15-Sep-2026
 
 - **File cài đặt có mục đo lượt xem.** Bốn bước, kèm hai chỗ dễ sai: bật ở cả
   `site.config.json` lẫn nút trên bảng điều khiển Cloudflare thì một trang có
   hai đoạn beacon và mỗi lượt xem đếm thành hai; và token đo lượt xem là thứ
   CÔNG KHAI, khác hẳn khoá Gemini — nó nằm nguyên văn trong HTML mọi trang nên
   để trong repo là đúng chỗ.
-## V2.07 — 15-Sep-2026
+## V1.2.7 — 15-Sep-2026
 
 - **Chữ lớn bị đường kẻ của lưới xén, không phải bị mép cửa sổ xén.** Bản trước
   phủ khối chữ lên cả màn nên chữ Z bị cắt ở mép cửa sổ — mà mép cửa sổ không
@@ -2048,7 +2126,7 @@
   trang giới thiệu rút còn một dòng. Màn đầu chỉ nên có MỘT thứ có khối lượng;
   hai thứ thì chúng tranh nhau và không thứ nào thắng.
 
-## V2.06 — 15-Sep-2026
+## V1.2.6 — 15-Sep-2026
 
 - **Đo lượt xem, không đặt cookie.** Cloudflare Web Analytics, khai một dòng
   trong file cấu hình, **mặc định tắt**. Không cookie nghĩa là không phải dựng
@@ -2060,14 +2138,14 @@
   nên bấm xong hiện gần như tức thì. Chỉ TẢI trước chứ không CHẠY trước — chạy
   trước thì mỗi link rê chuột qua đều bị tính một lượt xem và số liệu thành rác.
 
-## V2.05 — 15-Sep-2026
+## V1.2.5 — 15-Sep-2026
 
 - **Số phiên bản có luật, và có chỗ canh luật.** Đuôi bản vá chỉ chạy 00 tới 09
-  — không có V1.10. Bộ ghi sổ bản đầu không có cái chặn ấy nên cứ cộng dồn: sổ
-  đã đi tới V1.14 rồi mới có người nhận ra. Nay chạm 09 thì bản kế tự mở build
+  — không có V1.1.10. Bộ ghi sổ bản đầu không có cái chặn ấy nên cứ cộng dồn: sổ
+  đã đi tới V1.1.14 rồi mới có người nhận ra. Nay chạm 09 thì bản kế tự mở build
   mới, và có một phép kiểm canh cả sổ chứ không riêng dòng mới. Năm dòng lỡ ghi
-  sai đã đánh số lại thành V2.00–V2.04.
-## V2.04 — 15-Sep-2026
+  sai đã đánh số lại thành V1.2.0–V1.2.4.
+## V1.2.4 — 15-Sep-2026
 
 - **Tên blog thành khối đồ hoạ ở màn đầu.** Lúc nghỉ: chữ Z nhô lên góc trái và
   bị viền trên cắt mất một phần, rồi "in" nhỏ đứng lệch, rồi "Borderland" tụt
@@ -2085,7 +2163,7 @@
   thứ người đọc gặp đầu tiên mỗi ngày; ở trang giới thiệu nó chen vào giữa lúc
   người ta đang đọc về chủ trang mà lại chêm lời của người khác. Ô giới thiệu
   lấy luôn hai cột trống đó và nhận được nhiều đoạn văn, không chỉ một câu.
-## V2.03 — 15-Sep-2026
+## V1.2.3 — 15-Sep-2026
 
 - **Tài liệu thôi nói dối.** Mục "Trạng thái" trong README và mục "Việc còn
   lại" trong sơ đồ trang vẫn viết rằng trang chủ là bản tạm và các trang
@@ -2103,7 +2181,7 @@
 - **Hướng dẫn nhập bài cũ.** Cách chạy công cụ, bảng đổi trường, và ba việc
   phải làm bằng tay sau khi nhập: tỉa tag, sinh ảnh bìa, khai tiêu đề ngắn cho
   bài tiêu đề dài.
-## V2.02 — 15-Sep-2026
+## V1.2.2 — 15-Sep-2026
 
 - **Bỏ một phép kiểm không bao giờ chạy được.** Có hai phép kiểm canh bản
   nháp: một soi thư mục xuất bản, một soi sitemap và RSS. Cái thứ hai vô
@@ -2125,7 +2203,7 @@
 - **Tiêu đề dài có đường thoát.** Bài nào khai tiêu đề ngắn thì thẻ tiêu đề
   gửi cho Google dùng bản ngắn, còn tiêu đề in trên trang vẫn nguyên vẹn.
   Bốn phép kiểm mới đều đã thử cắm lỗi vào để xem nó có bắt thật không.
-## V2.01 — 15-Sep-2026
+## V1.2.1 — 15-Sep-2026
 
 - **Thiên hà to bằng khung.** Đĩa ngân hà ở theme tối trước đây lấy cỡ theo
   cạnh NGẮN của màn. Đĩa lại bị ép dẹt còn một phần ba chiều cao, nên cạnh
@@ -2135,7 +2213,7 @@
   theo để nhánh không bị thủng lỗ chỗ. Quầng lõi chỉ nhỉnh lên một chút —
   phần to ra phải là nhánh xoắn, không phải cục sáng giữa màn.
 
-## V2.00 — 15-Sep-2026
+## V1.2.0 — 15-Sep-2026
 
 - **Năm bài năm 2017.** Nhập từ bản xuất WordPress của blog cũ, vào bốn mục:
   Musings, Books, Food, Tarot. Thân bài giữ nguyên văn, kể cả emoji và giọng
@@ -2153,7 +2231,7 @@
   máy tìm kiếm: một bài có tới bốn tag cho cùng một ý. Ở đây mỗi tag sinh một
   trang, nên giữ nguyên là được mười bốn trang mỗi trang đúng một bài. Tag là
   đường đi nên tỉa còn bốn–năm; thân bài là chữ của người viết nên không đụng.
-## V1.09 — 15-Sep-2026
+## V1.1.9 — 15-Sep-2026
 
 - **Trang chủ hai màn.** Màn đầu cao trọn màn hình: tên trang cỡ lớn và 1–3 bài
   mới nhất, mỗi bài đúng một dòng tiêu đề ngắn. Cuộn xuống (hoặc bấm mũi tên)
@@ -2188,7 +2266,7 @@
 - Thêm hai phép kiểm: quầng sáng phải khai đủ ở cả ba trạng thái theme, và
   `nen` chỉ nhận `tinh` hoặc `dong`.
 
-## V1.08 — 15-Sep-2026
+## V1.1.8 — 15-Sep-2026
 
 Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang nhẹ đi **63%**:
 2.10MB còn 0.78MB.
@@ -2217,7 +2295,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
   chung của file khác) nên vẫn báo xanh khi thiếu file thật. Nay dò bằng dòng
   selector, và đã thử ngược để chắc là nó bắt được.
 
-## V1.07 — 15-Sep-2026
+## V1.1.7 — 15-Sep-2026
 
 - **Dựng xong bốn trang còn thiếu.** `/posts/` có hàng chip lọc theo chuyên
   mục, `/tags/` là mây chủ đề cỡ chữ theo số bài, `/archive/` xếp theo năm dạng
@@ -2242,7 +2320,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
   vì nó là một thẻ riêng; nay nó là `::before` của mục phía sau nên đi theo chữ.
 - **Bài mới:** *Chiếc gương*, trong chuyên mục Musings.
 
-## V1.06 — 15-Sep-2026
+## V1.1.6 — 15-Sep-2026
 
 - **Chuyển nhà sang Cloudflare Pages.** Hàm `/api/quote` phải viết lại hẳn:
   Cloudflare chạy trên Workers chứ không phải Node, nên không có `fs`, không có
@@ -2265,7 +2343,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
   từ trước, mấy lượt kiểm cũ không thấy vì nó là pseudo-element); ô số vỡ hai
   dòng khi giá trị dài như "TP. Hồ Chí Minh".
 
-## V1.05 — 14-Sep-2026
+## V1.1.5 — 14-Sep-2026
 
 - **Trang giới thiệu, hai khung.** `bento` là lưới ô kính đọc như tấm danh
   thiếp; `chuong` là các chương chữ lớn hiện dần khi cuộn. Đổi bằng một chữ
@@ -2276,7 +2354,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Dựng được trang tĩnh** từ `content/pages/` — `/about/` ra khỏi danh sách
   chưa dựng.
 
-## V1.04 — 14-Sep-2026
+## V1.1.4 — 14-Sep-2026
 
 - **Thêm ảnh chia sẻ mặc định.** `public/og.png` trước đây được khai trong thẻ
   meta nhưng file không tồn tại — mọi link chia sẻ ra ô trắng.
@@ -2288,7 +2366,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - Ghi rõ trong tài liệu: **repo riêng tư không ảnh hưởng SEO**, vì Google đọc
   trang đã dựng chứ không đọc repo.
 
-## V1.03 — 14-Sep-2026
+## V1.1.3 — 14-Sep-2026
 
 - **Bản nháp không còn lên mạng.** Trước đây bài `draft: true` vẫn được đẩy lên
   máy chủ, chỉ gắn `noindex` — mà `noindex` chỉ bảo Google đừng đánh chỉ mục,
@@ -2298,7 +2376,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Thêm `docs/RIENG-TU.md`** — cách đặt repo riêng tư, và nói thẳng vì sao
   không thể chặn việc sao chép trên web.
 
-## V1.02 — 14-Sep-2026
+## V1.1.2 — 14-Sep-2026
 
 - **Sửa chỗ Vercel deploy ra 404.** Thêm `vercel.json` trỏ thẳng vào `dist/`.
   Không có nó, Vercel lấy nhầm thư mục `public/` — trong đó chỉ có ảnh, không
@@ -2308,7 +2386,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Thêm `docs/DUA-LEN-MANG.md`** — ba cách xem trang, cách gỡ mấy lỗi hay gặp,
   và cái bẫy `.gitignore` biến mất khi upload tay lên GitHub.
 
-## V1.01 — 14-Sep-2026
+## V1.1.1 — 14-Sep-2026
 
 - **Xếp lại đầu bài.** Ngày và phút đọc lên ngay dưới tiêu đề; tóm tắt xuống
   sau, in nghiêng và nhỏ lại. Tag rời khỏi đầu bài, xuống hẳn khung riêng ở chân.
@@ -2319,7 +2397,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Hai công cụ mới.** `npm run anh` đưa ảnh từ `_anh/` vào đúng thư mục bài và
   in sẵn dòng chèn. Chữ giao diện chuyển hết sang tiếng Anh; bỏ khung C.
 
-## V1.00 — 14-Sep-2026
+## V1.1.0 — 14-Sep-2026
 
 - **Hệ chữ đo lại bằng số liệu thật.** Đếm ký tự trên dòng trong trình duyệt rồi
   mới chỉnh, không ước lượng. Giãn dòng tiêu đề nới ra cho dấu tiếng Việt có chỗ.
@@ -2330,7 +2408,7 @@ Lượt này không thêm tính năng nào, chỉ soát lại và dọn. Trang n
 - **Thêm hai công cụ.** `npm run ver` ghi sổ phiên bản; `npm run kiem` chạy bộ
   kiểm định trước khi đăng.
 
-## V0.00 — 14-Sep-2026
+## V1.0.0 — 14-Sep-2026
 
 - Dựng hạ tầng blog tĩnh, không framework và không dependency.
 - Design system kế thừa bảng màu Sakura và Galaxy; khung đọc bài có ba làn cho

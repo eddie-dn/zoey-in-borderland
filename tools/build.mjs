@@ -159,7 +159,14 @@ const SO_TAY = () => JSON.stringify({
   build: (() => {
     const m = new Map();
     for (const b of SO.ban) {
-      const lon = b.ten.split('.')[0];              /* 'V1.06' → 'V1' */
+      /* ── GOM THEO ĐỢT, KHÔNG THEO BUILD ──
+         Từ V3 số có ba tầng, và một build chở tới 100 bản. Gom theo build thì
+         tầng đầu chỉ có hai dòng, còn tầng hai đổ ra một trăm — đúng cái
+         "rải phẳng không đọc được mốc" mà cách gom này sinh ra để tránh.
+
+         Gom theo ĐỢT (`V2.4`) thì tầng đầu ra mười lăm dòng, tầng hai nhiều
+         nhất mười. Số build vẫn đọc được, vì nó nằm ngay trong tên đợt. */
+      const lon = b.nhom;                           /* 'V2.4.9' → 'V2.4' */
       if (!m.has(lon)) m.set(lon, { ten: lon, va: [] });
       m.get(lon).va.push({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh });
     }
@@ -481,7 +488,17 @@ const NHAN = {
   szBTable    : 'Table',      szBTableMo  : '2 columns — Shift+Enter between rows',
   szBCode     : 'Code block', szBCodeMo   : 'keeps every space and line break',
   szBTask     : 'Checklist',  szBTaskMo   : 'a list with tick boxes',
-  szBAsk      : 'Title for the box — leave empty for the default:',
+  /* Dòng mờ trong ô tiêu đề của khối — thay cho hộp thoại hỏi tiêu đề đã bỏ.
+     Nói RA VIỆC ("gõ vào đây"), không tả cái ô. */
+  szBDeCho    : 'Title — type here',
+  /* ── KHUNG CẮT ẢNH ──
+     "Use as is" chứ không "Cancel": bỏ qua khung cắt KHÔNG phải huỷ việc thả
+     ảnh — tấm ảnh vẫn vào bài, chỉ là vào nguyên khổ. Gọi nó là Cancel thì ai
+     cũng tưởng bấm vào là mất tấm ảnh. */
+  szCropHint  : 'Drag inside to move, corners to resize',
+  szCropFree  : 'Original',
+  szCropSkip  : 'Use as is',
+  szCropDo    : 'Crop',
   szBCodeAsk  : 'Language (js, css, python… — can be empty):',
   szBYoutube  : 'YouTube',   szBYoutubeMo : 'loads only when someone presses play',
   szBVideo    : 'Video file', szBVideoMo   : 'an .mp4 or .webm you uploaded',
@@ -1038,7 +1055,8 @@ function boChuThich(html) {
 
 function trang({ title, description, canonical, ogTitle, ogImage, ogType, content,
                  scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/',
-                 epTheme = '', shellAttr = '', ogAnhMo = '', ogBai = null }) {
+                 epTheme = '', shellAttr = '', ogAnhMo = '', ogBai = null,
+                 loaiCSS = '' }) {
   return boChuThich(dienMau(MAU_SHELL, {
     lang,
     /* `data-base` để JS biết gốc trang khi deploy vào thư mục con (GitHub
@@ -1190,7 +1208,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
                         bCode: NHAN.szBCode, bCodeMo: NHAN.szBCodeMo,
                         bTask: NHAN.szBTask, bTaskMo: NHAN.szBTaskMo,
-                        bAsk: NHAN.szBAsk, bCodeAsk: NHAN.szBCodeAsk,
+                        bDeCho: NHAN.szBDeCho, bCodeAsk: NHAN.szBCodeAsk,
+                        cropHint: NHAN.szCropHint, cropFree: NHAN.szCropFree,
+                        cropSkip: NHAN.szCropSkip, cropDo: NHAN.szCropDo,
                         undo: NHAN.szUndo, redo: NHAN.szRedo,
                         indent: NHAN.szIndent, outdent: NHAN.szOutdent,
                         para: NHAN.szPara,
@@ -1292,6 +1312,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     locale    : CAU.locale,
     /* Tính TRÊN đường dẫn chưa qua `attr` — hàm này phải mở được file trên đĩa
        để đo khổ ảnh, mà `attr` đã đổi `&` thành `&amp;` rồi. */
+    css       : goiCuaTrang(loaiCSS)
+      .map((g) => `<link rel="stylesheet" href="${BASE}/assets/${g}.css">`)
+      .join('\n'),
     ogThem    : ogThemHTML({
       ogImage    : ogImage || `${CAU.url}${BASE}/og.jpg`,
       ogAnhMo,
@@ -2502,6 +2525,7 @@ function trangBai(bai, congKhai) {
     description: bai.summary,
     canonical  : `${CAU.url}${bai.url}`,
     ogType     : 'article',
+    loaiCSS    : 'bai',
     ogImage    : anhChiaSe(bai),
     /* Mô tả ảnh bìa đi kèm ảnh chia sẻ. Bài không có bìa riêng thì ảnh chia sẻ
        là tấm og chung của trang, và tả nó bằng `coverAlt` của bài là tả sai —
@@ -2803,6 +2827,7 @@ function trangTinh(t, soBai, soTag) {
     description: t.summary,
     canonical  : `${CAU.url}${t.url}`,
     ogType     : 'profile',
+    loaiCSS    : 'gt',
     lang       : t.lang,
     duong      : t.url.replace(BASE, ''),
     content    : dienMau(MAU_PAGE, { khung: t.khung, than }),
@@ -2915,29 +2940,79 @@ function vanTayAssets() {
   suaTrong(THU_MUC.dist);
 }
 
-function gopCSS() {
-  /* Thứ tự KHÔNG đổi được:
-       tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
-       glass      trước component, để component ghi đè được vật liệu khi cần
-       prose      sau component, để khung đọc bài ghi đè được component
-     Danh sách này phải phủ HẾT src/styles/ — bộ kiểm định có một phép so lại
-     (xem tools/kiem-dinh.mjs). Bản trước thiếu glass.css ở đây, và vì CSS
-     thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
-  /* `fonts.css` đứng ĐẦU: @font-face phải được khai trước luật nào dùng tới
-     phông ấy, không thì trình duyệt vẽ một nhịp bằng phông hệ thống rồi mới
-     đổi. File này do `npm run phong` sinh ra, đừng sửa tay. */
-  const thuTu = ['fonts.css', 'tokens.css', 'base.css', 'glass.css', 'layout.css',
-                 'components.css', 'list.css', 'prose.css', 'about.css'];
+/* ══════════════════════════════════════════════════════════════════════
+   CSS CHIA THEO LOẠI TRANG
 
-  const gop = thuTu.map((f) => {
+   ── VÌ SAO ──
+   Trước bản này mọi trang tải MỘT file `style.css` 122 KB. Đo bằng cách thử
+   từng bộ chọn trên từng trang: **64–79% số luật không khớp được gì** trên
+   trang đang xem — luật của ô soạn thảo gửi tới người đọc bài, luật của màn
+   hero gửi tới trang quản trị.
+
+   Nay chia làm năm gói, mỗi trang lấy đúng phần của nó. Sau lượt ghé đầu thì
+   khác biệt bằng không (tên file có vân tay, cache một năm), nên cái được nằm
+   trọn ở LƯỢT GHÉ ĐẦU — và đó là lượt duy nhất người lạ có.
+
+   ── VÌ SAO KHÔNG CHIA NHỎ HƠN NỮA ──
+   Mỗi gói là một lượt tải chặn việc vẽ trang. Chia tới từng thành phần thì số
+   lượt tải ăn hết phần byte tiết kiệm được. Năm gói là chỗ dừng: mỗi gói ứng
+   với một loại trang có thật, không phải một khái niệm.
+
+   ── THỨ TỰ TRONG MỘT GÓI KHÔNG ĐỔI ĐƯỢC ──
+     tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
+     glass      trước component, để component ghi đè được vật liệu khi cần
+     prose      sau component, để khung đọc bài ghi đè được component
+   ══════════════════════════════════════════════════════════════════════ */
+const GOI_CSS = {
+  /* Mọi trang. `fonts.css` đứng đầu: @font-face phải khai trước luật nào dùng
+     tới phông, không thì trang vẽ một nhịp bằng phông hệ thống rồi mới đổi. */
+  nen  : ['fonts.css', 'tokens.css', 'base.css', 'glass.css', 'layout.css',
+          'components.css'],
+  /* Trang danh sách: màn hero, lưới thẻ, chip, bento, số trang, tag, kho lưu,
+     tìm kiếm, ghi chú ngắn. */
+  ds   : ['list.css'],
+  /* Trang bài: khung đọc, ảnh, bảng, khối `:::`, bình luận. */
+  bai  : ['prose.css'],
+  /* Trang giới thiệu. */
+  gt   : ['about.css'],
+  /* Khung đăng nhập — /z-admin/ cần, mà /notes/ cũng mượn. */
+  khoa : ['khoa.css'],
+  /* Bàn làm việc của chủ trang. */
+  ql   : ['admin.css', 'soan.css']
+};
+
+/* ── LOẠI TRANG KHAI THẲNG, KHÔNG ĐOÁN TỪ ĐƯỜNG DẪN ──
+   Bản đầu đoán bằng `duong`. Nó sai ngay: mọi trang BÀI đều truyền
+   `duong: '/posts/'` (đó là mục đang mở trên thanh menu), nên câu so cho
+   /posts/ bắt hết cả trang bài, và cả chín bài nhận gói của trang danh sách —
+   mất sạch `prose.css`. Trang vẫn dựng ra, vẫn không có lỗi nào; chỉ là bài
+   hiện lên trần trụi.
+
+   Nên chỗ gọi khai thẳng nó là loại gì. Thiếu thì rơi về `nen + ds`: vẫn hiện
+   được chứ không trắng. */
+function goiCuaTrang(loai) {
+  if (loai === 'ql')  return ['nen', 'khoa', 'ql', 'ds'];
+  if (loai === 'gt')  return ['nen', 'gt', 'ds'];
+  if (loai === 'gc')  return ['nen', 'ds', 'khoa'];
+  /* Trang bài KHÔNG cần `ds`. Tưởng là cần vì chân bài có mấy thẻ "đọc tiếp",
+     nhưng đo lại: trong 114 tên lớp một trang bài dùng tới, KHÔNG cái nào chỉ
+     có trong `list.css` — mấy thẻ ấy dựng bằng `components.css`, vốn đã nằm ở
+     gói nền. Bỏ `ds` đi cắt 23 KB khỏi mọi trang bài. */
+  if (loai === 'bai') return ['nen', 'bai'];
+  return ['nen', 'ds'];
+}
+
+function gopCSS(ten) {
+  const gop = (GOI_CSS[ten] || []).map((f) => {
     const p = path.join(THU_MUC.src, 'styles', f);
     if (!fs.existsSync(p)) { CANH_BAO.push(`thiếu file style: ${f}`); return ''; }
     return `/* ───────── ${f} ───────── */\n${fs.readFileSync(p, 'utf8')}`;
   }).join('\n\n');
 
-  /* Ghi đè CUỐI bundle: cùng độ ưu tiên thì luật sau thắng, nên con số trong
+  /* Ghi đè CUỐI gói nền: cùng độ ưu tiên thì luật sau thắng, nên con số trong
      site.config.json luôn thắng con số mặc định viết trong layout.css. */
-  return boChuThichCSS(gop) + `\n.logo--dong{--lg-ck:${LG_CK}}\n`;
+  return boChuThichCSS(gop) +
+    (ten === 'nen' ? `\n.logo--dong{--lg-ck:${LG_CK}}\n` : '');
 }
 
 /* ── CẮT CHÚ THÍCH KHI GỬI RA ──
@@ -3219,9 +3294,10 @@ function hangChip(ds, nay) {
 
 /* Khuôn chung của mọi trang danh sách. */
 function trangDanhSach({ tieuDe, dan, chip, than, duong, canonical, title, description,
-                        scripts = '', noindex = false }) {
+                        scripts = '', noindex = false, loaiCSS = '' }) {
   return trang({
     noindex,
+    loaiCSS,
     title: title || `${tieuDe} · ${CAU.title}`,
     description: description || CAU.description,
     canonical: canonical || `${CAU.url}${BASE}${duong}`,
@@ -3748,6 +3824,7 @@ function trangGhiChu() {
     dan: NHAN.notesHint,
     than: thanCoSo,
     duong: '/notes/',
+    loaiCSS: 'gc',
     description: `${NHAN.notesHint} — ${CAU.title}.`,
     /* /notes/ nay chỉ còn hai việc của NGƯỜI ĐỌC: lọc theo loại, và xin về
        mấy ghi chú đăng thẳng chưa kịp vào bản dựng. Ô viết đã về hẳn
@@ -3821,6 +3898,7 @@ function trangChuTrang() {
     tieuDe: NHAN.qlTitle,
     dan: NHAN.qlDan,
     duong: '/z-admin/',
+    loaiCSS: 'ql',
     noindex: true,
     than: `
     <!-- MỘT CỬA cho cả ba ngăn. Trước bản này mỗi ngăn tự xin khoá, nên trang
@@ -3956,7 +4034,7 @@ function trang404() {
       <input id="e404-q" class="tk-o" type="search" name="q" autocomplete="off" autofocus
              placeholder="${attr(NHAN.searchPh)}" enterkeyhint="search">
     </div>
-    <button class="btn btn--chinh" type="submit">${escapeHtml(NHAN.search)}</button>
+    <button class="btn" type="submit">${escapeHtml(NHAN.search)}</button>
   </form>` : ''}
   <p class="e404-hay">
     <a href="${BASE}/">${escapeHtml(NHAN.e404Home)}</a>
@@ -4227,7 +4305,9 @@ async function chay() {
     fs.mkdirSync(THU_MUC.dist, { recursive: true });
 
     chep(THU_MUC.public, THU_MUC.dist);
-    ghi(path.join(THU_MUC.dist, 'assets', 'style.css'), gopCSS());
+    for (const g of Object.keys(GOI_CSS)) {
+      ghi(path.join(THU_MUC.dist, 'assets', `${g}.css`), gopCSS(g));
+    }
     for (const j of ['theme.js', 'toc.js', 'media.js', 'comments.js',
                      'copy-guard.js', 'reveal.js', 'quote.js', 'so-tay.js', 'search.js',
                      'nen.js', 'trang-so.js', 'moc.js', 'man-dau.js',

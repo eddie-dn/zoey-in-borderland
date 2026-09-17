@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { docSo } from './lib/lichsu.mjs';
+import { docSo, docChiTiet } from './lib/lichsu.mjs';
 import { docNguon } from './lib/doc-nguon.mjs';
 import { render as dungMD } from './lib/markdown.mjs';
 import { boDau } from './lib/text.mjs';
@@ -456,9 +456,15 @@ const KIEM = [
     ten: 'Bundle CSS gộp đủ mọi file trong src/styles/',
     muc: 'loi',
     chay: ({ goc, dist }) => {
-      const f = fileAssets('style.css');
-      if (!f) return ['thiếu dist/assets/style.css'];
-      const gop = fs.readFileSync(f, 'utf8');
+      /* ── TỪ V17: KHÔNG CÒN MỘT BUNDLE, MÀ LÀ NĂM GÓI ──
+         CSS nay chia theo loại trang (`GOI_CSS` trong tools/build.mjs), nên
+         phép kiểm gộp tất cả lại rồi mới soi: câu hỏi vẫn y nguyên — file nào
+         trong src/styles/ mà KHÔNG lọt vào bản dựng nào cả? */
+      const thuAssets = path.join(dist, 'assets');
+      if (!fs.existsSync(thuAssets)) return ['thiếu dist/assets/'];
+      const dsGoi = fs.readdirSync(thuAssets).filter((x) => x.endsWith('.css'));
+      if (!dsGoi.length) return ['dist/assets/ không có gói CSS nào'];
+      const gop = dsGoi.map((x) => fs.readFileSync(path.join(thuAssets, x), 'utf8')).join('\n');
       const thuMuc = path.join(goc, 'src', 'styles');
       if (!fs.existsSync(thuMuc)) return [];
 
@@ -1100,11 +1106,12 @@ const KIEM = [
          phải của từng file JS. Gom lại để nói đúng một lần. */
       const daBao = new Set();
 
-      const css = ['list.css', 'prose.css', 'components.css']
-        .map((f) => {
-          const d = path.join(goc, 'src', 'styles', f);
-          return fs.existsSync(d) ? fs.readFileSync(d, 'utf8') : '';
-        })
+      /* Từ V17 CSS chia theo loại trang, và khuôn hàng `.ad-*` nằm ở
+         admin.css. Đọc CẢ thư mục thay vì liệt kê tên file: thêm một file
+         style mới mà quên thêm vào đây thì phép kiểm báo thiếu luật giả. */
+      const css = fs.readdirSync(path.join(goc, 'src', 'styles'))
+        .filter((f) => f.endsWith('.css'))
+        .map((f) => fs.readFileSync(path.join(goc, 'src', 'styles', f), 'utf8'))
         .join('\n')
         /* Bỏ chú thích TRƯỚC khi dò: file CSS ở đây chú thích dày hơn mã, và
            gần như mọi tên lớp đều được nhắc trong một câu giải thích nào đó.
@@ -1185,6 +1192,31 @@ const KIEM = [
     }
   },
   {
+    /* ── PHẦN DIỄN GIẢI: TỐI ĐA BA GẠCH ĐẦU DÒNG ──
+       Mỗi bản có một mục `## Vx.y.z` ở dưới bảng, và ngăn phiên bản ở chân
+       trang đọc thẳng mấy gạch đầu dòng ấy ra màn hình. Sáu bảy gạch trong một
+       mục thì cái ngăn ấy phải cuộn, và người bấm vào để xem "bản này đổi gì"
+       nhận về một bài đọc.
+
+       Ba là chỗ vừa: đủ kể ba việc chính, và ép người viết chọn ra ba.
+
+       ── VÌ SAO CHỈ SOI BẢN MỚI NHẤT ──
+       137 mục cũ viết trước luật này, nhiều mục bốn năm gạch. Bắt cả sổ thì
+       phép kiểm đỏ vĩnh viễn ở những chỗ không ai được phép sửa (sửa là sửa
+       lịch sử), mà một phép kiểm đỏ mãi thì người ta thôi nhìn nó. */
+    ten: 'Phần diễn giải của bản mới nhất có tối đa 3 gạch đầu dòng',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const so = docSo(goc);
+      if (so.loi || !so.moiNhat) return [];
+      const chi = docChiTiet(goc)[so.moiNhat.ten];
+      if (!chi) return [];
+      return chi.length <= 3 ? []
+        : [`${so.moiNhat.ten} — phần diễn giải có ${chi.length} gạch đầu dòng, ` +
+           'tối đa 3. Gộp lại, hoặc tách việc sang một bản vá nữa.'];
+    }
+  },
+  {
     /* ── MỘT DÒNG SỔ CHỞ TỐI ĐA BỐN VIỆC ──
        Cột "Sửa chính" hiện ra trong ngăn phiên bản ở chân trang, tức là người
        đọc blog mở ra xem được. Sáu bảy mệnh đề nối bằng dấu chấm phẩy ở đó là
@@ -1214,7 +1246,7 @@ const KIEM = [
     }
   },
   {
-    ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi, không dùng số kiêng',
+    ten: 'Số phiên bản đúng luật: ba tầng 0–9, cột # khớp vế cuối, không dùng số kiêng',
     muc: 'loi',
     chay: ({ goc }) => {
       const so = docSo(goc);
@@ -1233,11 +1265,15 @@ const KIEM = [
                   `(${BUILD_BO.join(', ')}); đổi sang số kế tiếp hợp lệ`);
         }
         if (b.va > 9) {
-          ra.push(`${b.ten} — đuôi bản vá chỉ chạy 00..09; sau V${b.build}.09 là ` +
-                  `V${b.build + 1}.00, không phải ${b.ten}`);
+          ra.push(`${b.ten} — vế bản vá chỉ chạy 0..9; sau V${b.build}.${b.dot}.9 là ` +
+                  `V${b.build}.${b.dot + 1}.0, không phải ${b.ten}`);
+        }
+        if (b.dot > 9) {
+          ra.push(`${b.ten} — vế đợt cũng chỉ chạy 0..9; sau V${b.build}.9.9 là ` +
+                  `build kế tiếp, không phải ${b.ten}`);
         }
         if (/^\d+$/.test(b.so) && +b.so !== b.va) {
-          ra.push(`${b.ten} — cột # ghi ${b.so} nhưng đuôi là ${String(b.va).padStart(2, '0')}`);
+          ra.push(`${b.ten} — cột # ghi ${b.so} nhưng vế bản vá là ${String(b.va).padStart(2, '0')}`);
         }
       }
       return ra;

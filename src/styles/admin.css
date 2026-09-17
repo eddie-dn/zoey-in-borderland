@@ -1,0 +1,515 @@
+/* ══════════════════════════════════════════════════════════════════════
+   admin.css — /z-admin/
+
+   Khung ba ngăn · ô viết bài · ô ảnh bìa · bảng SEO · khuôn hàng `.ad-*` dùng
+   chung cho ba ngăn Post · Category · Comment (bản đồ đầy đủ ở
+   docs/DESIGN-SYSTEM.md §20).
+
+   Chỉ /z-admin/ tải file này. Người đọc blog không bao giờ thấy một byte nào
+   của nó.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ══════════ BÀN LÀM VIỆC CỦA CHỦ TRANG (/z-admin/) ══════════
+   Hai khối xếp dọc, cách nhau rõ ràng: viết ghi chú ở trên, hàng chờ duyệt ở
+   dưới. Tách bằng một đường kẻ chứ không chỉ bằng khoảng trống — hai việc khác
+   nhau, và ở một trang chỉ toàn ô nhập thì khoảng trống không đủ nói ra ranh
+   giới. */
+/* ══════════ /z-admin/ — BA NGĂN ══════════
+   Cột chọn việc bên trái, nội dung bên phải. Cột trái hẹp và DÍNH khi cuộn:
+   ô viết bài cao hơn màn hình nhiều, mà đang gõ dở rồi muốn nhảy sang duyệt
+   một bình luận thì không nên phải cuộn ngược lên đầu trang. */
+.ad-khung{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:var(--s7);
+  align-items:start;
+}
+.ad-menu{
+  display:flex;flex-direction:column;gap:2px;
+  position:sticky;top:calc(var(--header-h) + var(--s4));
+}
+.ad-nut{
+  appearance:none;border:0;background:none;cursor:pointer;
+  text-align:left;padding:var(--s2) var(--s3);
+  border-radius:var(--r-sm);
+  border-left:2px solid transparent;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+  transition:color .16s ease,background .16s ease,border-color .16s ease;
+}
+.ad-nut:hover{color:var(--text-muted);background:var(--surface)}
+.ad-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Đang chọn: đổi MÀU CHỮ và thêm một vạch bên trái, không tô nền đậm. Cột này
+   nằm cạnh khung soạn thảo — một mảng màu đặc ở đây kéo mắt khỏi chỗ đang gõ. */
+.ad-nut[aria-selected="true"]{
+  color:var(--accent-ink);
+  border-left-color:var(--accent);
+  background:var(--surface);
+}
+.ad-o{min-width:0}
+
+@media (max-width:719px){
+  .ad-khung{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
+  /* Nằm ngang thì thôi dính: một hàng nút dính trên đầu màn hình điện thoại
+     ăn mất một phần ba chỗ vốn đã ít của khung soạn thảo. */
+  .ad-menu{
+    position:static;flex-direction:row;gap:var(--s2);
+    border-bottom:1px solid var(--line);padding-bottom:var(--s2);
+  }
+  .ad-nut{
+    flex:1;text-align:center;border-left:0;border-bottom:2px solid transparent;
+    border-radius:var(--r-sm) var(--r-sm) 0 0;
+  }
+  .ad-nut[aria-selected="true"]{border-left:0;border-bottom-color:var(--accent)}
+}
+
+/* `.ql-khoi` — ĐÃ BỎ. Ô quản trị từng xếp mọi thứ thành một chồng khối trên
+   MỘT trang; nay nó là ba ngăn có tab (`.ad-o`), nên lớp ấy hết việc. Luật
+   dùng chung với `.ad-o` ở dưới thì giữ, chỉ bỏ phần riêng của `.ql-khoi`. */
+.ql-de{
+  margin:0 0 var(--s5);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+/* Ở trang này ô viết và bàn duyệt là NỘI DUNG chính, không phải khối lạc vào
+   một trang đọc — nên bỏ lề ngoài và cho chúng rộng hết khung. */
+.ad-o .gc-viet,.ad-o .bl-duyet{margin:0;width:100%}
+
+/* ══════════ Ô VIẾT BÀI ══════════ */
+.vb-khoi{display:flex;flex-direction:column;gap:var(--s3)}
+.vb-hang{display:flex;gap:var(--s3);flex-wrap:wrap}
+.vb-o{display:flex;flex-direction:column;gap:6px;flex:1 1 180px;min-width:0}
+.vb-o--rong{flex-basis:100%}
+.vb-o > span{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  /* .12em chứ không phải --ls-label (.22em): nhãn ở đây đứng ngay trên ô nhập
+     của nó, nên nó là một CẶP với ô ấy chứ không phải một nhãn đứng riêng —
+     giãn rộng là tách cặp ra. */
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+.vb-o input,.vb-o select,.vb-o textarea{
+  width:100%;box-sizing:border-box;
+  padding:var(--s2) var(--s3);
+  border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--text);
+  font:inherit;font-size:var(--fs-sm);
+}
+/* Thân bài gõ bằng Markdown — chữ đều nét thì đếm được thụt đầu dòng và thấy
+   ngay dấu ``` có khớp nhau không. */
+.vb-o textarea[name="noiDung"]{font-family:var(--font-mono);font-size:var(--fs-xs);line-height:1.6}
+.vb-o input:focus-visible,.vb-o select:focus-visible,.vb-o textarea:focus-visible{
+  outline:2px solid var(--accent);outline-offset:1px;
+}
+.vb-duong{
+  margin:0;font-size:var(--fs-xs);color:var(--text-faint);
+  display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;
+}
+.vb-duong-nhan{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+}
+.vb-duong code{font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ── ĐƯỜNG DẪN SỬA ĐƯỢC, NHÌN RA MỘT ĐƯỜNG DẪN ──
+   Cả cụm là một khối liền: phần cố định (`/posts/tam-ly/`) và phần gõ được
+   nằm chung một khung viền, cùng phông máy chữ, cùng cỡ. Tách ô gõ ra thành
+   một `<input>` riêng có nhãn "Slug" thì người viết bài phải tự ghép trong
+   đầu xem đường dẫn cuối cùng ra làm sao — mà ghép sai là đăng sai. */
+.vb-duong-o{
+  display:inline-flex;align-items:center;min-width:0;flex:1 1 14rem;max-width:100%;
+  padding:5px var(--s3);border-radius:var(--r-sm);
+  background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+  transition:box-shadow var(--dur-fast);
+}
+.vb-duong-o:focus-within{box-shadow:inset 0 0 0 1px var(--accent)}
+.vb-duong-o code{flex:none;white-space:nowrap}
+.vb-duong-o input{
+  flex:1 1 4rem;min-width:0;
+  border:0;background:none;outline:none;padding:0;
+  font-family:var(--font-mono);font-size:var(--fs-xs);
+  color:var(--text);
+}
+/* Dòng nhắc dưới ô đường dẫn. Rỗng thì không chiếm chỗ — bình thường nó im
+   lặng, và chỉ lên tiếng đúng lúc có gì đáng nói. */
+.vb-duong-bao{
+  margin:6px 0 0;font-size:var(--fs-2xs);line-height:1.5;color:var(--text-faint);
+}
+.vb-duong-bao:empty{display:none}
+.vb-duong-bao--nhac{color:var(--warn)}
+/* ── BACK VÀ SAVE ĐỨNG CẠNH NHAU ──
+   Trước đây mỗi nút tự đẩy mình sang phải bằng `margin-left:auto`, nên cái ô
+   đánh dấu nháp nằm mép trái, "Back" trôi ra giữa và "Save" ra tận mép phải —
+   ba thứ rải khắp bề ngang khung.
+
+   Nhưng Back và Save là HAI NGÃ của cùng một quyết định: cất bài đi, hay bỏ
+   không cất. Hai lựa chọn của một quyết định thì phải nằm cạnh nhau để so —
+   cách nhau cả bề ngang màn là bắt mắt đi một vòng mới thấy được cái thứ hai,
+   và ở khổ rộng thì cái thứ hai còn nằm ngoài tầm nhìn tập trung.
+
+   Nay chỉ có MỘT khoảng co giãn, và nó nằm ở ô đánh dấu: ô ấy đẩy cả cặp nút
+   về phải, còn cặp nút thì dính vào nhau bằng đúng `gap` của hàng. */
+.vb-nut{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.vb-nhap{
+  display:flex;gap:6px;align-items:center;margin-right:auto;
+  font-size:var(--fs-xs);color:var(--text-muted);cursor:pointer;
+}
+.vb-cho,.vb-noi{margin:0;font-size:var(--fs-xs);color:var(--text-faint)}
+.vb-noi--hong{color:var(--accent-ink)}
+.vb-xong{display:flex;flex-direction:column;gap:var(--s3)}
+.vb-xong-de{
+  margin:0;font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+}
+.vb-xong-chu{margin:0;font-size:var(--fs-md);font-style:italic}
+.vb-xong-ds{margin:0;padding-left:1.1em;font-size:var(--fs-xs);color:var(--text-muted)}
+.vb-xong-ds code{font-size:var(--fs-xs)}
+
+BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH Ở /z-admin/
+
+   ── VÌ SAO GOM LẠI ──
+   Ba ngăn quản trị đều bày một danh sách để ĐIỂM DANH rồi thao tác: Post (bài
+   đã đăng), Category (chuyên mục), Comment (bình luận chờ duyệt). Ba ngăn ấy
+   từng có ba bộ luật riêng, viết ở hai file CSS khác nhau, và chúng trôi xa
+   nhau đúng như mọi bản sao vẫn trôi: ngăn Post ra danh sách dòng gọn, ngăn
+   Comment ra một cọc thẻ có viền, mỗi thẻ một nút bấm to.
+
+   Nay đúng một khuôn, khai một chỗ. Ngăn nào cần khác thì thêm MỘT lớp phụ
+   (`--hai` cho dòng hai tầng chữ), không dựng bộ luật thứ hai.
+
+   ── KHUÔN ──
+     .ad-thanh              thanh trên: nút chính · ô tìm · chip lọc
+       .ad-tim                ô lọc theo chữ
+       .ad-loc                hàng chip lọc (dùng .chip, xem components.css)
+     .ad-bang               thân danh sách
+       .ad-dong             MỘT hàng — lưới 4 cột: phụ · chính · trạng thái · nút
+         .ad-phu              cột 1: ngày, mã chuyên mục, tên người gửi (mono, nhạt)
+         .ad-chinh            cột 2: tiêu đề bài, tên mục, nội dung bình luận
+           .ad-mo             dòng hai trong cột 2 — mô tả, đường dẫn (nhạt hơn)
+         .ad-cd               cột 3: trạng thái, LUÔN chiếm chỗ kể cả khi rỗng
+         .ad-nut-hang         cột 4: các nút của hàng
+           .ad-nut            nút chữ, không viền
+     .ad-chan               dòng "đã tải 20 trên 63" + nút tải thêm
+
+   Một DÒNG một mục, không phải một THẺ một mục: đây là bảng làm việc, và ở
+   bảng làm việc thì mật độ quan trọng hơn dáng vẻ — nhìn một màn phải thấy
+   được mười lăm mục chứ không phải bốn.
+
+   Đầy đủ: docs/DESIGN-SYSTEM.md §20.
+   ══════════════════════════════════════════════════════════════════════ */
+.ad-thanh{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s5);
+  margin-bottom:var(--s5);
+}
+.ad-loc{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+/* ── Ô LỌC THEO CHỮ ──
+   Lọc TẠI CHỖ trên phần bảng đã tải, không hỏi máy chủ (lý do ở đầu khối bảng
+   bài trong src/js/viet-bai.js). Nó đứng cạnh nút chính chứ không ở một hàng
+   riêng: một bảng làm việc thì mọi thứ điều khiển nó phải nằm chung một thanh,
+   không thì mỗi việc lại thêm một hàng. */
+.ad-tim{
+  display:flex;align-items:center;gap:6px;
+  padding:5px var(--s3);border-radius:var(--r-pill);
+  box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text-faint);
+  transition:box-shadow var(--dur-fast),color var(--dur-fast);
+}
+.ad-tim:focus-within{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent-ink)}
+.ad-tim svg{
+  width:14px;height:14px;flex:none;
+  fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;
+}
+.ad-tim input,.ad-tim select{
+  flex:1;min-width:0;
+  border:0;background:none;outline:none;padding:0;
+  font-family:var(--font-body);font-size:var(--fs-xs);color:var(--text);
+}
+/* Ô chọn chuyên mục co theo nội dung chứ không giãn: nó ngồi cùng thanh với ô
+   tìm, mà ô tìm mới là thứ đáng được rộng. */
+.ad-tim--chon{padding-right:var(--s2)}
+.ad-tim--chon select{flex:0 1 auto;cursor:pointer}
+/* Nút xoá riêng của Safari/Chrome trong <input type=search> vẽ một chữ × đặc,
+   không ăn theo theme — bỏ đi, ô ngắn thế này xoá bằng phím nhanh hơn. */
+.ad-tim input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+
+/* Con số "8 trên 12" ở thanh trên ngăn Category. Ngăn Post không cần: hàng
+   chip lọc ở đó đã in số vào từng chip. */
+.ad-dem{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);font-variant-numeric:tabular-nums;margin-left:auto;
+}
+.ad-bang{display:flex;flex-direction:column}
+/* Dòng "đã tải 20 trên 63" + nút tải thêm, ngay dưới mục cuối. */
+.ad-chan{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s3);
+  padding-top:var(--s4);
+}
+/* ── NHỊP DỌC: GỌN LẠI MỘT BẬC ──
+   Lề trong cũ là `--s3` trên dưới cộng `--s2` giữa hai tầng chữ. Ở một bảng để
+   ĐIỂM DANH thì đó là quá rộng: một màn 900px chỉ chứa được chín hàng, trong
+   khi việc ở đây là quét qua hai ba chục dòng rồi mới quyết.
+
+   Siết còn 7px và bỏ khoảng cách giữa hai tầng: một màn nay chứa mười ba hàng,
+   mà hai hàng cạnh nhau vẫn còn đủ khoảng thở để mắt không dính chúng vào
+   nhau — đường kẻ ngăn lo phần ấy. */
+.ad-dong{
+  display:grid;
+  grid-template-columns:5.5rem minmax(0,1fr) auto auto;
+  align-items:baseline;gap:0 var(--s4);
+  padding:5px 0;
+  border-top:1px solid var(--line);
+}
+/* Bàn duyệt có thêm một cột ô tick ở ngoài cùng bên trái. */
+.ad-dong--chon{grid-template-columns:1.1rem 5.5rem minmax(0,1fr) auto auto}
+.ad-tick{display:flex;align-items:center;cursor:pointer;
+  /* Vùng bấm nới ra quanh ô 14px mà không đẩy hàng cao lên: lề âm bù lại. */
+  padding:9px 6px;margin:-9px -6px}
+.ad-tick input{accent-color:var(--accent);cursor:pointer;margin:0}
+.ad-dong--dang-chon{background:var(--accent-wash)}
+
+/* ── THANH LÀM HÀNG LOẠT ──
+   Dính ở đầu bảng khi cuộn: tick một dòng ở cuối danh sách rồi phải cuộn ngược
+   lên đầu để bấm Approve thì cả cơ chế này không tiết kiệm được gì. */
+.ad-chon-thanh{
+  position:sticky;top:calc(var(--header-h) + 2px);z-index:2;
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);
+  padding:8px var(--s3);margin-bottom:2px;
+  border-radius:var(--r-sm);
+  background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.ad-chon-dem{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+  margin-right:auto;
+}
+.ad-chon-thanh .ad-lenh{text-align:left}
+.ad-chon-bo{color:var(--text-faint)}
+.ad-dong:last-of-type{border-bottom:1px solid var(--line)}
+.ad-phu{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);font-variant-numeric:tabular-nums;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.ad-chinh{
+  font-size:var(--fs-xs);line-height:1.4;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* ── DÒNG THỨ HAI TRONG CỘT CHÍNH ──
+   Câu mô tả chuyên mục, hay đường dẫn trang của một bình luận. Xuống DÒNG
+   RIÊNG dưới cái tên, không đứng cùng dòng: cùng dòng thì hai thứ khác vai
+   dính liền nhau thành một chuỗi chữ dài không có chỗ ngắt, và mắt phải đọc
+   mới tách ra được đâu là tên.
+
+   Cắt ở một dòng: bảng này để ĐIỂM DANH chứ không để đọc. Muốn đọc trọn thì
+   bấm vào mục ấy. */
+.ad-mo{
+  display:block;margin-top:0;
+  font-style:normal;font-size:var(--fs-3xs);line-height:1.35;color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+a.ad-mo{font-family:var(--font-mono);font-size:var(--fs-3xs);text-decoration:none}
+a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
+/* Hàng chở HAI tầng chữ thì cao hơn hàng thường một nhịp, nên mốc canh đổi từ
+   đường chân chữ sang mép trên — canh chân chữ thì cột bên phải trôi xuống
+   ngang dòng thứ hai. */
+.ad-dong--hai{align-items:start}
+.ad-dong--hai .ad-phu{padding-top:2px}
+/* Cột trạng thái LUÔN chiếm chỗ, kể cả khi ô rỗng — không thì mỗi dòng một bề
+   rộng khác nhau và hàng nút bên phải nhảy lung tung. */
+.ad-cd{min-width:3.6rem;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.ad-cd--nhap{color:var(--warn)}
+.ad-cd--an{color:var(--bad)}
+.ad-cd--cho{color:var(--warn)}
+.ad-cd--roi{color:var(--ok)}
+/* ── MỖI NÚT MỘT CỘT CỐ ĐỊNH ──
+   Để `flex` thì mỗi ô rộng đúng bằng chữ trong nó, mà chữ thì đổi theo trạng
+   thái: `Approve` ở hàng này, `Unapprove` ở hàng kia, `Hide` và `Unhide` cũng
+   vậy. Hệ quả là mép trái của cột nút nhảy vài chục pixel giữa hai hàng liền
+   nhau, và cả bảng đọc ra là so le.
+
+   Lưới với cột rộng CỐ ĐỊNH, chữ dồn phải: mọi hàng thẳng cột, kể cả khi
+   nhãn đổi. 5rem đủ cho `Unapprove` — chuỗi dài nhất trong cả ba ngăn. */
+.ad-lenh-hang{
+  display:grid;grid-auto-flow:column;grid-auto-columns:5rem;
+  justify-items:end;gap:var(--s2);
+}
+/* Nút chữ, không viền: hai nút trên mỗi dòng × mười lăm dòng = ba mươi cái
+   viền, và lúc ấy bảng đọc ra là một cái lưới chứ không phải một danh sách. */
+.ad-lenh{
+  appearance:none;border:0;background:none;cursor:pointer;padding:0;
+  text-align:right;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;
+  color:var(--text-faint);transition:color var(--dur-fast);
+}
+.ad-lenh:hover{color:var(--accent-ink)}
+.ad-lenh:disabled{opacity:.45;cursor:default}
+.ad-lenh:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+/* Nút CHÍNH của hàng — Approve ở bàn duyệt. Vẫn là nút chữ, chỉ đậm màu hơn:
+   một viên thuốc tô đầy trên mỗi hàng thì mười lăm hàng ra mười lăm viên thuốc,
+   và cái bảng thôi đọc ra là một danh sách. */
+.ad-lenh--chinh{color:var(--accent-ink)}
+.ad-lenh--chinh:hover{color:var(--text)}
+/* Hàng vừa xử lý xong: mờ và trượt đi trước khi rút khỏi danh sách. Biến mất
+   phụt một cái thì mắt không kịp thấy hàng nào vừa đi, và cả danh sách nhảy
+   lên một nấc mà không rõ vì sao. */
+.ad-dong--xong{
+  opacity:0;transform:translateX(12px);
+  transition:opacity .28s var(--ease-glass),transform .28s var(--ease-glass);
+}
+@media (prefers-reduced-motion:reduce){.ad-dong--xong{transition:none}}
+/* Hàng đã duyệt vẫn ở lại danh sách nhưng mờ đi — để còn bỏ duyệt lại được
+   nếu lỡ tay, mà không tranh chỗ với những hàng đang chờ. */
+.ad-dong--roi{opacity:.55}
+.ad-dong--roi:hover{opacity:1}
+
+/* Trong hàng nút cuối khung soạn, "Back" đứng sát bên trái "Save" — không còn
+   `margin-left:auto` đẩy nó đi. Lý do ở chỗ khai .vb-nut. Nới khoảng cách hai
+   nút rộng hơn `gap` một nhịp: chúng cạnh nhau nhưng KHÁC sức nặng, và một cú
+   bấm nhầm ở đây là mất bài đang sửa. */
+.vb-nut .ad-lenh{margin-right:var(--s2)}
+@media (max-width:640px){
+  /* Cột phụ và trạng thái lên một dòng, phần chính và nút xuống dòng dưới. */
+  .ad-dong{grid-template-columns:5.5rem minmax(0,1fr);gap:2px var(--s3)}
+  .ad-chinh{grid-column:1 / -1;white-space:normal}
+  .ad-lenh-hang{grid-column:1 / -1;margin-top:2px}
+  /* Vùng bấm nới ra bằng lề trong: trên màn 390px hai nút chữ cạnh nhau ra
+     chừng 24px mỗi cái, mà ngón tay phủ tới 45px — và cái dễ bấm nhầm lại là
+     cái GIẤU HẲN một bình luận. Chỉ ở khổ hẹp; máy có con trỏ thì không cần. */
+  .ad-lenh-hang{gap:var(--s5)}
+  .ad-lenh{padding:10px 0;margin:-10px 0}
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   THẢ ẢNH VÀO KHUNG SOẠN THẢO
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Dòng trạng thái ngay dưới thanh nút. Ẩn hẳn khi không có chuyện — một dải
+   trống thường trực ở đó đẩy khung gõ xuống và không nói gì. */
+.sz-bao{
+  font-size:var(--fs-2xs);line-height:1.4;
+  padding:6px var(--s4);border-bottom:1px solid var(--line);
+  background:var(--surface-sunken);color:var(--text-faint);
+}
+.sz-bao--hong{color:var(--bad)}
+
+/* Kéo một tấm ảnh qua khung: viền đổi màu, nền hơi sáng lên. Không dùng
+   `outline` mà dùng `box-shadow` chèn vào trong — outline vẽ ra NGOÀI mép và
+   đè lên thanh nút ở trên. */
+.sz-khung--tha{
+  box-shadow:inset 0 0 0 2px var(--accent);
+  background:var(--surface-solid);
+}
+
+/* Ảnh đang lên: nhạt đi và có một nhịp thở. Không dùng vòng xoay riêng — một
+   cái spinner nữa là một phần tử nữa phải chèn vào giữa bài rồi gỡ ra đúng
+   chỗ, mà chính tấm ảnh đã ở sẵn đó để nói. */
+.sz-khung img.sz-anh--tai{opacity:.45;animation:sz-tho 1.1s ease-in-out infinite}
+@keyframes sz-tho{50%{opacity:.75}}
+/* Ai tắt hiệu ứng chuyển động thì chỉ còn độ mờ — nó vẫn nói đủ "chưa xong". */
+@media (prefers-reduced-motion:reduce){
+  .sz-khung img.sz-anh--tai{animation:none}
+}
+
+/* Nút Blocks mang cả chữ. Chữ biến mất dưới 560px: ở đó thanh nút đã phải
+   cuộn ngang, và một nút rộng gấp ba đẩy mọi thứ khác ra khỏi tầm mắt. */
+.sz-nut--khoi{width:auto;gap:5px;padding-inline:8px}
+.sz-nut-chu{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;
+}
+@media (max-width:560px){ .sz-nut-chu{display:none} }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Ô ẢNH BÌA
+   ══════════════════════════════════════════════════════════════════════ */
+.vb-bia{display:flex;gap:var(--s3);align-items:flex-start;flex-wrap:wrap}
+/* Ô thả: 16/9, đúng tỉ lệ thẻ chia sẻ Facebook dựng ra. Thấy ngay lúc chọn là
+   tấm này bị cắt mất phần nào — không phải chờ tới lúc dán link mới biết. */
+.vb-bia-tha{
+  appearance:none;cursor:pointer;flex:0 0 auto;
+  width:min(260px,100%);aspect-ratio:16/9;
+  display:grid;place-items:center;overflow:hidden;
+  padding:var(--s3);border:1px dashed var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface-sunken);color:var(--text-faint);
+  font-size:var(--fs-2xs);line-height:1.35;text-align:center;
+  transition:border-color var(--dur-fast),background var(--dur-fast);
+}
+.vb-bia-tha:hover{border-color:var(--accent);color:var(--accent-ink)}
+.vb-bia-tha:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vb-bia-tha--tha{border-color:var(--accent);border-style:solid;background:var(--surface-solid)}
+.vb-bia-tha--dang{opacity:.55}
+.vb-bia-xem{width:100%;height:100%;object-fit:cover;border-radius:2px;grid-area:1/1}
+.vb-bia-chu{grid-area:1/1}
+.vb-bia-ben{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.vb-bia-duong{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vb-bia-ben .ad-lenh{align-self:flex-start}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BẢNG SEO
+
+   Đóng sẵn, và trên nắp chỉ có một cụm chữ nói có gì cần mở ra hay không.
+   Người đang nghĩ câu không cần một bảng chấm điểm nhìn chằm chằm vào mình.
+   ══════════════════════════════════════════════════════════════════════ */
+.vb-seo{
+  margin-top:var(--s2);border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-sunken);
+}
+.vb-seo-nap{
+  cursor:pointer;list-style:none;
+  display:flex;align-items:baseline;gap:var(--s3);
+  padding:8px var(--s4);
+}
+.vb-seo-nap::-webkit-details-marker{display:none}
+.vb-seo-nap:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-sm)}
+.vb-seo-ten{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
+}
+.vb-seo-tom{font-size:var(--fs-2xs);margin-left:auto}
+.vb-seo-tom--ok{color:var(--text-faint)}
+.vb-seo-tom--nhac{color:var(--warn)}
+.vb-seo-tom--thieu{color:var(--bad)}
+
+/* Xem trước kiểu kết quả Google. Cắt đúng chỗ Google cắt — đó là cả tác dụng
+   của khối này: một con số "68 ký tự" không nói được bằng việc nhìn thấy câu
+   của mình cụt mất ba chữ cuối. */
+.vb-seo-xem{
+  display:flex;flex-direction:column;gap:1px;
+  margin:0 var(--s4) var(--s3);padding:var(--s3);
+  border-radius:var(--r-sm);background:var(--surface-solid);
+}
+.vb-seo-url{font-size:var(--fs-3xs);color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vb-seo-de{
+  font-size:var(--fs-sm);color:var(--accent-ink);line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.vb-seo-mo{
+  font-size:var(--fs-2xs);color:var(--text-muted);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.vb-seo-ds{list-style:none;margin:0;padding:0 var(--s4) var(--s3);
+  display:flex;flex-direction:column;gap:3px}
+/* Dấu đầu dòng là một ký tự, không phải một icon: ba mức phải phân biệt được
+   cả khi in ra đen trắng và cả với người không phân biệt được màu. */
+.vb-seo-d{font-size:var(--fs-2xs);line-height:1.45;padding-left:1.15em;position:relative}
+.vb-seo-d::before{position:absolute;left:0;font-weight:700}
+.vb-seo-d--ok{color:var(--text-faint)}
+.vb-seo-d--ok::before{content:"✓";color:var(--ok)}
+.vb-seo-d--nhac{color:var(--text-muted)}
+.vb-seo-d--nhac::before{content:"!";color:var(--warn)}
+.vb-seo-d--thieu{color:var(--text)}
+.vb-seo-d--thieu::before{content:"×";color:var(--bad)}
+
+@media (max-width:480px){
+  .vb-bia-tha{width:100%}
+}

@@ -179,13 +179,17 @@
   }
 
   /* ══════════ BA TẦNG ══════════
-     1. danh sách BUILD   V1 · V0
-     2. các bản vá trong một build   V1.06 · V1.05 …
+     1. danh sách ĐỢT     V2.4 · V2.3 · V2.2 …
+     2. các bản vá trong một đợt   V2.4.9 · V2.4.8 …
      3. chi tiết một bản vá
 
      Gom như vậy vì mỗi dòng trong docs/LICH-SU.md là một bản vá, còn cái người
-     xem muốn thấy trước là các MỐC LỚN. Rải phẳng tám dòng ngang hàng thì
-     không đọc ra đâu là mốc. */
+     xem muốn thấy trước là các MỐC LỚN. Rải phẳng trăm dòng ngang hàng thì
+     không đọc ra đâu là mốc.
+
+     Tầng đầu là ĐỢT chứ không phải BUILD: từ V3 số có ba tầng và một build chở
+     tới 100 bản, nên gom theo build thì tầng đầu chỉ còn hai dòng. Số build
+     vẫn đọc được — nó nằm ngay trong tên đợt. */
 
   function veDau(tieuDe, coLui, luiVe) {
     return '<div class="so-dau">' +

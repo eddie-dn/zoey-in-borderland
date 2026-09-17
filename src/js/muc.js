@@ -131,7 +131,7 @@
          Lọc TẠI CHỖ trên danh sách đã tải, giống hệt ngăn Post: chuyên mục
          không bao giờ nhiều tới mức phải hỏi máy chủ. */
       '<div class="ad-thanh">' +
-        '<button type="button" class="btn btn--chinh" data-moi>' +
+        '<button type="button" class="btn" data-moi>' +
           tho(L('mucNew', 'New category')) + '</button>' +
         '<label class="ad-tim">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true">' +

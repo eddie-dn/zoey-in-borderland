@@ -185,7 +185,7 @@
 
     var nut = document.createElement('button');
     nut.type = 'button';
-    nut.className = 'btn btn--chinh';
+    nut.className = 'btn';
     nut.textContent = L('signIn', 'Sign in');
 
     var hangNut = document.createElement('div');

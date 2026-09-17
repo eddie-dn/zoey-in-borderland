@@ -32,8 +32,22 @@ function buildKe(n) {
 const MO  = '<!-- BANG-BAT-DAU';
 const DONG = '<!-- BANG-KET-THUC -->';
 
-/* Một dòng bảng: | V1.00 | 2026-09-14 | 00 | sửa chính | */
-const RE_DONG = /^\|\s*V(\d+)\.(\d+)\s*\|\s*([\d-]+)\s*\|\s*(\S+)\s*\|\s*(.*?)\s*\|\s*$/;
+/* ══════════ BA TẦNG SỐ: Vxx.yy.zz ══════════
+   Đời trước chỉ có hai tầng `Vxx.yy`, đuôi chạy 00..09 — tức mỗi build chỉ chở
+   được MƯỜI bản. Làm một ngày là hết ba build, và con số đầu nở ra nhanh tới
+   mức nó thôi nói lên điều gì.
+
+   Nay ba tầng, mỗi tầng vẫn 00..09:
+     zz   bản vá      — mỗi lượt `npm run ver`
+     yy   đợt         — zz chạm 09 thì yy lên một, zz về 00
+     xx   build       — yy VÀ zz cùng 09 thì xx lên một, cả hai về 00
+
+   Một build nay chở 100 bản thay vì 10, nên số build lại có nghĩa: nó đánh dấu
+   một chặng, không phải một buổi chiều.
+
+   Luật bỏ số (13 · 14 · 23 · 38 · 39 · 40 · 41) chỉ áp cho VẾ BUILD — hai vế
+   sau chạy 00..09 nên không bao giờ chạm tới mấy số ấy. */
+const RE_DONG = /^\|\s*V(\d+)\.(\d+)\.(\d+)\s*\|\s*([\d-]+)\s*\|\s*(\S+)\s*\|\s*(.*?)\s*\|\s*$/;
 
 export function duongDan(goc) {
   return path.join(goc, 'docs', 'LICH-SU.md');
@@ -55,11 +69,14 @@ export function docSo(goc) {
     const m = d.match(RE_DONG);
     if (m) {
       ban.push({
-        build: +m[1], va: +m[2],
-        ten: `V${m[1]}.${m[2]}`,
-        ngay: m[3],
-        so: m[4],
-        suaChinh: m[5]
+        build: +m[1], dot: +m[2], va: +m[3],
+        ten: `V${+m[1]}.${+m[2]}.${+m[3]}`,
+        /* `nhom` là hai tầng đầu — khoá để gom bản vá theo đợt ở ngăn phiên
+           bản, và cũng là thứ chiếu vào mấy mục `## V2.04` trong tài liệu. */
+        nhom: `V${+m[1]}.${+m[2]}`,
+        ngay: m[4],
+        so: m[5],
+        suaChinh: m[6]
       });
     }
   }
@@ -69,7 +86,7 @@ export function docSo(goc) {
 /* Thêm một dòng ngay dưới hàng gạch của bảng.
    `lon: true` mở build mới (V1.03 → V2.00); mặc định là thêm bản vá (V1.03 → V1.04).
    Đuôi bản vá chỉ chạy 00..09 — chạm 09 thì bản kế tự mở build mới. */
-export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
+export function ghiSo(goc, suaChinh, { lon = false, vua = false, ngay = null } = {}) {
   const f = duongDan(goc);
   const raw = fs.readFileSync(f, 'utf8');
   const { moiNhat } = docSo(goc);
@@ -79,13 +96,36 @@ export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
      có V1.10. Chạm 09 rồi thì bản kế TỰ mở build mới, không cần ai nhớ gõ
      --lon. Bản đầu không có cái chặn này nên sổ đã lỡ đi tới V1.14 trước khi
      có người nhận ra; sửa tay thì lần sau lại lặp lại. */
-  const VA_TOI_DA = 9;
-  const moBuild = lon || (moiNhat ? moiNhat.va >= VA_TOI_DA : false);
-  const tuCuon  = !lon && moBuild;
+  const TOI_DA = 9;
+  let build, dot, va, tuCuon = false;
 
-  const build = moiNhat ? (moBuild ? buildKe(moiNhat.build + 1) : moiNhat.build) : 1;
-  const va    = moiNhat ? (moBuild ? 0 : moiNhat.va + 1) : 0;
-  const ten   = `V${build}.${String(va).padStart(2, '0')}`;
+  if (!moiNhat) {
+    build = 1; dot = 0; va = 0;
+  } else if (lon) {
+    build = buildKe(moiNhat.build + 1); dot = 0; va = 0;
+  } else if (vua) {
+    /* Xin một ĐỢT mới: nếu đợt cũng đã chạm 09 thì phải cuốn lên build. */
+    if (moiNhat.dot >= TOI_DA) {
+      build = buildKe(moiNhat.build + 1); dot = 0; va = 0; tuCuon = true;
+    } else {
+      build = moiNhat.build; dot = moiNhat.dot + 1; va = 0;
+    }
+  } else if (moiNhat.va < TOI_DA) {
+    build = moiNhat.build; dot = moiNhat.dot; va = moiNhat.va + 1;
+  } else if (moiNhat.dot < TOI_DA) {
+    /* Bản vá chạm 09 → tự sang đợt mới, không cần ai nhớ gõ cờ. */
+    build = moiNhat.build; dot = moiNhat.dot + 1; va = 0; tuCuon = true;
+  } else {
+    /* Cả hai vế sau cùng 09 → build mới. */
+    build = buildKe(moiNhat.build + 1); dot = 0; va = 0; tuCuon = true;
+  }
+
+  /* KHÔNG đệm số 0: `V2.4.9`, không phải `V2.04.09` — ba cặp số đệm đọc ra
+     nặng nề mà chẳng thêm nghĩa gì. Vế build thì bao nhiêu chữ số cũng được,
+     `V10.9.1` vẫn hợp lệ. */
+  const ten = `V${build}.${dot}.${va}`;
+  const moBuild = !!moiNhat && build !== moiNhat.build;
+  const moDot   = !!moiNhat && !moBuild && dot !== moiNhat.dot;
 
   const d = ngay ? new Date(ngay) : new Date();
   const p2 = (n) => String(n).padStart(2, '0');
@@ -111,8 +151,11 @@ export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
      số, hai con số ấy không còn liền nhau — V12.09 nhảy thẳng lên V15.00, và
      câu báo "bản vá của build 14 đã chạm 09" nói về một build chưa từng tồn
      tại. Ai biết số thì trả số ấy ra. */
-  return { ten, ngay: ngayISO, va, build, suaChinh, lon: moBuild, tuCuon,
-           buildTruoc: moiNhat ? moiNhat.build : null };
+  return { ten, ngay: ngayISO, va, dot, build, suaChinh,
+           lon: moBuild, vua: moDot, tuCuon,
+           nhom: `V${build}.${dot}`,
+           buildTruoc: moiNhat ? moiNhat.build : null,
+           dotTruoc: moiNhat ? moiNhat.dot : null };
 }
 
 /* "2026-09-14" → "14-Sep-2026" cho tem ở chân trang */
@@ -147,7 +190,9 @@ export function docChiTiet(goc) {
   const ra = {};
   for (const khoi of sau.split(/^##[ \t]+/m).slice(1)) {
     const dauDe = (khoi.split('\n')[0] || '').trim();
-    const m = dauDe.match(/^(V\d+\.\d+)/);
+    /* Khớp cả `V2.04.09` (một bản) lẫn `V2.04` (cả một đợt) — ngăn phiên bản
+       ở chân trang dựng ba tầng, nên tài liệu cũng viết được ở hai mức. */
+    const m = dauDe.match(/^(V\d+\.\d+(?:\.\d+)?)/);
     if (!m) continue;
 
     const y = [];

@@ -318,7 +318,7 @@
         '<label class="gc-o"><span>' + tho(N.body || 'Note') + '</span>' +
           '<textarea name="chu" rows="5" maxlength="2000"></textarea></label>' +
         '<div class="gc-nut">' +
-          '<button type="button" class="btn btn--chinh" data-dang>' +
+          '<button type="button" class="btn" data-dang>' +
             tho(N.post || 'Post') + '</button>' +
           /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ nút ấy đã nằm ở cột
              trái nên chỗ này để rỗng; chỉ /notes/#viet mới cần một lối ra

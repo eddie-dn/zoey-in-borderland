@@ -150,7 +150,7 @@
     soan = null;
     hop.innerHTML =
       '<div class="ad-thanh">' +
-        '<button type="button" class="btn btn--chinh" data-moi>' +
+        '<button type="button" class="btn" data-moi>' +
           tho(L('newPost', 'New post')) + '</button>' +
         '<label class="ad-tim">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true">' +

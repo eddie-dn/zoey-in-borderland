@@ -1,0 +1,380 @@
+/* ══════════════════════════════════════════════════════════════════════
+   soan.css — Ô SOẠN THẢO (src/js/soan.js)
+
+   Thanh nút · khung gõ · bảng khối · bảng màu · ô xem Markdown · khung cắt
+   ảnh. Tách khỏi admin.css vì đây là một BỘ PHẬN: nó cắm được vào bất kỳ chỗ
+   nào (hôm nay là ngăn Post), và tách ra thì sửa nó không phải đi qua phần
+   khung trang.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+   Ô SOẠN THẢO (src/js/soan.js)
+
+   Ba tầng xếp dọc: thanh nút · khung gõ · ô xem Markdown.
+
+   ── THANH NÚT DÍNH TRÊN ĐẦU KHUNG GÕ ──
+   Bài dài thì khung gõ cao hơn màn hình. Thanh nút cuộn mất là mỗi lần muốn
+   in đậm một chữ ở cuối bài lại phải cuộn ngược lên đầu. `sticky` giữ nó lại
+   ngay dưới thanh đầu trang.
+   ══════════════════════════════════════════════════════════════ */
+.sz{
+  display:flex;flex-direction:column;
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface-solid);
+  overflow:visible;
+}
+.sz-thanh{
+  position:sticky;top:calc(var(--header-h) + 2px);z-index:5;
+  display:flex;flex-wrap:wrap;align-items:center;gap:2px;
+  padding:5px 6px;
+  border-bottom:1px solid var(--line);
+  border-radius:var(--r-sm) var(--r-sm) 0 0;
+  /* Đục, không trong: thanh này nằm ĐÈ lên chữ đang cuộn qua dưới nó. Nền
+     trong thì chữ chạy xuyên qua mấy cái nút. */
+  background:var(--surface-sunken);
+}
+.sz-nut{
+  appearance:none;border:1px solid transparent;background:none;cursor:pointer;
+  width:28px;height:28px;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--r-xs);
+  font:inherit;font-size:13px;line-height:1;color:var(--text-muted);
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+.sz-nut svg{
+  width:16px;height:16px;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+}
+.sz-nut:hover{color:var(--text);background:var(--surface)}
+.sz-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* Đang bật: đổi màu chữ VÀ tô nền nhạt. Chỉ đổi màu thì ở cỡ 13px không đủ
+   thấy, mà chỉ tô nền thì lẫn với trạng thái rê chuột. */
+.sz-nut--bat{color:var(--accent-ink);background:var(--accent-wash)}
+.sz-nut--dam{font-weight:700}
+.sz-nut--ngh{font-family:var(--font-display);font-style:italic;font-size:15px}
+.sz-nut--gac{text-decoration:line-through}
+/* ── MỘT KHỔ CHO MỌI NÚT ──
+   Trước đó `--h` và `--md` khai `width:auto`, nên bề rộng chạy theo số ký tự:
+   `¶` ra 20px, `x₂` 24px, `x²` 25px, `H2` 27px, `B` 28px, `</>` 36px. Đo trên
+   thanh thật: hai mươi lăm cái nút với BẢY bề rộng khác nhau, và mắt đọc ra
+   một hàng lởm chởm chứ không phải một dãy nút.
+
+   Nay mọi nút cùng một ô 28×28 — chỉ nút Blocks rộng hơn, vì nó mang cả chữ
+   và nó cố ý phải nổi lên. Chữ dài nhất là `</>` (3 ký tự ở 11px mono ≈ 22px),
+   vẫn nằm gọn. */
+.sz-nut--h{font-family:var(--font-label);font-size:11px;
+  font-weight:600;letter-spacing:.04em}
+.sz-nut--md{font-family:var(--font-mono);font-size:11px;letter-spacing:-.02em}
+.sz-vach{width:1px;height:18px;margin-inline:3px;background:var(--line)}
+/* Đẩy nút xem Markdown về mép phải: nó không phải một nút định dạng, và đứng
+   lẫn trong dãy kia thì bấm nhầm. */
+.sz-day{flex:1}
+.sz-cham{
+  width:13px;height:13px;border-radius:50%;
+  background:conic-gradient(var(--c-tim),var(--c-hong),var(--c-cam),
+             var(--c-vang),var(--c-luc),var(--c-lam),var(--c-tim));
+}
+
+/* ── KHUNG GÕ ──
+   Chữ ở đây cố ý gần giống chữ của bài đã dựng (cùng phông thân, cùng giãn
+   dòng): gõ xong nhìn ra ngay bài sẽ trông thế nào. Không cố giống HỆT —
+   khung này hẹp hơn cột chữ thật, và bắt nó giống hệt thì phải chép cả
+   prose.css vào đây rồi giữ hai bản cho khớp mãi mãi. */
+.sz-khung{
+  min-height:20rem;max-height:none;
+  padding:var(--s5) var(--s5) var(--s7);
+  font-family:var(--font-body);font-size:var(--fs-sm);
+  line-height:var(--lh-body);color:var(--text);
+  outline:none;overflow-wrap:break-word;
+}
+.sz-khung:focus-visible{outline:none}
+.sz:focus-within{border-color:var(--accent)}
+.sz-khung > * + *{margin-top:.85em}
+.sz-khung h2{font-family:var(--font-display);font-size:1.5em;font-weight:600;margin-top:1.3em}
+.sz-khung h3{font-family:var(--font-display);font-size:1.25em;font-weight:600;margin-top:1.2em}
+.sz-khung blockquote{
+  margin-inline:0;padding-left:var(--s4);
+  border-left:2px solid var(--accent);
+  font-family:var(--font-display);font-style:italic;font-size:1.08em;
+  color:var(--text-muted);
+}
+.sz-khung :is(ul,ol){padding-left:1.4em}
+.sz-khung li + li{margin-top:.3em}
+.sz-khung code{font-family:var(--font-mono);font-size:.88em;
+  background:var(--surface-sunken);padding:.1em .35em;border-radius:var(--r-xs)}
+.sz-khung mark{background:var(--accent-wash);color:var(--text);padding:.05em .2em}
+.sz-khung a{color:var(--accent-ink);text-decoration:underline}
+/* ── VẠCH NGĂN: VẼ ĐÚNG THỨ TRANG SẼ HIỆN ──
+   Nút này in ra `---`, mà trên trang đã dựng `---` KHÔNG ra một đường kẻ — nó
+   ra ba dấu sao ✦ ✦ ✦ (xem `.prose hr` trong prose.css). Khung soạn thảo thì
+   vẽ một đường kẻ ngang, nên gõ xong nhìn thấy một thứ mà đăng lên lại ra một
+   thứ khác.
+
+   Chép đúng cách vẽ của trang sang đây. Không chép nguyên `.prose hr` — cỡ
+   chữ và khoảng giãn ở khung gõ khác — chỉ chép cái NHÌN THẤY. */
+.sz-khung hr{
+  border:0;height:auto;margin-block:1.2em;
+  text-align:center;color:var(--text-faint);
+}
+.sz-khung hr::before{content:"✦ ✦ ✦";letter-spacing:.6em;font-size:9px}
+.sz-khung img{max-width:100%;height:auto;border-radius:var(--r-xs)}
+/* ── DẤU HIỆU CHO THỨ CHỈ THẤY ĐƯỢC Ở BÀI ĐÃ DỰNG ──
+   Ảnh `{.wide}` / `{.full}` và đoạn `{.giua}` chỉ khác nhau ở TRANG THẬT.
+   Trong khung gõ, khung hẹp hơn cột chữ thật nên không tả lại được. Nên ở đây
+   chỉ cần một dấu đủ để biết "tấm này đã đặt rộng rồi" — một nhãn nhỏ ở góc,
+   không phải một bản xem trước giả. */
+.sz-khung img.sz-anh--wide,.sz-khung img.sz-anh--full{
+  box-shadow:0 0 0 2px var(--accent);
+}
+/* Nhãn viết THẲNG trong `content`, không lấy qua `attr()`: attr() cần một
+   thuộc tính có thật trên phần tử, mà ở đây thông tin nằm ở TÊN LỚP của tấm
+   ảnh bên trong — hai lớp, hai luật, rõ hơn là một luật cộng một thuộc tính
+   phải nhớ gắn. */
+.sz-khung p:has(> img.sz-anh--wide)::after{content:"wide — rộng hơn cột chữ"}
+.sz-khung p:has(> img.sz-anh--full)::after{content:"full — tràn hết bề ngang"}
+.sz-khung p:has(> img.sz-anh--wide)::after,
+.sz-khung p:has(> img.sz-anh--full)::after{
+  display:block;margin-top:4px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.06em;color:var(--accent-ink);
+}
+.sz-doan--giua{text-align:center}
+.sz-doan--nho{font-size:var(--fs-sm);color:var(--text-faint)}
+/* Ba thẻ mới phải nhìn ra ngay trong khung gõ — nhấn một mẩu chữ mà không thấy
+   gì đổi thì cái nút ấy coi như không có. Chép thông số từ prose.css; khung gõ
+   hẹp hơn cột chữ thật nên không cố giống hệt, chỉ cần giống về CHẤT. */
+.sz-khung :is(sup,sub){font-size:.72em;line-height:0;position:relative}
+.sz-khung sup{top:-.48em}
+.sz-khung sub{bottom:-.22em}
+.sz-khung kbd{
+  padding:1px 6px;border-radius:5px;
+  border:1px solid var(--line-strong);border-bottom-width:2px;
+  background:var(--surface-solid);font-size:.82em;color:var(--text-muted);
+}
+.sz-doan--giua::after,.sz-doan--thuong::after{
+  content:attr(data-lop);
+  display:block;margin-top:2px;
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);
+}
+/* Tám lớp màu phải hiện ra NGAY TRONG KHUNG GÕ, không chỉ ở bài đã dựng:
+   tô màu mà không thấy màu thì cái nút ấy coi như không có. Luật trong
+   prose.css chỉ với tới `.prose`, nên chép tên lớp sang đây. */
+.sz-khung .c-tim {color:var(--c-tim)}
+.sz-khung .c-hong{color:var(--c-hong)}
+.sz-khung .c-do  {color:var(--c-do)}
+.sz-khung .c-cam {color:var(--c-cam)}
+.sz-khung .c-vang{color:var(--c-vang)}
+.sz-khung .c-luc {color:var(--c-luc)}
+.sz-khung .c-lam {color:var(--c-lam)}
+.sz-khung .c-xam {color:var(--c-xam)}
+
+/* ── HAI BẢNG BẬT RA ──
+   Không dùng `position:absolute`: ở khổ điện thoại một bảng thả nổi hoặc tràn
+   khỏi mép phải, hoặc phải đo lại vị trí mỗi lần bàn phím bật lên. Đẩy khung
+   gõ xuống thì bảng luôn nằm gọn trong khung, và nó chỉ mở vài giây. */
+.sz-bang{
+  border-bottom:1px solid var(--line);
+  background:var(--surface-sunken);
+  padding:var(--s3) var(--s4);
+}
+.sz-bang--mau{display:flex;flex-wrap:wrap;gap:var(--s1)}
+
+/* ── BẢNG KHỐI ──
+   Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì tám ô chip xếp
+   ngang là đủ (màu tự nói ra nó là màu gì), còn ở đây "Note" và "Tip" trông
+   giống hệt nhau nếu chỉ có tên — câu mô tả mới là thứ phân biệt. */
+/* Mười sáu dòng. Ở khổ rộng chúng xếp ba cột nên vừa một màn; trên điện thoại
+   thì một cột, và mười sáu dòng đẩy khung gõ xuống tận đâu. Chặn chiều cao rồi
+   cho cuộn trong chính bảng — giống hệt bảng chỉ dẫn ngay bên cạnh. */
+.sz-bang--khoi{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;
+  max-height:min(46vh,420px);overflow-y:auto;
+}
+.sz-khoi-nut{
+  appearance:none;border:0;background:none;cursor:pointer;text-align:left;
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);
+  padding:7px var(--s3);border-radius:var(--r-sm);
+  transition:background var(--dur-fast);
+}
+.sz-khoi-chu{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sz-khoi-hang{display:flex;align-items:center;gap:6px}
+/* ── CHẤM MÀU CỦA BỐN KHUNG NHẤN ──
+   Thứ khác nhau THẬT giữa note · tip · warn · stop là MÀU, không phải chữ:
+   bốn câu mô tả cũ đều mở đầu bằng "same box", nên đọc xong bốn dòng vẫn không
+   chọn được cái nào. Chấm lấy đúng biến màu của `.callout--*` bên prose.css. */
+.sz-khoi-cham{
+  flex:none;width:8px;height:8px;border-radius:50%;
+  background:var(--m,var(--line-strong));
+}
+/* Tiêu đề nhóm chiếm TRỌN bề ngang lưới, nên nhóm nào cũng bắt đầu ở một hàng
+   mới dù bảng đang có hai hay ba cột. */
+.sz-khoi-de{
+  grid-column:1 / -1;
+  margin:var(--s3) 0 2px;padding:0 var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--text-faint);
+}
+.sz-khoi-de:first-child{margin-top:0}
+/* ── CÚ PHÁP ĐỨNG CẠNH CÁI NÚT LÀM RA NÓ ──
+   Trước đây nó nằm ở bảng chỉ dẫn, dưới một đầu đề nói rằng mấy thứ này không
+   có nút. Nhạt màu và đứng nép bên phải: nó là thứ để LIẾC khi cần biết dòng
+   này ghi ra cái gì trong file, không phải thứ phải đọc trước khi bấm. */
+.sz-khoi-cu{
+  flex:0 0 auto;font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);opacity:.75;white-space:nowrap;
+}
+.sz-khoi-nut:hover .sz-khoi-cu{opacity:1;color:var(--accent-ink)}
+.sz-khoi-nut:hover{background:var(--surface-solid)}
+.sz-khoi-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sz-khoi-ten{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text);
+}
+.sz-khoi-mo{font-size:var(--fs-2xs);line-height:1.35;color:var(--text-faint)}
+
+/* ── KHỐI ::: NGAY TRONG KHUNG GÕ ──
+   Viền trái đậm và một nhãn nhỏ ở đầu: đủ để nhìn ra "đây là một ô riêng, và
+   nó là loại này", mà không phải chép nguyên bộ màu của bốn kiểu callout trên
+   trang thật sang đây. Khung soạn thảo không cần giống hệt trang đã dựng — nó
+   cần nói đúng CẤU TRÚC. */
+.sz-khung .sz-khoi{
+  margin:1em 0;padding:var(--s3) var(--s4);
+  border-left:3px solid var(--accent);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+  background:var(--surface-sunken);
+}
+/* ── NHÃN KHỐI: MỘT NỬA KHOÁ, MỘT NỬA GÕ ĐƯỢC ──
+   `note` là LOẠI khối — do cái nút vừa bấm quyết, gõ đè lên thì bộ dựng không
+   nhận ra khối nữa, nên nó khoá. Phần sau là TIÊU ĐỀ, thứ chỉ người viết mới
+   biết, nên nó gõ được ngay tại chỗ.
+
+   Trước V16.08 cả nhãn đều khoá và tiêu đề hỏi bằng `window.prompt` — một hộp
+   thoại nhảy lên đỉnh màn hình, chặn cả trang, và bắt quyết một cái tên trước
+   khi viết một chữ nào trong khối. */
+.sz-khung .sz-khoi-nhan{
+  display:flex;align-items:baseline;gap:7px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+  margin-bottom:var(--s2);
+}
+.sz-khung .sz-khoi-loai{
+  flex:none;user-select:none;cursor:default;
+  opacity:.72;
+}
+/* Vạch phân cách giữa loại và tiêu đề — cùng dấu `·` mà nhãn cũ vẫn dùng. */
+.sz-khung .sz-khoi-loai::after{content:" ·";opacity:.5}
+.sz-khung .sz-khoi-de{
+  flex:1 1 auto;min-width:0;
+  outline:none;cursor:text;
+  /* Chữ thường ở đây, KHÔNG in hoa như phần loại: tiêu đề là chữ của người
+     viết, và in hoa nó lên là sửa chữ của họ. */
+  text-transform:none;letter-spacing:.01em;font-weight:600;
+  color:var(--text);
+}
+/* Dòng mờ chỉ chỗ gõ. `:empty` không bắt được ô chỉ có một khoảng trắng, nên
+   thêm cả ca ấy bằng `:has(> br:only-child)` — contenteditable hay để lại một
+   thẻ <br> khi xoá hết chữ. */
+.sz-khung .sz-khoi-de:empty::before,
+.sz-khung .sz-khoi-de:has(> br:only-child)::before{
+  content:attr(data-cho);
+  color:var(--text-faint);font-weight:400;font-style:italic;
+  letter-spacing:0;pointer-events:none;
+}
+.sz-khung .sz-khoi-de:focus{
+  box-shadow:0 1px 0 var(--accent);
+}
+.sz-khung .sz-khoi > *:last-child{margin-bottom:0}
+/* Mục có ô đánh dấu: vẽ cái ô bằng ::marker của chính <li>, không chèn thêm
+   một <input> — input trong contenteditable thì bấm vào là con trỏ nhảy vào
+   trong nó, và nó cũng không đi ra Markdown được. */
+.sz-khung li[data-viec]{list-style:none;position:relative}
+.sz-khung li[data-viec]::before{
+  content:"";position:absolute;left:-1.4em;top:.32em;
+  width:12px;height:12px;border-radius:3px;
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+}
+.sz-khung li[data-viec="1"]::before{
+  background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);
+}
+.sz-mau{
+  appearance:none;border:1px solid transparent;background:none;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 8px 4px 5px;border-radius:var(--r-pill);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);
+}
+.sz-mau:hover{background:var(--surface-solid);border-color:var(--line)}
+.sz-mau:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sz-mau-cham{width:13px;height:13px;border-radius:50%;background:var(--m,var(--line-strong))}
+.sz-mau--bo .sz-mau-cham{background:none;border:1px solid var(--line-strong);position:relative}
+.sz-mau--bo .sz-mau-cham::after{
+  content:"";position:absolute;inset:-1px;
+  background:linear-gradient(to bottom right,transparent 45%,var(--line-strong) 45%,
+             var(--line-strong) 55%,transparent 55%);
+}
+.sz-giup-de{
+  margin:var(--s3) 0 var(--s2);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.sz-giup-de:first-child{margin-top:0}
+.sz-giup-ds{
+  margin:0;padding-left:1.1em;
+  display:flex;flex-direction:column;gap:5px;
+  font-size:var(--fs-xs);line-height:1.5;color:var(--text-muted);
+}
+/* Mẫu gõ in bằng phông máy chữ, trên một nền chìm: mắt tách ngay được phần
+   PHẢI GÕ ĐÚNG TỪNG KÝ TỰ ra khỏi phần giải thích bằng tiếng người. */
+.sz-giup-ma{
+  font-family:var(--font-mono);font-size:.92em;
+  padding:.1em .4em;border-radius:var(--r-xs);
+  background:var(--surface-solid);color:var(--text);
+  white-space:nowrap;
+}
+.sz-giup-chan{
+  margin:var(--s3) 0 0;padding-top:var(--s3);
+  border-top:1px solid var(--line);
+  font-size:var(--fs-2xs);line-height:1.5;color:var(--text-faint);
+}
+
+/* ── Ô XEM MARKDOWN ──
+   Chỉ ĐỌC, không sửa. Sửa được thì phải có bộ đọc Markdown ngược về DOM, tức
+   là một bộ dựng thứ ba phải giữ cho khớp — lý do đầy đủ ở đầu src/js/soan.js. */
+.sz-md{
+  margin:0;padding:var(--s4) var(--s5);
+  border-top:1px dashed var(--line-strong);
+  background:var(--surface-sunken);
+  font-family:var(--font-mono);font-size:var(--fs-3xs);line-height:1.65;
+  color:var(--text-muted);
+  white-space:pre-wrap;overflow-wrap:break-word;
+  max-height:18rem;overflow:auto;
+}
+
+@media (max-width:640px){
+  /* Điện thoại: nút nhỏ lại một chút và thanh chia hai hàng thay vì tràn. */
+  .sz-nut{width:26px;height:26px}
+  .sz-khung{padding:var(--s4) var(--s4) var(--s6);min-height:16rem}
+}
+
+/* ── Ô VIẾT BÀI: CO KHUNG LẠI ──
+   Mấy ô phụ (tiêu đề, chuyên mục, ngày, tag, tóm tắt) là thứ điền trong mười
+   giây; khung soạn thảo là thứ ngồi với nó nửa tiếng. Nên chúng phải chiếm
+   ÍT chỗ nhất có thể, để khung gõ bắt đầu ngay trong tầm mắt đầu tiên. */
+/* `.vb-khoi{gap}` và `.vb-o > span{font-size,letter-spacing}` từng khai lại ở
+   đây, đè lên bản khai gốc cách hơn sáu trăm dòng phía trên. Cùng chọn lọc, nên
+   bản dưới luôn thắng và bản trên không bao giờ chạy — đọc bản trên thì thấy
+   một con số, chạy thì ra một con số khác. Đã gộp về đúng một chỗ ở trên. */
+.vb-o textarea[name="summary"]{
+  /* Cao một dòng lúc chưa gõ, tự nở khi gõ dài — field-sizing là cách làm
+     việc ấy mà không cần một dòng JavaScript nào. Trình duyệt chưa hiểu thì
+     bỏ qua và ô giữ đúng một dòng, vẫn gõ được, chỉ phải cuộn trong ô. */
+  field-sizing:content;min-height:2.2em;max-height:7em;
+}
+/* Dòng "Sẽ nằm ở /posts/…" và hàng nút gộp sát nhau: chúng là một cặp — xem
+   đường dẫn rồi bấm Đăng. Tách ra bằng một quãng thở lớn thì mắt đọc ra hai
+   việc rời nhau. */
+.vb-duong{margin-top:var(--s2)}
+.vb-nut{margin-top:var(--s1)}
+
+/* ══════════════════════════════════════════════════════════════════════
