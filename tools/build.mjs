@@ -460,6 +460,11 @@ const NHAN = {
      này, mà chủ trang thì đọc tiếng Việt nhanh hơn. Cùng lý do với ô viết ghi
      chú. */
   queue       : 'Waiting for review',
+  /* Ba chip lọc của bàn duyệt. Mặc định bật "Pending": bàn duyệt là chỗ LÀM
+     XONG một việc, không phải chỗ xem lại thứ đã xong. */
+  blFPending  : 'Pending',
+  blFDone     : 'Approved',
+  blFAll      : 'All',
   queueEmpty  : 'Nothing waiting.',
   loading     : 'Loading…',
   approve     : 'Approve',
@@ -955,7 +960,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                            không ai đọc thì lần sau có người sửa chữ ở đây rồi
                            ngồi tìm mãi không hiểu vì sao màn hình không đổi. */
                         badKey: NHAN.badKey, netErr: NHAN.netErr,
-                        anon: NHAN.anon
+                        anon: NHAN.anon,
+                        fPending: NHAN.blFPending, fDone: NHAN.blFDone,
+                        fAll: NHAN.blFAll, more: NHAN.vbMore
                       }))}"`
                    : '',
                  /* ── NHÃN CỦA KHUNG ĐĂNG NHẬP ──

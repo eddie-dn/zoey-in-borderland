@@ -15,6 +15,12 @@
 > kế tự mở build mới thành `V2.00` — `npm run ver` lo việc đó, không phải nhớ gõ
 > `--lon`. Bộ kiểm định có một phép kiểm canh luật này.
 >
+> **Vài số build bị bỏ qua: 13 · 14 · 23 · 38 · 39 · 40 · 41.** Chủ trang kiêng
+> mấy số ấy, nên sổ nhảy thẳng qua — sau `V12.09` là `V15.00`, sau `V22.09` là
+> `V24.00`. Luật nằm trong `tools/lib/lichsu.mjs` (`BUILD_BO`), không nằm trong
+> trí nhớ ai: một số phiên bản đã in ra chân trang và đã lên kho mã thì sửa lại
+> là sửa lịch sử.
+>
 > **Quy ước cột `#`** (giữ nguyên từ design system cũ): mỗi dòng là **MỘT BUILD
 > LỚN**, không phải một bản vá. Cột `#` là **số bản vá ghi lại được trong build
 > đó** — `V1.03` nghĩa là 04 bản, và nó luôn bằng đúng hai chữ số sau dấu chấm.
@@ -27,8 +33,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
-| V14.00 | 2026-09-17 | 00 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
-| V13.00 | 2026-09-17 | 00 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
+| V12.09 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
+| V12.08 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
 | V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
 | V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
 | V12.05 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
@@ -149,7 +155,7 @@
 
 ---
 
-## V14.00 — 17-Sep-2026
+## V12.09 — 17-Sep-2026
 
 - **Bài dài: cụm tim · chia sẻ · bình luận đi theo người đọc.** Ở một bài ba
   nghìn chữ, hàng meta trôi khỏi màn hình sau một cú vuốt — ai đọc tới đoạn hay
@@ -201,7 +207,7 @@
   trang giới thiệu được khai đúng là trang hồ sơ của chính người ấy. Điền thêm
   `mangXaHoi` trong `site.config.json` thì mạnh hơn nữa.
 
-## V13.00 — 17-Sep-2026
+## V12.08 — 17-Sep-2026
 
 - **Tim · chia sẻ · bình luận về chung MỘT hàng với ngày đăng.** Trước là hai
   hàng, và hai hàng ấy còn nói lặp nhau: một trái tim ở hàng meta để ĐỌC số,

@@ -295,15 +295,24 @@
     return d.chiTiet || L('failed', 'Could not publish.');
   }
 
-  /* Ngăn này nằm sau cùng một cánh cửa với ba ngăn kia (xem src/js/khoa.js):
-     có khoá thì tải bảng, mất khoá thì dọn sạch — không giữ lại một bảng chuyên
-     mục trên màn hình sau khi người ta vừa bấm đăng xuất. */
+  /* ── CHẠY MỘT LẦN NGAY LÚC NẠP, RỒI MỚI NGHE ──
+     `theoDoi()` chỉ ĐĂNG KÝ một trình nghe; nó không gọi hàm ngay. Và
+     `khoa.js` chỉ phát sự kiện `zib:khoa` khi khoá ĐỔI (nhập vào, xoá đi, hoặc
+     đổi ở tab khác) — mở trang với khoá đã lưu sẵn thì không có sự kiện nào cả.
+
+     Nên nếu chỉ đăng ký mà không gọi, ngăn này TRỐNG TRƠN mỗi lần mở trang, và
+     chỉ hiện ra sau khi đăng xuất rồi đăng nhập lại. Đúng lỗi đã gặp.
+
+     `viet-bai.js` và `duyet.js` đều gọi một lần rồi mới nghe — làm theo. */
+  if (coKhoa()) tai();
+
+  /* Khoá đổi ở đâu cũng vẽ lại ở đây. Chiều ĐĂNG XUẤT quan trọng không kém:
+     bảng chuyên mục đang bày ra thì bấm Đăng xuất xong nó phải biến mất, không
+     thì "đăng xuất" chỉ là một cái nút không làm gì. */
   if (K && K.theoDoi) {
     K.theoDoi(function (co) {
       if (co) tai();
       else { ds = null; hop.innerHTML = ''; }
     });
-  } else if (coKhoa()) {
-    tai();
   }
 })();

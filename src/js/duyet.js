@@ -157,8 +157,24 @@
     if (dangThay() && hop && coKhoa()) xin(true);
   });
 
+  /* ── LỌC: CHỜ DUYỆT · ĐÃ DUYỆT · TẤT CẢ ──
+     Mặc định là CHỜ DUYỆT. Đây là khác biệt lớn nhất khi hàng chờ dài ra: bản
+     trước đổ nguyên cả danh sách theo thứ tự máy chủ trả về, nên hai chục dòng
+     cần bấm nằm rải giữa một chục dòng đã xong — và cái đã xong thì chiếm đúng
+     chừng ấy chỗ với cái chưa. Đo trên 34 bình luận: 4.700px cuộn, mà việc
+     thật chỉ nằm ở 22 dòng.
+
+     Bàn duyệt là chỗ để LÀM XONG một việc, không phải chỗ để xem lại. Thứ đã
+     duyệt vẫn mở ra được — chỉ là không nằm chắn đường nữa. */
+  var loc = 'cho';   /* 'cho' | 'roi' | '' (tất cả) */
+  var MOI_LUOT = 25; /* dựng bấy nhiêu dòng một lần, còn lại chờ bấm "thêm" */
+  var hienToi = MOI_LUOT;
+  var dsHienTai = [];
+
   function veHang(ds) {
+    dsHienTai = ds;
     var cho = ds.filter(function (c) { return !c.duyet; });
+    var roi = ds.length - cho.length;
     hop.textContent = '';
     hop.appendChild(de(L('queue') + (cho.length ? ' (' + cho.length + ')' : '')));
 
@@ -167,8 +183,59 @@
       trong.className = 'bl-duyet-bao';
       trong.textContent = L('queueEmpty');
       hop.appendChild(trong);
+      batDongHo();
+      return;
     }
-    ds.forEach(function (c) { hop.appendChild(veDong(c)); });
+
+    /* Hàng chip cùng khuôn với ngăn Post — hai bàn làm việc cạnh nhau thì
+       không nên có hai kiểu lọc khác nhau. */
+    var hangChip = document.createElement('div');
+    hangChip.className = 'vb-loc bl-duyet-loc';
+    [['cho', L('fPending'), cho.length],
+     ['roi', L('fDone'), roi],
+     ['',    L('fAll'), ds.length]].forEach(function (x) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (loc === x[0] ? ' chip--nay' : '');
+      b.textContent = x[1];
+      var s = document.createElement('span');
+      s.className = 'chip-so'; s.textContent = x[2];
+      b.appendChild(s);
+      b.addEventListener('click', function () {
+        loc = x[0]; hienToi = MOI_LUOT; veHang(dsHienTai);
+      });
+      hangChip.appendChild(b);
+    });
+    hop.appendChild(hangChip);
+
+    var loc1 = ds.filter(function (c) {
+      return !loc || (loc === 'cho' ? !c.duyet : !!c.duyet);
+    });
+
+    if (!loc1.length) {
+      var trong2 = document.createElement('p');
+      trong2.className = 'bl-duyet-bao';
+      trong2.textContent = L('queueEmpty');
+      hop.appendChild(trong2);
+      batDongHo();
+      return;
+    }
+
+    loc1.slice(0, hienToi).forEach(function (c) { hop.appendChild(veDong(c)); });
+
+    /* Trần 25 dòng một lượt: mỗi dòng chở tên, đường dẫn, nguyên nội dung và
+       hai cái nút, nên hai trăm dòng là hai trăm lần dựng DOM cho một màn hình
+       chỉ hiện được bốn. */
+    if (loc1.length > hienToi) {
+      var them = document.createElement('button');
+      them.type = 'button';
+      them.className = 'vb-nho bl-duyet-them';
+      them.textContent = L('more') + ' (' + (loc1.length - hienToi) + ')';
+      them.addEventListener('click', function () {
+        hienToi += MOI_LUOT; veHang(dsHienTai);
+      });
+      hop.appendChild(them);
+    }
 
     batDongHo();
   }

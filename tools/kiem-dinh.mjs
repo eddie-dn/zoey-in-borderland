@@ -859,13 +859,24 @@ const KIEM = [
 
        Kiểm luôn cột `#`: theo quy ước nó bằng đúng số bản vá của dòng đó. Lệch
        là có người sửa bảng bằng tay. */
-    ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi',
+    ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi, không dùng số kiêng',
     muc: 'loi',
     chay: ({ goc }) => {
       const so = docSo(goc);
       if (so.loi || !so.ban.length) return [];
       const ra = [];
+      /* ── SỐ BUILD KIÊNG ──
+         Chép lại từ `BUILD_BO` trong tools/lib/lichsu.mjs. Hai bản, và cố ý:
+         bên kia là luật LÚC GHI (nhảy qua khi sinh số mới), bên này là luật
+         LÚC KIỂM (bắt cả những dòng vào sổ bằng cách khác — sửa tay, trộn
+         nhánh, hay một bản công cụ cũ hơn). Một cái chặn, một cái soi; cùng
+         một danh sách nhưng không thay được cho nhau. */
+      const BUILD_BO = [13, 14, 23, 38, 39, 40, 41];
       for (const b of so.ban) {
+        if (BUILD_BO.includes(b.build)) {
+          ra.push(`${b.ten} — build ${b.build} nằm trong danh sách số kiêng ` +
+                  `(${BUILD_BO.join(', ')}); đổi sang số kế tiếp hợp lệ`);
+        }
         if (b.va > 9) {
           ra.push(`${b.ten} — đuôi bản vá chỉ chạy 00..09; sau V${b.build}.09 là ` +
                   `V${b.build + 1}.00, không phải ${b.ten}`);

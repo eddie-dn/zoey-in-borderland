@@ -734,6 +734,19 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
   display:flex;flex-direction:column;gap:var(--s2);
 }
 .bl-dong--roi{opacity:.5}
+/* ── HÀNG CHIP LỌC CỦA BÀN DUYỆT ──
+   Cùng khuôn với hàng chip ở ngăn Post: hai bàn làm việc cạnh nhau thì không
+   nên có hai kiểu lọc khác nhau. */
+.bl-duyet-loc{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 var(--s4)}
+.bl-duyet-them{display:block;margin:var(--s5) auto 0}
+/* Dòng vừa duyệt xong hoặc vừa ẩn: mờ và trượt đi trước khi rút khỏi danh
+   sách. Biến mất phụt một cái thì mắt không kịp thấy dòng nào vừa đi, và cả
+   danh sách nhảy lên một nấc mà không rõ vì sao. */
+.bl-dong--xong{
+  opacity:0;transform:translateX(12px);
+  transition:opacity .28s var(--ease-glass),transform .28s var(--ease-glass);
+}
+@media (prefers-reduced-motion:reduce){.bl-dong--xong{transition:none}}
 .bl-dong-dau{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:baseline}
 .bl-dong-trang{
   font-family:var(--font-mono);font-size:var(--fs-2xs);

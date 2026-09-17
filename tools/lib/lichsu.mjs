@@ -9,6 +9,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+/* ══════════ SỐ BUILD BỊ BỎ QUA ══════════
+   Chủ trang kiêng mấy con số này, nên sổ phiên bản không bao giờ dừng ở chúng.
+   Đây là lựa chọn của người, không phải ràng buộc kỹ thuật — nhưng nó phải nằm
+   TRONG công cụ chứ không nằm trong trí nhớ: nhớ bằng đầu thì đúng được vài
+   lần, rồi một hôm gõ `npm run ver` lúc đang vội là sổ có một dòng V13 nằm đó
+   vĩnh viễn (số phiên bản đã in ra chân trang, đã lên kho mã, sửa lại là sửa
+   lịch sử).
+
+   Bỏ qua ở VẾ BUILD, không ở vế bản vá: vế sau chỉ chạy 00..09 nên không bao
+   giờ chạm tới mấy số này. */
+const BUILD_BO = [13, 14, 23, 38, 39, 40, 41];
+
+/* Trả về số build kế tiếp HỢP LỆ, nhảy qua mọi số trong danh sách trên.
+   Vòng lặp chắc chắn dừng: danh sách hữu hạn, mà số thì tăng mãi. */
+function buildKe(n) {
+  let b = n;
+  while (BUILD_BO.includes(b)) b++;
+  return b;
+}
+
 const MO  = '<!-- BANG-BAT-DAU';
 const DONG = '<!-- BANG-KET-THUC -->';
 
@@ -63,7 +83,7 @@ export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
   const moBuild = lon || (moiNhat ? moiNhat.va >= VA_TOI_DA : false);
   const tuCuon  = !lon && moBuild;
 
-  const build = moiNhat ? (moBuild ? moiNhat.build + 1 : moiNhat.build) : 1;
+  const build = moiNhat ? (moBuild ? buildKe(moiNhat.build + 1) : moiNhat.build) : 1;
   const va    = moiNhat ? (moBuild ? 0 : moiNhat.va + 1) : 0;
   const ten   = `V${build}.${String(va).padStart(2, '0')}`;
 
