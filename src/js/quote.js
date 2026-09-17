@@ -112,7 +112,7 @@
       var homNay = laBai(N, Math.floor(buoc / N))[((buoc % N) + N) % N];
       var dangO  = homNay;
 
-      function ve(i, doiTay) {
+      function ve(i, doiTay, moi) {
         var q = ds[i];
         hop.classList.add('q-mo');
         setTimeout(function () {
@@ -120,6 +120,11 @@
           elAi.textContent  = q.ai || '';
           elAi.hidden = !q.ai;
           hop.classList.toggle('q-khac', i !== homNay);
+          /* `moi` = câu này vừa được viết ra cho lượt bấm vừa rồi, chưa từng
+             có ở đâu. Nhãn đổi thành "· mới" thay vì "· thêm" — lật trong kho
+             sẵn và xin một câu chưa ai đọc là hai việc khác nhau, và người bấm
+             bỏ một trong ba lượt mỗi ngày thì nên thấy mình được gì. */
+          hop.classList.toggle('q-moi', !!moi);
           hop.classList.remove('q-mo');
         }, doiTay ? 180 : 0);
       }
@@ -279,7 +284,7 @@
            vẫn đi vòng qua cả kho sẵn như thường. */
         ds.unshift({ chu: x.q, ai: x.ai });
         homNay = 0; dangO = 0;
-        ve(0, true);
+        ve(0, true, true);
       }
 
       /* Chuẩn hoá một câu từ hàm về hình dạng mà `ve()` dùng. Một chỗ duy nhất

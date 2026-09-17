@@ -313,6 +313,16 @@
   background:linear-gradient(to bottom right,transparent 45%,var(--line-strong) 45%,
              var(--line-strong) 55%,transparent 55%);
 }
+/* ── KHUNG CHỈ DẪN TRONG BẢNG KHỐI ──
+   Bảng khối là một LƯỚI nhiều cột dành cho các nút. Chỉ dẫn là văn bản chảy
+   dọc, nên nó chiếm trọn một hàng của lưới rồi tự lo bên trong. Thiếu dòng
+   `grid-column` này thì mỗi tiêu đề, mỗi danh sách lại thành một ô lưới —
+   chữ xếp thành ba cột chồng lên nhau. */
+.sz-giup{
+  grid-column:1/-1;
+  margin-top:var(--s3);padding-top:var(--s3);
+  border-top:1px solid var(--line);
+}
 .sz-giup-de{
   margin:var(--s3) 0 var(--s2);
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
@@ -378,3 +388,31 @@
 .vb-nut{margin-top:var(--s1)}
 
 /* ══════════════════════════════════════════════════════════════════════
+   NÚT MÀU CHỮ VÀ TÊN MÀU TRONG BẢNG
+
+   Khối này từng bị CẮT CỤT: lúc tách `list.css` ra bốn file, phần đuôi
+   `soan.css` đứt ngay sau dòng tiêu đề, để lại một chú thích mở mà không
+   bao giờ đóng. Mọi luật sau đó coi như không tồn tại, và hai lớp dưới đây
+   mất sạch hình dạng. Phép kiểm #60 nay quét cú pháp CSS để không lặp lại.
+
+   (Chú thích CSS KHÔNG lồng nhau được: viết cặp ký tự đóng vào giữa một
+   chú thích là đóng nó ngay tại đó. Đừng gõ cặp ấy vào trong lời giải
+   thích — chính lỗi này vừa xảy ra một lần nữa lúc viết lại khối này.)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Tên màu nằm cạnh chấm màu. Khổ chữ và màu chữ đã do `.sz-mau` đặt, ở đây
+   chỉ cần ghì dòng lại cho chấm và chữ thẳng tâm nhau. */
+.sz-mau-ten{line-height:1;white-space:nowrap}
+
+/* Nút MỞ bảng màu trên thanh công cụ. Nó khác mọi nút khác ở chỗ ruột nút
+   không phải một hình vẽ nét mà là một chấm ĐẶC nhiều màu — người ta tìm nút
+   đổi màu bằng cách tìm chỗ có màu, không phải bằng cách đọc biểu tượng. */
+.sz-nut--mau .sz-cham{
+  background:conic-gradient(var(--c-do,#e4572e),var(--c-cam,#e8913a),
+             var(--c-vang,#d9b23a),var(--c-luc,#4f9d69),var(--c-lam,#3f7fae),
+             var(--c-tim,#7b6bb0),var(--c-hong,#c96a92),var(--c-do,#e4572e));
+  border-color:transparent;
+}
+.sz-nut--mau[aria-expanded="true"] .sz-cham{
+  box-shadow:0 0 0 2px var(--accent);
+}

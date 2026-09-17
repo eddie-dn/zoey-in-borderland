@@ -253,23 +253,70 @@
     var duocDoi = !!(ben && luoi && nutMo.getAttribute('data-o') === 'ben');
     var moc = null;
 
-    function doiCho(vaoBen) {
-      if (!duocDoi) return;
-      if (vaoBen) {
-        if (moc) return;
+    /* ── KHỐI VĂN ĐANG Ở ĐẦU TẦM MẮT ──
+       Dùng để biết người đọc đang đứng ở đâu trong bài. Lấy khối ĐẦU TIÊN mà
+       mép dưới của nó còn nằm dưới đầu vùng nhìn — tức khối đang đọc dở, chứ
+       không phải khối vừa trôi qua. Cộng 80px để trừ thanh đầu trang dính. */
+    function khoiDangDoc() {
+      var pr = document.querySelector('.prose');
+      if (!pr) return null;
+      var con = pr.children;
+      for (var i = 0; i < con.length; i++) {
+        if (con[i] === than) continue;
+        if (con[i].getBoundingClientRect().bottom > 80) return con[i];
+      }
+      return con[con.length - 1] || null;
+    }
+
+    /* ── BA CHỖ KHUNG BÌNH LUẬN CÓ THỂ ĐỨNG ──
+         'goc'    dưới hàng tag, chỗ nó được dựng ra
+         'ben'    cột phải, khổ ≥1080px có cột thật
+         'taicho' CHÈN THẲNG VÀO BÀI, ngay dưới đoạn đang đọc — chỉ ở khổ hẹp
+
+       `taicho` sinh ra vì một chuyện cụ thể: ở khổ hẹp không có cột nào để
+       mượn, nên khung ở lại chân bài, và bấm nút giữa một bài ba nghìn chữ là
+       bị ném xuống tận đáy trang. Muốn quay lại chỗ đang đọc thì phải tự dò
+       ngược lên — không ai làm thế, họ đóng tab.
+
+       Chèn tại chỗ thì ô gõ hiện ra ngay dưới đoạn vừa đọc, gõ xong đóng lại
+       là bài liền mạch như cũ. Vẫn là DỜI chứ không chép, nên chữ đang gõ dở
+       và chip "đang trả lời ai" đều đi theo.
+
+       Một `moc` duy nhất cho cả ba chỗ: mỗi lúc khung chỉ ở một nơi, nên hai
+       cái mốc là sớm muộn có một cái trỏ vào chỗ không còn tồn tại. */
+    function datCho(cho) {
+      if (cho !== 'goc' && !luoi) return;
+      /* Về gốc trước đã — đi thẳng từ 'ben' sang 'taicho' thì `moc` cũ mất. */
+      if (moc) {
+        moc.parentNode.insertBefore(than, moc);
+        moc.remove(); moc = null;
+        if (ben) ben.classList.remove('ben--bl');
+        luoi.classList.remove('khung-a--bl');
+        than.classList.remove('bl-than--taicho');
+      }
+      if (cho === 'goc') return;
+
+      if (cho === 'ben') {
+        if (!duocDoi) return;
         moc = document.createComment('bl-than');
         than.parentNode.insertBefore(moc, than);
         ben.appendChild(than);
         ben.classList.add('ben--bl');
         luoi.classList.add('khung-a--bl');
-      } else {
-        if (!moc) return;
-        moc.parentNode.insertBefore(than, moc);
-        moc.remove(); moc = null;
-        ben.classList.remove('ben--bl');
-        luoi.classList.remove('khung-a--bl');
+        return;
       }
+
+      var neo = khoiDangDoc();
+      if (!neo || !neo.parentNode) return;
+      moc = document.createComment('bl-than');
+      than.parentNode.insertBefore(moc, than);
+      neo.parentNode.insertBefore(than, neo.nextSibling);
+      than.classList.add('bl-than--taicho');
     }
+
+    /* Giữ tên cũ cho mọi chỗ đang gọi: `true` là sang cột bên, `false` là về
+       gốc. Chỗ mở khung gọi thẳng `datCho` để chọn được cả 'taicho'. */
+    function doiCho(vaoBen) { datCho(vaoBen ? 'ben' : 'goc'); }
 
     /* Nút "Back" trong khung bấm hộ chính nút đã mở khung: một đường đóng duy
        nhất, nên trạng thái `aria-expanded`, việc dời chỗ và cú cuộn đều đi qua
@@ -284,7 +331,8 @@
       /* .hidden chứ không phải style.display: thuộc tính này vừa giấu khỏi mắt
          vừa giấu khỏi trình đọc màn hình, và bấm Tab không lọt vào được. */
       than.hidden = dangMo;
-      doiCho(!dangMo && rong.matches);
+      if (dangMo) datCho('goc');
+      else datCho(rong.matches ? 'ben' : 'taicho');
       /* ── ĐƯA MẮT TỚI CHỖ VỪA MỞ ──
          Nút nằm ở đầu bài, còn khung — trừ lúc vừa dời sang cột bên — mở ra ở
          DƯỚI hàng tag, cách chỗ vừa bấm cả nghìn pixel. Bấm xong mà màn hình
@@ -305,8 +353,11 @@
          nhích vừa đủ thay vì kéo cả trang lên đầu. `start` cho khung mở tại
          chỗ dưới hàng tag: ở đó nó thật sự ở xa, và phải đưa hẳn lên. */
       if (!dangMo) {
-        var vaoBen = duocDoi && rong.matches;
-        than.scrollIntoView({ block: vaoBen ? 'nearest' : 'start',
+        /* Chèn tại chỗ thì khung đã nằm ngay dưới mắt — `nearest` chỉ nhích
+           vừa đủ cho ô gõ lọt vào màn, không kéo trang đi đâu cả. Đó là cả
+           mục đích của việc chèn tại chỗ. */
+        var oGan = (duocDoi && rong.matches) || !rong.matches;
+        than.scrollIntoView({ block: oGan ? 'nearest' : 'start',
                               behavior: 'smooth' });
         /* Con trỏ vào thẳng ô viết: mở khung bình luận là để viết, và nếu đã
            cuộn tới nơi rồi thì bắt gõ thêm một cú bấm nữa là thừa. Chờ hết cú
@@ -325,9 +376,12 @@
     /* Vượt ngưỡng lúc đang mở — xoay điện thoại, kéo rộng cửa sổ — thì khung
        phải đổi chỗ theo. Không nghe thì có lúc nó nằm trong một `.ben` đang là
        `display:contents`, tức là mất luôn cái cột mà nó vừa được dời vào. */
+    /* Xoay máy hay kéo rộng cửa sổ lúc khung đang mở: đích đến đổi theo khổ
+       màn. Không nghe thì khung chèn giữa bài ở khổ hẹp vẫn nằm chèn giữa bài
+       sau khi máy đã rộng ra tới hai cột. */
     var theoNgang = function () {
       if (than.hidden) return;
-      doiCho(rong.matches);
+      datCho(rong.matches ? 'ben' : 'taicho');
     };
     (rong.addEventListener ? rong.addEventListener('change', theoNgang)
                            : rong.addListener(theoNgang));
@@ -353,10 +407,29 @@
       });
   }
 
+  /* ── NGÀY VÀ GIỜ, LUÔN TÍNH THEO GIỜ VIỆT NAM ──
+     Không lấy giờ máy người đọc. Blog viết ở GMT+7 và người đọc cũng gần hết
+     ở đó; một bình luận gõ lúc 23:30 tối thứ Ba mà người mở ở châu Âu thấy
+     đề "17 Sep" còn người mở ở Hà Nội thấy "18 Sep" thì hai người đang nói
+     về hai buổi tối khác nhau.
+
+     `Intl` lo cả việc đổi múi lẫn việc bù ngày. Máy nào không có nó thì rơi
+     về giờ máy — mất độ chính xác chứ không mất dòng chữ. */
   function ngay(iso) {
     var d = new Date(iso);
     if (isNaN(d)) return '';
     var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    try {
+      var p = {};
+      new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        day: 'numeric', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+      if (p.day && p.hour) {
+        return p.day + ' ' + p.month + ' ' + p.year + ' · ' + p.hour + ':' + p.minute;
+      }
+    } catch (e) { /* rơi về giờ máy ở dưới */ }
     return d.getDate() + ' ' + M[d.getMonth()] + ' ' + d.getFullYear();
   }
 
@@ -468,8 +541,14 @@
     li.appendChild(nd);
     li.appendChild(cuoi);
 
+    /* Nút của chủ trang gắn vào `.bl-cuoi` — cụm ngày + Reply ở mép phải hàng
+       đầu — chứ KHÔNG treo ở cuối thẻ. Treo ở cuối thì chúng rơi xuống dưới cả
+       nhánh trả lời, nằm lẫn vào hàng nút của chính mấy trả lời ấy: trên màn
+       hình đọc ra thành "Unapprove Hide Unapprove Hide" trên một dòng, không
+       biết cặp nào của ai. */
+    nutChuTrang(c, li, cuoi);
+
     if (c.con && c.con.length) li.appendChild(veCon(c.con));
-    nutChuTrang(c, li);
     return li;
   }
 
@@ -606,7 +685,7 @@
 
      Mờ sẵn, rõ khi rê vào cả thẻ: đây là việc dọn dẹp thỉnh thoảng mới làm,
      không phải thứ mắt phải vấp mỗi lần đọc một bình luận. */
-  function nutChuTrang(c, li) {
+  function nutChuTrang(c, li, vao) {
     if (!coKhoa()) return;
 
     var nhom = document.createElement('div');
@@ -644,7 +723,7 @@
 
     nhom.appendChild(bRut);
     nhom.appendChild(bAn);
-    li.appendChild(nhom);
+    (vao || li).appendChild(nhom);
   }
 
 

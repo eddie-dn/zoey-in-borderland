@@ -1,0 +1,105 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Ô TRÍCH DẪN — dùng ở HAI chỗ, nên ở file riêng.
+
+   ── VÌ SAO KHÔNG NẰM TRONG about.css NỮA ──────────────────────────────
+   Cụm này vốn nằm trong `about.css`, từ hồi mọi trang tải chung một file
+   CSS nên đặt đâu cũng chạy. Lúc chia CSS theo loại trang (V2.5.0) thì
+   `about.css` chỉ còn đi với /about/ — mà ô trích dẫn CÒN ở màn hero
+   trang chủ. Trang chủ mất sạch luật gốc: hết phông nghiêng Cormorant,
+   hết cặp dấu “ ” hai đầu câu, nút xem câu khác hết cả vị trí.
+
+   Trang vẫn dựng ra, không lỗi nào, chỉ là chữ rơi về phông thân bài. Đó
+   là kiểu hỏng lặng lẽ nhất của việc chia CSS: class vẫn còn tên trong
+   `list.css` (ở luật `.hero-quote .q-chu{font-size}`), nên soi bằng tên
+   lớp thì thấy đủ. Phép kiểm #60 soi LUẬT TRẦN `.C{…}` chính là để bắt
+   đúng chuyện này.
+
+   ── AI TẢI FILE NÀY ───────────────────────────────────────────────────
+     gói `ds`  → trang chủ (hero) và mọi trang danh sách
+     gói `gt`  → /about/, nơi ô nằm giữa một khung chương
+
+   Phần vật liệu kính của ô nằm ở `glass.css`, phần khổ chữ riêng của màn
+   hero nằm ở `list.css`, phần ô to giữa khung chương nằm ở `about.css` —
+   ba chỗ ấy là ĐÈ LÊN bản gốc này, nên chúng ở lại chỗ cũ.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.bo-quote{
+  position:relative;
+  display:flex;flex-direction:column;gap:var(--s3);
+  padding:var(--s6);
+  justify-content:center;
+}
+/* Chừa chỗ cho nút ở góc trên phải — nhãn dài gặp ô hẹp thì không chui
+   xuống dưới nút. */
+.bo-quote .label{margin:0;padding-right:36px}
+.q-chu{
+  margin:0;padding:0;border:none;
+  font-family:var(--font-display);font-style:italic;font-weight:600;
+  font-size:clamp(19px,1.05rem + .7vw,25px);line-height:1.4;
+  color:var(--text);text-wrap:pretty;
+}
+.q-chu::before{content:"“";color:var(--accent);margin-right:2px}
+.q-chu::after{content:"”";color:var(--accent);margin-left:2px}
+.q-ai{
+  margin:0;font-size:var(--fs-sm);color:var(--text-faint);
+}
+.q-ai::before{content:"— "}
+
+/* ── NÚT XEM CÂU KHÁC — GÓC TRÊN PHẢI ──
+   Trước ở góc DƯỚI phải. Chỗ ấy sai hai đường: câu trích dẫn dài ngắn không
+   đều, nên nút nhảy lên nhảy xuống theo từng câu và không bao giờ ở một chỗ
+   cố định để nhớ; và ở màn hero nó rơi xuống sát tên tác giả, đọc ra như một
+   phần của dòng ghi tên.
+
+   Góc TRÊN phải thì đứng yên bất kể câu dài bao nhiêu, và nó ngang hàng với
+   nhãn "QUOTE OF THE DAY" — nhãn nói đây là cái gì, nút nói đổi được cái đó.
+   Mờ cho tới khi rê vào ô. */
+.q-nut{
+  position:absolute;top:var(--s4);right:var(--s4);
+  width:32px;height:32px;opacity:0;
+  transition:opacity var(--dur-fast),transform .34s var(--spring),
+             color var(--dur-fast);
+}
+.q-nut svg{width:15px;height:15px}
+.bo-quote:hover .q-nut,.q-nut:focus-visible{opacity:.75}
+.q-nut:hover{opacity:1}
+.q-nut:active{transform:rotate(-90deg) scale(.9)}
+@media (hover:none){.q-nut{opacity:.6}}
+
+/* Đang đổi câu: mờ đi một nhịp rồi hiện câu mới — đổi phựt một cái thì mắt
+   không kịp nhận ra là chữ đã khác. */
+.bo-quote.q-mo .q-chu,.bo-quote.q-mo .q-ai{opacity:0}
+.bo-quote .q-chu,.bo-quote .q-ai{transition:opacity .18s linear}
+
+/* ── NHÃN NÓI RÕ MÌNH ĐANG XEM CÂU GÌ ──
+   Ba trạng thái, ba chữ khác nhau, để không ai tưởng nhầm câu đang đọc là
+   câu của ngày:
+
+     (không nhãn)  câu của hôm nay — chọn theo ngày, ai mở cũng thấy như nhau
+     · thêm        đang lật trong kho câu viết sẵn
+     · mới         câu VỪA được viết ra cho lượt bấm này, chưa từng có
+
+   `mới` quý hơn `thêm`, nên nó lấy màu nhấn chứ không mờ đi như `thêm`. */
+.bo-quote.q-khac .label::after{
+  content:" · thêm";color:var(--text-faint);font-weight:400;
+}
+.bo-quote.q-moi .label::after{
+  content:" · mới";color:var(--accent-ink);font-weight:400;
+}
+/* q-moi thắng q-khac khi cả hai cùng có: câu mới xin về cũng là câu "khác" */
+.bo-quote.q-moi.q-khac .label::after{content:" · mới";color:var(--accent-ink)}
+
+/* ── NÚT CÒN LƯỢT XIN CÂU MỚI ──
+   quote.js bật `q-nut--moi` khi trong ngày còn lượt gọi Gemini. Trước nay
+   lớp ấy KHÔNG có luật nào — nút còn lượt và nút hết lượt trông y hệt, nên
+   ba lượt mỗi ngày không ai biết là mình có.
+
+   Một chấm nhỏ ở góc nút, không phải con số: con số đòi chỗ và đòi đọc,
+   còn chấm chỉ nói "bấm được cái nữa" — phần đếm đã nằm trong tooltip. */
+.q-nut--moi::after{
+  content:"";position:absolute;top:2px;right:2px;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--accent);
+}
+.q-nut--moi{opacity:.75}
+@media (hover:none){.q-nut--moi{opacity:.8}}

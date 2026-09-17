@@ -157,31 +157,52 @@ const SO_TAY = () => JSON.stringify({
 
      Nay ba tầng:  V1 (build)  →  các bản vá V1.yy  →  chi tiết từng bản. */
   build: (() => {
-    const m = new Map();
-    for (const b of SO.ban) {
-      /* ── GOM THEO ĐỢT, KHÔNG THEO BUILD ──
-         Từ V3 số có ba tầng, và một build chở tới 100 bản. Gom theo build thì
-         tầng đầu chỉ có hai dòng, còn tầng hai đổ ra một trăm — đúng cái
-         "rải phẳng không đọc được mốc" mà cách gom này sinh ra để tránh.
+    /* ── BA TẦNG, ĐÚNG BA TẦNG CỦA SỐ PHIÊN BẢN ──
+         tầng 1  Vx      build
+         tầng 2  Vx.y    đợt trong build ấy
+         tầng 3  Vx.y.z  bản vá trong đợt ấy
 
-         Gom theo ĐỢT (`V2.4`) thì tầng đầu ra mười lăm dòng, tầng hai nhiều
-         nhất mười. Số build vẫn đọc được, vì nó nằm ngay trong tên đợt. */
-      const lon = b.nhom;                           /* 'V2.4.9' → 'V2.4' */
-      if (!m.has(lon)) m.set(lon, { ten: lon, va: [] });
-      m.get(lon).va.push({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh });
+       Bản trước gom tầng đầu theo ĐỢT, vì lo rằng gom theo build thì tầng đầu
+       chỉ còn hai dòng. Nhưng hai dòng ở tầng đầu KHÔNG phải là nhược điểm —
+       đó chính là cái nhìn "blog này đã qua mấy đời" mà một trang lịch sử cần
+       mở ra bằng. Mười sáu dòng ngang hàng nhau ở màn đầu thì không nói được
+       điều gì: mắt phải đọc hết mười sáu cái tên rồi tự ghép lại thành hai
+       nhóm.
+
+       Mỗi tầng vẫn tự mang ngày và số đếm của nó, nên đóng lại ở bất kỳ tầng
+       nào cũng đọc được "quãng này gồm bao nhiêu, làm trong bao lâu". */
+    const mB = new Map();
+    for (const b of SO.ban) {
+      const build = String(b.ten).split('.')[0];    /* 'V2.4.9' → 'V2'   */
+      const dot   = b.nhom;                          /* 'V2.4.9' → 'V2.4' */
+      if (!mB.has(build)) mB.set(build, { ten: build, dot: new Map() });
+      const B = mB.get(build);
+      if (!B.dot.has(dot)) B.dot.set(dot, { ten: dot, va: [] });
+      B.dot.get(dot).va.push({ ten: b.ten, ngay: b.ngay, so: b.so, suaChinh: b.suaChinh });
     }
-    return [...m.values()].map((x) => ({
-      ten: x.ten,
-      /* Bảng xếp mới nhất trước, nên phần tử đầu là bản mới nhất của build. */
-      tuNgay: x.va[x.va.length - 1].ngay,
-      denNgay: x.va[0].ngay,
-      soVa: x.va.length,
-      va: x.va
-    }));
+    return [...mB.values()].map((B) => {
+      /* Bảng xếp mới nhất trước, nên phần tử đầu luôn là cái mới nhất. */
+      const dot = [...B.dot.values()].map((D) => ({
+        ten: D.ten,
+        tuNgay: D.va[D.va.length - 1].ngay,
+        denNgay: D.va[0].ngay,
+        soVa: D.va.length,
+        va: D.va
+      }));
+      return {
+        ten: B.ten,
+        tuNgay: dot[dot.length - 1].tuNgay,
+        denNgay: dot[0].denNgay,
+        soDot: dot.length,
+        soVa: dot.reduce((n, d) => n + d.soVa, 0),
+        dot
+      };
+    });
   })(),
   chiTiet: docChiTiet(GOC),
   nhan: {
     history: NHAN.history, builds: NHAN.builds, patches: NHAN.patches,
+    dots: NHAN.dots,
     noInfo: NHAN.noInfo, close: NHAN.close, back: NHAN.back
   }
 }, null, 0);
@@ -675,8 +696,12 @@ const NHAN = {
   history     : 'Version history',
   /* Chỉ đếm số bản dựng. Chỗ file nguồn là việc của người viết blog, không
      phải của người đọc — và người viết thì đã biết rồi. */
-  builds      : '{n} builds',
-  patches     : '{n} patches recorded in this build',
+  builds      : '{n} build{s}',
+  /* Ba tầng, ba chân trang khác nhau — mỗi cái đếm đúng thứ đang bày ra trên
+     màn. Dùng chung một chuỗi cho cả ba thì tầng đợt ghi "in this build" khi
+     nó đang là một đợt, và số đếm nói về một thứ mà bảng không hề bày. */
+  dots        : '{n} series in this build',
+  patches     : '{n} patch{s} in this series',
   noInfo      : 'no info',
   close       : 'Close',
   back        : 'Back'
@@ -2969,8 +2994,12 @@ const GOI_CSS = {
   nen  : ['fonts.css', 'tokens.css', 'base.css', 'glass.css', 'layout.css',
           'components.css'],
   /* Trang danh sách: màn hero, lưới thẻ, chip, bento, số trang, tag, kho lưu,
-     tìm kiếm, ghi chú ngắn. */
-  ds   : ['list.css'],
+     tìm kiếm, ghi chú ngắn.
+
+     `quote.css` đi trong gói NÀY chứ không trong `gt`, dù /about/ cũng có ô
+     trích dẫn: `goiCuaTrang('gt')` trả về `nen + gt + ds`, tức /about/ đã tải
+     `ds` rồi. Để cả hai chỗ thì file vào trang ấy hai lượt. */
+  ds   : ['quote.css', 'list.css'],
   /* Trang bài: khung đọc, ảnh, bảng, khối `:::`, bình luận. */
   bai  : ['prose.css'],
   /* Trang giới thiệu. */

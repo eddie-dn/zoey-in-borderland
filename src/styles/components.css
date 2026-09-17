@@ -352,14 +352,25 @@ body.so-khoa{overflow:hidden}
 .so-bang tr{border-bottom:1px solid var(--line)}
 .so-bang tr:last-child{border-bottom:none}
 .so-bang td{padding:var(--s3) var(--s2);vertical-align:baseline}
+/* ── BA CỘT HẸP CO VỀ ĐÚNG NỘI DUNG, CỘT MÔ TẢ ĂN PHẦN CÒN LẠI ──
+   Bảng `width:100%` với bố cục tự động chia bề ngang theo ĐỘ RỘNG MONG MUỐN
+   của từng cột, nên ba cột nowrap kia đòi bao nhiêu là được bấy nhiêu, và cột
+   mô tả nhận phần thừa. Ở dòng có khoảng ngày dài thì phần thừa ấy hẹp tới
+   mức một câu mười chữ phải gãy làm hai ba dòng — trong khi ba cột bên cạnh
+   vẫn còn chỗ trống.
+
+   `width:1%` là cách nói với bảng "cột này chỉ cần bằng nội dung của nó":
+   nowrap giữ cho nó không bị ép hẹp hơn chữ, còn 1% khiến nó không đòi thêm
+   một pixel nào. Toàn bộ chỗ dôi ra dồn hết cho cột mô tả. */
 .so-ver{
   font-family:var(--font-label);font-weight:600;letter-spacing:.04em;
-  color:var(--accent-ink);white-space:nowrap;
+  color:var(--accent-ink);white-space:nowrap;width:1%;
 }
 .so-ngay,.so-dem{
   font-size:var(--fs-2xs);color:var(--text-faint);white-space:nowrap;
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums;width:1%;
 }
+.so-dem{text-align:right}
 .so-viec{color:var(--text-muted);line-height:1.5;position:relative;padding-right:var(--s5)}
 
 /* Dòng BUILD là mốc lớn — to và đậm hơn dòng bản vá bên trong, để hai tầng

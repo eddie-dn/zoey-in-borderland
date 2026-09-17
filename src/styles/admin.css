@@ -166,7 +166,8 @@
 .vb-xong-ds{margin:0;padding-left:1.1em;font-size:var(--fs-xs);color:var(--text-muted)}
 .vb-xong-ds code{font-size:var(--fs-xs)}
 
-BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH Ở /z-admin/
+/* ══════════════════════════════════════════════════════════════════════
+   BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH Ở /z-admin/
 
    ── VÌ SAO GOM LẠI ──
    Ba ngăn quản trị đều bày một danh sách để ĐIỂM DANH rồi thao tác: Post (bài

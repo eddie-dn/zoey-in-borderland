@@ -2085,6 +2085,118 @@ const KIEM = [
         `src/styles/about.css — ô .${x} có grid-column nhưng không nằm trong luật ` +
         `gộp về một cột ở @media (max-width:860px) ⇒ trang sẽ tràn ngang trên điện thoại`);
     }
+  },
+  {
+    /* ── CHÚ THÍCH VÀ NGOẶC TRONG CSS PHẢI ĐÓNG ĐỦ ──
+       Một chú thích mở mà không đóng thì nuốt sạch mọi luật phía sau nó. Một
+       dấu đóng chú thích thừa thì trình duyệt coi chỗ đó là rác, và nó bỏ
+       luôn KHỐI LUẬT KẾ TIẾP để tìm lại chỗ đứng.
+
+       Cả hai đã xảy ra thật, cùng một lượt, lúc tách `list.css` ra bốn file:
+       `admin.css` mất dòng mở của một khối chú thích, và dấu đóng còn lại
+       nuốt đúng `.ad-thanh` ngay bên dưới — thanh công cụ ở /z-admin/ thôi
+       là flex, ô tìm kiếm giãn hết bề ngang, hàng chip lọc rơi về bên trái.
+       `soan.css` thì đứt hẳn phần đuôi, để lại một chú thích mở lơ lửng.
+
+       KHÔNG có gì báo: `npm run build` vẫn chạy, bộ rút gọn CSS vẫn nuốt
+       trôi, trang vẫn hiện. Chỉ mắt người mở đúng trang ấy ra mới thấy.
+       Nên phải quét ở đây. */
+    ten: 'Chú thích và ngoặc trong mọi file CSS đều đóng đủ',
+    muc: 'loi',
+    chay: () => {
+      const thuMuc = path.join(GOC, 'src', 'styles');
+      if (!fs.existsSync(thuMuc)) return [];
+      const ra = [];
+      for (const ten of fs.readdirSync(thuMuc).filter((x) => x.endsWith('.css'))) {
+        const s = fs.readFileSync(path.join(thuMuc, ten), 'utf8');
+        let i = 0, trong = false, sau = 0, dong = 1, dongMo = 0;
+        while (i < s.length) {
+          if (s[i] === '\n') dong++;
+          if (!trong && s[i] === '/' && s[i + 1] === '*') { trong = true; dongMo = dong; i += 2; continue; }
+          if (trong && s[i] === '*' && s[i + 1] === '/') { trong = false; i += 2; continue; }
+          if (!trong && s[i] === '*' && s[i + 1] === '/') {
+            ra.push(`src/styles/${ten}:${dong} — dấu đóng chú thích thừa ⇒ `
+                  + `trình duyệt bỏ luôn khối luật ngay sau nó`);
+            i += 2; continue;
+          }
+          if (!trong && s[i] === '{') sau++;
+          if (!trong && s[i] === '}') { if (--sau < 0) { ra.push(`src/styles/${ten}:${dong} — thừa một dấu }`); sau = 0; } }
+          i++;
+        }
+        if (trong) ra.push(`src/styles/${ten}:${dongMo} — chú thích mở mà không đóng ⇒ `
+                         + `mọi luật sau dòng này bị nuốt`);
+        if (sau > 0) ra.push(`src/styles/${ten} — thiếu ${sau} dấu }`);
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── TRANG NÀO DÙNG MỘT CỤM THÌ PHẢI TẢI LUẬT GỐC CỦA CỤM ẤY ──
+       Từ lúc CSS chia theo loại trang, mỗi trang chỉ tải vài gói. Một cụm có
+       luật nằm trong gói trang KHÔNG tải thì cụm ấy hiện lên trần trụi — mà
+       trang vẫn dựng ra, vẫn không lỗi nào.
+
+       Đã vấp thật: ô trích dẫn khai trong `about.css`, nhưng nó còn ở màn
+       hero TRANG CHỦ. Trang chủ không tải `about.css`, nên câu trích dẫn mất
+       phông nghiêng Cormorant, mất cặp dấu ngoặc kép hai đầu, nút xem câu
+       khác rơi xuống đáy ô. Không ai biết cho tới lúc nhìn bằng mắt.
+
+       Soi bằng TÊN LỚP thì không bắt được: `list.css` vẫn nhắc `.q-chu` ở
+       luật `.hero-quote .q-chu{font-size}`, nên tên lớp coi như có đủ. Phải
+       soi LUẬT TRẦN — luật mà bộ chọn đúng bằng `.tên-lớp`, không tổ tiên,
+       không lớp kèm. Luật trần là định nghĩa gốc của cụm: thiếu nó là mất
+       phông, mất viền, mất vị trí. */
+    ten: 'Trang nào dùng một cụm thì gói CSS của trang có luật gốc của cụm',
+    muc: 'loi',
+    chay: () => {
+      const tep = [];
+      (function di(d) {
+        for (const x of fs.readdirSync(d)) {
+          const q = path.join(d, x);
+          if (fs.statSync(q).isDirectory()) di(q);
+          else if (x.endsWith('.html')) tep.push(q);
+        }
+      })(DIST);
+
+      /* `.C`, `.C:hover`, `.C::before` — KHÔNG `.a .C`, `.C.d`, `.C > x` */
+      const TRAN = /^\.(-?[_a-zA-Z][\w-]*)(::?[a-z-]+(\([^)]*\))?)*$/;
+      const banTran = new Map();
+      const thuAssets = path.join(DIST, 'assets');
+      if (!fs.existsSync(thuAssets)) return [];
+      for (const x of fs.readdirSync(thuAssets).filter((n) => n.endsWith('.css'))) {
+        const noi = fs.readFileSync(path.join(thuAssets, x), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+        const bo = new Set();
+        for (const m of noi.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+          if (!m[2].trim()) continue;
+          for (const sel of m[1].split(',')) {
+            const g = sel.trim().match(TRAN);
+            if (g) bo.add(g[1]);
+          }
+        }
+        banTran.set('/assets/' + x, bo);
+      }
+      const coTran = new Set();
+      for (const bo of banTran.values()) for (const c of bo) coTran.add(c);
+
+      const ra = [];
+      for (const f of tep) {
+        const html = fs.readFileSync(f, 'utf8');
+        const goi = [...html.matchAll(/<link[^>]+href="(\/assets\/[^"]+\.css)"/g)].map((m) => m[1]);
+        const co = new Set();
+        for (const g of goi) for (const c of (banTran.get(g) || [])) co.add(c);
+        const dung = new Set();
+        for (const m of html.matchAll(/class="([^"]*)"/g))
+          for (const c of m[1].trim().split(/\s+/)) if (c) dung.add(c);
+        const thieu = [...dung].filter((c) => !co.has(c) && coTran.has(c));
+        if (thieu.length) {
+          ra.push(`${f.slice(DIST.length)} — tải `
+            + `${goi.map((g) => g.split('/').pop().split('.')[0]).join(' + ')} `
+            + `nhưng không gói nào có luật gốc cho: ${thieu.map((x) => '.' + x).join(' · ')} `
+            + `⇒ cụm hiện lên trần trụi`);
+        }
+      }
+      return ra;
+    }
   }
 ];
 

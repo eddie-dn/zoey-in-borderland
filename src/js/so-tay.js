@@ -74,7 +74,11 @@
   /* Chữ lấy từ bảng NHAN trong tools/build.mjs, gửi kèm trong chính khối JSON
      này — cùng lý do như bên comments.js: một bảng nhãn, một chỗ để sửa. */
   var N = {};
-  function L(k, n) { return String(N[k] || '').replace('{n}', n); }
+  /* `{s}` là chữ s của số nhiều: một thì bỏ đi, nhiều thì giữ. Nhờ vậy bảng
+     không bao giờ ghi "1 patches" — chuỗi nhãn vẫn nằm một chỗ ở build.mjs. */
+  function L(k, n) {
+    return String(N[k] || '').replace('{n}', n).replace('{s}', n === 1 ? '' : 's');
+  }
 
   function xinDuLieu() {
     if (DU) return Promise.resolve(DU);
@@ -212,18 +216,43 @@
     else hop.querySelector('.so-x').focus();
   }
 
-  /* ── TẦNG 1: BUILD ── */
+  /* ── IN NGÀY CHO GỌN ──
+     Cột ngày từng in nguyên hai chuỗi ISO nối bằng mũi tên:
+     `2026-09-15 → 2026-09-16`, hai mươi ba ký tự không ngắt dòng được. Ở một
+     bảng bốn cột thì nó ăn mất phần lớn bề ngang, và cột MÔ TẢ — thứ người ta
+     thật sự đọc — bị ép xuống hai ba dòng trong khi cột ngày vẫn thừa chỗ.
+
+     Nay gộp phần chung lại: cùng tháng thì in `15–16 Sep 2026`, cùng năm thì
+     `15 Sep – 2 Oct 2026`. Ngắn hơn một nửa mà đọc còn nhanh hơn. */
+  var THANG = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function mot(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return String(iso || '');
+    return { d: +p[2], m: +p[1] - 1, y: +p[0] };
+  }
+  function inNgay(x) {
+    return typeof x === 'string' ? x : x.d + ' ' + THANG[x.m] + ' ' + x.y;
+  }
+  function khoangNgay(tu, den) {
+    if (!den || tu === den) return inNgay(mot(tu));
+    var a = mot(tu), b = mot(den);
+    if (typeof a === 'string' || typeof b === 'string') return inNgay(a) + ' – ' + inNgay(b);
+    if (a.y === b.y && a.m === b.m) return a.d + '–' + b.d + ' ' + THANG[a.m] + ' ' + a.y;
+    if (a.y === b.y) return a.d + ' ' + THANG[a.m] + ' – ' + b.d + ' ' + THANG[b.m] + ' ' + a.y;
+    return inNgay(a) + ' – ' + inNgay(b);
+  }
+
+  /* ── TẦNG 1: BUILD (Vx) ── */
   function veBuild() {
     var hang = DU.build.map(function (b, i) {
       /* Mô tả build = việc chính của bản vá MỚI NHẤT trong build đó. Gộp cả
          bảy dòng lại thì ra một đoạn dài không ai đọc. */
-      var moi = b.va[0];
-      var khoang = b.tuNgay === b.denNgay ? an(b.tuNgay)
-                 : an(b.tuNgay) + ' → ' + an(b.denNgay);
+      var moi = b.dot[0].va[0];
       return '<tr class="so-co so-build" tabindex="0" role="button" data-i="' + i + '">' +
           '<td class="so-ver so-ver--lon">' + an(b.ten) + '</td>' +
-          '<td class="so-ngay">' + khoang + '</td>' +
-          '<td class="so-dem">' + an(b.soVa) + '</td>' +
+          '<td class="so-ngay">' + an(khoangNgay(b.tuNgay, b.denNgay)) + '</td>' +
+          '<td class="so-dem">' + an(b.soDot) + '</td>' +
           '<td class="so-viec">' + an(moi.suaChinh) +
             '<i class="so-mui" aria-hidden="true"></i></td>' +
         '</tr>';
@@ -235,18 +264,40 @@
       '<p class="so-chan">' + an(L('builds', DU.build.length)) + '</p>';
 
     noiNut(null);
-    gan(function (i) { veVa(i); });
+    gan(function (i) { veDot(i); });
+  }
+
+  /* ── TẦNG 2: ĐỢT TRONG MỘT BUILD (Vx.y) ── */
+  function veDot(iB) {
+    var b = DU.build[iB];
+    var hang = b.dot.map(function (d, i) {
+      return '<tr class="so-co" tabindex="0" role="button" data-i="' + i + '">' +
+          '<td class="so-ver">' + an(d.ten) + '</td>' +
+          '<td class="so-ngay">' + an(khoangNgay(d.tuNgay, d.denNgay)) + '</td>' +
+          '<td class="so-dem">' + an(d.soVa) + '</td>' +
+          '<td class="so-viec">' + an(d.va[0].suaChinh) +
+            '<i class="so-mui" aria-hidden="true"></i></td>' +
+        '</tr>';
+    }).join('');
+
+    hop.innerHTML =
+      veDau(an(b.ten), true) +
+      '<div class="so-cuon"><table class="so-bang"><tbody>' + hang + '</tbody></table></div>' +
+      '<p class="so-chan">' + an(L('dots', b.soDot)) + '</p>';
+
+    noiNut(veBuild);
+    gan(function (i) { veVa(iB, i); });
   }
 
   /* ── TẦNG 2: BẢN VÁ TRONG MỘT BUILD ── */
-  function veVa(iB) {
-    var b = DU.build[iB];
+  function veVa(iB, iD) {
+    var b = DU.build[iB].dot[iD];
     var hang = b.va.map(function (v, i) {
       var coChi = DU.chiTiet && DU.chiTiet[v.ten] && DU.chiTiet[v.ten].length;
       return '<tr class="' + (coChi ? 'so-co' : 'so-khong') + '"' +
              (coChi ? ' tabindex="0" role="button" data-i="' + i + '"' : '') + '>' +
           '<td class="so-ver">' + an(v.ten) + '</td>' +
-          '<td class="so-ngay">' + an(v.ngay) + '</td>' +
+          '<td class="so-ngay">' + an(khoangNgay(v.ngay)) + '</td>' +
           '<td class="so-dem">' + an(v.so) + '</td>' +
           '<td class="so-viec">' + an(v.suaChinh) +
             (coChi ? '<i class="so-mui" aria-hidden="true"></i>' : '') + '</td>' +
@@ -258,17 +309,17 @@
       '<div class="so-cuon"><table class="so-bang"><tbody>' + hang + '</tbody></table></div>' +
       '<p class="so-chan">' + an(L('patches', b.soVa)) + '</p>';
 
-    noiNut(veBuild);
-    gan(function (i) { veChiTiet(iB, i); });
+    noiNut(function () { veDot(iB); });
+    gan(function (i) { veChiTiet(iB, iD, i); });
   }
 
-  /* ── TẦNG 3: CHI TIẾT MỘT BẢN VÁ ── */
-  function veChiTiet(iB, iV) {
-    var v  = DU.build[iB].va[iV];
+  /* ── CHI TIẾT MỘT BẢN VÁ — các gạch đầu dòng của chính nó ── */
+  function veChiTiet(iB, iD, iV) {
+    var v  = DU.build[iB].dot[iD].va[iV];
     var ds = (DU.chiTiet && DU.chiTiet[v.ten]) || [];
 
     hop.innerHTML =
-      veDau(an(v.ten) + ' · ' + an(v.ngay), true) +
+      veDau(an(v.ten) + ' · ' + an(khoangNgay(v.ngay)), true) +
       '<div class="so-cuon">' +
         (ds.length
           ? '<ul class="so-y">' + ds.map(function (y) {
@@ -278,7 +329,7 @@
       '</div>' +
       '<p class="so-chan">' + an(v.suaChinh) + '</p>';
 
-    noiNut(function () { veVa(iB); });
+    noiNut(function () { veVa(iB, iD); });
   }
 
   /* Gắn bấm + Enter/Space cho mọi dòng có data-i. Một chỗ cho cả ba tầng. */

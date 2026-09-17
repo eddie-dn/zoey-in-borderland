@@ -1574,9 +1574,21 @@
         doiLopDoan('{.thuong}');
       });
 
-      /* Phần chỉ dẫn rót thẳng vào cuối bảng này. Trước bản này nó là một bảng
-         riêng sau nút `i` — hai cửa dạy cùng một việc, và chúng đã lệch nhau. */
-      giupVao(b);
+      /* ── PHẦN CHỈ DẪN ĐI TRONG MỘT KHUNG RIÊNG ──
+         Trước bản này nó là một bảng riêng sau nút `i` — hai cửa dạy cùng một
+         việc, và chúng đã lệch nhau. Gộp vào đây là đúng.
+
+         Nhưng KHÔNG rót thẳng từng mẩu vào `b`: `b` là một LƯỚI ba cột, nên
+         mỗi tiêu đề và mỗi danh sách chỉ dẫn rơi vào một ô lưới riêng, nằm
+         chen ngang giữa các nút khối. Trên màn rộng nó ra thành ba cột chữ
+         xếp chồng lên nhau, đọc không ra chữ nào vào chữ nào.
+
+         Nên chỉ dẫn vào MỘT khung con, và khung ấy trải hết bề ngang lưới
+         (`grid-column:1/-1`). Trong khung thì chữ chảy dọc như văn bản
+         thường, đúng như nó cần. */
+      var oGiup = el('div', 'sz-giup');
+      giupVao(oGiup);
+      b.appendChild(oGiup);
       return b;
     }
 

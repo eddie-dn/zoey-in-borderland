@@ -621,10 +621,69 @@
    gạch chân link của .prose không chạm tới đây. */
 a.rn-dong:hover{color:var(--accent-ink);padding-left:var(--s2)}
 a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
+/* ══════════ KHỔ HẸP: ĐỌC TIẾP MƯỢN HÌNH CẶP LÙI/TỚI ══════════
+   Ở khổ rộng đây là hai DÒNG xếp dọc, ngăn nhau bằng sợi kẻ — hợp lý khi còn
+   chỗ cho ba cột.
+
+   Trên điện thoại thì không còn chỗ, và bản trước xử lý bằng cách cho nhãn
+   loại nhảy lên một dòng riêng. Thành ra mỗi gợi ý ăn ba dòng, hai gợi ý là
+   sáu dòng cộng ba sợi kẻ — một khối cao gần bằng màn hình, đặt ngay dưới
+   phần bình luận, chỉ để chở hai cái tên bài.
+
+   Mà `docTiep` luôn đúng bằng 2, và hai bài ấy luôn là một cũ một mới. Đó
+   chính xác là thứ cặp lùi/tới ở khung ảnh đang bày: hai đầu một thanh, mũi
+   tên quay ra ngoài, đọc ra ngay là trục thời gian. Nên ở đây bày lại y như
+   vậy — KHÔNG dựng thêm khung mới, chỉ xếp lại đúng chừng ấy thẻ:
+
+     · `.rn-grid` thành một thanh ngang, hai đầu dạt ra
+     · bài CŨ nằm trái, bài MỚI nằm phải (thứ tự bằng `order`, không đụng HTML)
+     · ngày ẩn đi — ở một cặp điều hướng thì ngày là chữ thừa
+     · tiêu đề về phông thân bài và cắt bằng dấu ba chấm, đúng như `.rn-p-ten`
+   ══════════════════════════════════════════════════════════════════ */
 @media (max-width:560px){
-  /* Ba cột không đủ chỗ: nhãn loại lên trên, tiêu đề và ngày xuống dưới. */
-  .rn-dong{grid-template-columns:minmax(0,1fr) auto;gap:2px var(--s3)}
-  .rn-kind{grid-column:1 / -1}
+  .rn-grid{
+    flex-direction:row;align-items:flex-start;justify-content:space-between;
+    gap:var(--s4);
+    padding-top:var(--s4);border-top:1px solid var(--line);
+  }
+  .rn-dong{
+    display:flex;flex-direction:column;gap:3px;
+    /* `stretch` phải khai lại: luật lưới ở trên đặt `align-items:baseline`, và
+       nó theo sang đây. Trong một cột flex, `baseline` khiến mỗi ô rộng đúng
+       bằng NỘI DUNG nó chở — tên bài dài hơn cột thì tràn ra ngoài và đè lên
+       tên bài bên cạnh, mà `text-overflow` không cứu được vì ô có tràn đâu,
+       nó chỉ đang rộng hơn cha. */
+    align-items:stretch;
+    flex:0 1 48%;min-width:0;
+    padding:var(--s2) 0;border-top:0;
+  }
+  .rn-dong:last-child{border-bottom:0}
+  a.rn-dong:hover{padding-left:0}
+  .rn-meta{display:none}
+  .rn-title{
+    font-family:var(--font-body);font-style:normal;
+    font-size:var(--fs-xs);font-weight:500;line-height:1.35;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  /* ── MŨI TÊN KHOÁ THEO VỊ TRÍ, KHÔNG THEO NHÃN ──
+     Bản đầu cho bài CŨ mũi tên ← và bài MỚI mũi tên →. Nghe hợp lý, nhưng
+     nhãn của dòng không phải lúc nào cũng là "older"/"newer": khi hai bài
+     trùng tag thì cả hai đều mang nhãn "related", và lúc ấy có bài hiện
+     "related →" còn bài kia "related ←" mà không có gì trên màn giải thích
+     tại sao. Gặp đúng ca này ở bài Siddhartha: cả hai gợi ý đều là bài mới
+     hơn, nên cả hai cùng quay một chiều.
+
+     Khoá theo VỊ TRÍ thì không bao giờ sai: ô bên trái chỉ ra trái, ô bên
+     phải chỉ ra phải. Mũi tên nói "còn nữa ở phía này", đó là tất cả những
+     gì nó cần nói. */
+  .rn-kind{letter-spacing:.12em}
+  .rn-dong:first-child{text-align:left}
+  .rn-dong:first-child .rn-kind::before{content:"← "}
+  .rn-dong:last-child{text-align:right}
+  .rn-dong:last-child .rn-kind::after{content:" →"}
+  /* Chỉ có một gợi ý: nó bám mép trái và chỉ mang một mũi tên. */
+  .rn-dong:only-child{flex:0 1 auto;max-width:100%;text-align:left}
+  .rn-dong:only-child .rn-kind::after{content:""}
 }
 
 /* ══════════ CẶP LÙI / TỚI — KHUNG ẢNH ══════════
@@ -768,10 +827,18 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    dẹp thỉnh thoảng mới làm, không phải thứ mắt phải vấp mỗi lần đọc.
    Máy cảm ứng không có trạng thái "rê vào" nên để mờ sẵn ở mức đọc được. */
 .bl-quyen{
-  display:flex;gap:var(--s3);margin-top:var(--s2);
+  display:flex;gap:var(--s3);
   opacity:0;transition:opacity var(--dur-fast);
 }
-.bl-item:hover .bl-quyen,.bl-quyen:focus-within{opacity:1}
+/* Dấu `>` chứ không phải dấu cách: nút của MỘT thẻ, không phải của mọi thẻ
+   lồng bên trong nó. */
+.bl-item:hover > .bl-cuoi > .bl-quyen,.bl-quyen:focus-within{opacity:1}
+/* ── RÊ VÀO MỘT TRẢ LỜI THÌ CHỈ NÚT CỦA TRẢ LỜI ẤY HIỆN ──
+   Thẻ con nằm TRONG thẻ gốc, nên rê vào con là gốc cũng đang được rê. Không
+   chặn thì hai cặp nút cùng sáng, và người bấm không biết mình sắp gỡ bình
+   luận nào. Máy không hiểu `:has()` thì luật này rơi, về đúng nếp cũ — mất
+   một tinh chỉnh chứ không mất nút. */
+.bl-item:has(.bl-item:hover) > .bl-cuoi > .bl-quyen{opacity:0}
 @media (hover:none){.bl-quyen{opacity:.65}}
 .bl-quyen-nut{
   font:inherit;font-size:var(--fs-2xs);cursor:pointer;
@@ -782,7 +849,31 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-quyen-nut--an:hover{color:var(--bad)}
 .bl-quyen-nut:disabled{opacity:.4;cursor:default}
 
+/* ── KHUNG BÌNH LUẬN CHÈN GIỮA BÀI (khổ hẹp) ──
+   Nó đang đứng giữa hai đoạn văn, nên phải đọc ra NGAY là "cái này không
+   thuộc bài". Một tấm nền chìm có bo góc và hai vệt kẻ trên dưới là đủ: mắt
+   thấy mép là biết chỗ bài dừng và chỗ bài đọc tiếp.
+
+   Lấn ra hai bên bằng lề trong âm để tấm nền chạm mép cột chữ — một khối nền
+   hẹp hơn cột chữ nhìn như bị thụt vào nhầm. */
+.bl-than--taicho{
+  margin:var(--s5) 0;padding:var(--s5) var(--s4);
+  margin-inline:calc(var(--s4) * -1);
+  border-radius:var(--r-md);
+  background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+
 .bl-form{display:flex;flex-direction:column;gap:var(--s4)}
+/* ── Ô SOẠN DỜI VÀO TRONG MỘT THẺ BÌNH LUẬN ──
+   Bấm Reply là ô soạn được DỜI vào trong thẻ ấy (một ô soạn duy nhất cho cả
+   trang — xem `denTraLoi`). Nhưng thẻ bình luận là một HÀNG flex, nên ô soạn
+   vào đó thành một ô của hàng: nó co lại vừa bằng bề ngang nội dung và ngồi
+   chen bên phải tên người gõ, hẹp hơn cả lúc nó nằm ở chân trang.
+
+   `flex:1 0 100%` bắt nó chiếm trọn một dòng của hàng — tức là bung ra hết
+   bề ngang thẻ, đúng như một ô để gõ cần. */
+.bl-item > .bl-form{flex:1 0 100%;margin-top:var(--s4)}
 /* Hai ô tên + email nằm cạnh nhau ở màn rộng, tự xuống hàng ở màn hẹp —
    auto-fit lo việc đó, không cần media query. */
 .bl-hang{

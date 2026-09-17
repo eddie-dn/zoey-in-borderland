@@ -44,6 +44,41 @@
       if (!hep.matches) return;            /* khổ ngang: :hover lo rồi */
       man.classList.toggle('hd-ro');
     });
+
+    /* ── BA ĐƯỜNG THU LẠI, ĐỂ KHỔ DỌC KHÉP KÍN NHƯ `:hover` ──
+       `:hover` tự thu lại khi con trỏ rời đi — không cần ai bảo. Cú chạm thì
+       không có "rời đi", nên trạng thái mở cứ thế nằm lại: cuộn xuống đọc bài
+       rồi cuộn ngược lên vẫn thấy khối chữ đang nở, mà không nhớ mình đã mở
+       nó lúc nào.
+
+       Nên dựng đủ ba đường ra, ứng với ba cách người ta thật sự rời khỏi nó. */
+
+    /* 1 · Chạm ra NGOÀI khối chữ — thanh đầu trang, nút, chỗ trống. Nghe ở
+       pha bắt (`true`) để nó chạy trước mọi thứ khác, và bỏ qua khi chính
+       khối chữ được chạm — cú bấm ấy đã có bộ chuyển ở trên lo. */
+    document.addEventListener('click', function (e) {
+      if (!hep.matches) return;
+      if (!man.classList.contains('hd-ro')) return;
+      if (danh.contains(e.target)) return;
+      man.classList.remove('hd-ro');
+    }, true);
+
+    /* 2 · Cuộn khỏi màn đầu. Ngưỡng .3 chứ không phải 0: đợi khuất hẳn mới
+       thu thì lúc cuộn ngược lên, khối chữ hiện ra vẫn đang nở và cú thu diễn
+       ra ngay trước mắt — đọc ra như một trục trặc. */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (ds) {
+        if (!ds[0].isIntersecting) man.classList.remove('hd-ro');
+      }, { threshold: .3 }).observe(danh);
+    }
+
+    /* 3 · Kéo cửa sổ rộng ra quá ngưỡng: từ đó trở đi `:hover` cầm trịch, mà
+       lớp `hd-ro` còn sót lại thì hai bên cùng nói một lúc. */
+    (hep.addEventListener ? hep.addEventListener('change', function () {
+      if (!hep.matches) man.classList.remove('hd-ro');
+    }) : hep.addListener(function () {
+      if (!hep.matches) man.classList.remove('hd-ro');
+    }));
   }
 
   if (!nut || !cot) return;

@@ -609,12 +609,18 @@
      thứ hai là mất chỗ đậu ấy; và chữ trích dẫn màu --text nằm trên nền hồng
      sáng thì tương phản tụt hẳn ở theme tối. */
   background:none;
-  box-shadow:inset 0 0 0 1px var(--line);
+  /* Viền lấy ĐÚNG vật liệu kính như mọi khối khác (--glass-edge), không phải
+     sợi kẻ xám `--line` của bảng biểu. Hai thứ ấy khác nhau: `--line` là nét
+     chia ô, còn `--glass-edge` là mép của một tấm kính — và ô này nằm cạnh
+     khối số bài vốn đang dùng mép kính. Dùng `--line` thì nó đọc ra như một
+     cái ô bảng lạc vào giữa mấy tấm kính. Nét sáng chuyển màu ở `::before`
+     (glass.css) nay mới ăn khớp được với mép dưới nó. */
+  box-shadow:inset 0 0 0 1px var(--glass-edge);
   gap:var(--s2);
 }
 .hero-quote .q-chu{font-size:clamp(15px,.86rem + .42vw,19px);line-height:1.38}
 .hero-quote .q-ai{font-size:12px}
-.hero-quote .q-nut{bottom:var(--s2);right:var(--s2);width:26px;height:26px}
+.hero-quote .q-nut{top:var(--s3);right:var(--s3);width:26px;height:26px}
 .hero-quote .q-nut svg{width:13px;height:13px}
 /* Màn thấp: ô trích dẫn là thứ bỏ được đầu tiên ở cột trái — cửa vào trang
    giới thiệu thì không. */
@@ -862,14 +868,31 @@
 
      `hd-mo` vẫn còn để cả khối mờ dần hiện lên lúc mở trang — đó là chuyện
      khác, và nó không tiết lộ trước trạng thái nở. */
+  /* ── NGHỈ THÌ MỜ, CHẠM MỚI SÁNG — GIỐNG HỆT KHỔ NGANG ──
+     Bản trước khoá `opacity:1` vĩnh viễn ở đây. Thành ra khổ ngang có một
+     khối chữ mờ làm nền, chạm vào mới rõ lên; còn điện thoại thì khối chữ
+     lúc nào cũng đậm hết cỡ — không còn cú chuyển nào để nhận ra, và nó đè
+     lên mọi thứ khác trên màn đầu thay vì làm nền cho chúng.
+
+     Nay cùng một trạng thái nghỉ với khổ ngang (`--hd-nghi`), và sáng lên
+     đúng mức `.96` khi `.hd-ro` bật. Cú chạm lần nữa, chạm ra ngoài, hay
+     cuộn khỏi màn đầu đều gỡ lớp ấy — man-dau.js lo. */
   .hero-danh{
+    --hd-nghi:.17;
+    opacity:var(--hd-nghi);
+    transition:opacity var(--nhip);
     animation:hd-mo .9s var(--ease-glass) .35s backwards;
     /* Bật lại cú chạm: khối này vốn `pointer-events:none` để không chắn nút
        phía dưới. Ở khổ dọc nó là thứ PHẢI chạm được, còn nút "Read on" thì
        nằm ngoài vùng chữ nên không có gì để chắn. */
     pointer-events:auto;cursor:pointer;
   }
-  @keyframes hd-mo{from{opacity:.3}to{opacity:1}}
+  :root[data-theme="dark"] .hero-danh{--hd-nghi:.22}
+  /* Hiện dần từ 0 lên ĐÚNG mức nghỉ, không lên 1 rồi tụt xuống: `backwards`
+     chỉ giữ khung đầu trước lúc chạy, nên hết animation là thuộc tính trả về
+     giá trị khai trong CSS — kết ở 1 thì có một cú tụt không ai đặt ra. */
+  @keyframes hd-mo{from{opacity:0}to{opacity:var(--hd-nghi)}}
+  .hero.hd-ro .hero-danh{opacity:.96}
 
   .hero.hd-ro .hd-con{opacity:1;letter-spacing:-.03em}
 

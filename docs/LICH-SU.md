@@ -58,17 +58,20 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.5.3 | 2026-09-17 | 03 | bảng lịch sử ba tầng Vx → Vx.y → Vx.y.z, ngày in gọn; đọc tiếp ở khổ hẹp thành cặp lùi/tới một dải; tên blog ở khổ hẹp nghỉ thì mờ và sáng khi chạm, như khổ ngang |
+| V2.5.2 | 2026-09-17 | 02 | thẻ bình luận: giờ GMT+7, nút duyệt lên góc phải và thôi trùng đôi ở nhánh trả lời; ô soạn dời vào thẻ nay bung hết bề ngang; khổ hẹp mở khung bình luận ngay tại đoạn đang đọc thay vì rơi xuống chân trang |
+| V2.5.1 | 2026-09-17 | 01 | hai lỗi cú pháp CSS nuốt mất luật: thanh công cụ ở /z-admin/ và nút màu trong ô soạn; ô trích dẫn tách thành file riêng, trả lại phông nghiêng và cặp dấu ngoặc ở trang chủ; thêm hai phép kiểm chặn đúng hai lỗi đó |
 | V2.5.0 | 2026-09-17 | 00 | CSS chia theo loại trang, mỗi trang chỉ tải phần của nó; số phiên bản đổi sang ba tầng Vx.y.z; bỏ mấy tên lớp không tạo ra luật nào |
 | V2.4.9 | 2026-09-17 | 09 | cắt ảnh ngay trước khi gửi đi: kéo bốn góc hoặc chọn tỉ lệ có sẵn |
 | V2.4.8 | 2026-09-17 | 08 | tiêu đề khối gõ thẳng tại chỗ, bỏ hộp thoại nhảy lên đỉnh màn; thanh nút về một khổ duy nhất; vạch ngăn trong khung gõ vẽ đúng thứ trang sẽ hiện |
 | V2.4.7 | 2026-09-17 | 07 | bàn duyệt tick chọn nhiều rồi làm một lượt; hàng ở cả ba ngăn quản trị gọn lại từ 62px còn 42px |
 | V2.4.6 | 2026-09-17 | 06 | sửa ba lỗi nút danh sách làm mất dòng và mất chữ; thụt vào và thụt ra chỉ chạy trong danh sách; ảnh thả vào rơi đúng chỗ thả |
-| V2.4.5 | 2026-09-17 | 05 | phông tự host, trang không còn gọi tài nguyên nào ngoài tên miền; bấm ảnh trong bài để xem to; bài khai ngày tương lai nay đợi tới ngày mới lên; sinh llms.txt |
-| V2.4.4 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; npm run bia thôi sinh ảnh mồ côi; ghi rõ trần lượt gọi GitHub của trang quản trị |
+| V2.4.5 | 2026-09-17 | 05 | phông tự host, trang không còn gọi tài nguyên nào ngoài tên miền; bấm ảnh trong bài để xem to; bài khai ngày tương lai nay đợi tới ngày mới lên |
+| V2.4.4 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; ghi rõ trần lượt gọi GitHub của trang quản trị |
 | V2.4.3 | 2026-09-17 | 03 | tên file assets mang vân tay nội dung; cache assets một năm thay cho 14 vòng hỏi lại mỗi lượt xem trang; phép kiểm cache đảo chiều theo |
 | V2.4.2 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
 | V2.4.1 | 2026-09-17 | 01 | có trang 404 thật thay cho trang trắng; phép kiểm bản nháp từ nay đỏ được; Cloudflare trỏ vào đúng trang ấy |
-| V2.4.0 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS; sửa luật cache đang giữ ảnh bìa cũ một năm |
+| V2.4.0 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS |
 | V2.3.9 | 2026-09-17 | 09 | thanh soạn thảo xếp lại chính trước phụ sau và bỏ nút chỉ dẫn; bảng Blocks chia bốn nhóm, bốn khung nhấn có chấm màu riêng; nút dọn nay gỡ được cả liên kết |
 | V2.3.8 | 2026-09-17 | 08 | thẻ bình luận gọn lại còn một dòng; bàn duyệt căn cột cố định, nhãn đổi cũng không so le; ngăn Category có ô lọc y như ngăn Post |
 | V2.3.7 | 2026-09-17 | 07 | ảnh bìa mang hoạ tiết mandala của logo; nét hoa văn tự đổi theo nền sáng hay tối; bớt tối bốn góc để giữ đúng bảng màu |
@@ -78,9 +81,9 @@
 | V2.3.3 | 2026-09-17 | 03 | ô ảnh bìa ngay trong trang viết bài; bảng đo tiêu đề · tóm tắt · ảnh lúc đang gõ; thẻ chia sẻ khai đủ khổ ảnh để Messenger và Zalo vẽ được ô xem trước |
 | V2.3.2 | 2026-09-17 | 02 | mọi khối viết được đều có nút, không còn gì phải gõ tay; cú pháp hiện ngay cạnh từng nút; thêm khối tràn hết bề ngang màn hình |
 | V2.3.1 | 2026-09-17 | 01 | kéo thả ảnh thẳng vào khung soạn thảo; ảnh tự thu nhỏ và đổi định dạng ngay trên máy; bấm đúp vào ảnh để gõ dòng tả |
-| V2.3.0 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài Vô thức tách phần demo xuống phụ lục; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
-| V2.2.9 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
-| V2.2.8 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
+| V2.3.0 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
+| V2.2.9 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; sửa được đường dẫn và chuyên mục của bài đã đăng; nút cho mọi khối trong ô soạn thảo |
+| V2.2.8 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; điện thoại đưa Search vào menu ☰ |
 | V2.2.7 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
 | V2.2.6 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
 | V2.2.5 | 2026-09-17 | 05 | cột bên một thang chữ; nút Back đứng cạnh Send có viền; khung ảnh đưa cụm nút lên đầu bài |
@@ -105,7 +108,7 @@
 | V2.0.6 | 2026-09-16 | 06 | điện thoại: màn đầu giữ trọn một màn sau khi mở danh sách; tên blog chạm để mở, hai dòng thẳng cột |
 | V2.0.5 | 2026-09-16 | 05 | bộ khung logo: dựng lại tấm lát cắt 14 chặng, đồng bộ trọn thư mục sang zoey-blog-logo |
 | V2.0.4 | 2026-09-16 | 04 | nền theme: mưa chạm mặt nước có nước hắt lên; ngân hà phủ trọn màn hình |
-| V2.0.3 | 2026-09-16 | 03 | chữa header dính ở trang chủ; chân trang liền mạch; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
+| V2.0.3 | 2026-09-16 | 03 | chữa header dính ở trang chủ; cột chữ ôm làn chữ; đọc tiếp theo khung bài |
 | V2.0.2 | 2026-09-16 | 02 | bình luận thành nút tim + icon; đếm tim đặt cạnh lượt xem ở đầu bài |
 | V2.0.1 | 2026-09-16 | 01 | logo: nét nối đứng thẳng rồi mới ngả vào nối; xuất lại bộ khung 14 chặng |
 | V2.0.0 | 2026-09-16 | 00 | cỡ chữ thân bài nhỏ một bậc; khối tag bỏ khung bao |
@@ -118,12 +121,12 @@
 | V1.9.3 | 2026-09-16 | 03 | nền cho sửa bài: trạng thái ẩn trong bộ dựng, và API đọc/ghi bài đã đăng |
 | V1.9.2 | 2026-09-16 | 02 | siết lại hệ thống: chip nhỏ lại, Read next thành dòng đơn, bỏ ô trích dẫn khỏi trang bài, cột chữ rộng thêm, thu khoảng trống trên chân trang |
 | V1.9.1 | 2026-09-16 | 01 | trang chủ chỉ còn màn đầu; Read on đi thẳng sang Posts |
-| V1.9.0 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; vành đứt nét trở lại; xoáy nhoè rồi nổ; nghỉ 6,2 giây |
+| V1.9.0 | 2026-09-16 | 00 | logo: xoay trước rồi mới nối; tám cánh mở ra từ bốn; xoáy nhoè rồi nổ |
 | V1.8.9 | 2026-09-16 | 09 | ô soạn thảo đọc được Markdown vào — nền cho việc sửa bài đã đăng |
 | V1.8.8 | 2026-09-16 | 08 | gỡ hẳn lối #viet và #duyet cũ: trang ngoài thôi bị chèn ô đăng nhập |
 | V1.8.7 | 2026-09-16 | 07 | admin: lời chào thay dòng phụ đề, lối ra thành chữ; sai khoá thì im lặng; ngăn Note thôi kèm danh sách |
 | V1.8.6 | 2026-09-16 | 06 | màn đầu ở khổ dọc: tên blog cân giữa thay vì bám mép trái |
-| V1.8.5 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh; dừng hình cuối lâu gấp đôi |
+| V1.8.5 | 2026-09-16 | 05 | logo: thêm nấc đanh nét trước khi xoay; vành ngoài thành đường sóng; một nhịp cho mọi cú chuyển cảnh |
 | V1.8.4 | 2026-09-16 | 04 | chân trang gọn còn một hàng; chữ chân trang khớp chữ đầu trang |
 | V1.8.3 | 2026-09-16 | 03 | đăng nhập gom về một cửa; ô soạn thảo gõ như văn bản; màu chữ trong bài |
 | V1.8.2 | 2026-09-16 | 02 | điền kho mã thật; canh chỗ trống mẫu trong cấu hình Worker |
@@ -131,7 +134,7 @@
 | V1.8.0 | 2026-09-16 | 00 | trang bài nhẹ đi mười lần; ghi chú kỹ thuật thôi đi theo người đọc |
 | V1.7.9 | 2026-09-16 | 09 | dọn file chết, dựng lại bản lưu logo, tài liệu khớp lại với mã |
 | V1.7.8 | 2026-09-16 | 08 | đổi đường dẫn trang quản lý |
-| V1.7.7 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang; bộ ảnh lưu trạng thái logo |
+| V1.7.7 | 2026-09-16 | 07 | trang quản lý riêng; theme Tĩnh lặng sâu màu hơn; ghi chú có phân trang |
 | V1.7.6 | 2026-09-16 | 06 | bàn duyệt gom về một chỗ, tự làm mới; gỡ bình luận ngay tại chỗ đang đọc |
 | V1.7.5 | 2026-09-16 | 05 | model dự phòng cho ô trích dẫn đổi sang bí danh tự cập nhật |
 | V1.7.4 | 2026-09-16 | 04 | bật lớp trích dẫn viết mới mỗi ngày |
@@ -140,7 +143,7 @@
 | V1.7.1 | 2026-09-16 | 01 | chạy được cả dưới dạng Worker, không riêng Pages |
 | V1.7.0 | 2026-09-16 | 00 | bình luận chuyển sang Cloudflare, duyệt ngay trên trang thay vì trong bảng tính |
 | V1.6.5 | 2026-09-16 | 05 | khối chữ màn đầu bị khuôn xén ở CẢ hai đầu, không riêng đầu trái |
-| V1.6.4 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp; mưa chậm lại |
+| V1.6.4 | 2026-09-16 | 04 | mục lục bám theo bài dài; thanh cuộn thấy được; cỡ chữ thân bài nhỏ một nhịp |
 | V1.6.3 | 2026-09-16 | 03 | logo lấy lại đoá mandala làm hình nghỉ; vòng kể ngắn lại, chặng xoay rõ hơn; tên blog ở khổ dọc cân hai dòng |
 | V1.6.2 | 2026-09-16 | 02 | ghi chú đăng thẳng từ điện thoại, không phải dựng lại trang; theme Tĩnh lặng ngả xanh trời |
 | V1.6.1 | 2026-09-16 | 01 | tên blog đúng phông; cột chữ hẹp lại còn 70 ký tự; bài cũ về cùng một khung |
@@ -200,6 +203,60 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.5.3 — 17-Sep-2026
+
+- **Bảng lịch sử đủ ba tầng `Vx → Vx.y → Vx.y.z`.** Tầng đầu trước đây bày
+  thẳng mười sáu ĐỢT ngang hàng nhau — mắt phải đọc hết rồi tự ghép lại thành
+  hai nhóm. Nay tầng đầu đúng hai dòng, `V2` và `V1`, mỗi dòng nói luôn nó chở
+  mấy đợt và mấy bản. Ngày cũng in gọn lại: `15–16 Sep 2026` thay cho
+  `2026-09-15 → 2026-09-16`, nên cột mô tả thôi bị bóp còn hai ba dòng.
+- **Đọc tiếp ở khổ hẹp thành một dải hai đầu.** Hai gợi ý vốn xếp dọc, mỗi cái
+  ba dòng cộng sợi kẻ — một khối cao gần bằng màn hình chỉ để chở hai cái tên.
+  Mà `docTiep` luôn đúng bằng 2, nên nay bày như cặp lùi/tới của khung ảnh:
+  một dải 68px, mũi tên quay ra hai bên, tên bài cắt bằng dấu ba chấm.
+- **Tên blog ở khổ hẹp nghỉ thì mờ, chạm mới sáng.** Khổ ngang để khối chữ ở
+  `.17` làm nền rồi sáng lên `.96` khi rê vào; khổ hẹp trước đây khoá cứng ở
+  `1`, nên không còn cú chuyển nào và khối chữ đè lên mọi thứ khác trên màn
+  đầu. Nay cùng một nếp, và có đủ ba đường thu lại: chạm ra ngoài, cuộn khỏi
+  màn đầu, hoặc kéo cửa sổ rộng quá ngưỡng.
+
+## V2.5.2 — 17-Sep-2026
+
+- **Thẻ bình luận: giờ GMT+7, và hết nút trùng.** Ngày nay kèm giờ:phút, luôn
+  tính theo giờ Việt Nam bằng `Intl` — một bình luận gõ lúc 23:30 mà người đọc
+  ở châu Âu thấy đề hôm trước thì hai người đang nói về hai buổi tối khác nhau.
+  Nút duyệt của chủ trang chuyển lên cụm bên phải hàng đầu; trước đó chúng treo
+  ở cuối thẻ, tức là DƯỚI cả nhánh trả lời, nên rê vào một trả lời là hiện ra
+  `Unapprove Hide Unapprove Hide` trên một dòng, không biết cặp nào của ai.
+- **Ô soạn dời vào thẻ nay bung hết bề ngang.** Bấm Reply thì ô soạn được dời
+  vào trong thẻ ấy, mà thẻ là một hàng flex — nên ô soạn co lại vừa bằng bề
+  ngang nội dung và ngồi chen bên phải tên người gõ, hẹp hơn cả lúc nó nằm ở
+  chân trang.
+- **Khổ hẹp mở khung bình luận ngay tại đoạn đang đọc.** Không có cột bên để
+  mượn, nên khung vốn ở lại chân bài, và bấm nút giữa một bài ba nghìn chữ là
+  bị ném xuống tận đáy trang. Nay khung chèn thẳng vào bài, ngay dưới đoạn đang
+  đọc; đóng lại là bài liền mạch như cũ.
+
+## V2.5.1 — 17-Sep-2026
+
+- **Hai lỗi cú pháp CSS nuốt mất luật.** Lúc tách `list.css` ra bốn file,
+  `admin.css` mất dòng mở của một khối chú thích — dấu đóng còn lại thành rác,
+  và trình duyệt bỏ luôn khối luật ngay sau nó, đúng `.ad-thanh`. Thanh công cụ
+  ở /z-admin/ thôi là flex: ô tìm giãn hết bề ngang, hàng chip lọc rơi về bên
+  trái. `soan.css` thì đứt hẳn phần đuôi, để lại một chú thích mở lơ lửng và
+  hai lớp của nút màu mất sạch hình dạng. Build vẫn chạy, không cảnh báo gì.
+- **Ô trích dẫn tách thành file riêng.** Nó khai trong `about.css` từ hồi mọi
+  trang tải chung một file CSS, mà nó còn ở màn hero TRANG CHỦ — nơi không tải
+  file ấy nữa. Câu trích dẫn mất phông nghiêng Cormorant, mất cặp dấu ngoặc kép
+  hai đầu, nút xem câu khác rơi xuống đáy ô. Nay nút ấy nằm góc TRÊN phải (câu
+  dài ngắn không đều, góc dưới thì nút nhảy chỗ theo từng câu), viền ô lấy mép
+  kính như mọi khối khác, và câu vừa xin về mang nhãn `· mới` thay cho `· thêm`.
+- **Hai phép kiểm chặn đúng hai lỗi đó.** Một phép quét cú pháp mọi file CSS —
+  chú thích mở không đóng, dấu đóng thừa, ngoặc lệch. Một phép soi LUẬT TRẦN
+  `.C{…}`: trang nào dùng một cụm thì gói CSS của trang phải có luật gốc của
+  cụm ấy. Soi bằng tên lớp không bắt được, vì `list.css` vẫn nhắc `.q-chu` ở
+  luật `.hero-quote .q-chu{font-size}` nên tên lớp coi như có đủ.
 
 ## V2.5.0 — 17-Sep-2026
 
