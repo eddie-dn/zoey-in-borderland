@@ -354,7 +354,7 @@ const NHAN = {
   szOl        : 'Numbered list',
   szLink      : 'Link',
   szImg       : 'Image',
-  szHr        : 'Divider',
+  szHr        : 'Divider — shows as ✦ ✦ ✦',
   szMark      : 'Highlight',
   szColor     : 'Text colour',
   szNoColor   : 'Remove colour',
@@ -374,6 +374,10 @@ const NHAN = {
   szH6t       : 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.',
   szH7t       : 'Drafts save to this device on their own; closing the tab is safe.',
   szH8t       : 'Press </> to see the exact Markdown that will go to GitHub.',
+  /* Nút này có sẵn từ lâu mà chưa ai biết nó làm gì: tên "Divider" không nói ra
+     được thứ hiện lên trên trang là BA DẤU SAO, không phải một đường kẻ ngang.
+     Câu chỉ dẫn vì thế phải tả cái NHÌN THẤY, không tả cái thẻ HTML. */
+  szH9t       : 'The — button drops a ✦ ✦ ✦ break between two parts of a post.',
   /* ── PHẦN HAI CỦA BẢNG CHỈ DẪN: THỨ KHÔNG CÓ NÚT ──
      Mười cú pháp mà bộ dựng hiểu nhưng thanh nút không có chỗ cho. Chúng có
      thật và đang được dùng (xem bài "Vô thức tập thể"), nên chúng phải được
@@ -1018,7 +1022,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         imgAsk: NHAN.szImgAsk, imgAlt: NHAN.szImgAlt,
                         h1: NHAN.szH1t, h2t: NHAN.szH2t, h3t: NHAN.szH3t,
                         h4t: NHAN.szH4t, h5t: NHAN.szH5t, h6t: NHAN.szH6t,
-                        h7t: NHAN.szH7t, h8t: NHAN.szH8t,
+                        h7t: NHAN.szH7t, h8t: NHAN.szH8t, h9t: NHAN.szH9t,
                         gHelp1: NHAN.szGHelp1, gHelp2: NHAN.szGHelp2,
                         gNote: NHAN.szGNote, gCallout: NHAN.szGCallout,
                         gGallery: NHAN.szGGallery, gWide: NHAN.szGWide,

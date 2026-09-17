@@ -66,6 +66,16 @@
   oNoi.hidden = true;
   document.body.appendChild(oNoi);
 
+  /* ── CỤM NỔI LUI ĐI TRONG LÚC CUỘN XUỐNG ──
+     Nó nằm ĐÈ LÊN cột chữ — trên màn 390px, cột chữ rộng 350px mà cụm ăn mất
+     54px ở mép phải, tức là nuốt hai ba chữ cuối của mấy dòng nó che. Đọc tới
+     đó là hụt mất chữ.
+
+     Cuộn XUỐNG là đang đọc tới; lúc ấy cụm không có việc gì, nên nó trượt đi.
+     Cuộn NGƯỢC LÊN là đã dừng đọc và đang tìm lại cái gì đó — đúng lúc cần
+     nó. Cùng nếp với thanh công cụ của mọi trình duyệt điện thoại.
+
+     Ngưỡng 8px để một cú chạm rung tay không bật tắt liên tục. */
   var CHO_GOC = 0, CHO_BEN = 1, CHO_NOI = 2;
   var dangO = CHO_GOC;
   var daRoi = false;          /* hàng meta đã trôi khỏi tầm mắt chưa */
@@ -76,6 +86,16 @@
        nhau một cột là cột ấy dài ra và khung soạn bị đẩy xuống. */
     if (!daRoi) return CHO_GOC;
     if (rong.matches && coBen && !ben.classList.contains('ben--bl')) return CHO_BEN;
+    /* ── CỤM NỔI LÀ CÁCH LÀM CỦA ĐIỆN THOẠI, KHÔNG PHẢI CỦA MÁY BÀN ──
+       Ở khổ rộng mà bài không có cột bên (khung ảnh, khung B, hoặc khung A
+       không có tiêu đề mục), cụm KHÔNG nổi lên: nó ở lại hàng meta.
+
+       Ba nút tròn thả nổi giữa một màn 1440px đọc ra là một mẩu giao diện lạc
+       — không neo vào cột chữ, không neo vào cột bên, chỉ lơ lửng ở góc. Trên
+       điện thoại nó có lý do tồn tại (không còn chỗ nào khác, và ngón cái với
+       tới được); trên máy bàn thì chuột đi đâu cũng tới, nên cái giá "một mẩu
+       lạc giữa màn" không đổi lại được gì. */
+    if (rong.matches) return CHO_GOC;
     /* ── TỚI CHÂN BÀI THÌ CỤM NỔI LUI ──
        Dưới đó là hàng tag, khung bình luận và cặp đọc tiếp — toàn thứ bấm
        được, và cụm nổi ở góc dưới phải sẽ nằm đè lên đúng nút Send. Một cái
@@ -129,6 +149,20 @@
       ve();
     }).observe(chan);
   }
+
+  var truocY = window.scrollY;
+  var cuonXuong = false;
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (Math.abs(y - truocY) < 8) return;
+    var xuong = y > truocY;
+    truocY = y;
+    if (xuong === cuonXuong) return;
+    cuonXuong = xuong;
+    /* Chỉ giấu, KHÔNG dời chỗ: dời đi dời lại theo mỗi cú vuốt là mỗi cú vuốt
+       một lượt tính lại bố cục, và nút vừa bấm hụt thì nó đã ở chỗ khác. */
+    oNoi.classList.toggle('cum-noi--lui', xuong);
+  }, { passive: true });
 
   /* Vượt ngưỡng lúc đang dời — xoay điện thoại, kéo rộng cửa sổ — thì đích
      đến đổi theo. Không nghe thì có lúc cụm nằm trong một `.ben` đang là

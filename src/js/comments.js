@@ -261,8 +261,19 @@
          vào màn, nên ở một bài ngắn nó gần như không nhúc nhích. `start` đưa
          hẳn đầu khung lên đầu vùng nhìn — người đọc thấy rõ mình vừa được
          chuyển tới đâu. */
-      if (!dangMo && !(duocDoi && rong.matches)) {
-        than.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      /* ── LUÔN ĐƯA MẮT TỚI CHỖ VỪA MỞ, KỂ CẢ KHI NÓ SANG CỘT BÊN ──
+         Bản trước bỏ qua cú cuộn ở khổ rộng, vì "khung nằm ngay cạnh, khỏi
+         cuộn". Đúng khi người đọc còn ở đầu bài; sai hẳn khi họ đang ở giữa
+         bài — lúc ấy cột bên có thể đã trôi qua, và bấm xong thì không có gì
+         đổi trên màn.
+
+         `nearest` cho cột bên: nó đã dính sẵn trong tầm mắt, nên cú cuộn chỉ
+         nhích vừa đủ thay vì kéo cả trang lên đầu. `start` cho khung mở tại
+         chỗ dưới hàng tag: ở đó nó thật sự ở xa, và phải đưa hẳn lên. */
+      if (!dangMo) {
+        var vaoBen = duocDoi && rong.matches;
+        than.scrollIntoView({ block: vaoBen ? 'nearest' : 'start',
+                              behavior: 'smooth' });
         /* Con trỏ vào thẳng ô viết: mở khung bình luận là để viết, và nếu đã
            cuộn tới nơi rồi thì bắt gõ thêm một cú bấm nữa là thừa. Chờ hết cú
            cuộn mới focus — focus sớm thì trình duyệt tự nhảy, đè lên cuộn mượt. */

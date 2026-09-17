@@ -1011,22 +1011,29 @@
   /* Khối dính chỉ trượt được trong ô của nó; danh sách bình luận thì dài bao
      nhiêu cũng được. Kẹp lại trong một màn và cho cuộn riêng, không thì phần
      dưới của khung nằm ngoài màn mà không có cách nào tới. */
-  /* ── ĐANG BÌNH LUẬN: CỘT BÊN THÔI DÍNH, THÔI CÓ THANH CUỘN RIÊNG ──
-     Bản trước kẹp cột bên trong một màn rồi cho nó cuộn riêng
-     (`max-height` + `overflow-y:auto`, có lúc thêm cả
-     `overscroll-behavior:contain`). Ba thứ ấy cộng lại thành một cái hộp cuộn
-     lồng trong trang, ngay cạnh bài đang đọc — và một hộp cuộn lồng thì:
+  /* ── ĐANG BÌNH LUẬN: CỘT BÊN VẪN DÍNH ──
+     Đã thử cả hai đường, và đây là đường ít tệ hơn.
 
-       · con lăn đi qua nó là cả trang đứng im (trông như trang đơ);
-       · kéo thanh cuộn của trang thì nội dung trong hộp không nhúc nhích;
-       · cuộn hết hộp rồi mới lan ra trang, tức là phải cuộn hai lần cho một
-         quãng đường.
+     Đời trước để `position:static` với lý do: kẹp cột bên trong một màn rồi cho
+     cuộn riêng thì thành một hộp cuộn lồng trong trang — con lăn đi qua nó là
+     cả trang đứng im, và cuộn hết hộp mới lan ra trang.
 
-     Bỏ hết. Khung bình luận cứ cao bao nhiêu thì cao, và cả cột trôi theo
-     trang như mọi thứ khác — một mặt phẳng cuộn duy nhất, không có hộp nào
-     giữ chân ai. Mất phần "khung luôn dính trong tầm mắt", nhưng phần ấy chưa
-     bao giờ đáng giá bằng việc cuộn được. */
-  .ben--bl{position:static}
+     Nhưng `static` hỏng nặng hơn, theo một cách không ai thấy khi thử ở đầu
+     bài: cột bên tĩnh thì nó bắt đầu ở ĐỈNH hàng lưới, tức là ngang tiêu đề
+     bài. Người đọc cuộn xuống giữa một bài ba nghìn chữ, bấm nút bình luận —
+     khung mở ra cách chỗ họ đang đứng hai nghìn pixel PHÍA TRÊN, và trên màn
+     hình không có gì thay đổi cả. Đọc ra là nút hỏng.
+
+     Dính lại thì khung mở ra ngay cạnh chỗ đang đọc, không phải cuộn đi đâu.
+     Cái giá là hộp cuộn lồng — nhưng nó CHỈ xuất hiện khi khung cao quá một
+     màn, tức là khi đã có kha khá bình luận; còn ô viết thì lúc nào cũng vừa.
+     Đổi một phiền toái hiếm lấy một cú bấm không phản hồi: đáng. */
+  .ben--bl{
+    position:sticky;
+    top:calc(var(--header-h) + var(--s6));
+    max-height:calc(100dvh - var(--header-h) - var(--s8));
+    overflow-y:auto;
+  }
   .toc-box{
     max-height:calc(100dvh - var(--header-h) - var(--s9));overflow-y:auto}
   .toc-box summary{display:none}

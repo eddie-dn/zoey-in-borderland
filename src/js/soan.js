@@ -1300,6 +1300,7 @@
         L('h5t', 'Images: press the image button, paste a path like /media/2026/post-name/pic.png'),
         L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
         L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
+        L('h9t', 'The — button drops a ✦ ✦ ✦ break between two parts of a post.'),
         L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
       ]);
 

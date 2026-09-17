@@ -211,11 +211,32 @@
   background:var(--surface-sunken);   /* ô xám giữ chỗ trong lúc ảnh đang tải */
 }
 .prose figure.full img,.prose figure.full video{border-radius:0}
+/* ── TRÊN ĐIỆN THOẠI CHỈ CÒN HAI MÉP, KHÔNG PHẢI BỐN ──
+   Luật cũ: dưới 640px, `.wide` cũng tràn hết bề ngang như `.full`. Lý do khi
+   ấy nghe được — giữ lề cho ảnh ở màn hẹp chỉ làm ảnh bé lại.
+
+   Nhưng đo trên bài thật thì nó là thứ làm cả trang đọc ra là lôm côm: chữ
+   thụt vào 20px, ảnh `.wide` sát mép 0, ảnh `.full` sát mép 0, dải ảnh sát mép
+   0 — cuộn xuống là mắt phải nhảy qua lại giữa mấy trục dọc khác nhau, mà
+   không có trục nào là trục chính.
+
+   Và nó sai hẳn với SƠ ĐỒ: một hình vẽ có chữ bên trong mà dán sát hai mép
+   màn hình thì phần chữ ấy co lại, trong khi nó là thứ cần đọc được.
+
+   Nay chỉ `.full` tràn. `.wide` nghĩa là "rộng hơn cột chữ MỘT CHÚT" — trên
+   màn 390px không có chỗ nào để rộng hơn một chút, nên nó về đúng cột chữ.
+   Cả trang còn hai mép: mép chữ, và mép màn hình. `.full` vẫn tràn vì đó là
+   câu người viết nói thẳng ra "tấm này phá khung", và một tấm ảnh ngang tràn
+   màn trên điện thoại thì đẹp thật. */
 @media (max-width:640px){
-  /* Trên điện thoại, ảnh .wide tự động tràn hết bề ngang: giữ lề hai bên cho
-     ảnh ở màn hẹp chỉ làm ảnh bé lại chứ không giúp gì cho việc đọc. */
-  .prose > .wide{grid-column:full}
-  .prose figure.wide img,.prose figure.wide video{border-radius:0}
+  .prose > .wide{grid-column:text}
+  .prose figure.full img,.prose figure.full video{border-radius:0}
+  /* Chú thích căn giữa chỉ đúng khi ảnh TRÀN ra ngoài cột chữ — lúc ấy không
+     còn mép nào để thẳng hàng. `.wide` ở khổ này đã về đúng cột chữ, nên chú
+     thích của nó cũng về căn trái như mọi chú thích khác. */
+  .prose > .wide figcaption{
+    padding-inline:0;text-align:left;max-width:none;margin-inline:0;
+  }
 }
 /* Chú thích CĂN TRÁI, thẳng mép với chữ — chỉ ảnh tràn ra ngoài cột chữ mới
    căn giữa, vì lúc đó không còn mép nào để thẳng hàng. Căn giữa hết thì mỗi
@@ -376,6 +397,17 @@
    quyết định có đọc tiếp không. Tóm tắt đứng sau, đã là phần nội dung rồi.
    Tag KHÔNG nằm ở đây nữa — chuyển hẳn xuống chân bài. */
 .post-head{margin-bottom:var(--s8)}
+/* ── HÀNG "CONTENTS" LÀ MỘT VẠCH NGĂN, KHÔNG PHẢI MỘT KHỐI RIÊNG ──
+   Nó có kẻ ở trên và kẻ ở dưới, nên bản thân nó đã làm xong việc ngăn hai
+   phần. Chừa thêm 40px phía trên nữa là ngăn hai lần cho một chỗ nối, và trên
+   màn điện thoại quãng ấy đọc ra là đầu bài bị hụt xuống một nấc.
+
+   24px trên, 24px dưới — cân hai bên cái vạch. Chỉ đổi ở khổ có hàng gập này
+   (dưới 1080px); khổ rộng thì mục lục nằm hẳn ở cột phải, không chen vào giữa
+   đầu bài và thân bài, nên nhịp 40px ở đó vẫn đúng. */
+@media (max-width:1079px){
+  .post-head:has(+ .ben .toc-box){margin-bottom:var(--s6)}
+}
 .post-head h1{
   font-size:var(--fs-h1);font-style:italic;line-height:var(--lh-tight);
   margin-top:var(--s3);
@@ -1046,6 +1078,13 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
   pointer-events:none;
 }
 .cum-noi--hien{opacity:1;transform:none;pointer-events:auto}
+/* Trượt hẳn ra khỏi mép phải trong lúc người đọc đang cuộn xuống — lý do đầy
+   đủ ở src/js/cum-theo.js. `translateX` chứ không `display:none`: nó còn phải
+   trượt về được, và một phần tử vừa thôi `display:none` thì không có trạng
+   thái đầu để chạy transition. */
+.cum-noi--hien.cum-noi--lui{
+  opacity:0;transform:translateX(120%);pointer-events:none;
+}
 @media (prefers-reduced-motion:reduce){.cum-noi{transition:none}}
 .cum-tt--noi{display:flex;flex-direction:column;gap:var(--s2)}
 .cum-tt--noi .cum-nut{flex-direction:column;gap:var(--s2)}
