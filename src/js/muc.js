@@ -54,11 +54,15 @@
   var ds = null;        /* bảng chuyên mục đã tải */
   var dangSua = null;   /* chuyên mục đang mở ra sửa, hoặc {moi:true} */
 
+  /* Móc bằng THUỘC TÍNH chứ không bằng lớp: dòng báo tin nay dùng chung lớp
+     `.bao` với mọi chỗ khác, mà trong `hop` còn có những `.bao` khác (dòng
+     báo lỗi khi tải hỏng chẳng hạn) — `querySelector('.bao')` sẽ vớ phải cái
+     đầu tiên gặp được chứ không phải cái mình muốn. */
   function noi(t, loai) {
-    var o = hop.querySelector('.vb-noi');
+    var o = hop.querySelector('[data-bao]');
     if (!o) return;
     o.textContent = t || '';
-    o.className = 'vb-noi' + (loai ? ' vb-noi--' + loai : '');
+    o.className = 'bao' + (loai ? ' bao--' + loai : '');
   }
 
   /* Cùng một phép rút tên thư mục với `slugify` bên viet-bai.js và bên máy
@@ -78,12 +82,12 @@
 
   /* ══════════ TẢI BẢNG ══════════ */
   function tai() {
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
+    hop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api + '?muc=1', { cache: 'no-store', headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
         if (!kq.d || !kq.d.ok) {
-          hop.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+          hop.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(kq.d)) + '</p>';
           return;
         }
         ds = kq.d.muc || [];
@@ -91,7 +95,7 @@
       })
       .catch(function (e) {
         if (window.console) console.error('[muc]', e);
-        hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+        hop.innerHTML = '<p class="bao bao--hong">' +
           tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
       });
   }
@@ -164,11 +168,11 @@
                 '</span>' +
               '</div>';
             }).join('')
-          : '<p class="vb-cho">' +
+          : '<p class="trong trong--cho vb-cho">' +
               tho(chu ? L('noMatch', 'Nothing matches, in what is loaded so far.')
                       : L('empty', 'Nothing here.')) + '</p>') +
       '</div>' +
-      '<p class="vb-noi"></p>';
+      '<p class="bao" data-bao></p>';
 
     var oDem = hop.querySelector('[data-dem]');
     if (oDem) {
@@ -238,7 +242,7 @@
         '<button type="button" class="btn" data-luu>' +
           tho(moi ? L('mucAdd', 'Add') : L('save', 'Save')) + '</button>' +
       '</div>' +
-      '<p class="vb-noi"></p>';
+      '<p class="bao" data-bao></p>';
 
     var oMuc = hop.querySelector('[name=muc]');
     if (cai) {

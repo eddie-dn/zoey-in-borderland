@@ -46,7 +46,7 @@ thị được thì phải gửi nội dung xuống máy người đọc.** Chuy
 
 ### 1.4 · Bản nháp KHÔNG còn lên mạng nữa
 
-Trước V1.03, bài `draft: true` vẫn được dựng ra file và đẩy lên máy chủ, chỉ
+Trước V1.1.3, bài `draft: true` vẫn được dựng ra file và đẩy lên máy chủ, chỉ
 gắn thẻ `noindex`. Nhưng `noindex` chỉ bảo Google **đừng đánh chỉ mục** — file
 vẫn nằm công khai, ai đoán trúng đường dẫn là đọc được.
 

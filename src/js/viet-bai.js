@@ -65,11 +65,12 @@
   /* Chuyên mục đang lọc ở bảng bài. Rỗng = tất cả. */
   var locMuc = '';
 
+  /* Móc bằng THUỘC TÍNH — lý do giống hệt `noi()` bên muc.js. */
   function noi(chu, kieu) {
-    var o = hop.querySelector('.vb-noi');
+    var o = hop.querySelector('[data-bao]');
     if (!o) return;
     o.textContent = chu || '';
-    o.className = 'vb-noi' + (kieu ? ' vb-noi--' + kieu : '');
+    o.className = 'bao' + (kieu ? ' bao--' + kieu : '');
   }
 
   /* ── CHƯA CÓ KHOÁ THÌ KHÔNG BÀY Ô VIẾT ──
@@ -80,7 +81,7 @@
      của trang đã chặn từ ngoài. Câu dưới đây chỉ là lưới an toàn cho trường
      hợp khoa.js không tải được. */
   function khungCho() {
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('locked',
+    hop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('locked',
       'Sign in above to unlock this.')) + '</p>';
   }
 
@@ -176,9 +177,9 @@
         '<div class="ad-loc" data-loc></div>' +
       '</div>' +
       '<div class="ad-bang" data-bang>' +
-        '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>' +
+        '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>' +
       '</div>' +
-      '<p class="vb-noi"></p>';
+      '<p class="bao" data-bao></p>';
 
     hop.querySelector('[data-moi]').addEventListener('click', function () { khungViet(); });
 
@@ -232,7 +233,7 @@
         if (!kq.d || !kq.d.ok) {
           if (them) { veHang(); noi(loiChu(kq.d), 'hong'); return; }
           var o = hop.querySelector('[data-bang]');
-          if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+          if (o) o.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(kq.d)) + '</p>';
           return;
         }
         var moi = kq.d.bai || [];
@@ -246,7 +247,7 @@
         dangTai = false;
         if (them) { veHang(); noi(L('netErr', 'Network hiccup. Try again in a moment.'), 'hong'); return; }
         var o = hop.querySelector('[data-bang]');
-        if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+        if (o) o.innerHTML = '<p class="bao bao--hong">' +
           tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
       });
   }
@@ -325,7 +326,7 @@
        thứ nhất thì không. Nói chung một câu là để người dùng tự đoán, và đoán
        sai thì họ đi tìm một bài vốn đang nằm ở trang chưa tải. */
     if (!ds.length) {
-      oBang.innerHTML = '<p class="vb-cho">' +
+      oBang.innerHTML = '<p class="trong trong--cho vb-cho">' +
         tho(chu || locTrang ? L('noMatch', 'Nothing matches, in what is loaded so far.')
                             : L('empty', 'Nothing here.')) + '</p>' +
         chanBang();
@@ -372,7 +373,7 @@
     if (!bangDS) return '';
     var h = '';
     if (bangDS.tong > bangDS.length) {
-      h += '<p class="vb-cho ad-chan">' +
+      h += '<p class="trong trong--cho vb-cho ad-chan">' +
              tho(L('shown', 'Loaded {n} of {t}.')
                    .replace('{n}', bangDS.length).replace('{t}', bangDS.tong)) +
              (bangDS.con
@@ -384,7 +385,7 @@
     /* Cây kho mã bị GitHub cắt bớt — không phải chuyện phân trang, và không có
        nút nào chữa được. Nói riêng một dòng. */
     if (bangDS.cut) {
-      h += '<p class="vb-cho vb-noi--hong">' +
+      h += '<p class="bao bao--hong">' +
              tho(L('capped', 'The repository is too large to list in full.')) + '</p>';
     }
     return h;
@@ -443,19 +444,19 @@
      thành nút Lưu, và có thêm nút Quay lại. Dựng một khung sửa riêng thì hai
      khung phải giữ cho giống nhau mãi mãi — mà chúng vốn là một việc. */
   function moSua(duong) {
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
+    hop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
         if (!kq.d || !kq.d.ok) {
-          hop.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+          hop.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(kq.d)) + '</p>';
           return;
         }
         dangSua = kq.d;
         khungViet(kq.d);
       })
       .catch(function () {
-        hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+        hop.innerHTML = '<p class="bao bao--hong">' +
           tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
       });
   }
@@ -574,7 +575,7 @@
         '<button type="button" class="btn" data-dang>' +
           tho(cu ? L('save', 'Save') : L('publish', 'Post')) + '</button>' +
       '</div>' +
-      '<p class="vb-noi"></p>';
+      '<p class="bao" data-bao></p>';
 
     /* ── SỬA THÌ ĐIỀN SẴN — VÀ CHUYÊN MỤC NAY ĐỔI ĐƯỢC ──
        Đường dẫn bài tính từ CHỖ ĐẶT FILE, nên đổi chuyên mục là dời file. Đời
@@ -1181,7 +1182,7 @@
           (d.commit ? '<li><a href="' + tho(d.commit) + '" target="_blank" rel="noopener">' +
             tho(L('seeCommit', 'See the commit on GitHub')) + '</a></li>' : '') +
         '</ul>' +
-        '<p class="vb-noi">' + tho(d.nhac || L('building',
+        '<p class="bao">' + tho(d.nhac || L('building',
           'Cloudflare is rebuilding. The post goes live in about a minute.')) + '</p>' +
         '<div class="vb-nut">' +
           '<button type="button" class="ad-lenh" data-ve>' + tho(L('back', 'Back')) + '</button>' +
@@ -1202,12 +1203,12 @@
      hẳn biết sau. */
   function nap() {
     if (!coKhoa()) { khungCho(); return; }
-    hop.innerHTML = '<p class="vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
+    hop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api, { headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
         if (kq.d && kq.d.ok) { dsMuc = kq.d.muc || []; dangSua = null; veBang(); return; }
-        hop.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
+        hop.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(kq.d)) + '</p>';
       })
       /* ── HAI LOẠI HỎNG, MỘT CÂU BÁO — VÀ ĐÓ TỪNG LÀ MỘT BUỔI ĐI SAI ĐƯỜNG ──
          `khungViet()` chạy bên TRONG chuỗi promise, nên một lỗi lập trình ở
@@ -1220,7 +1221,7 @@
       .catch(function (e) {
         var laMang = (e instanceof TypeError) && /fetch|network|Load failed/i.test(String(e.message));
         if (!laMang && window.console) console.error('[viet-bai]', e);
-        hop.innerHTML = '<p class="vb-cho vb-noi--hong">' +
+        hop.innerHTML = '<p class="bao bao--hong">' +
           tho(laMang ? L('netErr', 'Network hiccup. Try again in a moment.')
                      : L('crash', 'The editor failed to load — open the browser console to see the error.')) +
           '</p>';

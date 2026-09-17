@@ -44,8 +44,8 @@
 .kh-o input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .kh-nut{display:flex}
 .kh-nut .btn{width:100%;justify-content:center}
-.kh-bao{margin:0;min-height:1.2em;font-size:var(--fs-xs);color:var(--text-faint)}
-.kh-bao--hong{color:var(--bad)}
+/* Dòng báo tin của khung đăng nhập dùng thẳng `.bao` (components.css) —
+   nó không cần khác gì cả, nên không có lớp phụ nào ở đây. */
 
 /* ── LỐI RA LÀ CHỮ, KHÔNG PHẢI NÚT ──
    Nó nằm giữa một câu ("Haluuu, Zoey! — Đăng xuất"), nên nó phải mặc bộ đồ

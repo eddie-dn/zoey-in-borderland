@@ -2002,7 +2002,7 @@ function cumTuongTac(bai) {
         <span class="bl-so" data-bl-so hidden></span>
       </button>
     </span>
-    <span class="cum-bao" role="status" aria-live="polite"></span>
+    <span class="bao cum-bao" role="status" aria-live="polite"></span>
   </span>`;
 }
 
@@ -2207,7 +2207,7 @@ function binhLuanHTML(bai) {
       </div>
     </form>
 
-    <p class="bl-bao" role="status" aria-live="polite"></p>
+    <p class="bao bl-bao" role="status" aria-live="polite"></p>
     </div>
   </section>`;
 }
@@ -3307,7 +3307,7 @@ function bocPhanTrang(than, chonItem, so, moi) {
          ` data-moi-trang="${moiTrang}" data-nhan="${attr(nhan)}">${than}</div>`;
 }
 function luoiThe(ds, trong) {
-  if (!ds.length) return `<p class="ds-trong">${trong}</p>`;
+  if (!ds.length) return `<p class="trong ds-trong">${trong}</p>`;
   const luoi = `<div class="ds-luoi">${ds.map((b) => theBai(b)).join('')}</div>`;
   return bocPhanTrang(luoi, '.the-bai', ds.length);
 }
@@ -3691,7 +3691,7 @@ function cacTrangPosts(bai) {
       than: theoNgay.length
         ? bocPhanTrang(`<div class="muc-luoi">${thuMuc}</div>`,
                        '.muc-khoi', mucCap1.length, MOI_TRANG_MUC)
-        : `<p class="ds-trong">${NHAN.noPosts}</p>`,
+        : `<p class="trong ds-trong">${NHAN.noPosts}</p>`,
       duong: '/posts/'
     })
   });
@@ -3750,7 +3750,7 @@ function cacTrangTags(bai, bangTag) {
         ? `<div class="may-tag">${bangTag.map((t) =>
             `<a class="tag tag--may${bac(t.so)}" href="${BASE}/tags/${t.slug}/">` +
             `${escapeHtml(t.ten)}<span class="tag-so">${t.so}</span></a>`).join('')}</div>`
-        : `<p class="ds-trong">${NHAN.noTags}</p>`,
+        : `<p class="trong ds-trong">${NHAN.noTags}</p>`,
       duong: '/tags/'
     })
   });
@@ -3838,7 +3838,7 @@ function trangGhiChu() {
           ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
         </div>
         <div class="gc-chu prose">${x.html}</div>
-      </li>`).join('')}</ol>` : `${locHTML}<p class="ds-trong">${NHAN.noNotes}</p>`;
+      </li>`).join('')}</ol>` : `${locHTML}<p class="trong ds-trong">${NHAN.noNotes}</p>`;
 
   /* Bọc phân trang, KHÔNG để danh sách dài vô tận. Chọn `.gc-mot:not(.gc-khac-loai)`
      chứ không phải `.gc-mot` trơn: lọc theo loại giấu mục bằng class ấy, và bộ
@@ -3984,7 +3984,7 @@ function trangArchive(bai) {
     tieuDe: NHAN.archive,
     dan: `${bai.length} bài · ${theoNam.size} năm`,
     than: bai.length ? bocPhanTrang(than, '.kho-dong', bai.length)
-                     : `<p class="ds-trong">${NHAN.noPosts}</p>`,
+                     : `<p class="trong ds-trong">${NHAN.noPosts}</p>`,
     duong: '/archive/'
   });
 }

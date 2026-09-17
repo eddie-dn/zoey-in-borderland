@@ -405,11 +405,9 @@ body.so-khoa{overflow:hidden}
   background:var(--surface-sunken);padding:1px 5px;border-radius:var(--r-sm);
 }
 
-.so-trong{
-  margin:var(--s6) 0;text-align:center;
-  font-family:var(--font-label);font-size:var(--fs-2xs);letter-spacing:var(--ls-label);
-  text-transform:uppercase;color:var(--text-faint);
-}
+/* Bản vá không có dòng chi tiết nào — cụm gốc ở `.trong`. Khác mỗi việc căn
+   giữa, vì nó đứng một mình giữa một tấm kính chứ không trong một cột chữ. */
+.so-trong{text-align:center}
 .so-chan{
   margin:0;padding:var(--s3) var(--s5);
   border-top:1px solid var(--line);
@@ -533,3 +531,95 @@ body.so-khoa{overflow:hidden}
 
    Ở lại đúng một ô "icon + số" trong hàng này: lượt xem. Nó không có nút, nên
    nó thật sự chỉ là một con số để đọc. */
+
+/* ══════════════════════════════════════════════════════════════════════
+   `.bao` — MỘT DÒNG BÁO TIN, DÙNG CHUNG CHO CẢ TRANG
+
+   ── VÌ SAO GOM LẠI ──────────────────────────────────────────────────────
+   Mỗi chỗ cần nói một câu với người dùng — "đã gửi", "hỏng rồi", "đang
+   gửi…" — đều tự dựng lấy một bộ luật riêng. Đếm ra BẢY bộ, ở năm file CSS
+   khác nhau, và chúng đã trôi xa nhau đúng như mọi bản sao vẫn trôi:
+
+     bốn cỡ chữ khác nhau     --fs-sm · --fs-xs · --fs-2xs · --fs-3xs
+     ba màu nghỉ khác nhau    thừa kế · --text-faint · --text-muted
+     hai chữ cho cùng một nghĩa   `--loi` ở một chỗ, `--hong` ở sáu chỗ
+     hai tên gốc                  `bao` (báo) ở bốn chỗ, `noi` (nói) ở hai
+
+   Và hai chỗ HỎNG THẬT, mà chỉ lúc xếp cạnh nhau mới lộ ra:
+     · `.vb-noi--hong` tô `--accent-ink` chứ không phải `--bad` ⇒ báo lỗi ở
+       ô viết bài hiện màu tím, đọc ra như một dòng chữ thường;
+     · `.bl-duyet-bao--hong` KHÔNG có luật nào ⇒ báo lỗi ở bàn duyệt không
+       đổi màu gì cả.
+
+   ── CÁCH DÙNG ───────────────────────────────────────────────────────────
+     <p class="bao">                  dòng báo tin mặc định
+     <p class="bao bao--ok">          xong việc
+     <p class="bao bao--hong">        hỏng
+     <p class="bao bao--cho">         đang chạy
+
+   Chỗ nào cần khác thì thêm MỘT lớp phụ chở đúng phần khác ấy — cỡ chữ,
+   lề, nền — và KHÔNG khai lại màu trạng thái:
+
+     .bl-bao        khung bình luận      cỡ chữ lớn hơn một bậc
+     .sz-bao        ô soạn thảo          có nền chìm và vạch ngăn dưới
+     .cum-bao       hàng meta bài        phông nhãn, chữ hoa
+     .gc-noi        ghi chú ngắn         cỡ nhỏ hơn
+     .bl-duyet-bao  bàn duyệt            cỡ nhỏ hơn
+
+   ── MÀU ĐI QUA MỘT BIẾN, KHÔNG KHAI THẲNG ───────────────────────────────
+   `--bao-mau` chứ không phải `color` trực tiếp. Lý do là thứ tự file: cụm
+   này nằm ở gói NỀN, tải trước mọi gói khác, nên một luật `.cum-bao{color}`
+   bên prose.css sẽ THẮNG `.bao--hong{color}` ở đây dù cả hai cùng một mức
+   cụ thể. Đi qua biến thì lớp phụ đặt màu NGHỈ, còn lớp trạng thái đặt màu
+   TRẠNG THÁI, và hai việc ấy không giẫm lên nhau.
+
+   Lớp trạng thái viết `.bao.bao--hong` (hai lớp) chứ không `.bao--hong`:
+   như vậy nó luôn cụ thể hơn mọi lớp phụ một-lớp, bất kể file nào tải sau.
+
+   Phép kiểm #62 chặn việc khai lại màu trạng thái ở lớp phụ.
+   ══════════════════════════════════════════════════════════════════════ */
+.bao{
+  margin:0;min-height:1.2em;line-height:1.5;
+  font-size:var(--fs-xs);
+  color:var(--bao-mau,var(--text-faint));
+}
+/* Rỗng thì thôi chiếm chỗ — nhưng CHỈ lề, không bỏ `min-height`: chiều cao
+   ấy giữ sẵn một dòng để lúc có chữ thì bố cục không giật lên một nhịp. */
+.bao:empty{margin:0}
+.bao.bao--ok{--bao-mau:var(--ok)}
+.bao.bao--hong{--bao-mau:var(--bad)}
+.bao.bao--cho{--bao-mau:var(--text-faint);font-style:italic}
+
+/* ══════════════════════════════════════════════════════════════════════
+   `.trong` — "CHỖ NÀY KHÔNG CÓ GÌ"
+
+   Bốn chỗ trong trang phải nói câu ấy, và bốn chỗ nói bốn kiểu:
+
+     .ds-trong    danh sách bài rỗng     --fs-sm   nghiêng
+     .bl-trong    chưa có bình luận      --fs-sm   nghiêng
+     .vb-cho      bảng quản trị đang tải --fs-xs   thẳng
+     .so-trong    bản vá không có chi tiết --fs-2xs  phông nhãn, CHỮ HOA, căn giữa
+
+   Ba cỡ chữ và hai lối trình bày cho một câu nói cùng một việc. Hai cái đầu
+   giống hệt nhau tới từng thuộc tính, chỉ khác lề — tức là một bản sao chép
+   nguyên xi mà không ai nhớ.
+
+   Nay một cụm, hai trạng thái:
+
+     <p class="trong">              không có gì, và sẽ không có gì thêm
+     <p class="trong trong--cho">   chưa có gì NGAY BÂY GIỜ — đang tải, chưa
+                                    mở khoá, đang đợi
+
+   Hai trạng thái ấy KHÁC nhau thật, nên chúng được phép trông khác: "rỗng"
+   là một câu kết, viết nghiêng như một lời chú; "đang chờ" là một câu tạm,
+   viết thẳng và nhỏ hơn để nó không đòi được đọc kỹ.
+
+   Chỗ nào cần khác thì thêm MỘT lớp phụ chở đúng phần lề hay căn chỉnh ấy,
+   và KHÔNG khai lại cỡ chữ hay màu.
+   ══════════════════════════════════════════════════════════════════════ */
+.trong{
+  margin:var(--s6) 0;
+  font-size:var(--fs-sm);font-style:italic;line-height:1.6;
+  color:var(--text-faint);
+}
+.trong.trong--cho{font-style:normal;font-size:var(--fs-xs)}

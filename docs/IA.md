@@ -102,14 +102,22 @@ content/posts/tam-ly/2026-09-14-vo-thuc.md
 ```
 
 Cùng lượt đó build còn sinh: `search-index.json`, `tags.json`, `feed.xml`,
-`sitemap.xml`, `robots.txt`, `version.json`, `so-tay.json`, và gộp **8** file
-CSS thành một `assets/style.css`.
+`sitemap.xml`, `robots.txt`, `llms.txt`, `version.json`, `so-tay.json`, và gộp
+**13** file CSS thành **6 gói** — mỗi loại trang chỉ tải gói của nó. Bảng đầy
+đủ ở `docs/DESIGN-SYSTEM.md` §7.
+
+Tên file assets mang **vân tay nội dung** (`nen.b92c6bac.css`), nên đừng gõ
+cứng tên nào trong mã hay trong tài liệu: đọc từ `<link>` của trang đã dựng.
+Một script trong `docs/logo/` từng gõ cứng `dist/assets/style.css` và hỏng
+lặng suốt từ lượt chia gói cho tới khi có người chạy lại nó.
 
 **Trước khi ghi ra `dist/`, CSS và JS đều bị cắt hết chú thích.** Chú thích
 trong `src/` là chủ ý — chúng ghi lại vì sao từng chỗ viết như vậy — nhưng
-người đọc blog không cần chúng mà vẫn phải tải về. Đo trên bản thật: CSS
-91 → 57 KB, JS 135 → 77 KB (52 → 23 KB sau brotli). Bản trong `src/` không
-đổi một chữ.
+người đọc blog không cần chúng mà vẫn phải tải về. Đo trên bản thật:
+CSS **402 → 142 KB**, JS **469 → 211 KB**. Bản trong `src/` không đổi một chữ.
+
+Hai con số ấy là TỔNG cả sáu gói. Một trang cụ thể tải ít hơn hẳn: trang bài
+84 KB, trang danh sách 83 KB, `/z-admin/` 110 KB.
 
 > Cắt chú thích của JS khó hơn của CSS: dấu `/` trong JS vừa là phép chia,
 > vừa mở chú thích, vừa mở một mẫu tìm kiếm. `boChuThichJS` phải đọc từng ký
@@ -232,7 +240,7 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 | **Menu trượt cho màn hẹp** | dưới 640px nav giấu chữ, chỉ còn brand + nút tìm + nút theme. Bốn mục thì tạm được; thêm mục thứ năm là phải làm | nhỏ |
 | **Ảnh cho bài đăng từ `/z-admin/`** | ngăn Post mới đăng được chữ. Ảnh vẫn phải qua `npm run anh` ở máy, vì bộ dựng còn ĐO ảnh để khoá tỉ lệ khung — gửi ảnh qua mạng thì phải đo ở phía máy chủ | vừa |
 | **Vân tay nội dung cho tên file CSS/JS** | tên file chưa có vân tay nên không cache dài được; xem `docs/DUA-LEN-MANG.md` §8 | vừa |
-### 6.1 · Bình luận — đã có (V1.01)
+### 6.1 · Bình luận — đã có (V1.1.1)
 
 Google Apps Script làm máy chủ, Google Sheet làm chỗ lưu. Không tốn tiền, không
 đăng ký dịch vụ nào, dữ liệu nằm trong Drive của chính chủ trang. Cài đặt từng

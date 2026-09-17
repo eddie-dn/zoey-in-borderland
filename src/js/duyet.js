@@ -88,7 +88,7 @@
     dungDongHo();
     if (!loi) return;
     var b = de(loi);
-    b.className = 'bl-duyet-bao bl-duyet-bao--hong';
+    b.className = 'bao bl-duyet-bao bao--hong';
     hop.appendChild(b);
   }
 
@@ -101,7 +101,7 @@
       hop.textContent = '';
       hop.appendChild(de(L('queue')));
       var b = document.createElement('p');
-      b.className = 'bl-duyet-bao';
+      b.className = 'bao bl-duyet-bao';
       b.textContent = L('loading');
       hop.appendChild(b);
     }
@@ -180,7 +180,7 @@
 
     if (!ds.length) {
       var trong = document.createElement('p');
-      trong.className = 'bl-duyet-bao';
+      trong.className = 'bao bl-duyet-bao';
       trong.textContent = L('queueEmpty');
       hop.appendChild(trong);
       batDongHo();
@@ -223,7 +223,7 @@
 
     if (!loc1.length) {
       var trong2 = document.createElement('p');
-      trong2.className = 'bl-duyet-bao';
+      trong2.className = 'bao bl-duyet-bao';
       trong2.textContent = L('queueEmpty');
       hop.appendChild(trong2);
       batDongHo();

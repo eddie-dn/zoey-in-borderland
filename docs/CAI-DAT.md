@@ -493,7 +493,7 @@ Thêm cho **cả hai** môi trường (Production và Preview).
 > Text. Xoá nó đi rồi thêm lại với Type = **Secret** là hết hẳn.
 >
 > Triệu chứng phía người dùng giống y như lúc chưa từng đặt khoá: đăng nhập
-> `/z-admin/` không vào được, và (từ V8.03) màn hình nói "Máy chủ chưa đặt
+> `/z-admin/` không vào được, và (từ V1.8.3) màn hình nói "Máy chủ chưa đặt
 > GC_ID và GC_KEY".
 
 > **Thiếu một vế là chặn hết, không phải mở hết.** Hàm coi "chưa đặt đủ khoá"

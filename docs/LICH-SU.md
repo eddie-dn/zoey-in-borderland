@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.5.6 | 2026-09-17 | 06 | chữ đậm trong bài về cân nặng thật 600 thay vì nét đậm trình duyệt tự bịa; ghi luật ba họ phông vào Design System; thêm phép kiểm chặn cân nặng không có face đỡ |
+| V2.5.5 | 2026-09-17 | 05 | rà lại tài liệu: §7 FILE NÀO CHỨA GÌ viết lại cho đúng 13 file và 6 gói; sửa script dựng logo động đang hỏng lặng vì gõ cứng tên file assets; hồi sinh một phép kiểm đã chết âm thầm |
+| V2.5.4 | 2026-09-17 | 04 | gom bảy bộ luật báo tin và bốn bộ trạng thái rỗng thành hai cụm dùng chung .bao và .trong; sửa hai lỗi màu lộ ra lúc xếp cạnh nhau; chuyển 74 dòng CSS khung cắt ảnh từ list.css về soan.css |
 | V2.5.3 | 2026-09-17 | 03 | bảng lịch sử ba tầng Vx → Vx.y → Vx.y.z, ngày in gọn; đọc tiếp ở khổ hẹp thành cặp lùi/tới một dải; tên blog ở khổ hẹp nghỉ thì mờ và sáng khi chạm, như khổ ngang |
 | V2.5.2 | 2026-09-17 | 02 | thẻ bình luận: giờ GMT+7, nút duyệt lên góc phải và thôi trùng đôi ở nhánh trả lời; ô soạn dời vào thẻ nay bung hết bề ngang; khổ hẹp mở khung bình luận ngay tại đoạn đang đọc thay vì rơi xuống chân trang |
 | V2.5.1 | 2026-09-17 | 01 | hai lỗi cú pháp CSS nuốt mất luật: thanh công cụ ở /z-admin/ và nút màu trong ô soạn; ô trích dẫn tách thành file riêng, trả lại phông nghiêng và cặp dấu ngoặc ở trang chủ; thêm hai phép kiểm chặn đúng hai lỗi đó |
@@ -203,6 +206,64 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.5.6 — 17-Sep-2026
+
+- **Chữ đậm trong bài thôi là nét bịa.** Bộ phông tự host chỉ có cân nặng
+  400 · 500 · 600 — không có face 700 nào. Mà trình duyệt cho `<strong>` và
+  `<b>` cân nặng 700 theo **mặc định**, và `prose.css` không đặt lại. Nên mọi
+  cụm chữ đậm trong mọi bài đều là nét trình duyệt tự bịa: vẽ đè chính chữ ấy
+  lệch đi vài phần pixel. Nét bịa nhoè nhất đúng ở chỗ tiếng Việt cần rõ nhất —
+  dấu mũ, dấu móc, dấu thanh chồng lên nhau. Đo được 30 cụm trên một bài.
+  Nay lấy 600, tức nét đậm THẬT mà 84 luật CSS khác đang dùng.
+- **Luật ba họ phông ghi thành văn.** `docs/DESIGN-SYSTEM.md` §2.0: ba họ tải
+  về (Oswald · Cormorant Garamond · Be Vietnam Pro) cộng một họ máy chữ của
+  máy, cố ý không tải file nào — đó là lý do bảng lịch sử trông như dùng phông
+  thứ tư. Kèm ba luật phải giữ, và câu trả lời cho "có cần xoá gì khỏi kho mã
+  không": **không** — 33 file thuộc đúng ba họ, mọi cân nặng đều có chỗ dùng.
+- **Phép kiểm #65** đọc thẳng `fonts.css` để biết có những face nào, rồi chặn
+  mọi luật xin một cân nặng không face nào đỡ. Tải thêm cân nặng thì nó tự nới
+  theo, không phải sửa phép kiểm.
+
+## V2.5.5 — 17-Sep-2026
+
+- **Một script đang hỏng lặng, không ai biết.** `docs/logo/dung-logo-dong.mjs`
+  đọc `dist/assets/style.css` — cái tên của thời mọi trang tải chung một file.
+  Từ lượt chia CSS theo loại trang thì không còn file nào tên thế, và script
+  ném ENOENT. Nó không nằm trong `npm run build` cũng không nằm trong
+  `npm run kiem`, nên phải có người chạy tay mới thấy. Nay nó đọc `<link>` của
+  trang đã dựng, và **phép kiểm #63** cấm mọi chỗ gõ cứng tên file trong
+  `dist/assets/` — tên ấy mang vân tay nội dung, đổi mỗi lượt build.
+- **Một phép kiểm đã chết âm thầm.** Phép kiểm "hai nửa hoạt hình logo chạy
+  cùng nhịp" cũng tìm `style.css`, không thấy, rồi `return []` — tức là nó
+  xanh mãi mãi, không đỏ được nữa. Nay nó đọc đúng gói `nen`, và thiếu gói thì
+  BÁO LỖI chứ không bỏ qua: một phép kiểm không chạy được phải nói ra, không
+  thì nó chỉ là một dòng xanh dối.
+- **§7 FILE NÀO CHỨA GÌ viết lại.** Bảng vẫn liệt kê 8 file và vẫn nói build
+  gộp tất cả thành một `assets/style.css`; năm file mới không có tên trong đó.
+  Nay đủ 13 file, 6 gói, và bảng "trang nào lấy gói nào" kèm số KB thật.
+  **Phép kiểm #64** buộc bảng ấy khớp với `src/styles/` và với `GOI_CSS`.
+  Kèm theo: `VIEC-DANG-CHO.md` bỏ bảng "đã xong" chép lại sổ phiên bản, và
+  năm chỗ trong tài liệu còn ghi số hai tầng cũ đã đổi sang ba tầng.
+
+## V2.5.4 — 17-Sep-2026
+
+- **Bảy bộ luật cho một dòng báo tin, gom về một.** Mỗi chỗ cần nói một câu
+  với người dùng đều tự dựng lấy một bộ riêng — bốn cỡ chữ, ba màu nghỉ, hai
+  chữ cho cùng một nghĩa (`--loi` một chỗ, `--hong` sáu chỗ), hai tên gốc.
+  Xếp cạnh nhau mới lộ **hai chỗ hỏng thật**: `.vb-noi--hong` tô màu nhấn chứ
+  không phải màu lỗi, nên báo lỗi ở ô viết bài hiện **màu tím**; còn
+  `.bl-duyet-bao--hong` không có luật nào, nên báo lỗi ở bàn duyệt không đổi
+  màu gì cả. Nay một cụm `.bao` lo mọi trạng thái.
+- **Bốn bộ cho câu "chỗ này không có gì", gom về một.** `.ds-trong` và
+  `.bl-trong` giống nhau tới từng thuộc tính, chỉ khác lề — một bản sao chép
+  nguyên xi mà không ai nhớ. Nay `.trong` và `.trong--cho`: "rỗng" là câu kết
+  nên viết nghiêng, "đang chờ" là câu tạm nên viết thẳng và nhỏ hơn.
+- **Khung cắt ảnh nằm nhầm file.** 74 dòng `.sz-cat-*` ngồi trong `list.css` —
+  file của trang danh sách công khai — nên mọi trang danh sách tải CSS cắt ảnh
+  mà không bao giờ dùng. Chuyển về `soan.css`; trang chủ nhẹ đi 2 KB. Cả hai
+  cụm ghi ở `docs/DESIGN-SYSTEM.md` §21, và **phép kiểm #62** chặn việc lớp phụ
+  tự khai trạng thái hay quên gắn lớp gốc.
 
 ## V2.5.3 — 17-Sep-2026
 

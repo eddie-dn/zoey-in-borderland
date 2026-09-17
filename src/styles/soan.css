@@ -50,7 +50,7 @@
 /* Đang bật: đổi màu chữ VÀ tô nền nhạt. Chỉ đổi màu thì ở cỡ 13px không đủ
    thấy, mà chỉ tô nền thì lẫn với trạng thái rê chuột. */
 .sz-nut--bat{color:var(--accent-ink);background:var(--accent-wash)}
-.sz-nut--dam{font-weight:700}
+.sz-nut--dam{font-weight:600}
 .sz-nut--ngh{font-family:var(--font-display);font-style:italic;font-size:15px}
 .sz-nut--gac{text-decoration:line-through}
 /* ── MỘT KHỔ CHO MỌI NÚT ──
@@ -415,4 +415,79 @@
 }
 .sz-nut--mau[aria-expanded="true"] .sz-cham{
   box-shadow:0 0 0 2px var(--accent);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   KHUNG CẮT ẢNH
+
+   Mở ra khi thả ĐÚNG MỘT tấm ảnh vào khung soạn. Cắt trước khi gửi đi, nên
+   file lên kho mã đã là tấm đã cắt — bài chỉ có một đường dẫn, và không có
+   tấm gốc nào nằm lại làm ảnh mồ côi. Lý do đầy đủ ở `moKhungCat` trong
+   src/js/soan.js.
+   ══════════════════════════════════════════════════════════════════════ */
+.sz-cat{
+  border:0;padding:var(--s5);max-width:min(92vw,780px);max-height:92dvh;
+  border-radius:var(--r-md);background:var(--surface-solid);color:var(--text);
+  box-shadow:0 24px 64px rgba(20,10,40,.28);
+}
+.sz-cat::backdrop{background:rgba(12,8,24,.62)}
+.sz-cat-de{
+  margin:0 0 var(--s4);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
+}
+/* Ảnh và lớp phủ chồng lên nhau bằng position, không bằng grid: khung cắt cần
+   toạ độ theo % của ĐÚNG tấm ảnh, nên nó phải là con của một khối ôm sát ảnh. */
+.sz-cat-anh{
+  position:relative;display:block;line-height:0;
+  max-height:60dvh;overflow:hidden;touch-action:none;cursor:move;
+  border-radius:var(--r-sm);background:var(--surface-sunken);
+}
+.sz-cat-goc{display:block;max-width:100%;max-height:60dvh;margin:auto}
+/* Phần NGOÀI khung cắt tối đi — vẽ bằng một bóng đổ khổng lồ ra ngoài, nên
+   không cần bốn tấm che ở bốn phía. */
+.sz-cat-o{
+  position:absolute;
+  box-shadow:0 0 0 9999px rgba(12,8,24,.55);
+  outline:1px solid rgba(255,255,255,.9);
+  cursor:move;
+}
+.sz-cat-o > span{
+  position:absolute;width:18px;height:18px;
+  background:#fff;border-radius:2px;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);
+}
+.sz-cat-goc-tt{left:-9px;top:-9px;cursor:nwse-resize}
+.sz-cat-goc-tp{right:-9px;top:-9px;cursor:nesw-resize}
+.sz-cat-goc-dt{left:-9px;bottom:-9px;cursor:nesw-resize}
+.sz-cat-goc-dp{right:-9px;bottom:-9px;cursor:nwse-resize}
+
+.sz-cat-thanh{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  margin-top:var(--s4);
+}
+.sz-cat-ti{
+  appearance:none;cursor:pointer;
+  padding:5px 10px;border-radius:var(--r-pill);
+  border:0;background:none;box-shadow:inset 0 0 0 1px var(--line);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.06em;color:var(--text-muted);
+}
+.sz-cat-ti:hover{color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.sz-cat-ti--nay{color:var(--accent-ink);background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--accent)}
+.sz-cat-nut{
+  appearance:none;cursor:pointer;
+  padding:7px 14px;border-radius:var(--r-pill);border:0;
+  background:none;box-shadow:inset 0 0 0 1px var(--line-strong);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.sz-cat-nut:hover{color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
+.sz-cat-nut--chinh{background:var(--accent);color:var(--text-invert);box-shadow:none}
+.sz-cat-nut--chinh:hover{color:var(--text-invert);opacity:.9;box-shadow:none}
+@media (max-width:480px){
+  .sz-cat{padding:var(--s4)}
+  .sz-cat-thanh{gap:5px}
+  .sz-cat-nut{flex:1 1 auto;text-align:center}
 }

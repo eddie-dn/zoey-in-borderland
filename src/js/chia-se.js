@@ -41,11 +41,11 @@
   function noi(chu, hong) {
     if (!bao) return;
     bao.textContent = chu;
-    bao.classList.toggle('cum-bao--hong', !!hong);
+    bao.classList.toggle('bao--hong', !!hong);
     clearTimeout(dongHo);
     dongHo = setTimeout(function () {
       bao.textContent = '';
-      bao.classList.remove('cum-bao--hong');
+      bao.classList.remove('bao--hong');
     }, 2600);
   }
 

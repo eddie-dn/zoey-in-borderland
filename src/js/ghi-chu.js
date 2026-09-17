@@ -241,7 +241,7 @@
       var o = hop.querySelector('.gc-noi');
       if (!o) return;
       o.textContent = chu || '';
-      o.classList.toggle('gc-noi--hong', !!hong);
+      o.classList.toggle('bao--hong', !!hong);
     }
 
     /* Ô viết chỉ sống ở /z-admin/, và trang ấy đã có cửa đăng nhập riêng ở
@@ -325,7 +325,7 @@
              ngay tại đây. */
           '<span class="gc-ra" data-khoa-ra-nho></span>' +
         '</div>' +
-        '<p class="gc-noi"></p>';
+        '<p class="bao gc-noi"></p>';
     }
 
     function loaiDaCo() {

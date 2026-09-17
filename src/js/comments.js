@@ -136,7 +136,7 @@
 
   function noi(t, loai) {
     bao.textContent = t || '';
-    bao.className = 'bl-bao' + (loai ? ' bl-bao--' + loai : '');
+    bao.className = 'bao bl-bao' + (loai ? ' bao--' + loai : '');
   }
 
   /* ══════════ TRÁI TIM ══════════
@@ -469,7 +469,7 @@
     }
     if (!ds.length) {
       var trong = document.createElement('li');
-      trong.className = 'bl-trong';
+      trong.className = 'trong bl-trong';
       trong.textContent = L('noComments');
       dsEl.appendChild(trong);
       return;
@@ -621,7 +621,7 @@
     var nut = form.querySelector('button[type="submit"]');
     var nd = form.noiDung.value.trim();
 
-    if (nd.length < 2) { noi(L('tooShort'), 'loi'); form.noiDung.focus(); return; }
+    if (nd.length < 2) { noi(L('tooShort'), 'hong'); form.noiDung.focus(); return; }
 
     nut.disabled = true;
     var chuCu = nut.textContent;
@@ -645,7 +645,7 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (kq) {
-        if (!kq.ok) { noi(kq.loi || L('failed'), 'loi'); return; }
+        if (!kq.ok) { noi(kq.loi || L('failed'), 'hong'); return; }
         form.reset();
         veNha();
         /* Bình luận của chủ trang lên thẳng, nên báo khác: nói "chờ duyệt" với
@@ -654,7 +654,7 @@
         if (kq.duyet) tai();
       })
       .catch(function () {
-        noi(L('netErr'), 'loi');
+        noi(L('netErr'), 'hong');
       })
       .finally(function () {
         nut.disabled = false;

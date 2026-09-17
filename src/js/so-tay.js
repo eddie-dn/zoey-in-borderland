@@ -325,7 +325,7 @@
           ? '<ul class="so-y">' + ds.map(function (y) {
               return '<li>' + chuNho(y) + '</li>';
             }).join('') + '</ul>'
-          : '<p class="so-trong">' + an(L('noInfo')) + '</p>') +
+          : '<p class="trong so-trong">' + an(L('noInfo')) + '</p>') +
       '</div>' +
       '<p class="so-chan">' + an(v.suaChinh) + '</p>';
 

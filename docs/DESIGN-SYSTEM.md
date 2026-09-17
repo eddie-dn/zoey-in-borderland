@@ -7,7 +7,7 @@
 >
 > Vì để đọc bài dài, có ba chỗ buộc phải khác, ghi rõ ở §2.4.
 >
-> **Bộ liquid glass** thêm ở V1.00 — xem §2b.
+> **Bộ liquid glass** thêm ở V1.1.0 — xem §2b.
 
 ---
 
@@ -112,6 +112,44 @@ Bên theme tối thì orchid đạt 9.4:1, nên hai biến về chung một màu
 **Be Vietnam Pro là bắt buộc cho thân bài.** Phông này vẽ đủ dấu tiếng Việt
 chồng hai tầng — `ộ`, `ẫ`, `ự`, `ế`. Phông Latin thường thì dấu bị lệch hoặc
 chồng lên nhau, đọc một bài dài là mỏi mắt thấy rõ.
+
+### 2.0 · LUẬT PHÔNG — BA HỌ, KHÔNG HƠN
+
+> **Trang này dùng đúng BA họ phông tải về, cộng một họ hệ thống.** Thêm họ
+> thứ tư là thêm 100–200 KB cho mọi người đọc, thêm một nhịp chữ nhảy lúc mở
+> trang, và thêm một giọng nữa vào thứ vốn nên chỉ có một giọng.
+
+| Token | Họ | Tải về? | Dùng khi |
+|---|---|---|---|
+| `--font-label` | Oswald | ✓ 400 · 500 · 600 | nhãn VIẾT HOA giãn rộng |
+| `--font-display` | Cormorant Garamond | ✓ 500 · 600, cả nghiêng | tiêu đề · trích dẫn · sapo |
+| `--font-body` | Be Vietnam Pro | ✓ 400 · 500 · 600 | mọi thứ đọc lâu |
+| `--font-mono` | phông máy chữ của máy | ✗ **không tải** | số cần thẳng cột · khối mã · đường dẫn |
+
+**`--font-mono` cố ý không tải file nào.** Nó chỉ gọi tên những phông máy chữ
+đã có sẵn trên máy (`SF Mono`, `Cascadia Code`, `Consolas`…). Chữ máy chữ trên
+trang này chỉ để **xếp thẳng cột** — ngày tháng, số bản vá, đường dẫn file —
+chứ không phải để trưng bày, nên phông nào cũng xong việc, và 0 KB thì hơn
+150 KB. Đây là lý do bảng lịch sử trông như dùng một phông thứ tư.
+
+#### Ba luật phải giữ
+
+1. **Không thêm họ thứ tư.** Cần một giọng khác thì đổi cân nặng, cỡ chữ, hay
+   khoảng chữ trong ba họ đang có — đừng gọi thêm một họ.
+2. **Chỉ xin những cân nặng đã tải: 400 · 500 · 600.** Không có face 700.
+   Xin 700 thì trình duyệt **bịa** nét đậm — vẽ đè chính chữ ấy lệch đi vài
+   phần pixel — và nét bịa nhoè nhất đúng ở chỗ tiếng Việt cần rõ nhất: dấu mũ,
+   dấu móc, dấu thanh chồng lên nhau.
+   > Đã vấp, và vấp ở chỗ đọc nhiều nhất: trình duyệt cho `<strong>` và `<b>`
+   > cân nặng 700 theo **mặc định**, mà `prose.css` không đặt lại. Nên mọi cụm
+   > chữ đậm trong mọi bài đều là nét bịa — đo được 30 cụm trên một bài. Nay
+   > `.prose strong,.prose b{font-weight:600}`. **Phép kiểm #65** chặn việc này.
+3. **Thêm cân nặng thì thêm ở `tools/phong.mjs`, không khai tay.** `fonts.css`
+   do `npm run phong` sinh ra; sửa tay thì lượt chạy sau ghi đè mất.
+
+**Không cần xoá gì khỏi kho mã.** 33 file trong `public/assets/fonts/` thuộc
+đúng ba họ trên, và mọi cân nặng tải về đều có luật CSS dùng tới — đã đối
+chiếu từng cái.
 
 ### 2.1 · Thang cỡ chữ
 
@@ -419,7 +457,7 @@ Giữ nguyên quy ước §4 của design system cũ — hai dòng, **ký tên t
 
 ```
 @Designed by Zoey
-Last updated 14-Sep-2026 · V0.10
+Last updated 17-Sep-2026 · V2.5.3
 ```
 
 Oswald, 8.5px, giãn `.18em`, VIẾT HOA, màu mờ.
@@ -455,25 +493,65 @@ tử tràn cũng không kéo cả trang trượt theo.
 
 ## 7 · FILE NÀO CHỨA GÌ
 
+Mười ba file nguồn, gộp thành **sáu gói**, và mỗi trang chỉ tải gói của nó.
+Trước V2.5.0 mọi trang tải chung một file 122 KB, mà đo ra **64–79% số luật
+không khớp được gì** trên trang đang xem.
+
+### Nguồn
+
 | File | Chứa | Không chứa |
 |---|---|---|
-| `tokens.css` | mọi biến màu, chữ, nhịp, bóng đổ · cả hai theme | bất kỳ selector nào khác `:root` |
+| `fonts.css` | `@font-face` cho ba họ chữ tự host (`npm run phong` sinh ra) | mọi thứ khác — đừng sửa tay |
+| `tokens.css` | mọi biến màu, chữ, nhịp, bóng đổ · cả ba theme | bất kỳ selector nào khác `:root` |
 | `base.css` | reset, nền trang, chữ gốc, focus | component |
-| `layout.css` | header, chân trang, cột bài + mục lục | style của thân bài |
-| `components.css` | nút, chip, thẻ, huy hiệu, tooltip | khung đọc bài |
 | `glass.css` | vật liệu kính + hai nhịp chuyển động | màu (đọc từ tokens) · bố cục |
-| `list.css` | trang danh sách, màn đầu, thẻ bài, ghi chú, chia trang | khung đọc bài |
-| `prose.css` | **toàn bộ khung đọc bài** | mọi thứ ngoài `<article>` |
+| `layout.css` | header, chân trang, cột bài + mục lục, logo | style của thân bài |
+| `components.css` | nút, chip, thẻ, huy hiệu, tooltip, `.bao`, `.trong`, bảng lịch sử | khung đọc bài |
+| `quote.css` | ô trích dẫn — dùng ở CẢ màn hero lẫn /about/ | phần hero riêng (ở `list.css`) |
+| `list.css` | trang danh sách, màn đầu, thẻ bài, ghi chú, chia trang, trang 404 | khung đọc bài · mọi thứ của /z-admin/ |
+| `prose.css` | **toàn bộ khung đọc bài** + khung bình luận | mọi thứ ngoài `<article>` |
 | `about.css` | riêng trang About — khung bento | mọi trang khác |
+| `khoa.css` | khung đăng nhập (`/z-admin/` và `/notes/` cùng mượn) | bàn làm việc |
+| `admin.css` | bàn làm việc của chủ trang — `.ad-*`, `.vb-*` | ô soạn thảo |
+| `soan.css` | ô soạn thảo — `.sz-*`, kể cả khung cắt ảnh | bảng danh sách |
 
-Build gộp thành `dist/assets/style.css` theo thứ tự:
+### Gói
+
+| Gói | Gồm |
+|---|---|
+| `nen` | fonts · tokens · base · glass · layout · components |
+| `ds` | quote · list |
+| `bai` | prose |
+| `gt` | about |
+| `khoa` | khoa |
+| `ql` | admin · soan |
+
+### Trang nào lấy gói nào
+
+Khai **thẳng** bằng `loaiCSS`, không đoán từ đường dẫn (xem `goiCuaTrang`):
+
+| Loại | Gói | KB |
+|---|---|---|
+| trang bài (`bai`) | `nen + bai` | 84 |
+| danh sách · kho lưu · tìm kiếm · trang chủ | `nen + ds` | 83 |
+| `/about/` (`gt`) | `nen + gt + ds` | 90 |
+| `/notes/` (`gc`) | `nen + ds + khoa` | 85 |
+| `/z-admin/` (`ql`) | `nen + khoa + ql + ds` | 110 |
+
+> **Đã vấp.** Bản đầu đoán loại trang bằng `duong`. Mọi trang BÀI đều truyền
+> `duong: '/posts/'` (đó là mục đang mở trên thanh menu), nên cả chín bài nhận
+> gói của trang danh sách và mất sạch `prose.css`. Trang vẫn dựng ra, không lỗi
+> nào; chỉ là bài hiện lên trần trụi.
+
+### Thứ tự trong một gói không đổi được
 
 ```
-tokens → base → glass → layout → components → list → prose → about
+fonts → tokens → base → glass → layout → components → (quote → list) → prose → about
 ```
 
-Thứ tự này không đổi được:
-- `tokens` trước mọi thứ, vì mọi file còn lại đọc biến của nó
+- `fonts` đầu tiên: `@font-face` phải khai trước luật nào dùng tới phông, không
+  thì trang vẽ một nhịp bằng phông hệ thống rồi mới đổi
+- `tokens` trước mọi thứ còn lại, vì chúng đọc biến của nó
 - `glass` trước `components`, để component ghi đè được vật liệu khi cần
 - `prose` sau `components`, để khung đọc bài ghi đè được component
 
@@ -481,6 +559,26 @@ Thứ tự này không đổi được:
 > `layout.css`. Đã vấp: `.khung-b .post-cover{grid-column:full}` bị
 > `.prose > .wide{grid-column:wide}` đè, nên ảnh bìa không tràn hết. Cách xử:
 > thêm một bậc — `.khung-b .prose > .post-cover`.
+
+> **Hệ quả thứ hai, nặng hơn.** Gói `nen` tải TRƯỚC mọi gói khác, nên một luật
+> một-lớp ở `prose.css` hay `admin.css` sẽ thắng một luật một-lớp ở
+> `components.css` dù cả hai cùng mức cụ thể. Cụm dùng chung nào đặt ở
+> `components.css` cũng phải tính chuyện đó — xem §21.
+
+### Hai cái bẫy của việc chia file
+
+1. **Một cụm dùng ở hai loại trang phải nằm ở gói cả hai cùng tải.** Ô trích
+   dẫn từng khai trong `about.css` mà còn ở màn hero trang chủ; trang chủ không
+   tải file ấy nên câu trích dẫn mất phông nghiêng, mất cặp dấu ngoặc kép, nút
+   xem câu khác rơi xuống đáy ô. **Phép kiểm #61** soi LUẬT TRẦN `.C{…}` để
+   bắt đúng chuyện này — soi bằng tên lớp không bắt được, vì `list.css` vẫn
+   nhắc `.q-chu` ở luật `.hero-quote .q-chu{font-size}`.
+
+2. **Cắt file bằng tay thì cắt trúng chú thích.** Lượt tách `list.css` để
+   `admin.css` mất dòng mở của một khối chú thích — dấu đóng còn lại thành rác,
+   và trình duyệt bỏ luôn khối luật ngay sau nó. `soan.css` thì đứt hẳn phần
+   đuôi. Build vẫn chạy, không cảnh báo gì. **Phép kiểm #60** quét cú pháp mọi
+   file CSS.
 
 ---
 
@@ -1683,3 +1781,105 @@ trong khi ý thật chỉ là "người này là chủ nhà".
 Dùng lại đúng bộ tên trên. Cần khác thì thêm **một lớp phụ**, không dựng bộ
 luật thứ hai. `npm run kiem` có một phép kiểm canh đúng chuyện này: mọi file
 quản trị dựng ra danh sách đều phải đi qua `.ad-dong`.
+
+---
+
+## 21 · CỤM DÙNG CHUNG — `.bao` VÀ `.trong`
+
+Hai câu mà mọi phần của trang đều phải nói lúc này lúc khác: **"đây, kết quả"**
+và **"chỗ này không có gì"**. Cả hai từng được mỗi chỗ tự dựng lấy.
+
+### 21.1 · Đếm ra bao nhiêu bản sao
+
+Bảy bộ luật cho một dòng báo tin, ở năm file CSS khác nhau:
+
+| Lớp cũ | File | Cỡ chữ | Màu nghỉ | Biến thể lỗi |
+|---|---|---|---|---|
+| `.bl-bao` | prose | `--fs-sm` | thừa kế | `--loi` |
+| `.kh-bao` | khoa | `--fs-xs` | `--text-faint` | `--hong` |
+| `.sz-bao` | admin | `--fs-2xs` | `--text-faint` | `--hong` |
+| `.vb-noi` | admin | `--fs-xs` | `--text-faint` | `--hong` |
+| `.gc-noi` | list | `--fs-2xs` | `--text-muted` | `--hong` |
+| `.cum-bao` | prose | `--fs-3xs` | `--accent-ink` | `--hong` |
+| `.bl-duyet-bao` | prose | `--fs-2xs` | `--text-muted` | `--hong` |
+
+Bốn cỡ chữ, ba màu nghỉ, hai chữ cho cùng một nghĩa, hai tên gốc (`bao` =
+báo, `noi` = nói). Và **hai chỗ hỏng thật**, chỉ lộ ra khi xếp cạnh nhau:
+
+- `.vb-noi--hong` tô `--accent-ink` chứ không phải `--bad` — báo lỗi ở ô viết
+  bài hiện **màu tím**, đọc ra như một dòng chữ thường;
+- `.bl-duyet-bao--hong` **không có luật nào** — báo lỗi ở bàn duyệt không đổi
+  màu gì cả.
+
+Cùng kiểu ấy, bốn bộ cho câu "không có gì": `.ds-trong` · `.bl-trong` ·
+`.vb-cho` · `.so-trong` — ba cỡ chữ, hai lối trình bày. Hai cái đầu **giống
+nhau tới từng thuộc tính**, chỉ khác lề.
+
+### 21.2 · Cách dùng
+
+```html
+<p class="bao">                    dòng báo tin mặc định
+<p class="bao bao--ok">            xong việc
+<p class="bao bao--hong">          hỏng
+<p class="bao bao--cho">           đang chạy
+
+<p class="trong">                  không có gì, và sẽ không có gì thêm
+<p class="trong trong--cho">       chưa có gì NGAY BÂY GIỜ — đang tải, chưa mở khoá
+```
+
+Hai trạng thái rỗng ấy khác nhau thật, nên được phép trông khác: *"rỗng"* là
+một câu kết, viết nghiêng như lời chú; *"đang chờ"* là câu tạm, viết thẳng và
+nhỏ hơn để không đòi được đọc kỹ.
+
+Chỗ nào cần khác thì thêm **một** lớp phụ chở đúng phần khác ấy — cỡ chữ, lề,
+nền — và **không khai lại** màu trạng thái:
+
+| Lớp phụ | Gốc | Khác ở |
+|---|---|---|
+| `.bl-bao` | `.bao` | cỡ chữ lớn hơn một bậc |
+| `.sz-bao` | `.bao` | nền chìm + vạch ngăn dưới |
+| `.cum-bao` | `.bao` | phông nhãn, chữ hoa, rỗng thì `display:none` |
+| `.gc-noi` · `.bl-duyet-bao` | `.bao` | cỡ nhỏ hơn |
+| `.ds-trong` · `.bl-trong` | `.trong` | lề |
+| `.so-trong` | `.trong` | căn giữa |
+| `.vb-cho` | `.trong` | bỏ lề |
+
+Khung đăng nhập và hai ngăn Post · Category dùng **thẳng** `.bao`, không lớp
+phụ nào — chúng không cần khác gì cả. Hai ngăn ấy móc phần tử bằng
+`[data-bao]` chứ không bằng lớp, vì trong cùng một khung còn `.bao` khác.
+
+### 21.3 · Màu đi qua một biến, không khai thẳng
+
+```css
+.bao{color:var(--bao-mau,var(--text-faint))}
+.bao.bao--hong{--bao-mau:var(--bad)}
+.cum-bao{--bao-mau:var(--accent-ink)}    /* màu NGHỈ của một chỗ */
+```
+
+Hai lý do, và cả hai đều là chuyện thứ tự file (§7):
+
+1. Cụm gốc nằm ở `components.css`, tức gói `nen`, tải **trước** mọi gói khác.
+   Một luật `.cum-bao{color}` bên `prose.css` sẽ thắng `.bao--hong{color}` dù
+   cùng mức cụ thể. Đi qua biến thì lớp phụ đặt màu **nghỉ**, lớp trạng thái
+   đặt màu **trạng thái**, và hai việc ấy không giẫm lên nhau.
+2. Lớp trạng thái viết `.bao.bao--hong` (hai lớp) chứ không `.bao--hong`: như
+   vậy nó luôn cụ thể hơn mọi lớp phụ một-lớp, bất kể file nào tải sau.
+
+> **Phép kiểm #62** chặn hai việc: lớp phụ tự khai trạng thái
+> (`.x-bao--hong`), và gắn lớp phụ mà quên lớp gốc.
+
+### 21.4 · Hộp thoại — ba cái, hai cách dựng
+
+| Hộp | Cách dựng | Nền mờ | Đóng · khoá cuộn |
+|---|---|---|---|
+| `.anh-to` xem ảnh to | `<dialog>` + `showModal()` | `::backdrop` | trình duyệt lo |
+| `.sz-cat` cắt ảnh | `<dialog>` + `showModal()` | `::backdrop` | trình duyệt lo |
+| `.so-nen`/`.so-hop` bảng lịch sử | `div` + `position:fixed` | tự vẽ | JS tự lo, `body.so-khoa` |
+
+**Cái mới thì dùng `<dialog>`.** `showModal()` cho sẵn bốn thứ mà một lớp phủ
+tự dựng phải viết tay và dễ quên: phím Esc đóng, bẫy tiêu điểm trong hộp, che
+phần còn lại khỏi trình đọc màn hình, và một `::backdrop` nằm đúng lớp trên
+cùng mà không phải đi tranh `z-index` với ai.
+
+Bảng lịch sử tự dựng vì nó có sẵn từ trước và có hiệu ứng mờ dần riêng khi mở;
+đổi nó sang `<dialog>` là một việc nên làm, chưa làm.

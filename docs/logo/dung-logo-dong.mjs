@@ -12,7 +12,18 @@ import { fileURLToPath } from 'node:url';
    đổi tên thư mục, là hỏng ngay. */
 const GOC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const html = fs.readFileSync(path.join(GOC, 'dist/index.html'), 'utf8');
-const css  = fs.readFileSync(path.join(GOC, 'dist/assets/style.css'), 'utf8');
+
+/* ── ĐỌC ĐÚNG MẤY GÓI TRANG CHỦ ĐANG TẢI ──
+   Trước V2.5.0 chỉ có một `dist/assets/style.css` và dòng này gõ cứng tên ấy.
+   Nay CSS chia theo loại trang, và tên file còn mang vân tay nội dung
+   (`nen.b92c6bac.css`), nên gõ cứng bất kỳ tên nào cũng sai sau lượt sửa kế
+   tiếp. Đọc thẳng từ trang đã dựng: nó khai ra nó tải những gì.
+
+   Luật của logo nằm ở `layout.css`, tức gói `nen` — nhưng cứ nối hết mọi gói
+   trang chủ tải rồi lọc sau, vì phần lọc bên dưới đã làm đúng việc ấy. */
+const goi = [...html.matchAll(/<link[^>]+href="(\/assets\/[^"]+\.css)"/g)].map((m) => m[1]);
+if (!goi.length) throw new Error('dist/index.html không trỏ tới gói CSS nào — chạy npm run build trước');
+const css = goi.map((g) => fs.readFileSync(path.join(GOC, 'dist' + g), 'utf8')).join('\n');
 
 /* ── MARKUP ── */
 const m = html.match(/<svg class="logo logo--dong"[\s\S]*?<\/svg>/);

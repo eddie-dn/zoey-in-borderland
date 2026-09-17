@@ -1743,13 +1743,23 @@ const KIEM = [
     ten: 'Hai nửa hoạt hình logo chạy cùng nhịp trong bản đã dựng',
     muc: 'loi',
     chay: ({ trang, dist }) => {
-      const fCss = fileAssets('style.css');
-      if (!fCss) return [];
+      /* ── ĐỌC GÓI `nen`, KHÔNG PHẢI `style.css` ──
+         Luật logo nằm ở `layout.css`, tức gói `nen`. Dòng này từng tìm
+         `style.css` — cái tên của thời mọi trang tải chung một file. Từ lượt
+         chia CSS theo loại trang thì không còn file nào tên thế, `fileAssets`
+         trả về null, và câu `if (!fCss) return []` ngay dưới khiến phép kiểm
+         ÂM THẦM ĐI QUA. Nó không đỏ được nữa, và không ai biết.
+
+         Nay thiếu gói là BÁO LỖI chứ không bỏ qua: một phép kiểm không chạy
+         được thì phải nói ra, không thì nó chỉ là một dòng xanh dối. */
+      const fCss = fileAssets('nen.css');
+      if (!fCss) return ['không tìm thấy gói CSS `nen` trong dist/assets/ — '
+                       + 'phép kiểm này không chạy được'];
       const css = fs.readFileSync(fCss, 'utf8');
       /* Lấy khai báo CUỐI CÙNG: cùng độ ưu tiên thì luật sau thắng, và build
          ghi đè giá trị của cấu hình vào cuối bundle. */
       const dsCss = [...css.matchAll(/--lg-ck:\s*([\w.]+)/g)].map((m) => m[1]);
-      if (!dsCss.length) return ['dist/assets/style.css không có --lg-ck nào'];
+      if (!dsCss.length) return ['gói CSS `nen` không có --lg-ck nào'];
       const cCss = dsCss[dsCss.length - 1];
 
       const co = trang.find((t) => /<svg class="logo logo--dong"/.test(t.html));
@@ -2193,6 +2203,245 @@ const KIEM = [
             + `${goi.map((g) => g.split('/').pop().split('.')[0]).join(' + ')} `
             + `nhưng không gói nào có luật gốc cho: ${thieu.map((x) => '.' + x).join(' · ')} `
             + `⇒ cụm hiện lên trần trụi`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── DÒNG BÁO TIN CHỈ CÓ MỘT BỘ TRẠNG THÁI ──
+       Bảy chỗ trong trang cần nói một câu với người dùng, và mỗi chỗ từng tự
+       dựng lấy một bộ luật riêng. Chúng trôi xa nhau: bốn cỡ chữ, ba màu
+       nghỉ, hai chữ cho cùng một nghĩa (`--loi` một chỗ, `--hong` sáu chỗ).
+
+       Hai chỗ hỏng thật, mà chỉ lúc xếp cạnh nhau mới lộ:
+         · `.vb-noi--hong` tô `--accent-ink` chứ không phải `--bad` — báo lỗi
+           ở ô viết bài hiện màu tím suốt từ lúc ra đời;
+         · `.bl-duyet-bao--hong` không có luật nào — báo lỗi ở bàn duyệt
+           không đổi màu gì cả.
+
+       Nay một cụm `.bao` lo mọi trạng thái (components.css). Phép kiểm này
+       giữ cho nó ở nguyên một chỗ:
+
+         A · KHÔNG lớp phụ nào được tự khai trạng thái. `.x-bao--hong`,
+             `.x-noi--loi`… đều sai — trạng thái là việc của `.bao--*`.
+         B · Chỗ nào gắn lớp phụ thì PHẢI gắn kèm `bao`, không thì cụm gốc
+             không tới được và dòng ấy mất cỡ chữ, mất màu, mất chiều cao
+             giữ chỗ. */
+    ten: 'Báo tin và trạng thái rỗng dùng chung một cụm, không chỗ nào khai lại',
+    muc: 'loi',
+    chay: () => {
+      const ra = [];
+      const TRANG_THAI = '(ok|hong|loi|cho)';
+
+      /* ── A · lớp phụ tự khai trạng thái ── */
+      const thuMuc = path.join(GOC, 'src', 'styles');
+      if (fs.existsSync(thuMuc)) {
+        for (const ten of fs.readdirSync(thuMuc).filter((x) => x.endsWith('.css'))) {
+          const noi = fs.readFileSync(path.join(thuMuc, ten), 'utf8')
+                        .replace(/\/\*[\s\S]*?\*\//g, '');
+          const re = new RegExp('\\.([a-z][\\w-]*-(?:bao|noi))--' + TRANG_THAI + '\\b', 'g');
+          for (const m of noi.matchAll(re)) {
+            ra.push(`src/styles/${ten} — .${m[1]}--${m[2]} tự khai trạng thái ⇒ `
+                  + `bỏ đi, dùng .bao--${m[2] === 'loi' ? 'hong' : m[2]} của cụm chung`);
+          }
+        }
+      }
+
+      /* ── B · gắn lớp phụ thì phải gắn kèm lớp GỐC của nó ──
+         Hai cụm dùng chung, mỗi cụm một bảng lớp phụ:
+           `.bao`   một dòng báo tin
+           `.trong` "chỗ này không có gì" */
+      const GOC_CUA = {
+        'bl-bao': 'bao', 'sz-bao': 'bao', 'cum-bao': 'bao',
+        'gc-noi': 'bao', 'bl-duyet-bao': 'bao',
+        'ds-trong': 'trong', 'bl-trong': 'trong',
+        'so-trong': 'trong', 'vb-cho': 'trong'
+      };
+      const CHO = Object.keys(GOC_CUA);
+      const nguon = [];
+      const thuJs = path.join(GOC, 'src', 'js');
+      if (fs.existsSync(thuJs)) {
+        for (const x of fs.readdirSync(thuJs).filter((n) => n.endsWith('.js')))
+          nguon.push(['src/js/' + x, path.join(thuJs, x)]);
+      }
+      nguon.push(['tools/build.mjs', path.join(GOC, 'tools', 'build.mjs')]);
+
+      for (const [nhan, duong] of nguon) {
+        if (!fs.existsSync(duong)) continue;
+        const noi = fs.readFileSync(duong, 'utf8');
+        /* Mọi chuỗi ký tự trong mã — chỉ những chuỗi CHỞ TÊN LỚP mới lọt vào
+           vòng dưới, nên không phải hiểu cú pháp JS làm gì. */
+        for (const m of noi.matchAll(/(['"`])([^'"`\n]*)\1/g)) {
+          const chuoi = m[2];
+          const co = CHO.filter((c) => new RegExp('(^|[\\s"\'=])' + c + '($|[\\s"\'])').test(chuoi));
+          if (!co.length) continue;
+          const goc = GOC_CUA[co[0]];
+          if (new RegExp('(^|[\\s"\'=])' + goc + '($|[\\s"\'])').test(chuoi)) continue;
+          ra.push(`${nhan} — "${chuoi.slice(0, 60)}" gắn .${co[0]} mà thiếu .${goc} ⇒ `
+                + `mất cỡ chữ, màu và lề của cụm chung`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── KHÔNG GÕ CỨNG ĐƯỜNG DẪN TRONG dist/assets/ ──
+       Tên file assets mang VÂN TAY NỘI DUNG từ V2.4.3 (`nen.b92c6bac.css`),
+       và đổi mỗi lần nội dung đổi. Gõ cứng một tên nào ở đó thì mã chạy đúng
+       đúng một lượt build, rồi hỏng lặng.
+
+       Đã vấp thật: `docs/logo/dung-logo-dong.mjs` đọc `dist/assets/style.css`.
+       Cái tên ấy còn đúng cho tới lượt chia CSS theo loại trang — từ đó không
+       có file nào tên như vậy nữa, và script ném ENOENT. Không ai biết, vì nó
+       không nằm trong `npm run build` cũng không nằm trong `npm run kiem`;
+       phải có người chạy tay mới thấy.
+
+       Cách đúng: đọc `<link>` / `<script>` của trang đã dựng — trang tự khai
+       nó tải những gì. */
+    ten: 'Không file mã nào gõ cứng một tên file trong dist/assets/',
+    muc: 'loi',
+    chay: () => {
+      const ra = [];
+      const quet = [];
+      const them = (thu, tien) => {
+        if (!fs.existsSync(thu)) return;
+        for (const x of fs.readdirSync(thu, { withFileTypes: true })) {
+          const d = path.join(thu, x.name);
+          if (x.isDirectory()) them(d, tien + x.name + '/');
+          else if (/\.(mjs|js)$/.test(x.name)) quet.push([tien + x.name, d]);
+        }
+      };
+      them(path.join(GOC, 'tools'), 'tools/');
+      them(path.join(GOC, 'src', 'js'), 'src/js/');
+      them(path.join(GOC, 'docs'), 'docs/');
+      them(path.join(GOC, 'functions'), 'functions/');
+
+      for (const [nhan, duong] of quet) {
+        /* Bỏ chú thích trước khi quét. Chỗ GIẢI THÍCH một đường dẫn sai không
+           phải là chỗ DÙNG nó — mà lời giải thích rõ ràng nhất lại chính là
+           lời nhắc lại cái tên đã hỏng. Không lọc thì phép kiểm phạt đúng
+           người đang viết tài liệu cho nó. */
+        const noi = fs.readFileSync(duong, 'utf8')
+                      .replace(/\/\*[\s\S]*?\*\//g, '')
+                      .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+        for (const m of noi.matchAll(/['"`]([^'"`\n]*dist\/assets\/[^'"`\n]+)['"`]/g)) {
+          const d = m[1];
+          /* Chỉ bắt thứ TRÔNG NHƯ MỘT ĐƯỜNG DẪN: không khoảng trắng, không
+             nội suy `${…}`, và kết thúc bằng một phần đuôi file. Câu thông báo
+             lỗi có nhắc tên thư mục thì không phải chuyện của phép kiểm này —
+             bắt cả chúng thì mỗi lời giải thích rõ ràng lại thành một lỗi đỏ,
+             và người ta học cách viết mơ hồ để né. */
+          if (/[\s${}]/.test(d)) continue;
+          if (!/dist\/assets\/[\w.-]+\.\w+$/.test(d)) continue;
+          ra.push(`${nhan} — gõ cứng "${d}" ⇒ tên file assets mang vân tay nội dung, `
+                + `đổi mỗi lượt build. Đọc từ <link> của trang đã dựng.`);
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── BẢNG "FILE NÀO CHỨA GÌ" PHẢI KHỚP src/styles/ THẬT ──
+       `docs/DESIGN-SYSTEM.md` §7 là chỗ duy nhất nói file CSS nào chứa gì và
+       gói nào gồm những file nào. Nó lạc hậu thì người đọc đi sai đường ngay
+       từ câu hỏi đầu tiên ("sửa cái này thì mở file nào").
+
+       Và nó ĐÃ lạc hậu: sau lượt chia CSS theo loại trang, bảng vẫn liệt kê 8
+       file và vẫn nói build gộp tất cả thành một `assets/style.css`. Năm file
+       mới không có tên trong đó suốt nhiều bản.
+
+       Tài liệu không tự kiểm được, nên phải kiểm ở đây. Hai vế:
+         A · mọi file trong `src/styles/` đều có mặt trong bảng, và ngược lại
+         B · mọi gói trong `GOI_CSS` đều có mặt trong bảng gói, và ngược lại */
+    ten: 'Bảng FILE NÀO CHỨA GÌ trong DESIGN-SYSTEM khớp với src/styles/ thật',
+    muc: 'loi',
+    chay: () => {
+      const fDoc = path.join(GOC, 'docs', 'DESIGN-SYSTEM.md');
+      const thuCss = path.join(GOC, 'src', 'styles');
+      if (!fs.existsSync(fDoc) || !fs.existsSync(thuCss)) return [];
+      const doc = fs.readFileSync(fDoc, 'utf8');
+
+      const i = doc.indexOf('## 7 · FILE NÀO CHỨA GÌ');
+      if (i < 0) return ['docs/DESIGN-SYSTEM.md không còn mục "## 7 · FILE NÀO CHỨA GÌ"'];
+      const j = doc.indexOf('\n## ', i + 5);
+      const muc7 = doc.slice(i, j < 0 ? doc.length : j);
+
+      const ra = [];
+
+      /* ── A · danh sách file ── */
+      const thatCss = new Set(fs.readdirSync(thuCss).filter((x) => x.endsWith('.css')));
+      const docCss = new Set();
+      for (const m of muc7.matchAll(/`([a-z-]+\.css)`/g)) docCss.add(m[1]);
+      for (const f of thatCss) {
+        if (!docCss.has(f)) ra.push(`src/styles/${f} có thật nhưng KHÔNG có trong bảng §7`);
+      }
+      for (const f of docCss) {
+        if (!thatCss.has(f)) ra.push(`§7 nhắc \`${f}\` nhưng src/styles/ không có file ấy`);
+      }
+
+      /* ── B · danh sách gói ── */
+      const build = fs.readFileSync(path.join(GOC, 'tools', 'build.mjs'), 'utf8');
+      const kBuild = build.indexOf('const GOI_CSS');
+      const goiThat = new Set();
+      if (kBuild >= 0) {
+        const khoi = build.slice(kBuild, build.indexOf('};', kBuild));
+        for (const m of khoi.matchAll(/^\s*([a-z]+)\s*:\s*\[/gm)) goiThat.add(m[1]);
+      }
+      const goiDoc = new Set();
+      for (const m of muc7.matchAll(/^\| `([a-z]+)` \|/gm)) goiDoc.add(m[1]);
+      for (const g of goiThat) {
+        if (!goiDoc.has(g)) ra.push(`GOI_CSS có gói \`${g}\` nhưng §7 không nhắc tới`);
+      }
+      for (const g of goiDoc) {
+        if (!goiThat.has(g)) ra.push(`§7 nhắc gói \`${g}\` nhưng GOI_CSS không có`);
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── KHÔNG XIN CÂN NẶNG NÀO KHÔNG CÓ FACE ĐỠ ──
+       `fonts.css` khai đúng những cân nặng đã tải về: 400 · 500 · 600. Một
+       luật xin 700 thì trình duyệt không có gì để lấy, nên nó BỊA nét đậm —
+       vẽ đè chính chữ ấy lệch đi vài phần pixel.
+
+       Nét bịa nhoè, và nhoè nhất đúng ở chỗ tiếng Việt cần rõ nhất: dấu mũ,
+       dấu móc, dấu thanh chồng lên nhau ở cỡ chữ thân bài.
+
+       Đã vấp thật, và vấp ở chỗ đọc nhiều nhất: trình duyệt cho `<strong>`
+       và `<b>` cân nặng 700 theo MẶC ĐỊNH, mà `prose.css` không đặt lại. Nên
+       mọi cụm chữ đậm trong mọi bài đều là nét bịa — đo được 30 cụm trên một
+       bài. Không có gì báo, vì CSS không sai cú pháp và chữ vẫn hiện ra.
+
+       Phép kiểm này đọc thẳng `fonts.css` để biết có những face nào, nên tải
+       thêm một cân nặng là nó tự nới theo. */
+    ten: 'Không luật CSS nào xin một cân nặng chữ không có face đỡ',
+    muc: 'loi',
+    chay: () => {
+      const thuCss = path.join(GOC, 'src', 'styles');
+      const fFonts = path.join(thuCss, 'fonts.css');
+      if (!fs.existsSync(fFonts)) return [];
+
+      const co = new Set();
+      for (const m of fs.readFileSync(fFonts, 'utf8').matchAll(/font-weight:\s*(\d+)/g)) {
+        co.add(+m[1]);
+      }
+      if (!co.size) return ['src/styles/fonts.css không khai cân nặng nào — chạy `npm run phong`'];
+
+      const ra = [];
+      for (const ten of fs.readdirSync(thuCss).filter((x) => x.endsWith('.css'))) {
+        if (ten === 'fonts.css') continue;
+        const noi = fs.readFileSync(path.join(thuCss, ten), 'utf8')
+                      .replace(/\/\*[\s\S]*?\*\//g, '');
+        const dong = noi.split('\n');
+        for (let i = 0; i < dong.length; i++) {
+          for (const m of dong[i].matchAll(/font-weight:\s*(\d+)/g)) {
+            const n = +m[1];
+            if (co.has(n)) continue;
+            ra.push(`src/styles/${ten}:${i + 1} — xin font-weight:${n} mà không face nào `
+                  + `có cân nặng ấy (đang có: ${[...co].sort((a, b) => a - b).join(' · ')}) `
+                  + `⇒ trình duyệt bịa nét đậm, chữ nhoè ở dấu tiếng Việt`);
+          }
         }
       }
       return ra;

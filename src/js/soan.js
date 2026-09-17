@@ -1870,7 +1870,7 @@
     /* Dòng trạng thái: nằm ngay dưới thanh nút, và chỉ hiện khi có chuyện.
        Không dùng `alert` cho việc đang chạy — một hộp thoại chặn cả trang thì
        không gõ tiếp được trong lúc ảnh đang lên. */
-    var oBao = el('div', 'sz-bao');
+    var oBao = el('div', 'bao sz-bao');
     oBao.hidden = true;
     oBao.setAttribute('role', 'status');
 
@@ -1878,7 +1878,7 @@
       if (!chu) { oBao.hidden = true; oBao.textContent = ''; return; }
       oBao.hidden = false;
       oBao.textContent = chu;
-      oBao.classList.toggle('sz-bao--hong', !!hong);
+      oBao.classList.toggle('bao--hong', !!hong);
     }
 
     /* ── ĐẾM ẢNH CHƯA CÓ MÔ TẢ ──
@@ -2156,7 +2156,7 @@
         .then(function () {
           dangGui = false;
           if (hangAnh.length) chayHang();
-          else if (!oBao.classList.contains('sz-bao--hong')) nhacMoTa();
+          else if (!oBao.classList.contains('bao--hong')) nhacMoTa();
         });
     }
 

@@ -194,12 +194,12 @@
     khung.appendChild(hangNut);
 
     var bao2 = document.createElement('p');
-    bao2.className = 'kh-bao';
+    bao2.className = 'bao';
     khung.appendChild(bao2);
 
     function noi(chu, hong) {
       bao2.textContent = chu || '';
-      bao2.classList.toggle('kh-bao--hong', !!hong);
+      bao2.classList.toggle('bao--hong', !!hong);
     }
 
     function gui() {

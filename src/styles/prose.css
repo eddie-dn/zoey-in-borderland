@@ -140,6 +140,24 @@
   padding-left:var(--s4);
   border-left:2px solid var(--line);
 }
+/* ══════════════════════════════════════════════════════════════════════
+   CHỮ ĐẬM TRONG BÀI LẤY 600, KHÔNG LẤY 700
+
+   Trình duyệt cho `<strong>` và `<b>` cân nặng 700 theo mặc định. Nhưng bộ
+   phông tự host chỉ có **400 · 500 · 600** — không có một face 700 nào. Xin
+   700 thì trình duyệt không có gì để lấy, nên nó BỊA: tô nét dày thêm bằng
+   cách vẽ đè chính chữ ấy lệch đi vài phần pixel.
+
+   Nét bịa ấy nhoè, và nhoè nhất đúng ở chỗ tiếng Việt cần rõ nhất — dấu mũ,
+   dấu móc, dấu thanh chồng lên nhau ở cỡ chữ thân bài. Đo trên một bài thật:
+   30 cụm chữ đậm, tất cả đều đang là nét bịa.
+
+   600 là nét đậm THẬT của trang, và cũng là nét đậm mà 84 luật CSS khác đang
+   dùng. Bài viết lấy 700 mới là chỗ lạc khỏi phần còn lại.
+
+   Phép kiểm #65 chặn mọi luật xin một cân nặng không có face nào đỡ.
+   ══════════════════════════════════════════════════════════════════════ */
+.prose strong,.prose b{font-weight:600}
 .prose .lead strong{color:var(--text);font-weight:600}
 
 /* ── ĐOẠN CĂN GIỮA ──
@@ -811,7 +829,10 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
 }
-.bl-duyet-bao{margin:0;font-size:var(--fs-2xs);color:var(--text-muted)}
+/* Báo tin ở bàn duyệt — cụm gốc ở `.bao`. Trước bản này `.bl-duyet-bao--hong`
+   được duyet.js gắn lên mà KHÔNG có một luật nào, nên báo lỗi ở đây không đổi
+   màu gì cả. Nay trạng thái do `.bao--hong` lo. */
+.bl-duyet-bao{--bao-mau:var(--text-muted);font-size:var(--fs-2xs);min-height:0}
 
 /* Hàng ở bàn duyệt nay dùng chung `.ad-dong` với ngăn Post và ngăn Category —
    khai một chỗ, ở đầu khối `.ad-*` trong list.css. */
@@ -920,11 +941,10 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-con{font-size:var(--fs-sm);color:var(--text-faint);
   font-variant-numeric:tabular-nums;margin-right:auto}
 
-.bl-bao{margin:var(--s4) 0 0;font-size:var(--fs-sm);line-height:1.6;min-height:1.2em}
-.bl-bao:empty{margin:0;min-height:0}
-.bl-bao--ok{color:var(--ok)}
-.bl-bao--loi{color:var(--bad)}
-.bl-bao--cho{color:var(--text-faint);font-style:italic}
+/* Dòng báo tin của khung bình luận — cụm gốc ở `.bao` (components.css).
+   Ở đây chỉ khai phần KHÁC: khung này rộng và người ta vừa gõ xong một đoạn,
+   nên câu trả lời đọc ở cỡ thân bài chứ không cỡ chú thích. */
+.bl-bao{margin-top:var(--s4);font-size:var(--fs-sm);line-height:1.6}
 
 /* ══════════ MỘT BÌNH LUẬN ══════════
    Hàng có đường kẻ ngăn, không phải thẻ có khung. Ba lý do, theo thứ tự nặng
@@ -982,10 +1002,9 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    thì thấy bằng chính khung đang hiện ra. */
 .bl-mo:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
 
-.bl-trong{
-  font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
-  padding:var(--s4) 0;
-}
+/* Chưa có bình luận nào — cụm gốc ở `.trong`. Lề hẹp hơn danh sách bài: nó
+   nằm giữa hàng nút và ô soạn, hai thứ đã có khoảng cách riêng. */
+.bl-trong{margin-block:var(--s4)}
 
 /* ── HUY HIỆU TÁC GIẢ ── */
 /* Huy hiệu tác giả: chỉ còn chữ, không còn viên thuốc. Nó đứng cạnh một cái
@@ -1118,13 +1137,18 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* Câu báo "đã chép đường dẫn". Nằm cùng hàng, ngay sau ba cái nút: nó chỉ sống
    vài giây, và bắt cả hàng xuống dòng để chở một câu ngắn thì cứ mỗi lần bấm
    chia sẻ là bài lại nhích xuống một nhịp. */
+/* Báo tin trong HÀNG META của bài — cụm gốc ở `.bao`. Khác ở chỗ nó đứng
+   lẫn giữa mấy con số và nhãn, nên nó mặc đúng bộ đồ của hàng ấy: phông nhãn,
+   chữ hoa, cỡ nhỏ nhất. Màu nghỉ đi qua `--bao-mau` để lớp trạng thái còn
+   đè lên được. */
 .cum-bao{
-  margin:0;
+  --bao-mau:var(--accent-ink);
+  min-height:0;
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:.08em;text-transform:uppercase;
-  color:var(--accent-ink);
 }
-.cum-bao--hong{color:var(--bad)}
+/* Rỗng thì BIẾN MẤT hẳn, không chỉ thu chiều cao: nó là một ô trong hàng
+   flex, còn tồn tại là còn ăn một khoảng `gap`. */
 .cum-bao:empty{display:none}
 .meta-row > * + .cum-bao::before{content:none;margin:0}
 

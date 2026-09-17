@@ -155,8 +155,13 @@
   display:flex;gap:6px;align-items:center;margin-right:auto;
   font-size:var(--fs-xs);color:var(--text-muted);cursor:pointer;
 }
-.vb-cho,.vb-noi{margin:0;font-size:var(--fs-xs);color:var(--text-faint)}
-.vb-noi--hong{color:var(--accent-ink)}
+/* `.vb-noi` không còn: dòng báo tin ở hai ngăn Post và Category dùng thẳng
+   `.bao` (components.css), vì nó không cần khác gì cả. Lớp cũ còn kèm một
+   lỗi — `--hong` tô `--accent-ink` chứ không phải `--bad`, nên báo lỗi ở đây
+   hiện màu tím suốt từ lúc ra đời.
+   `.vb-cho` ở lại, nhưng nay là lớp phụ của `.trong` (components.css): nó là
+   trạng thái ĐANG CHỜ, không phải một dòng báo tin. */
+.vb-cho{margin:0}
 .vb-xong{display:flex;flex-direction:column;gap:var(--s3)}
 .vb-xong-de{
   margin:0;font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
@@ -391,12 +396,13 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 
 /* Dòng trạng thái ngay dưới thanh nút. Ẩn hẳn khi không có chuyện — một dải
    trống thường trực ở đó đẩy khung gõ xuống và không nói gì. */
+/* Dòng trạng thái của ô soạn thảo — cụm gốc ở `.bao`. Khác ở chỗ nó là một
+   DẢI nằm sát trên khung gõ, nên có nền chìm và vạch ngăn dưới. */
 .sz-bao{
-  font-size:var(--fs-2xs);line-height:1.4;
+  font-size:var(--fs-2xs);line-height:1.4;min-height:0;
   padding:6px var(--s4);border-bottom:1px solid var(--line);
-  background:var(--surface-sunken);color:var(--text-faint);
+  background:var(--surface-sunken);
 }
-.sz-bao--hong{color:var(--bad)}
 
 /* Kéo một tấm ảnh qua khung: viền đổi màu, nền hơi sáng lên. Không dùng
    `outline` mà dùng `box-shadow` chèn vào trong — outline vẽ ra NGOÀI mép và
@@ -503,7 +509,7 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 /* Dấu đầu dòng là một ký tự, không phải một icon: ba mức phải phân biệt được
    cả khi in ra đen trắng và cả với người không phân biệt được màu. */
 .vb-seo-d{font-size:var(--fs-2xs);line-height:1.45;padding-left:1.15em;position:relative}
-.vb-seo-d::before{position:absolute;left:0;font-weight:700}
+.vb-seo-d::before{position:absolute;left:0;font-weight:600}
 .vb-seo-d--ok{color:var(--text-faint)}
 .vb-seo-d--ok::before{content:"✓";color:var(--ok)}
 .vb-seo-d--nhac{color:var(--text-muted)}
