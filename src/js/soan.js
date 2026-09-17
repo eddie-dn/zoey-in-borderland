@@ -1175,10 +1175,34 @@
        `vach()` giữ nguyên tên và nguyên chỗ gọi: nó nay mở một nhóm MỚI thay
        vì vẽ một cái vạch. Mọi chỗ gọi cũ vẫn đúng nghĩa "từ đây là nhóm
        khác". */
+    /* ── HAI HÀNG, CHIA THEO NGHĨA ──
+       Bản trước để một hàng dài rồi cho nó tự rớt xuống hàng hai khi hết chỗ.
+       Chỗ rớt vì thế do BỀ NGANG CỬA SỔ quyết định, không do nghĩa: cùng một
+       thanh, màn rộng thì "x² x₂ ⌨" nằm hàng trên, màn hẹp hơn một chút thì
+       nó xuống hàng dưới. Người dùng không bao giờ nhớ được nút ở đâu.
+
+       Nay hai hàng CỐ ĐỊNH, và ranh giới là một câu hỏi trả lời được:
+
+         hàng 1 — đổi CHỮ:   hoàn tác · đậm nghiêng liên kết · gạch mã nhấn
+                             màu · chỉ số trên dưới phím
+         hàng 2 — đổi KHỐI:  tiêu đề trích dẫn danh sách căn dòng · ảnh khối ·
+                             thụt ra vào đoạn vạch · dọn định dạng
+
+       "Đổi chữ" là việc làm với phần đang bôi đen; "đổi khối" là việc làm với
+       cả đoạn con trỏ đang đứng. Hai loại ấy khác nhau ở tay người dùng, nên
+       tách ra thì tìm nhanh hơn hẳn — và mỗi hàng còn chừng mười nút, đủ ngắn
+       để quét một lượt bằng mắt. */
+    /* Dựng sẵn cả hai hàng, rồi `vach(n)` thả nhóm vào hàng n. Làm vậy thì
+       THỨ TỰ MÃ giữ nguyên — không phải dời mấy khối bốn chục dòng đi chỗ
+       khác chỉ để đổi chỗ chúng trên màn hình, và mỗi nhóm vẫn nằm cạnh đúng
+       cái chú thích giải thích nó. */
+    var hang = [el('div', 'sz-hang'), el('div', 'sz-hang')];
+    thanh.appendChild(hang[0]);
+    thanh.appendChild(hang[1]);
     var nhomNay = null;
-    function vach() {
+    function vach(n) {
       nhomNay = el('span', 'sz-nhom');
-      thanh.appendChild(nhomNay);
+      hang[(n || 1) - 1].appendChild(nhomNay);
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1209,12 +1233,12 @@
     /* Mở nhóm đầu tiên TRƯỚC nút đầu tiên: thiếu dòng này thì Undo/Redo rơi
        thẳng vào thanh chứ không vào nhóm nào, và chúng là hai nút duy nhất có
        thể bị xé khỏi nhau khi xuống hàng. */
-    vach();
+    vach(1);
     nut(svg(['M3 10h11a5 5 0 0 1 0 10h-3', 'M7 6 3 10l4 4']),
         L('undo', 'Undo') + ' (⌘Z)', function () { lenh('undo'); });
     nut(svg(['M21 10H10a5 5 0 0 0 0 10h3', 'M17 6l4 4-4 4']),
         L('redo', 'Redo') + ' (⇧⌘Z)', function () { lenh('redo'); });
-    vach();
+    vach(1);
 
     /* ── CHÍNH 2: ba nét của một câu ──
        Đậm · nghiêng · link. Ba thứ này chiếm gần hết số lần bấm của cả thanh,
@@ -1223,7 +1247,7 @@
     var nNgh = nut('I', L('italic', 'Italic') + ' (⌘I)', function () { lenh('italic'); }, 'sz-nut--ngh');
     nut(svg('M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1'),
         L('link', 'Link') + ' (⌘K)', chenLink);
-    vach();
+    vach(2);
 
     /* ── CHÍNH 3: dàn bài ── */
     nut('H2', L('h2', 'Heading'), function () { lenh('formatBlock', 'h2'); }, 'sz-nut--h');
@@ -1248,7 +1272,7 @@
                      function () { moBangCan(); });
     nutCan.setAttribute('aria-expanded', 'false');
     var bangCan = veBangCan();
-    vach();
+    vach(2);
 
     /* ── CHÍNH 4: hai cửa chèn ──
        Ảnh là thứ chèn nhiều nhất; Blocks là cửa vào mười sáu thứ còn lại. Hai
@@ -1271,7 +1295,7 @@
                       function () { moBangKhoi(); }, 'sz-nut--khoi');
     nutKhoi.setAttribute('aria-expanded', 'false');
     var bangKhoi = veBangKhoi();
-    vach();
+    vach(1);
 
     /* ── PHỤ 1: nhấn một mẩu chữ ──
        Bốn nét cùng một họ: chúng bọc một đoạn chữ đã bôi đen, bấm lại thì gỡ.
@@ -1293,7 +1317,7 @@
     var nutMau = nut(el('span', 'sz-cham'), L('color', 'Text colour'), function () { moBangMau(); });
     nutMau.classList.add('sz-nut--mau');
     var bangMau = veBangMau();
-    vach();
+    vach(1);
 
     /* ── PHỤ 2: ba nét kỹ thuật ──
        Chỉ số trên, chỉ số dưới, phím. Tách khỏi nhóm trên vì chúng thuộc một
@@ -1317,7 +1341,7 @@
         goBoc(khung, function (n) { return n.nodeName === 'KBD'; });
       capNhat();
     });
-    vach();
+    vach(2);
 
     /* ── PHỤ 3: sửa hình dạng của một đoạn ──
        Thụt vào / thụt ra là cách DUY NHẤT để có danh sách lồng nhau — gõ dấu
@@ -1354,7 +1378,7 @@
       lenh('formatBlock', 'p');
     }, 'sz-nut--h');
     nut(svg('M4 12h16'), L('hr', 'Divider'), function () { lenh('insertHorizontalRule'); });
-    vach();
+    vach(2);
 
     /* ── Nhóm 5: dọn ── */
     nut(svg(['M4 7h16', 'M9 7V5h6v2', 'M6 7l1 13h10l1-13']), L('clear', 'Clear formatting'), function () {
@@ -2439,8 +2463,8 @@
       nutMD.classList.toggle('sz-nut--bat', !oMD.hidden);
       if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
     });
-    thanh.appendChild(el('span', 'sz-day'));
-    thanh.appendChild(nutMD);
+    hang[1].appendChild(el('span', 'sz-day'));
+    hang[1].appendChild(nutMD);
 
     /* ══════════ TRẠNG THÁI NÚT ══════════
        Nút đang bật thì phải nhìn ra là đang bật — không thì bôi đen một cụm

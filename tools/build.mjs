@@ -693,6 +693,7 @@ const NHAN = {
   cancelReply : 'Cancel reply',
   moreReplies : 'Show {n} earlier replies',
   /* Sửa lời của chính mình — tối đa ba lượt. Con số in ngay trong nhãn nút. */
+  changeName  : 'change',
   edit        : 'Edit',
   editLeft    : '{n} edits left',
   cancelEdit  : 'Cancel',
@@ -2157,6 +2158,7 @@ function binhLuanHTML(bai) {
   const nhanJS = attr(JSON.stringify({
     author: NHAN.author, anon: NHAN.anon, reply: NHAN.reply,
     replyTo: NHAN.replyTo, cancelReply: NHAN.cancelReply,
+    changeName: NHAN.changeName,
     edit: NHAN.edit, editLeft: NHAN.editLeft, cancelEdit: NHAN.cancelEdit,
     saveEdit: NHAN.saveEdit, editOk: NHAN.editOk, editWait: NHAN.editWait,
     editFail: NHAN.editFail,

@@ -115,22 +115,59 @@
      cũng phải đổi theo mà không cần tải lại trang. */
   var TEN_CHU = khoi.dataset.chuTen || '';
 
+  /* ── AI ĐANG GÕ: MỘT DÒNG, KHÔNG PHẢI HAI Ô ──
+     Hai ô Tên và Email chiếm gần một nửa chiều cao khung soạn, và chúng hỏi
+     đúng một câu mà máy đã biết câu trả lời — tên lần trước đã lưu ở
+     `localStorage` (xem `dienLaiTen`).
+
+     Nên khi đã biết tên thì gấp hai ô ấy lại thành MỘT DÒNG: "Posting as
+     Mai · change". Bấm `change` là mở lại hai ô. Ai chưa từng bình luận thì
+     vẫn thấy hai ô như cũ — không giấu thứ họ bắt buộc phải điền.
+
+     Chủ trang đăng nhập rồi thì hai ô KHÔNG mở lại được: tên lấy thẳng từ
+     site.config.json, gõ tên khác vào cũng không đổi được gì. */
+  var moHang = false;
+
   function veVaiTro() {
     var hang = form && form.querySelector('.bl-hang');
     if (!hang) return;
-    var la = coKhoa() && TEN_CHU;
-    hang.hidden = !!la;
+    var laChu = coKhoa() && TEN_CHU;
+    var tenNho = '';
+    if (!laChu) {
+      try { tenNho = (JSON.parse(localStorage.getItem(KHOA_TEN) || 'null') || {}).ten || ''; }
+      catch (e) { tenNho = ''; }
+    }
+    var gap = laChu || (!!tenNho && !moHang);
+    hang.hidden = gap;
+
     var dau = khoi.querySelector('.bl-vaitro');
-    if (la) {
-      if (!dau) {
-        dau = document.createElement('p');
-        dau.className = 'bl-vaitro';
-        hang.parentNode.insertBefore(dau, hang);
-      }
-      dau.textContent = L('laChu', 'Posting as {ten}').replace('{ten}', TEN_CHU);
-      dau.hidden = false;
-    } else if (dau) {
-      dau.hidden = true;
+    if (!gap) { if (dau) dau.hidden = true; return; }
+
+    if (!dau) {
+      dau = document.createElement('p');
+      dau.className = 'bao bl-vaitro';
+      hang.parentNode.insertBefore(dau, hang);
+    }
+    dau.textContent = L('laChu', 'Posting as {ten}')
+                        .replace('{ten}', laChu ? TEN_CHU : tenNho);
+    dau.hidden = false;
+
+    /* Nút "đổi" chỉ có khi người đọc THẬT SỰ đổi được — tức không phải chủ
+       trang. Bày một cái nút không làm gì là tệ hơn không bày. */
+    var doi = dau.querySelector('.bl-doi-ten');
+    if (laChu) { if (doi) doi.remove(); return; }
+    if (!doi) {
+      doi = document.createElement('button');
+      doi.type = 'button';
+      doi.className = 'bl-doi-ten';
+      doi.textContent = L('changeName', 'change');
+      doi.addEventListener('click', function () {
+        moHang = true;
+        veVaiTro();
+        if (form.ten) form.ten.focus();
+      });
+      dau.appendChild(document.createTextNode(' · '));
+      dau.appendChild(doi);
     }
   }
 
@@ -899,6 +936,10 @@
       if (form.email && !form.email.value && d.email) form.email.value = d.email;
     } catch (x) { /* như trên */ }
   })();
+
+  /* Chạy lại sau khi đã điền tên: lượt gọi đầu ở cuối file chạy TRƯỚC đoạn
+     điền, nên lúc ấy chưa biết có tên để mà gấp hai ô lại. */
+  veVaiTro();
 
   /* Đếm ký tự còn lại — chỉ hiện khi đã gõ quá nửa hạn mức, để nó không
      ngồi đó đếm ngược ngay từ chữ đầu tiên như đang thúc người ta. */

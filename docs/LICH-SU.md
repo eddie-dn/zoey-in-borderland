@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.6.9 | 2026-09-17 | 09 | thanh nút ô soạn chia hai hàng cố định theo nghĩa; đường kẻ đọc tiếp ở cột bên thôi thò thụt; khung trả lời gấp hai ô tên email thành một dòng |
+| V2.6.8 | 2026-09-17 | 08 | nền 霜降: thêm hai ngọn núi cao xa, và sương nay XOÁ mực thay vì tô trắng nên mới thấy được |
 | V2.6.7 | 2026-09-17 | 07 | sửa lỗi bàn duyệt báo rỗng: câu truy vấn chọn cột soSua trước khi cột ấy được thêm; và thôi biến mọi lỗi truy vấn thành không có gì |
 | V2.6.6 | 2026-09-17 | 06 | khối đọc tiếp ở cột bên có lại đường kẻ giữa các dòng |
 | V2.6.5 | 2026-09-17 | 05 | 霜降 có favicon và ảnh chia sẻ riêng; ảnh bìa tự sinh thêm hai cặp màu giấy-mực; ảnh chia sẻ Tĩnh lặng theo nền mới |
@@ -217,6 +219,43 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.6.9 — 17-Sep-2026
+
+- **Thanh nút ô soạn chia hai hàng CỐ ĐỊNH, theo nghĩa.** Bản trước để một
+  hàng dài rồi cho nó tự rớt khi hết chỗ — nghĩa là chỗ rớt do BỀ NGANG CỬA SỔ
+  quyết định: cùng một thanh, màn rộng thì `x² x₂ ⌨` nằm hàng trên, hẹp hơn
+  một chút thì nó xuống hàng dưới, và không ai nhớ được nút ở đâu. Nay hàng 1
+  đổi CHỮ (việc làm với phần đang bôi đen), hàng 2 đổi KHỐI (việc làm với cả
+  đoạn con trỏ đang đứng) — bốn nhóm mỗi hàng.
+- **Đường kẻ đọc tiếp ở cột bên thôi thò thụt.** Luật gốc đặt
+  `align-items:flex-start` cho dải hai đầu, mà bản cột bên chỉ đổi chiều thành
+  cột chứ không đổi cái đó — nên mỗi dòng rộng đúng bằng tên bài trong nó, và
+  sợi kẻ dài ngắn theo. Đây là lần thứ hai cùng một kiểu lỗi (lần trước là
+  `align-items:baseline` ở cùng khối này).
+- **Khung trả lời gọn lại.** Hai ô Tên và Email chiếm gần một nửa chiều cao
+  khung soạn, mà chúng hỏi đúng một câu máy đã biết câu trả lời — tên lần
+  trước đã lưu ở `localStorage`. Nay gấp thành một dòng "Posting as Mai ·
+  change"; khung từ chừng 400px còn **298px**. Ai chưa từng bình luận thì vẫn
+  thấy hai ô như cũ.
+
+## V2.6.8 — 17-Sep-2026
+
+- **Sương trên nền 霜降 nay mới thật sự thấy được.** Bản trước vẽ mây bằng màu
+  TRẮNG chồng lên, và nó không bao giờ hiện ra — lý do hiển nhiên khi nói
+  thành lời: canvas nền trong suốt nằm trên một trang GIẤY TRẮNG, nên tô trắng
+  lên nó là tô trắng lên trắng. Nay dùng `destination-out`: sương XOÁ mực núi
+  đi, giấy trắng phía sau hiện ra. Đó đúng là cách mây được vẽ trong tranh
+  thuỷ mặc — chỗ trắng là chỗ CHỪA LẠI, không phải chỗ tô thêm.
+- **Thêm hai ngọn núi cao ở xa.** Nếp núi dựng bằng tổng sin thì ra một dải
+  đồi trải đều — làm nền thì được, nhưng không có gì để mắt đậu. Hai ngọn cao
+  cho cả bức một điểm nhìn, và mây che ngang lưng một ngọn núi mới là hình ảnh
+  làm nên bức tranh.
+- **Núi xa tô NGƯỢC với núi gần.** Núi gần nhạt ở đỉnh, đậm xuống chân. Núi xa
+  thì đậm nhất ngay tại đường sống rồi nhoè xuống — tô như núi gần thì cái
+  đỉnh, thứ duy nhất làm nó ra một NGỌN NÚI, lại là chỗ mờ nhất và cả hình tan
+  thành một vệt loang không có dáng. Kèm theo, vài vệt sương mỏng vẽ thật ở
+  nửa trên màn, nơi không có mực để mà xoá.
 
 ## V2.6.7 — 17-Sep-2026
 

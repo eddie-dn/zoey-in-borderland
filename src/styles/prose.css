@@ -624,6 +624,11 @@
    khối rồi, thêm nữa là hai sợi sát nhau. */
 .ben .rn-grid{
   flex-direction:column;gap:0;
+  /* `stretch` phải khai lại: luật gốc đặt `align-items:flex-start` cho dải
+     hai đầu (ở đó mỗi ô co theo chữ là đúng). Đổi chiều thành cột mà không
+     đổi cái này thì mỗi DÒNG rộng đúng bằng tên bài trong nó — và đường kẻ
+     trên mỗi dòng dài ngắn theo, thò thụt so với sợi kẻ của cả khối. */
+  align-items:stretch;
   padding-top:var(--s3);border-top:1px solid var(--line);
 }
 .ben .rn-dong + .rn-dong{border-top:1px solid var(--line);margin-top:var(--s2)}
@@ -988,6 +993,17 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   display:grid;gap:var(--s4);
   grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));
 }
+/* Dòng "Posting as Mai · change" thay cho hai ô Tên/Email khi máy đã nhớ tên.
+   Nó là một dòng BÁO TIN, nên dùng cụm `.bao` (components.css) — chỉ thêm nét
+   nhấn cho cái tên, vì đó là thứ người ta cần liếc để biết mình đang gửi dưới
+   danh nghĩa nào. */
+.bl-vaitro{color:var(--text-muted)}
+.bl-doi-ten{
+  appearance:none;border:0;background:none;padding:0;cursor:pointer;
+  font:inherit;color:var(--accent-ink);
+  text-decoration:underline;text-underline-offset:3px;
+}
+.bl-doi-ten:hover{color:var(--accent-ink-hover)}
 .bl-o{display:flex;flex-direction:column;gap:6px}
 .bl-o > span{
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;

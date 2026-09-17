@@ -23,9 +23,15 @@
   background:var(--surface-solid);
   overflow:visible;
 }
+/* ── THANH LÀ HAI HÀNG, KHÔNG PHẢI MỘT DÃY TỰ RỚT ──
+   Xem chú thích ở `hang` trong src/js/soan.js: hàng 1 đổi CHỮ, hàng 2 đổi
+   KHỐI. Chỗ xuống hàng do nghĩa quyết định, không do bề ngang cửa sổ — nút
+   không bao giờ đổi chỗ khi kéo rộng hay thu hẹp trình duyệt.
+
+   Thanh nay xếp DỌC hai hàng con; mỗi hàng con mới là flex ngang. */
 .sz-thanh{
   position:sticky;top:calc(var(--header-h) + 2px);z-index:5;
-  display:flex;flex-wrap:wrap;align-items:center;gap:2px;
+  display:flex;flex-direction:column;gap:3px;
   padding:5px 6px;
   border-bottom:1px solid var(--line);
   border-radius:var(--r-sm) var(--r-sm) 0 0;
@@ -33,6 +39,11 @@
      trong thì chữ chạy xuyên qua mấy cái nút. */
   background:var(--surface-sunken);
 }
+/* Mỗi hàng con VẪN wrap: ở màn rất hẹp một hàng mười nút cũng không đủ chỗ,
+   và lúc ấy rớt xuống trong PHẠM VI hàng ấy là đúng — nó vẫn ở cùng nhóm
+   nghĩa, chỉ xuống một dòng. */
+.sz-hang{display:flex;flex-wrap:wrap;align-items:center;gap:2px;min-width:0}
+
 .sz-nut{
   appearance:none;border:1px solid transparent;background:none;cursor:pointer;
   width:28px;height:28px;padding:0;

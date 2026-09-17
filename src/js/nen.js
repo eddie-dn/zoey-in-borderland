@@ -786,12 +786,31 @@
      một dòng chữ. Theme 霜降 sinh ra để nhìn ảnh và đọc lâu — nền mà tranh
      phần thì hỏng đúng cái lý do nó tồn tại. */
   function dungMay() {
-    var may = [], nui = null, W0 = 0, H0 = 0;
+    var may = [], vet = [], nui = null, W0 = 0, H0 = 0;
+
+    /* Một vệt sương: dải dẹt nằm ngang, trôi rất chậm ở NỬA TRÊN màn — chỗ
+       không có mực núi để mây xoá. Xem lý do đầy đủ ở vòng vẽ trong `ve`. */
+    function moiVet(batDau) {
+      var r = 140 + Math.random() * 260;
+      return {
+        r: r,
+        x: batDau ? Math.random() * (W + r * 2) - r : -r * 2,
+        y: H * (0.10 + Math.random() * 0.44),
+        v: 0.03 + Math.random() * 0.07,
+        /* Dưới .05 — đủ để thấy có gì trôi khi nhìn vào khoảng trống, không
+           đủ để đọc ra là một vật. */
+        mo: 0.018 + Math.random() * 0.026
+      };
+    }
 
     /* Một nếp núi: đường gấp khúc mềm dựng bằng tổng ba sóng sin lệch pha.
        Tổng sin chứ không phải random từng điểm — random cho ra răng cưa, mà
        sườn núi thì liền mạch. Ba tần số để nó không đều đặn như sóng nước. */
-    function veNui(c, y0, cao, mo, hat) {
+    /* `dinh` (không bắt buộc) = một ngọn CAO đứng riêng, cho ở [tâm, bề rộng].
+       Nếp núi thường dựng bằng tổng sin thì ra một dải đồi trải đều — đẹp làm
+       nền, nhưng không có gì để mắt đậu. Một ngọn cao ở xa cho cả bức có điểm
+       nhìn, và đó chính là thứ làm nó ra "thuỷ mặc" chứ không ra "sóng". */
+    function veNui(c, y0, cao, mo, hat, dinh) {
       c.beginPath();
       c.moveTo(0, H0);
       for (var x = 0; x <= W0; x += 4) {
@@ -799,17 +818,43 @@
         var h = Math.sin(u * 6.1 + hat) * 0.45
               + Math.sin(u * 2.3 + hat * 1.7) * 0.36
               + Math.sin(u * 11.4 + hat * 0.6) * 0.19;
+        if (dinh) {
+          /* Đường chuông: cao nhất ở tâm, tắt dần ra hai bên. Cộng THÊM vào
+             nếp có sẵn chứ không thay nó — ngọn núi mọc LÊN TỪ dãy, không
+             phải dán đè lên dãy. */
+          for (var k = 0; k < dinh.length; k++) {
+            var d = (u - dinh[k][0]) / dinh[k][1];
+            h += dinh[k][2] * Math.exp(-d * d * 4);
+          }
+        }
         c.lineTo(x, y0 - h * cao);
       }
       c.lineTo(W0, H0);
       c.closePath();
-      /* Chuyển dần lên trong suốt ở đỉnh: núi thuỷ mặc không có đường viền
-         trên, nó tan vào giấy. Đây là chỗ làm nó ra mực chứ không ra hình cắt
-         dán. */
-      var g = c.createLinearGradient(0, y0 - cao, 0, y0 + cao * 0.9);
-      g.addColorStop(0, 'rgba(17,19,21,0)');
-      g.addColorStop(0.45, 'rgba(17,19,21,' + (mo * 0.72).toFixed(3) + ')');
-      g.addColorStop(1, 'rgba(17,19,21,' + mo.toFixed(3) + ')');
+
+      /* ── HAI CÁCH TÔ, CHO HAI LOẠI NÚI ──
+         NÚI GẦN (không có `dinh`): nhạt ở đỉnh, đậm dần xuống chân. Đỉnh tan
+         vào giấy — núi thuỷ mặc không có đường viền trên.
+
+         NÚI XA (có `dinh`): NGƯỢC LẠI — đậm nhất ngay tại đường sống rồi
+         nhoè dần xuống. Đây là chỗ bản trước làm sai: tô như núi gần thì cái
+         đỉnh — thứ duy nhất làm nó ra một NGỌN NÚI — lại là chỗ mờ nhất, và
+         cả hình tan thành một vệt loang không có dáng.
+
+         Nhìn một dãy núi xa qua sương thì đúng như vậy: đường sống cắt vào
+         nền trời còn đọc được, còn chân núi thì chìm trong sương. */
+      var g;
+      if (dinh) {
+        g = c.createLinearGradient(0, y0 - cao * 1.6, 0, y0 + cao * 0.5);
+        g.addColorStop(0, 'rgba(17,19,21,' + mo.toFixed(3) + ')');
+        g.addColorStop(0.62, 'rgba(17,19,21,' + (mo * 0.55).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(17,19,21,0)');
+      } else {
+        g = c.createLinearGradient(0, y0 - cao, 0, y0 + cao * 0.9);
+        g.addColorStop(0, 'rgba(17,19,21,0)');
+        g.addColorStop(0.45, 'rgba(17,19,21,' + (mo * 0.72).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(17,19,21,' + mo.toFixed(3) + ')');
+      }
       c.fillStyle = g;
       c.fill();
     }
@@ -871,6 +916,10 @@
         may = [];
         for (var i = 0; i < n; i++) may.push(moiMay(true));
 
+        var nv = Math.max(3, Math.min(9, Math.round(W / 220)));
+        vet = [];
+        for (var j = 0; j < nv; j++) vet.push(moiVet(true));
+
         /* Canvas phụ cho núi. Vẽ ở đúng cỡ CSS rồi để phép dán tự lo tỉ lệ —
            nhân thêm dpr ở đây là tốn bộ nhớ cho một hình vốn đã mờ tịt. */
         nui = document.createElement('canvas');
@@ -878,14 +927,22 @@
         nui.height = Math.max(1, Math.round(H0));
         var c = nui.getContext('2d');
         /* Ba nếp, xa trước gần sau: nếp xa nhạt và cao, nếp gần đậm và thấp. */
-        /* Ba nấc đậm này đã tăng một lượt so với bản đầu (.045/.062/.080).
-           Ở mức cũ, núi mờ tới nỗi MÂY không còn gì để che — mà mây ở đây là
-           màu TRẮNG, nên trên nền giấy trắng nó chỉ hiện ra được ở đúng chỗ
-           có mực để xoá đi. Núi nhạt quá thì cả hiệu ứng thành một tấm giấy
-           trắng đứng yên. */
-        veNui(c, H0 * 0.62, H0 * 0.17, 0.055, 0.0);
-        veNui(c, H0 * 0.74, H0 * 0.13, 0.080, 2.4);
-        veNui(c, H0 * 0.86, H0 * 0.10, 0.105, 5.1);
+        /* ── NĂM LỚP, XA TRƯỚC GẦN SAU ──
+           Hai lớp đầu là NÚI XA: cao hơn hẳn, nhạt hơn hẳn, mỗi lớp có một
+           ngọn nhô lên. Chúng đứng ở nửa trên khung để còn chỗ cho mây trôi
+           ngang qua chân — mây che ngang lưng một ngọn núi cao là hình ảnh
+           làm nên cả bức, còn mây trôi trên một dãy đồi thấp thì chỉ là mây
+           trôi trên trời.
+
+           Ba lớp sau là dãy gần, đậm dần xuống chân màn.
+
+           Mọi nấc đậm đã tăng một lượt nữa so với bản trước: mây nay XOÁ mực
+           (xem `ve`), nên càng nhiều mực thì cú xoá càng đọc được. */
+        veNui(c, H0 * 0.56, H0 * 0.34, 0.085, 1.3, [[0.23, 0.10, 0.85]]);
+        veNui(c, H0 * 0.60, H0 * 0.28, 0.070, 3.7, [[0.69, 0.09, 0.72]]);
+        veNui(c, H0 * 0.72, H0 * 0.15, 0.060, 0.0);
+        veNui(c, H0 * 0.81, H0 * 0.12, 0.080, 2.4);
+        veNui(c, H0 * 0.90, H0 * 0.09, 0.100, 5.1);
       },
 
       ve: function (t) {
@@ -902,18 +959,57 @@
           m.x += m.v * (1 + song * 0.25);
           var ly = song * m.bien;
           if (m.x - m.r * 2.4 > W) { may[i] = moiMay(false); continue; }
+          /* ── MÂY LÀ MỘT CÁI TẨY, KHÔNG PHẢI MỘT NÉT VẼ ──
+             Bản trước vẽ mây bằng màu TRẮNG chồng lên. Nó không bao giờ hiện
+             ra được, và lý do thì hiển nhiên khi nói thành lời: canvas này
+             trong suốt và nằm trên một trang GIẤY TRẮNG, nên tô trắng lên nó
+             là tô trắng lên trắng.
+
+             `destination-out` mới đúng việc: nó XOÁ phần alpha đã có ở chỗ
+             hình được vẽ. Mực núi bị tẩy đi, giấy trắng phía sau hiện ra —
+             tức là sương che khuất núi, đúng cách mây được vẽ trong tranh
+             thuỷ mặc (chỗ trắng là chỗ CHỪA LẠI, không phải chỗ tô thêm).
+             Và vì nó tẩy theo gradient tròn, mép sương tan dần chứ không có
+             đường viền. */
+          ctx.globalCompositeOperation = 'destination-out';
           for (var k = 0; k < m.cum.length; k++) {
             var q = m.cum[k];
             var g = ctx.createRadialGradient(m.x + q.dx, m.y + q.dy + ly, 0,
                                              m.x + q.dx, m.y + q.dy + ly, q.rr);
-            g.addColorStop(0, 'rgba(255,255,255,' + m.mo.toFixed(3) + ')');
-            g.addColorStop(0.55, 'rgba(250,251,252,' + (m.mo * 0.6).toFixed(3) + ')');
-            g.addColorStop(1, 'rgba(255,255,255,0)');
+            /* Màu ở đây KHÔNG quan trọng, chỉ alpha quan trọng — xem chú thích
+               về `destination-out` ở đầu vòng lặp. Để đen cho rõ ý: đây là một
+               cái tẩy, không phải một nét vẽ. */
+            g.addColorStop(0, 'rgba(0,0,0,' + m.mo.toFixed(3) + ')');
+            g.addColorStop(0.55, 'rgba(0,0,0,' + (m.mo * 0.6).toFixed(3) + ')');
+            g.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.fillStyle = g;
             ctx.beginPath();
             ctx.arc(m.x + q.dx, m.y + q.dy + ly, q.rr, 0, Math.PI * 2);
             ctx.fill();
           }
+        }
+        ctx.globalCompositeOperation = 'source-over';
+
+        /* ── VỆT SƯƠNG MỎNG, VẼ THẬT ──
+           Phần trên chỉ XOÁ, nên ở khoảng giấy trống — chỗ không có mực núi —
+           nó không để lại gì. Mà khoảng trống ấy chiếm nửa trên màn hình, và
+           một nửa màn hình đứng im thì cả hiệu ứng đọc ra là một tấm hình
+           tĩnh có góc dưới hơi động đậy.
+
+           Nên thêm vài vệt sương XÁM rất mỏng, vẽ bình thường. Chúng đi chậm
+           hơn mây (lớp xa nhất), và alpha dưới .05 — đủ để thấy có gì trôi
+           khi nhìn vào khoảng trống, không đủ để đọc ra là một vật. */
+        for (var j = 0; j < vet.length; j++) {
+          var v = vet[j];
+          v.x += v.v;
+          if (v.x - v.r * 2 > W) { vet[j] = moiVet(false); continue; }
+          var gv = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, v.r);
+          gv.addColorStop(0, 'rgba(42,52,64,' + v.mo.toFixed(3) + ')');
+          gv.addColorStop(1, 'rgba(42,52,64,0)');
+          ctx.fillStyle = gv;
+          ctx.beginPath();
+          ctx.ellipse(v.x, v.y, v.r, v.r * 0.26, 0, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
     };
