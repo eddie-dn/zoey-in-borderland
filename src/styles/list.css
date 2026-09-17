@@ -1140,6 +1140,34 @@
   letter-spacing:var(--ls-label);text-transform:uppercase;
 }
 .vb-duong code{font-size:var(--fs-xs);color:var(--text-muted)}
+
+/* ── ĐƯỜNG DẪN SỬA ĐƯỢC, NHÌN RA MỘT ĐƯỜNG DẪN ──
+   Cả cụm là một khối liền: phần cố định (`/posts/tam-ly/`) và phần gõ được
+   nằm chung một khung viền, cùng phông máy chữ, cùng cỡ. Tách ô gõ ra thành
+   một `<input>` riêng có nhãn "Slug" thì người viết bài phải tự ghép trong
+   đầu xem đường dẫn cuối cùng ra làm sao — mà ghép sai là đăng sai. */
+.vb-duong-o{
+  display:inline-flex;align-items:center;min-width:0;flex:1 1 14rem;max-width:100%;
+  padding:5px var(--s3);border-radius:var(--r-sm);
+  background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+  transition:box-shadow var(--dur-fast);
+}
+.vb-duong-o:focus-within{box-shadow:inset 0 0 0 1px var(--accent)}
+.vb-duong-o code{flex:none;white-space:nowrap}
+.vb-duong-o input{
+  flex:1 1 4rem;min-width:0;
+  border:0;background:none;outline:none;padding:0;
+  font-family:var(--font-mono);font-size:var(--fs-xs);
+  color:var(--text);
+}
+/* Dòng nhắc dưới ô đường dẫn. Rỗng thì không chiếm chỗ — bình thường nó im
+   lặng, và chỉ lên tiếng đúng lúc có gì đáng nói. */
+.vb-duong-bao{
+  margin:6px 0 0;font-size:var(--fs-2xs);line-height:1.5;color:var(--text-faint);
+}
+.vb-duong-bao:empty{display:none}
+.vb-duong-bao--nhac{color:var(--warn)}
 /* ── BACK VÀ SAVE ĐỨNG CẠNH NHAU ──
    Trước đây mỗi nút tự đẩy mình sang phải bằng `margin-left:auto`, nên cái ô
    đánh dấu nháp nằm mép trái, "Back" trôi ra giữa và "Save" ra tận mép phải —
@@ -1774,6 +1802,58 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   padding:var(--s3) var(--s4);
 }
 .sz-bang--mau{display:flex;flex-wrap:wrap;gap:var(--s1)}
+
+/* ── BẢNG KHỐI ──
+   Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì tám ô chip xếp
+   ngang là đủ (màu tự nói ra nó là màu gì), còn ở đây "Note" và "Tip" trông
+   giống hệt nhau nếu chỉ có tên — câu mô tả mới là thứ phân biệt. */
+.sz-bang--khoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:2px}
+.sz-khoi-nut{
+  appearance:none;border:0;background:none;cursor:pointer;text-align:left;
+  display:flex;flex-direction:column;gap:1px;
+  padding:7px var(--s3);border-radius:var(--r-sm);
+  transition:background var(--dur-fast);
+}
+.sz-khoi-nut:hover{background:var(--surface-solid)}
+.sz-khoi-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sz-khoi-ten{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text);
+}
+.sz-khoi-mo{font-size:var(--fs-2xs);line-height:1.35;color:var(--text-faint)}
+
+/* ── KHỐI ::: NGAY TRONG KHUNG GÕ ──
+   Viền trái đậm và một nhãn nhỏ ở đầu: đủ để nhìn ra "đây là một ô riêng, và
+   nó là loại này", mà không phải chép nguyên bộ màu của bốn kiểu callout trên
+   trang thật sang đây. Khung soạn thảo không cần giống hệt trang đã dựng — nó
+   cần nói đúng CẤU TRÚC. */
+.sz-khung .sz-khoi{
+  margin:1em 0;padding:var(--s3) var(--s4);
+  border-left:3px solid var(--accent);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+  background:var(--surface-sunken);
+}
+.sz-khung .sz-khoi-nhan{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+  margin-bottom:var(--s2);
+  /* Con trỏ không vào được nhãn (`contenteditable=false` ở HTML), nên cũng
+     đừng để nó trông như chỗ gõ được. */
+  user-select:none;cursor:default;
+}
+.sz-khung .sz-khoi > *:last-child{margin-bottom:0}
+/* Mục có ô đánh dấu: vẽ cái ô bằng ::marker của chính <li>, không chèn thêm
+   một <input> — input trong contenteditable thì bấm vào là con trỏ nhảy vào
+   trong nó, và nó cũng không đi ra Markdown được. */
+.sz-khung li[data-viec]{list-style:none;position:relative}
+.sz-khung li[data-viec]::before{
+  content:"";position:absolute;left:-1.4em;top:.32em;
+  width:12px;height:12px;border-radius:3px;
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+}
+.sz-khung li[data-viec="1"]::before{
+  background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);
+}
 .sz-mau{
   appearance:none;border:1px solid transparent;background:none;cursor:pointer;
   display:inline-flex;align-items:center;gap:6px;
@@ -1918,6 +1998,23 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   font-size:var(--fs-sm);color:var(--text);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
+/* ── CÂU MÔ TẢ TRONG BẢNG CHUYÊN MỤC ──
+   Xuống DÒNG RIÊNG dưới tên, không đứng cùng dòng. Cùng dòng thì hai thứ khác
+   vai — một cái tên và một câu văn — dính liền nhau thành một chuỗi chữ dài
+   không có chỗ ngắt, và mắt phải đọc mới tách ra được đâu là tên.
+
+   Cắt ở một dòng: câu mô tả đầy đủ có tới 300 ký tự, mà bảng này để ĐIỂM DANH
+   chứ không để đọc. Muốn đọc trọn thì bấm Edit. */
+.ql-mo{
+  display:block;margin-top:2px;
+  font-style:normal;font-size:var(--fs-2xs);line-height:1.4;color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* Dòng chuyên mục cao hơn dòng bài một nhịp vì nó chở hai tầng chữ, nên mốc
+   canh đổi từ đường chân chữ sang mép trên — canh chân chữ thì cột bên phải
+   trôi xuống ngang câu mô tả. */
+.mc-dong-ql{align-items:start}
+.mc-dong-ql .vb-dong-ngay{font-size:var(--fs-3xs);padding-top:2px}
 /* Cột trạng thái LUÔN chiếm chỗ, kể cả khi bài đang hiện và ô rỗng — không
    thì mỗi dòng một bề rộng khác nhau và hàng nút bên phải nhảy lung tung. */
 .vb-cd{min-width:3.6rem;

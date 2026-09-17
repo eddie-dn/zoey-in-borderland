@@ -1333,6 +1333,49 @@ băng ảnh ngay phía trên, nên không phải học thêm gì.
   nút còn lại trượt về giữa và mất nghĩa "trái là lùi, phải là tới". Dưới
   520px ô rỗng co về 0, để nút duy nhất được cả hàng.
 
+### 18.7 · Bài dài: cụm nút đi theo người đọc
+
+Trên **2.500 ký tự** (chữ trơn, không kể thẻ), cụm tim · chia sẻ · bình luận
+rời hàng meta khi hàng ấy trôi khỏi màn hình:
+
+| Khổ màn | Nó về đâu |
+|---|---|
+| ≥1080px, khung A | **cột phải**, dưới khối "đọc tiếp" — cột dính khi cuộn |
+| còn lại | một cụm **nổi ở góc dưới phải**, nút tròn 42px |
+
+Bốn trường hợp **không** dời: bài ngắn · hàng meta vẫn trong tầm mắt · khung
+bình luận đang chiếm cột phải · đã cuộn tới chân bài ở khổ hẹp (cụm nổi sẽ che
+mất nút Gửi).
+
+**DỜI, không chép.** Trạng thái — đã thả tim chưa, mấy lượt thích, mấy bình
+luận — nằm trong chính phần tử ấy. Dựng một cụm thứ hai là hai `aria-pressed`,
+hai con số, và mọi tham chiếu của `comments.js` trỏ vào bản cũ. Cùng nguyên tắc
+với cách khung bình luận dời sang cột phải (`src/js/comments.js`).
+
+Ngưỡng đổi chỗ đặt ở **đúng mép trên màn hình**, không có `rootMargin`: thêm lề
+âm thì có một quãng cả hai cùng nằm trong tầm mắt — hai cụm nút giống hệt nhau
+trên một màn.
+
+### 18.8 · Kính phủ: đừng lồng `backdrop-filter`
+
+Tấm menu ☰ nằm **bên trong** `.site-head`, mà thanh ấy đã có `backdrop-filter`.
+Theo chuẩn, một phần tử có `backdrop-filter` trở thành **gốc nền** cho mọi con
+cháu: lớp nhoè của con chỉ lấy mẫu được cái nền đã gộp của cha, trong đúng
+khung của cha. Tấm menu thì thò xuống dưới thanh — phần thò ra không có nền nào
+để lấy mẫu, và Chrome trả về một lớp rỗng.
+
+Hậu quả nhìn thấy: tấm menu **gần như trong suốt**, tiêu đề bài đọc xuyên qua,
+chữ trong menu thì chìm. Dựng lại được: tắt một dòng `backdrop-filter` là nó
+đặc lại ngay.
+
+Nên có biến thể **`.glass--tam`** — ruột `--glass-tam` tự nó đã đủ đặc (0.985 →
+0.945), giữ nguyên vệt sáng mép và bóng đổ, và **không** có `backdrop-filter`.
+Vẫn là kính, chỉ là kính mờ — đúng như menu của iOS khi nó bung ra trên một
+trang đầy chữ.
+
+**Luật chung: đừng lồng `backdrop-filter` trong `backdrop-filter`.** Mảnh nào
+bung ra đè lên nội dung thì dùng `.glass--tam`.
+
 ---
 
 ## 19 · LOGO

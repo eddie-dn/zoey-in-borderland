@@ -27,6 +27,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V14.00 | 2026-09-17 | 00 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
 | V13.00 | 2026-09-17 | 00 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
 | V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
 | V12.06 | 2026-09-17 | 06 | Posts thành lưới bento; một khuôn dòng cho bốn danh sách; favicon dùng logo thật |
@@ -147,6 +148,58 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V14.00 — 17-Sep-2026
+
+- **Bài dài: cụm tim · chia sẻ · bình luận đi theo người đọc.** Ở một bài ba
+  nghìn chữ, hàng meta trôi khỏi màn hình sau một cú vuốt — ai đọc tới đoạn hay
+  nhất mà muốn thả tim thì phải cuộn ngược lên đầu bài, và phần lớn thì không
+  cuộn. Nay cuộn qua khỏi đầu bài là cụm hiện lại: ở cột phải trên máy bàn
+  (ngay dưới phần gợi ý đọc tiếp), ở góc dưới phải trên điện thoại. Tới chân
+  bài thì nó lui đi, để không che nút Gửi. Bài dưới 2.500 chữ không có — cả bài
+  gọn trong một hai màn, và một cụm nút nổi lên ở đó chỉ che mất chữ.
+- **Menu ☰ trên điện thoại thành kính thật.** Nó vốn là một tấm nhựa đục, dán
+  ngay dưới một thanh đầu trang trong suốt — hai vật liệu khác nhau cách nhau
+  8px. Nay nó mượn đúng công thức kính của thanh đầu trang: vệt sáng chạy quanh
+  mép, bóng đổ, bung ra từ góc trên phải đúng chỗ ngón tay vừa chạm.
+  Dòng "Search" trong menu bỏ cái kính lúp — bốn mục quanh nó đều là chữ trơn.
+- **Mục lục trên điện thoại thôi đứng chơ vơ.** Nó là một viên thuốc rộng 120px
+  nằm giữa một khoảng trắng, không neo vào mép nào. Nay là một hàng của trang:
+  căng hết bề ngang, một sợi kẻ trên dưới, mũi nhọn ở mép phải — và cả hàng bấm
+  được thay vì đúng 120px.
+- **Chữ trên điện thoại căn đều hai bên như trên máy bàn.** Luật cũ tắt căn đều
+  dưới 560px vì "chỉ còn 30–40 ký tự một dòng". Đo lại bằng chính chữ tiếng
+  Việt trên màn 375px thì ra 45 ký tự — con số cũ đếm bằng bề ngang chữ số 0,
+  chữ rộng nhất trong phông. 45 ký tự là đủ để mép phải thẳng mà không hở.
+- **Khoảng trống cuối bài co lại, và khung bình luận có tên.** Từ dòng cuối bài
+  xuống tới hàng tag là gần một phần tư màn hình trắng trơn — cuộn tới đó thì
+  tưởng bài đã hết. Và khi mở khung bình luận ra, phía trên nó là một mảng
+  trống không nói gì; nay có một dòng **NOTES** kèm số lời nhắn.
+- **Đường dẫn bài sửa được, ngay trên dòng xem trước.** Tiêu đề hay cho người
+  đọc thường ra một đường dẫn dài 46 ký tự, mà đường dẫn tốt cho tìm kiếm thì
+  ngắn. Nay phần giữa đường dẫn là một ô gõ; hai đầu vẫn là chữ chết, nên nhìn
+  thấy nguyên cái link thật trong lúc sửa.
+- **Chuyên mục của một bài đã đăng đổi được.** Trước đây ô ấy khoá hẳn. Nay đổi
+  được, và máy chủ ghi bản mới TRƯỚC rồi mới xoá bản cũ — hỏng ở bước nào cũng
+  còn ít nhất một bản. Cái giá là link cũ gãy, và ô soạn nói thẳng ra điều đó
+  kèm đúng cái link sắp gãy, trước khi bấm Lưu.
+- **Có ngăn Category ở /z-admin/.** Đặt tên hiện ra trên trang cho từng chuyên
+  mục, viết câu mô tả nằm dưới tên ấy ở trang Posts, sắp thứ tự, thêm mục mới,
+  bỏ mục rỗng. Trước đây muốn sửa một câu mô tả thì phải mở kho mã trên GitHub.
+- **Ô soạn thảo có nút cho mọi khối.** Khung ghi chú bốn tông, dải ảnh, khối
+  tràn lề, bảng, khối mã, danh sách việc — sáu thứ trước đây chỉ có cách gõ tay
+  `:::note`. Khung ghi chú nay hiện ra trong lúc gõ đúng như một cái ô, không
+  phải ba dòng dấu hai chấm.
+- **Và một lỗi mất chữ đã chữa: bảng trong bài cũ.** Mở một bài có bảng ra sửa
+  rồi lưu lại thì mọi hàng của bảng bị nối thành một đoạn văn đầy gạch đứng —
+  bảng hỏng thật, không chỉ hiện xấu. Dải ảnh cũng vậy: hai tấm ảnh dồn về một
+  dòng là dải ảnh thành một đoạn có hai ảnh nằm ngang. Nay cả hai đi qua nguyên
+  vẹn, và vòng đổi-đi-đổi-lại đứng yên từ lượt lưu thứ hai.
+- **Google có đủ dữ liệu để biết ai đứng sau trang.** Trước đây mỗi trang tự
+  khai một nút "Person" riêng — chín bài là hai chục nút rời rạc cùng tên mà
+  không cái nào nói nó là cùng một người. Nay cả trang là một đồ thị liền, và
+  trang giới thiệu được khai đúng là trang hồ sơ của chính người ấy. Điền thêm
+  `mangXaHoi` trong `site.config.json` thì mạnh hơn nữa.
 
 ## V13.00 — 17-Sep-2026
 

@@ -5,6 +5,8 @@
   "heroAnh": "",
   "description": "Blog cá nhân — tâm lý, đời thường, và những thứ nhặt được dọc đường.",
   "author": "Zoey",
+  "_mangXaHoi": "Địa chỉ mạng xã hội / hồ sơ của CHÍNH tác giả — Facebook, Instagram, LinkedIn, Goodreads, GitHub… Google dùng danh sách này để nối cái tên trên blog với một người có thật: mỗi địa chỉ là một phiếu xác nhận, và đó là thứ quyết định blog có được gom thành một thực thể tra được hay không. Để rỗng cũng chạy bình thường — build chỉ bỏ hẳn khoá sameAs đi. CHỈ điền hồ sơ của mình, đừng điền link bài viết.",
+  "mangXaHoi": [],
   "lang": "vi",
   "url": "https://z-in-borderland.com",
   "base": "",

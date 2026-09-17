@@ -50,7 +50,7 @@ src/styles/     …· list (chưa kể ở dòng trên)
 src/js/         theme · nen · toc · media · comments · duyet · copy-guard
                 reveal · so-tay · quote · search · trang-so · moc · bang-anh
                 xem · ghi-chu · viet-bai · admin · khoa · soan · man-dau
-                chia-se · logo-nhip · menu
+                chia-se · logo-nhip · menu · cum-theo · muc
 src/templates/  shell.html · post.html · page.html
 tools/          build · new-post · anh · bia · og · nen · dev · version
                 kiem-dinh · ghi-chu-keo · og-font/ · lib/
@@ -168,6 +168,20 @@ khung viết ở cột phải, còn bài ảnh thì nhảy thẳng tới ô vi�
 **Bảng bài ở `/z-admin/` tải từng trang 20 bài**, có nút tải thêm và ô lọc theo
 tên (gõ không dấu cũng ra). Mỗi bài là một lượt gọi ra GitHub, nên tải cả kho
 trong một lượt vừa chậm vừa chạm hạn mức của Cloudflare Workers.
+
+**Đường dẫn bài sửa được ngay trên dòng xem trước**, và chuyên mục của một bài
+đã đăng đổi được — máy chủ ghi bản mới rồi mới xoá bản cũ, nên hỏng ở bước nào
+cũng còn ít nhất một bản. Đổi thì LINK CŨ GÃY, và ô soạn nói ra điều đó trước
+khi bấm Lưu.
+
+**Chuyên mục có ngăn quản lý riêng** ở `/z-admin/` → Category: đặt tên hiện ra
+trên trang, viết câu mô tả dưới tên ấy ở `/posts/`, sắp thứ tự, thêm mục mới,
+bỏ mục rỗng. Nó ghi thẳng `content/posts/<mục>/_muc.json`.
+
+**Ô soạn thảo có nút cho mọi khối**, không còn phải nhớ cú pháp: khung ghi chú
+bốn tông, dải ảnh, khối tràn lề, bảng, khối mã, danh sách việc. Mở một bài đã
+đăng ra sửa thì mọi khối ấy đi qua nguyên vẹn — có phép kiểm canh vòng
+đổi-đi-đổi-lại đứng yên từ lượt lưu thứ hai.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.

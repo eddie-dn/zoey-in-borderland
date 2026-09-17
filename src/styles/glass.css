@@ -20,6 +20,9 @@
 /* ══════════ 1. DANH SÁCH MẢNH DÙNG KÍNH ══════════ */
 .glass,
 .site-head,
+/* Tấm menu ☰ ở khổ hẹp — CHỈ lúc đang mở. Đóng thì nó là `display:none`, mà
+   một tấm kính không nhìn thấy được thì không cần nhoè cái gì phía sau. */
+.nav-menu--mo,
 .card,
 .btn,
 .ovp,
@@ -38,7 +41,24 @@
    vẫn còn nền bán trong ở trên, chỉ mất phần nhoè — vẫn đọc được chữ.
    Nếu gộp chung thì máy cũ ra một tấm trong suốt hoàn toàn, chữ đè lên chữ. */
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .glass,.site-head,.card,.btn,.ovp,.bo,.bo-quote,.prose pre .copy-btn{
+  /* `.nav-menu--mo` CỐ Ý KHÔNG có mặt ở đây, dù nó có trong hai danh sách kia.
+
+     Tấm menu nằm BÊN TRONG `.site-head`, mà thanh ấy đã có backdrop-filter.
+     Theo chuẩn, một phần tử có backdrop-filter trở thành "gốc nền" cho mọi con
+     cháu: lớp nhoè của con chỉ lấy mẫu được cái nền ĐÃ GỘP của cha, trong đúng
+     khung của cha. Tấm menu thì thò hẳn xuống dưới thanh đầu trang, nên phần
+     thò ra không có nền nào để lấy mẫu.
+
+     Chrome xử lý ca ấy bằng cách trả về một lớp RỖNG — và vì backdrop-filter
+     ghi đè luôn phần nền phía sau, tấm menu hiện ra gần như trong suốt: tiêu đề
+     bài phía dưới đọc xuyên qua, còn chữ trong menu thì chìm. Đã dựng lại đúng
+     hiện tượng: tắt một dòng backdrop-filter là tấm menu đặc lại ngay.
+
+     Nên tấm phủ không dùng nhoè nền. Nó dựa vào `--glass-tam` — một cái ruột tự
+     nó đã đủ đặc — cộng vệt sáng mép và bóng đổ. Vẫn là kính, chỉ là kính mờ.
+     Bài học chung: ĐỪNG lồng backdrop-filter trong backdrop-filter. */
+  .glass,.site-head,.card,.btn,.ovp,.bo,.bo-quote,
+  .prose pre .copy-btn{
     -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
     backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   }
@@ -53,6 +73,7 @@
    nhau, và mắt đọc ra ngay là một cái khung, không phải một tấm kính. */
 .glass::before,
 .site-head::before,
+.nav-menu--mo::before,
 .card::before,
 .btn::before,
 .ovp::before,
@@ -85,6 +106,16 @@
 .glass--tint::before,.btn:not(.btn--ghost)::before{
   background:linear-gradient(150deg,rgba(255,255,255,.88) 0%,
     rgba(255,255,255,.22) 40%,transparent 72%);
+}
+
+/* Kính PHỦ — tấm bật ra đè lên nội dung đang đọc (menu ☰).
+   Ruột đặc hơn hẳn, vì thứ phía sau nó là CHỮ chứ không phải nền; lý do đầy đủ
+   ghi ở `--glass-tam` trong tokens.css. Mọi tầng còn lại của vật liệu giữ
+   nguyên — vệt sáng mép, bóng đổ, gradient chéo — nên nó vẫn đọc ra là kính,
+   chỉ là kính mờ. */
+.glass--tam,.nav-menu--mo{
+  background:var(--glass-tam);
+  box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
 }
 
 /* Kính MỎNG — cho thứ nằm trong một tấm kính khác. Hai lớp blur chồng nhau

@@ -62,6 +62,10 @@
 
      Nay `[data-bl-so]` LÀ chính cái span mang con số, nằm trong nút. */
   var demEl = document.querySelector('[data-bl-so]');
+  /* Con số thứ hai: in cạnh TÊN khối bình luận cuối bài. Cùng một số, hai chỗ
+     đọc — một ở nút (bấm được), một ở đầu khối (đang mở, đang đọc). Cùng một
+     phép cập nhật lo cả hai, nên không có đường nào để chúng lệch nhau. */
+  var deEl = document.querySelector('[data-bl-dem]');
   var nutMo = tim1('.bl-mo');
   var moLuc = Date.now();
 
@@ -337,6 +341,7 @@
 
   function ve(ds) {
     dsEl.textContent = '';
+    if (deEl) deEl.textContent = ds.length ? String(ds.length) : '';
     if (demEl) {
       /* Ẩn hẳn khi chưa có bình luận nào — cùng luật với ô lượt thích. Số 0
          cạnh một cái icon bong bóng đọc ra là "chưa ai nói gì", mà đó là câu

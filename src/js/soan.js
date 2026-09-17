@@ -247,6 +247,12 @@
       }
       if (c.nodeType !== 1) continue;
 
+      /* Nhãn ở đầu một khối ::: là thứ VẼ RA cho người gõ nhìn, không phải nội
+         dung — tên loại và tiêu đề khối đã nằm ở `data-khoi` / `data-nhan` rồi.
+         Không bỏ qua ở đây thì nó ra Markdown thành một đoạn văn thừa nằm ngay
+         trong khối, và mỗi lượt mở-lưu lại đẻ thêm một đoạn nữa. */
+      if (c.classList && c.classList.contains('sz-khoi-nhan')) continue;
+
       var the = c.nodeName;
 
       if (the === 'H1' || the === 'H2') { ra.push(thut + '## '   + trong(c)); continue; }
@@ -307,13 +313,39 @@
             for (var k = 0; k < conDS.length; k++) tam.appendChild(conDS[k].cloneNode(true));
             khoi(tam, con, thut + '  ');
           }
-          muc.push(thut + dau + trong(ban) + (con.length ? '\n' + con.join('\n') : ''));
+          /* Ô đánh dấu việc. Nó là một thuộc tính trên <li>, không phải một
+             ký tự trong chữ — nếu để người ta gõ "[ ]" vào đầu dòng thì mỗi
+             lần sửa lại phải né đúng ba ký tự ấy. */
+          var viec = li.getAttribute && li.getAttribute('data-viec');
+          var dauViec = viec == null ? '' : (viec === '1' ? '[x] ' : '[ ] ');
+          muc.push(thut + dau + dauViec + trong(ban) + (con.length ? '\n' + con.join('\n') : ''));
         }
         if (muc.length) ra.push(muc.join('\n'));
         continue;
       }
 
       if (the === 'FIGURE') { ra.push(thut + trong(c)); continue; }
+
+      /* ── KHỐI ::: (ghi chú, mẹo, lưu ý, đừng làm, dải ảnh, tràn lề) ──
+         Trong khung soạn thảo nó là một <div data-khoi="note" data-nhan="…">
+         có viền và có nhãn, tức là NHÌN RA ngay nó là cái gì. Ra Markdown thì
+         nó trở lại đúng ba dòng mà bộ dựng đọc được:
+
+             :::note Đọc thêm
+             <nội dung>
+             :::
+
+         Nhãn ở đầu khối là `contenteditable=false` nên nó không lọt vào phần
+         nội dung; ở đây bỏ qua nó bằng cách đọc `data-nhan` thay vì đọc chữ. */
+      if (the === 'DIV' && c.getAttribute && c.getAttribute('data-khoi')) {
+        var loai = c.getAttribute('data-khoi');
+        var nhanK = (c.getAttribute('data-nhan') || '').trim();
+        var trongK = [];
+        khoi(c, trongK, '');
+        ra.push(thut + ':::' + loai + (nhanK ? ' ' + nhanK : '') + '\n\n' +
+                trongK.join('\n\n') + '\n\n' + thut + ':::');
+        continue;
+      }
 
       /* P, DIV, và mọi thứ còn lại: một đoạn. Trình duyệt đôi khi đẻ ra <div>
          thay vì <p> (Safari vẫn làm thế ở vài chỗ dù đã khai
@@ -392,8 +424,29 @@
 
   function xuongDong(s) {
     /* Cắt ở cú ngắt dòng cứng trước, ngắt lại từng mảnh, rồi ghép lại bằng
-       đúng cái dấu hiệu cũ — hai dấu cách rồi xuống dòng. */
-    return String(s).split('  \n').map(ngatMot).join('  \n');
+       đúng cái dấu hiệu cũ — hai dấu cách rồi xuống dòng.
+
+       HAI LOẠI DÒNG KHÔNG ĐƯỢC NGẮT, dài bao nhiêu cũng để nguyên:
+
+         · hàng của một bảng — bộ dựng đọc bảng theo DÒNG, nên một hàng bị bẻ
+           làm đôi là bảng vỡ thành hai hàng lệch số cột;
+         · ảnh hoặc video đứng riêng một dòng — mỗi dòng như thế ra một
+           <figure>; bẻ đôi thì nửa sau thành một đoạn văn chở nguyên cú pháp
+           Markdown ra giữa bài.
+
+       Cả hai đều chỉ lộ ra ở lượt lưu THỨ HAI: lượt đầu còn ngắt đúng chỗ, lượt
+       sau đọc lại phần đã bị bẻ và không nhận ra nó nữa. Cùng lý do với ba chỗ
+       đã liệt kê ở chú thích của `ngatMot`. */
+    var GIU_NGUYEN = [
+      /^\s*\|/,                                        /* hàng bảng */
+      /^\s*!\[[^\]]*\]\([^)]*\)\s*(\{[^}]*\})?\s*$/,   /* ảnh đứng riêng */
+      /^\s*@[a-z]+\\?\[/i                              /* @youtube[…] và họ hàng */
+    ];
+    return String(s).split('  \n')
+      .map(function (d) {
+        return GIU_NGUYEN.some(function (re) { return re.test(d); }) ? d : ngatMot(d);
+      })
+      .join('  \n');
   }
 
   function sangMD(goc) {
@@ -419,8 +472,13 @@
 
      Thứ nó không hiểu KHÔNG bị mất: mọi dòng lạ rơi xuống nhánh cuối và thành
      một đoạn văn giữ nguyên chữ. Sửa một bài có bảng thì cái bảng hiện ra dưới
-     dạng mấy dòng gạch đứng — xấu, nhưng còn nguyên, và lưu lại vẫn ra đúng
-     chừng ấy ký tự. Mất chữ mới là hỏng; hiện xấu thì chỉ là xấu.
+     dạng mấy dòng gạch đứng — xấu, nhưng còn nguyên.
+
+     "Còn nguyên" ấy có điều kiện, và điều kiện đó từng KHÔNG được giữ: nếu nối
+     mấy dòng ấy lại bằng dấu cách thì phép ngắt lại 80 cột ở `sangMD` xáo hết
+     chỗ ngắt, và lưu một lần là bảng vỡ thật — mất nội dung, không chỉ xấu.
+     Nay đoạn nào có dòng-là-nội-dung (bảng, ảnh đứng riêng) được nối bằng cú
+     ngắt dòng CỨNG; xem nhánh đoạn văn ở cuối hàm.
 
      ── VÒNG TRÒN PHẢI KHÉP ──
      `sangMD(tuMD(x))` phải trả lại đúng `x`. Mở một bài ra rồi lưu lại mà
@@ -538,6 +596,33 @@
 
       if (laVach(d)) { ra.push('<hr>'); i++; continue; }
 
+      /* ── KHỐI ::: ──
+         Gom tới dòng `:::` đóng, rồi đọc phần bên trong bằng chính hàm này.
+         Đếm tầng để một khối lồng trong một khối không làm dòng đóng của khối
+         trong đóng mất khối ngoài.
+
+         Không nhận ra loại khối thì CỨ DỰNG: bộ dựng thật nhận note · tip ·
+         warn · stop · gallery · wide · full, và danh sách ấy có thể dài thêm.
+         Giữ nguyên tên loại rồi trả lại y như cũ lúc lưu là cách duy nhất để
+         một khối kiểu mới đi qua khung soạn thảo mà không bị nghiền nát. */
+      var moKhoi = d.match(/^:::\s*([\w-]+)\s*(.*)$/);
+      if (moKhoi) {
+        i++;
+        var tang = 1, thanK = [];
+        while (i < dong.length) {
+          if (/^:::\s*$/.test(dong[i])) { tang--; if (!tang) { i++; break; } }
+          else if (/^:::\s*[\w-]+/.test(dong[i])) tang++;
+          thanK.push(dong[i]); i++;
+        }
+        var ten = moKhoi[1], nhanK = (moKhoi[2] || '').trim();
+        ra.push('<div class="sz-khoi" data-khoi="' + ten.replace(/"/g, '') + '"' +
+                (nhanK ? ' data-nhan="' + nhanK.replace(/"/g, '&quot;') + '"' : '') + '>' +
+                '<div class="sz-khoi-nhan" contenteditable="false">' +
+                  thoatHTML(ten + (nhanK ? ' · ' + nhanK : '')) + '</div>' +
+                tuMD(thanK.join('\n')) + '</div>');
+        continue;
+      }
+
       if (/^```/.test(d)) {
         /* Tên ngôn ngữ sau ba dấu huyền quyết định cách tô màu cú pháp ở bài
            đã dựng. Bản đầu vứt nó đi, nên mở một bài có khối mã ra rồi lưu
@@ -575,21 +660,64 @@
           while (i < dong.length && /^\s{2,}\S/.test(dong[i])) {
             con.push(dong[i].replace(/^\s{2}/, '')); i++;
           }
-          muc.push('<li>' + nhoMD(chu) + (con.length ? tuMD(con.join('\n')) : '') + '</li>');
+          /* `- [ ] việc` / `- [x] việc` → một mục có ô đánh dấu. Bắt ở đây
+             chứ không ở `nhoMD`: nó là thuộc tính của CẢ MỤC, không phải một
+             nét nằm giữa chữ. */
+          var oViec = chu.match(/^\[( |x|X)\]\s+([\s\S]*)$/);
+          var thuocViec = '';
+          if (oViec) {
+            thuocViec = ' data-viec="' + (oViec[1] === ' ' ? '0' : '1') + '"';
+            chu = oViec[2];
+          }
+          muc.push('<li' + thuocViec + '>' + nhoMD(chu) +
+                   (con.length ? tuMD(con.join('\n')) : '') + '</li>');
         }
         ra.push((co ? '<ol>' : '<ul>') + muc.join('') + (co ? '</ol>' : '</ul>'));
         continue;
       }
 
-      /* Đoạn: gom tới dòng trống hoặc tới dòng mở một khối khác. Hai dấu cách
-         cuối dòng đã thành <br> trong `nhoMD`, nên nối bằng xuống dòng là đủ. */
+      /* Đoạn: gom tới dòng trống hoặc tới dòng mở một khối khác. */
       var doan = [];
       while (i < dong.length && dong[i].trim()
-             && !/^(#{1,4}\s|>|```)/.test(dong[i])
+             && !/^(#{1,4}\s|>|```|:::)/.test(dong[i])
              && !dsThuong.test(dong[i]) && !dsSo.test(dong[i]) && !laVach(dong[i])) {
         doan.push(dong[i]); i++;
       }
-      if (doan.length) ra.push('<p>' + nhoMD(doan.join('\n')) + '</p>');
+      if (doan.length) {
+        /* ── CÓ NHỮNG ĐOẠN MÀ CHỖ NGẮT DÒNG LÀ NỘI DUNG ──
+           Văn xuôi thì chỗ ngắt dòng chỉ là chỗ ngắt: bộ dựng nối lại thành
+           một đoạn, và khung soạn thảo cũng nối lại. Nhưng hai thứ dưới đây
+           thì bộ dựng đọc THEO DÒNG:
+
+             · bảng   — mỗi dòng một hàng của bảng;
+             · ảnh và video đứng riêng một dòng — mỗi dòng một <figure>, và
+               đó là thứ làm nên một dải ảnh.
+
+           Nối chúng lại bằng dấu cách là bảng thành một đoạn văn đầy gạch
+           đứng, và dải ảnh thành một đoạn có mấy tấm ảnh nằm ngang. Chú thích
+           cũ ở đầu `tuMD` từng hứa "xấu nhưng còn nguyên" — không đúng: phép
+           ngắt lại 80 cột ở `sangMD` xáo luôn chỗ ngắt, nên lưu lại một lần là
+           bảng hỏng thật.
+
+           Nên ở đây nối bằng cú ngắt dòng CỨNG (hai dấu cách rồi xuống dòng).
+           Bộ dựng hiểu nó đúng như hiểu một dòng riêng, và `xuongDong()` thì
+           cắt trước ở mọi cú ngắt cứng nên nó không xáo được nữa. */
+        var laDong = doan.some(function (d) {
+          return /^\s*\|/.test(d) ||
+                 /^\s*!\[[^\]]*\]\([^)]*\)\s*(\{[^}]*\})?\s*$/.test(d) ||
+                 /^\s*@[a-z]+\\?\[/i.test(d);
+        });
+        /* Cắt khoảng trắng cuối mỗi dòng TRƯỚC khi nối, và chỉ ở nhánh này:
+           dòng đọc vào có thể đã mang sẵn hai dấu cách của lượt lưu trước, cộng
+           thêm hai dấu nữa là bốn — mà `sangMD` chỉ giữ lại đúng HAI. Kết quả
+           là bản lưu lần này rụng mất hai dấu cách so với lần trước, lần sau
+           lại mọc ra, và `git diff` kêu ở mấy dòng bảng sau mỗi lượt sửa dù
+           chẳng ai động vào chúng. Nhánh văn xuôi thì KHÔNG cắt: ở đó hai dấu
+           cách cuối dòng là cú ngắt dòng cứng người viết cố ý đặt. */
+        ra.push('<p>' + nhoMD(laDong
+          ? doan.map(function (d) { return d.replace(/\s+$/, ''); }).join('  \n')
+          : doan.join('\n')) + '</p>');
+      }
       else i++;
     }
     return ra.join('');
@@ -926,6 +1054,19 @@
     nut(svg(['M3 5h18v14H3z', 'm3 16 5-5 4 4 3-3 6 6']),
         L('img', 'Image'), chenAnh);
     nut(svg('M4 12h16'), L('hr', 'Divider'), function () { lenh('insertHorizontalRule'); });
+    /* ── NÚT KHỐI: thứ trước đây phải gõ tay ──
+       Khối ghi chú, dải ảnh, ảnh tràn lề, bảng, khối mã, danh sách việc — sáu
+       thứ bộ dựng hiểu mà thanh nút không có chỗ cho, nên bảng chỉ dẫn phải
+       dạy người ta gõ `:::note`. Dạy cú pháp cho một người viết bài là đúng
+       thứ khung soạn thảo này sinh ra để khỏi phải làm.
+
+       Một nút, một bảng thả xuống: sáu thứ này dùng vài lần một bài, nên chúng
+       không đáng sáu chỗ trên thanh — mà một bảng có TÊN cho từng thứ lại nói
+       rõ hơn sáu cái icon. */
+    var nutKhoi = nut(svg(['M4 5h16v6H4z', 'M4 15h10']), L('block', 'Blocks'),
+                      function () { moBangKhoi(); });
+    nutKhoi.setAttribute('aria-expanded', 'false');
+    var bangKhoi = veBangKhoi();
     vach();
 
     /* ── Nhóm 4: nhấn mạnh ── */
@@ -951,6 +1092,102 @@
     var nutI = nut('i', L('help', 'How to use'), function () { moGiupDo(); }, 'sz-nut--i');
     nutI.setAttribute('aria-expanded', 'false');
     var bangGiup = veBangGiup();
+
+    /* ══════════ BẢNG KHỐI ══════════
+
+       Mỗi dòng là một khối chèn được. Chèn bằng `insertHTML` chứ không dựng
+       DOM rồi nhét vào: `insertHTML` đi qua đúng cỗ máy hoàn tác của trình
+       duyệt, nên Ctrl+Z gỡ được — dựng tay thì cú bấm ấy nằm ngoài lịch sử và
+       người ta mất đường lùi. */
+    function chenKhoi(ma, ten) {
+      khung.focus();
+      var nhanHTML = ma + (ten ? ' · ' + ten : '');
+      document.execCommand('insertHTML', false,
+        '<div class="sz-khoi" data-khoi="' + ma + '"' +
+          (ten ? ' data-nhan="' + ten.replace(/"/g, '&quot;') + '"' : '') + '>' +
+          '<div class="sz-khoi-nhan" contenteditable="false">' + nhanHTML + '</div>' +
+          '<p><br></p>' +
+        '</div><p><br></p>');
+      capNhat();
+    }
+
+    function veBangKhoi() {
+      /* Danh sách dựng BÊN TRONG hàm, không phải một `var` ở ngoài: hàm này
+         được gọi ngay lúc dựng thanh nút, mà `var` thì mới chỉ được cất chỗ ở
+         đó chứ chưa gán — đọc ra `undefined`, và cả khung soạn thảo chết ngay
+         dòng đầu. Khai báo hàm thì được đưa lên trước; khai báo biến thì không. */
+      var KHOI = [
+        { ma: 'note',    ten: L('bNote', 'Note'),       mo: L('bNoteMo', 'a boxed aside') },
+        { ma: 'tip',     ten: L('bTip', 'Tip'),         mo: L('bTipMo', 'same box, friendlier') },
+        { ma: 'warn',    ten: L('bWarn', 'Heads up'),   mo: L('bWarnMo', 'same box, careful tone') },
+        { ma: 'stop',    ten: L('bStop', 'Do not'),     mo: L('bStopMo', 'same box, strongest tone') },
+        { ma: 'gallery', ten: L('bGallery', 'Gallery'), mo: L('bGalleryMo', 'photos side by side') },
+        { ma: 'wide',    ten: L('bWide', 'Wide block'), mo: L('bWideMo', 'spills past the text column') }
+      ];
+      var b = el('div', 'sz-bang sz-bang--khoi');
+      b.hidden = true;
+
+      function dong(ten, mo, lam) {
+        var o = el('button', 'sz-khoi-nut');
+        o.type = 'button';
+        o.appendChild(el('span', 'sz-khoi-ten', ten));
+        if (mo) o.appendChild(el('span', 'sz-khoi-mo', mo));
+        o.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        o.addEventListener('click', function () { lam(); dongBang(); });
+        b.appendChild(o);
+      }
+
+      KHOI.forEach(function (k) {
+        dong(k.ten, k.mo, function () {
+          /* Nhãn của khối ghi chú là thứ hiện ra ở đầu ô trên trang đã dựng —
+             để trống thì bộ dựng lấy tên mặc định theo loại. Hỏi ngay lúc chèn
+             thì người ta khỏi phải tìm ra chỗ sửa nó sau. */
+          var ten = '';
+          if (k.ma !== 'gallery' && k.ma !== 'wide') {
+            ten = window.prompt(L('bAsk', 'Title for the box — leave empty for the default:'), '') || '';
+          }
+          chenKhoi(k.ma, ten.trim());
+        });
+      });
+
+      dong(L('bTable', 'Table'), L('bTableMo', '2 columns — Shift+Enter between rows'), function () {
+        khung.focus();
+        /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
+           bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng ba dòng liền
+           nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì phải
+           viết thêm cả một bộ đổi bảng ↔ Markdown, cho một khối dùng vài lần
+           một năm. */
+        document.execCommand('insertHTML', false,
+          '<p>|  |  |<br>|---|---|<br>|  |  |</p><p><br></p>');
+        capNhat();
+      });
+
+      dong(L('bCode', 'Code block'), L('bCodeMo', 'keeps every space and line break'), function () {
+        khung.focus();
+        var ngon = window.prompt(L('bCodeAsk', 'Language (js, css, python… — can be empty):'), '') || '';
+        document.execCommand('insertHTML', false,
+          '<pre' + (ngon.trim() ? ' data-ngon="' + ngon.trim().replace(/[^\w-]/g, '') + '"' : '') +
+          '> </pre><p><br></p>');
+        capNhat();
+      });
+
+      dong(L('bTask', 'Checklist'), L('bTaskMo', 'a list with tick boxes'), function () {
+        khung.focus();
+        document.execCommand('insertHTML', false,
+          '<ul><li data-viec="0"> </li></ul><p><br></p>');
+        capNhat();
+      });
+
+      return b;
+    }
+
+    function moBangKhoi() {
+      bangMau.hidden = true;
+      bangGiup.hidden = true;
+      nutI.setAttribute('aria-expanded', 'false');
+      bangKhoi.hidden = !bangKhoi.hidden;
+      nutKhoi.setAttribute('aria-expanded', bangKhoi.hidden ? 'false' : 'true');
+    }
 
     /* ══════════ BẢNG MÀU ══════════ */
     function veBangMau() {
@@ -1006,11 +1243,19 @@
        bảng dưới vẫn ăn được cú bấm mà không ai thấy nó ở đó. */
     function moBangMau() {
       bangGiup.hidden = true;
+      bangKhoi.hidden = true;
       nutI.setAttribute('aria-expanded', 'false');
+      nutKhoi.setAttribute('aria-expanded', 'false');
       bangMau.hidden = !bangMau.hidden;
     }
 
-    function dongBang() { bangMau.hidden = true; bangGiup.hidden = true; }
+    /* BA bảng, MỘT chỗ đứng: mở cái này thì hai cái kia đóng. Chồng lên nhau
+       thì bảng dưới vẫn ăn được cú bấm mà không ai thấy nó ở đó. */
+    function dongBang() {
+      bangMau.hidden = true; bangGiup.hidden = true; bangKhoi.hidden = true;
+      nutKhoi.setAttribute('aria-expanded', 'false');
+      nutI.setAttribute('aria-expanded', 'false');
+    }
 
     /* ══════════ CHỈ DẪN ══════════
 
@@ -1082,6 +1327,8 @@
 
     function moGiupDo() {
       bangMau.hidden = true;
+      bangKhoi.hidden = true;
+      nutKhoi.setAttribute('aria-expanded', 'false');
       bangGiup.hidden = !bangGiup.hidden;
       nutI.setAttribute('aria-expanded', bangGiup.hidden ? 'false' : 'true');
     }
@@ -1227,6 +1474,7 @@
 
     /* ══════════ RÁP LẠI ══════════ */
     khoiSoan.appendChild(thanh);
+    khoiSoan.appendChild(bangKhoi);
     khoiSoan.appendChild(bangMau);
     khoiSoan.appendChild(bangGiup);
     khoiSoan.appendChild(khung);

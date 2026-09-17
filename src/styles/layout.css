@@ -667,11 +667,7 @@
      150px. Kính lúp là nút dễ bỏ nhất trong ba: tìm kiếm không phải việc người
      ta làm mỗi lần mở trang, và nó vẫn còn nguyên một dòng trong tấm menu. */
   .nav .nap-tim{display:none}
-  .nav .nav-tim{display:flex;align-items:center;gap:var(--s3)}
-  .nav .nav-tim svg{
-    width:15px;height:15px;flex:none;
-    fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;
-  }
+  .nav .nav-tim{display:block}
   /* `.nav .nav-text` chứ KHÔNG phải `.nav a.nav-text`: mục trỏ tới trang chưa
      dựng được render thành <span>, không phải <a>, nên luật cũ không bắt được
      chúng. Hậu quả: bốn mục nav vẫn hiện ở 390px, chiếm hết bề ngang, và tên
@@ -682,19 +678,40 @@
      bề ngang màn, nên tấm menu mới canh được mép phải của khung nội dung.
      `display:none` khi đóng — không phải `opacity:0` — để nó thôi nhận cú bấm
      và thôi nằm trên đường Tab. */
+  /* ── VẬT LIỆU: MƯỢN CỦA BỘ KÍNH, KHÔNG TỰ PHA ──
+     Bản trước tự khai `background:var(--surface-solid)` + một cái viền + một
+     cái bóng. Ba dòng ấy cho ra một tấm NHỰA ĐỤC: nó che hẳn trang phía sau,
+     nên lúc mở menu thì thanh đầu trang trong suốt còn tấm menu ngay dưới lại
+     đặc — hai vật liệu khác nhau dán vào nhau, cách nhau 8px.
+
+     Nay `.nav-menu--mo` có tên trong danh sách ở §1 của glass.css, nên nó
+     nhận đủ bốn tầng của vật liệu: ruột bán trong, nhoè nền có nâng bão hoà,
+     vệt sáng chạy quanh mép, và bóng đổ. Cùng công thức với thanh đầu trang
+     ngay trên nó — hai mảnh đọc ra là một tấm kính gập xuống.
+
+     KHÔNG khai `background` hay `box-shadow` ở đây nữa: glass.css nạp TRƯỚC
+     file này, nên một dòng ở đây là một dòng đè mất vật liệu. */
   .nav-menu{
     display:none;
     position:absolute;top:calc(100% - var(--s2));right:var(--gutter);
-    z-index:70;min-width:186px;
-    flex-direction:column;align-items:stretch;gap:2px;
-    padding:var(--s3);
-    border-radius:var(--r-md);
-    background:var(--surface-solid);
-    box-shadow:inset 0 0 0 1px var(--line), var(--shadow-md);
+    z-index:70;min-width:204px;
+    flex-direction:column;align-items:stretch;gap:1px;
+    padding:var(--s2);
+    border-radius:var(--r-lg);
   }
-  .nav-menu--mo{display:flex;animation:hd-mo .18s var(--ease-glass)}
+  /* Bung ra từ GÓC TRÊN PHẢI — đúng chỗ ngón tay vừa chạm vào nút ☰. Mở từ
+     giữa hay mờ dần đều đọc ra là "một tấm xuất hiện"; mở từ góc thì đọc ra là
+     "cái nút vừa bấm nở ra thành tấm này", tức là có nhân quả. */
+  .nav-menu--mo{display:flex;animation:nav-bung .22s var(--ease-glass)}
+  @keyframes nav-bung{
+    from{opacity:0;transform:translateY(-6px) scale(.96)}
+    to  {opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .nav-menu--mo{animation:none}
+  }
   .nav-menu :is(a,span){
-    display:block;padding:var(--s3) var(--s4);border-radius:var(--r-sm);
+    display:block;padding:11px var(--s4);border-radius:var(--r-sm);
     text-align:left;
   }
   .site-head .container{position:relative}
@@ -853,7 +870,7 @@
   width:min(var(--measure), 100% - var(--gutter) * 2);
   margin-inline:auto;
 }
-.post-foot{margin-top:var(--s10)}
+.post-foot{margin-top:var(--s8)}
 
 @media (min-width:1080px){
   /* ── CỘT CHỮ ÔM LẤY LÀN CHỮ, KHÔNG PHẢI NUỐT CẢ CHỖ THỪA ──
@@ -952,7 +969,7 @@
    đúng tỉ lệ rồi. */
 @media (max-width:640px){
   .post-layout{padding-block:var(--s6) var(--s8)}
-  .post-foot{margin-top:var(--s8)}
+  .post-foot{margin-top:var(--s7)}
 }
 
 .toc{font-size:var(--fs-sm);line-height:1.55}
@@ -1037,7 +1054,13 @@
      nên `display:contents` thả nó vào dòng chảy — và `order:4` đưa nó xuống
      SAU chân bài, đúng chỗ nó vẫn đứng từ trước. Không có khổ nào mất nó, và
      cũng không có khổ nào thấy nó chen lên giữa lúc đang đọc. */
-  .read-next{order:4;margin:0 var(--gutter)}
+  /* Lề TRÊN phải khai ở đây. Ở khổ rộng khối này là con của `.ben`, và `gap`
+     của cột ấy lo chỗ nối; đổ về một cột thì nó thành con của `.post-layout`
+     — một lưới không có `gap` — nên không còn gì tách nó khỏi hàng tag ngay
+     trên. Trước bản này chỗ ấy được khung bình luận (lúc nào cũng chiếm một ô,
+     kể cả khi đóng) độn hộ; nay khung đóng thì thôi chiếm ô, và hai khối dính
+     liền nhau. Một lỗi chỉ lộ ra sau khi sửa một chỗ khác. */
+  .read-next{order:4;margin:var(--s7) var(--gutter) 0}
 /* ── MỤC LỤC TRÊN ĐIỆN THOẠI: MỘT NÚT, KHÔNG PHẢI MỘT KHỐI ──
      Bản trước mở sẵn. Sáu mục là chừng 240px chen giữa dòng tóm tắt và câu đầu
      tiên của bài — tức là người đọc mở một bài viết ra và phải cuộn qua một
@@ -1051,21 +1074,45 @@
      ký hiệu duy nhất mà ai cũng đọc ngay ra "bấm vào đây có danh sách". Đóng
      mặc định, bấm thì mở tại chỗ, không phủ lên trang. `toc.js` gỡ thuộc tính
      `open` ở khổ hẹp; khổ rộng giữ nguyên vì ở đó mục lục là một cột thật. */
+  /* ── VÀ NÓ LÀ MỘT HÀNG, KHÔNG PHẢI MỘT CÁI CHIP ──
+     Bản trước là một viên thuốc có viền, rộng chừng 120px, đứng một mình giữa
+     khoảng trắng giữa dòng tóm tắt và câu đầu tiên của bài. Nó đọc ra là một
+     mẩu rơi vãi: không neo vào mép nào, không thuộc về khối nào, mà vẫn chiếm
+     trọn một hàng.
+
+     Nay nó là một HÀNG của trang — căng hết bề ngang cột chữ, một sợi kẻ mảnh
+     ở trên và dưới, tên ở mép trái, dấu nhắc ở mép phải. Đây là khuôn quen
+     thuộc của một dòng gập trên điện thoại, và vì nó dùng CÙNG sợi kẻ với
+     hàng tag ở cuối bài nên nó đọc ra là một phần cấu trúc trang chứ không
+     phải một nút thả nổi.
+
+     Được thêm hai thứ mà cái chip không có: cả hàng bấm được (thay vì đúng
+     120px), và không còn khoảng trắng vô chủ hai bên. */
   .toc-box{
     margin:0 var(--gutter) var(--s6);
     border:none;background:none;padding:0;
   }
   .toc-box summary{
-    display:inline-flex;align-items:center;gap:9px;
+    display:flex;align-items:center;gap:var(--s3);
     cursor:pointer;list-style:none;
-    padding:7px var(--s4) 7px var(--s3);
-    border-radius:var(--r-pill);
-    box-shadow:inset 0 0 0 1px var(--line);
-    background:var(--surface);
+    padding:9px 2px;
+    border-block:1px solid var(--line);
     font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-    letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
-    transition:color var(--dur-fast),box-shadow var(--dur-fast),
-               background var(--dur-fast);
+    letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+    transition:color var(--dur-fast),border-color var(--dur-fast);
+  }
+  /* Mũi nhọn ở MÉP PHẢI, đẩy ra bằng một ô đệm co giãn. Nó quay xuống khi mở
+     — cử chỉ quen của mọi hàng gập, và không phải học lại. */
+  .toc-box summary::after{
+    content:"";margin-left:auto;flex:none;
+    width:7px;height:7px;
+    border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+    transform:translateY(-2px) rotate(-45deg);
+    transition:transform var(--dur-fast);
+  }
+  .toc-box[open] summary::after{transform:translateY(-2px) rotate(45deg)}
+  @media (prefers-reduced-motion:reduce){
+    .toc-box summary::after{transition:none}
   }
   .toc-box summary::-webkit-details-marker{display:none}
   /* Ba vạch vẽ bằng gradient trên MỘT phần tử giả: ba thẻ rỗng trong HTML chỉ
@@ -1083,7 +1130,7 @@
     background-size:100% 1.5px,55% 1.5px,100% 1.5px;
   }
   .toc-box summary:hover,.toc-box summary:focus-visible{
-    color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent);outline:none;
+    color:var(--accent-ink);border-color:var(--accent);outline:none;
   }
   .toc-box[open] summary{color:var(--accent-ink)}
   .toc-box .toc{margin-top:var(--s4)}

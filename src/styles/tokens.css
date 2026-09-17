@@ -235,6 +235,21 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      nhựa trắng: không thấy gì phía sau, và mảng màu của nó át cả chữ bên
      trong. Kính phải để lọt nền qua thì mới ra kính. */
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
+  /* ── RUỘT CỦA MỘT TẤM PHỦ (menu ☰, và mọi tấm bật ra sau này) ──
+     Kính bình thường để lọt nền qua, và đó là cái hay của nó — nhưng chỉ khi
+     thứ phía sau là NỀN. Tấm menu thì bung ra ĐÈ LÊN thân bài: chữ đè chữ,
+     và cả hai lớp cùng không đọc được.
+
+     Chữa bằng backdrop-filter thì không xong: tấm menu nằm BÊN TRONG thanh đầu
+     trang, mà thanh ấy đã có backdrop-filter của riêng nó. Một lớp nhoè lồng
+     trong một lớp nhoè chỉ thấy được cái nền ĐÃ GỘP của lớp ngoài — nên nó
+     nhoè đúng thứ không cần nhoè, và chữ phía sau vẫn sắc nguyên. Đây là hành
+     vi đúng theo chuẩn, không phải lỗi trình duyệt.
+
+     Nên ruột của tấm phủ phải TỰ nó đủ đặc. Vẫn là kính — vẫn giữ vệt sáng ở
+     mép, bóng đổ và gradient chéo — chỉ là đặc hơn hẳn, đúng như menu của iOS
+     khi nó bung ra trên một trang đầy chữ. */
+  --glass-tam:linear-gradient(163deg,rgba(255,255,255,.985),rgba(252,248,255,.945));
   /* HAI viền, hai việc khác nhau — đây là chỗ bản đầu làm sai:
        --glass-edge  viền CẤU TRÚC, tối nhẹ, tách tấm kính khỏi nền
        --glass-spec  vệt SÁNG ở mép, chỗ ánh sáng bẻ qua rìa
@@ -325,6 +340,9 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
        hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
        đục, mất hẳn cảm giác kính. */
     --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
+    /* Nền tối: tấm phủ lấy màu MẶT THẺ đục (#241839) pha sáng lên một chút,
+       chứ không lấy trắng trong suốt — trắng .9 trên nền tối ra một vũng sữa. */
+    --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
     --glass-edge:rgba(227,170,221,.15);
     --glass-ring:rgba(227,170,221,.26);
     --glass-spec:rgba(255,255,255,.42);
@@ -399,6 +417,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      hơn và mờ hơn. Bê nguyên thông số bản sáng sang đây thì ra một vũng đen
      đục, mất hẳn cảm giác kính. */
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
+  --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
   --glass-edge:rgba(227,170,221,.15);
   --glass-ring:rgba(227,170,221,.26);
   --glass-spec:rgba(255,255,255,.42);
@@ -569,6 +588,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
      bên sáng ngang nhau. Chỉ viền cấu trúc đổi sang mực đá — để trắng thì tấm
      kính mất đường bao đúng như lỗi đã vấp ở bản Sakura đầu tiên. */
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.42),rgba(255,255,255,.17));
+  --glass-tam:linear-gradient(163deg,rgba(255,255,255,.985),rgba(246,251,255,.95));
   --glass-edge:rgba(21,48,62,.18);
   --glass-ring:rgba(255,255,255,.75);
   --glass-spec:rgba(255,255,255,.95);

@@ -412,8 +412,28 @@
         '<div class="vb-o vb-o--rong"><span>' + tho(L('body', 'Post')) + '</span>' +
           '<div data-soan></div></div>' +
       '</div>' +
-      '<p class="vb-duong"><span class="vb-duong-nhan">' + tho(L('willBe', 'Will live at')) +
-        '</span> <code data-xem-duong>…</code></p>' +
+      /* ── ĐƯỜNG DẪN SỬA ĐƯỢC NGAY TRÊN DÒNG XEM TRƯỚC ──
+         Bản trước dòng này chỉ để ĐỌC: nó hiện ra đường dẫn mà máy rút từ tiêu
+         đề, và không có cách nào đổi. Với SEO thì đó là một hạn chế thật —
+         tiêu đề hay cho người đọc ("Vô thức tập thể, và cái cớ để tin vào giấc
+         mơ") ra một đường dẫn dài 46 ký tự, trong khi đường dẫn tốt thì ngắn,
+         chỉ giữ mấy từ khoá.
+
+         Nay phần GIỮA của đường dẫn là một ô gõ, còn hai đầu vẫn là chữ chết:
+         người ta sửa đúng phần được phép sửa, và nhìn thấy nguyên cái đường
+         dẫn thật trong lúc gõ. Không phải học "slug" là gì. */
+      '<div class="vb-duong">' +
+        '<span class="vb-duong-nhan">' + tho(L('willBe', 'Will live at')) + '</span>' +
+        '<span class="vb-duong-o">' +
+          '<code data-duong-dau>/posts/</code>' +
+          '<input type="text" name="slug" autocomplete="off" spellcheck="false" ' +
+                 'maxlength="80" aria-label="' + tho(L('slug', 'Link')) + '">' +
+          '<code>/</code>' +
+        '</span>' +
+        '<button type="button" class="vb-nho" data-slug-lai hidden>' +
+          tho(L('slugAuto', 'From title')) + '</button>' +
+      '</div>' +
+      '<p class="vb-duong-bao" data-duong-bao></p>' +
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
@@ -424,11 +444,16 @@
       '</div>' +
       '<p class="vb-noi"></p>';
 
-    /* ── SỬA THÌ ĐIỀN SẴN, VÀ CHUYÊN MỤC KHOÁ LẠI ──
-       Đổi chuyên mục là đổi đường dẫn bài, mà đường dẫn tính từ CHỖ ĐẶT FILE.
-       Muốn đổi thì phải dời file — hai lượt ghi, và giữa hai lượt ấy bài
-       không tồn tại, cộng thêm mọi link đã chia sẻ gãy hết. Nên ô chuyên mục
-       ở chế độ sửa chỉ để XEM. */
+    /* ── SỬA THÌ ĐIỀN SẴN — VÀ CHUYÊN MỤC NAY ĐỔI ĐƯỢC ──
+       Đường dẫn bài tính từ CHỖ ĐẶT FILE, nên đổi chuyên mục là dời file. Đời
+       trước khoá hẳn ô này lại vì thế: dời file là ghi mới rồi xoá cũ, và nếu
+       lượt thứ hai hỏng thì bài biến mất.
+
+       Nay máy chủ làm đúng thứ tự an toàn — ghi bản mới TRƯỚC, xoá bản cũ SAU
+       — nên hỏng ở bước nào cũng còn ít nhất một bản (xem onRequestPut trong
+       functions/api/bai.js). Cái giá còn lại là LINK CŨ GÃY, và đó là thứ phải
+       nói ra chứ không phải thứ để chặn: `xemDuong()` in thẳng đường dẫn cũ ra
+       ngay lúc người ta vừa đổi, trước khi bấm Lưu. */
     if (cu) {
       hop.querySelector('[name=title]').value = cu.fm.title || '';
       hop.querySelector('[name=date]').value = cu.fm.date || '';
@@ -443,7 +468,13 @@
             '<option value="' + tho(mucCu) + '">' + tho(mucCu) + '</option>');
         }
         oMuc.value = mucCu;
-        oMuc.disabled = true;
+      }
+      /* Đường dẫn hiện tại, rút ra từ tên file: bỏ phần ngày ở đầu. Điền sẵn
+         để người ta thấy nó đang là gì — và để không sửa gì thì nó giữ nguyên. */
+      var oSlugCu = hop.querySelector('[name=slug]');
+      if (oSlugCu) {
+        oSlugCu.value = cu.duong.split('/').pop()
+          .replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
       }
       var bVe = hop.querySelector('[data-ve]');
       if (bVe) bVe.addEventListener('click', function () { dangSua = null; veBang(); });
@@ -478,20 +509,85 @@
       oSoan.innerHTML = '<textarea name="noiDung" rows="14"></textarea>';
     }
 
-    hop.querySelector('[name=title]').addEventListener('input', xemDuong);
+    var oSlug = hop.querySelector('[name=slug]');
+    var nutLai = hop.querySelector('[data-slug-lai]');
+
+    /* ── Ô ĐƯỜNG DẪN TỰ ĐIỀN, CHO TỚI LÚC NGƯỜI TA TỰ GÕ ──
+       Mặc định nó bám theo tiêu đề, nên ai không quan tâm thì không phải làm
+       gì. Gõ vào nó một cái là nó THÔI bám — và từ đó đổi tiêu đề không còn
+       giật mất thứ vừa gõ. Nút "From title" là đường quay lại.
+
+       Bài ĐANG SỬA thì mặc định là KHÔNG bám: đường dẫn ấy đã công khai, có
+       thể đã được chia sẻ và Google đã đánh chỉ mục, nên nó chỉ được đổi khi
+       chủ trang cố ý đổi — không phải vì vừa sửa một chữ trong tiêu đề. */
+    var slugTuDo = !!cu;
+    if (nutLai) nutLai.hidden = !slugTuDo;
+
+    function theoTieuDe() {
+      if (slugTuDo || !oSlug) return;
+      oSlug.value = slugify((hop.querySelector('[name=title]') || {}).value || '');
+      xemDuong();
+    }
+
+    hop.querySelector('[name=title]').addEventListener('input', theoTieuDe);
     hop.querySelector('[name=muc]').addEventListener('change', xemDuong);
     hop.querySelector('[name=date]').addEventListener('change', xemDuong);
+    if (oSlug) {
+      oSlug.addEventListener('input', function () {
+        slugTuDo = true;
+        if (nutLai) nutLai.hidden = false;
+        xemDuong();
+      });
+      /* Dọn lúc rời ô, không dọn từng phím: gõ "tam " rồi định gõ tiếp "ly" mà
+         dấu cách bị đổi thành "-" ngay lập tức thì con trỏ nhảy và người ta gõ
+         tiếp vào chỗ khác. */
+      oSlug.addEventListener('blur', function () {
+        oSlug.value = slugify(oSlug.value);
+        xemDuong();
+      });
+    }
+    if (nutLai) {
+      nutLai.addEventListener('click', function () {
+        slugTuDo = false; nutLai.hidden = true; theoTieuDe();
+      });
+    }
     hop.querySelector('[data-dang]').addEventListener('click', gui);
+    if (!cu) theoTieuDe();
     xemDuong();
   }
 
+  /* ── XEM TRƯỚC ĐƯỜNG DẪN, VÀ NÓI RA CHỖ ĐÁNG NGẠI ──
+     Ba thứ kiểm ngay lúc gõ, vì cả ba đều chỉ lộ ra sau khi đăng:
+       · rỗng      → máy chủ sẽ tự rút từ tiêu đề, và kết quả có thể rất dài;
+       · quá dài   → Google cắt đường dẫn trong kết quả tìm kiếm ở khoảng 60–70
+                     ký tự; dài hơn thì phần đuôi thành dấu ba chấm;
+       · ĐÃ ĐỔI ở một bài đang sửa → link cũ GÃY. Đây là chỗ đáng sợ nhất và
+         cũng là chỗ dễ làm mà không nhận ra, nên nó được nói to nhất. */
   function xemDuong() {
-    var o = hop.querySelector('[data-xem-duong]');
-    if (!o) return;
-    var t = (hop.querySelector('[name=title]') || {}).value || '';
+    var dau = hop.querySelector('[data-duong-dau]');
+    var bao = hop.querySelector('[data-duong-bao]');
+    var oSlug = hop.querySelector('[name=slug]');
+    if (!dau || !oSlug) return;
+
     var m = (hop.querySelector('[name=muc]') || {}).value || '';
-    var s = slugify(t);
-    o.textContent = s ? '/posts/' + (m ? m + '/' : '') + s + '/' : '…';
+    dau.textContent = '/posts/' + (m ? m + '/' : '');
+
+    var s = slugify(oSlug.value || (hop.querySelector('[name=title]') || {}).value || '');
+    if (!bao) return;
+
+    var duongMoi = '/posts/' + (m ? m + '/' : '') + s + '/';
+    var nhac = [];
+    if (dangSua) {
+      var cuMuc  = dangSua.duong.split('/').slice(2, -1).join('/');
+      var cuTen  = dangSua.duong.split('/').pop().replace(/\.md$/, '');
+      var cuSlug = cuTen.replace(/^\d{4}-\d{2}-\d{2}-/, '');
+      var duongCu = '/posts/' + (cuMuc ? cuMuc + '/' : '') + cuSlug + '/';
+      if (duongCu !== duongMoi) nhac.push(L('slugMoved', 'The old link {u} will stop working.').replace('{u}', duongCu));
+    }
+    if (s.length > 60) nhac.push(L('slugLong', 'Long links get cut off in search results — under 60 characters reads better.'));
+
+    bao.textContent = nhac.join(' ');
+    bao.className = 'vb-duong-bao' + (nhac.length ? ' vb-duong-bao--nhac' : '');
   }
 
   function gui() {
@@ -500,6 +596,7 @@
     var b = {
       title  : hop.querySelector('[name=title]').value,
       muc    : hop.querySelector('[name=muc]').value,
+      slug   : (hop.querySelector('[name=slug]') || {}).value || '',
       date   : hop.querySelector('[name=date]').value,
       tags   : hop.querySelector('[name=tags]').value,
       summary: hop.querySelector('[name=summary]').value,
@@ -536,10 +633,18 @@
       if (kq.d && kq.d.ok) {
         if (dangSua) {
           /* Lưu xong thì `sha` đổi — giữ bản mới để lưu tiếp lần nữa không bị
-             từ chối vì cầm mã băm cũ. */
+             từ chối vì cầm mã băm cũ. Và nếu vừa DỜI bài thì `duong` cũng đổi:
+             không cập nhật thì lượt lưu kế tiếp gửi đường dẫn cũ, máy chủ
+             không tìm thấy file ở đó, và nó dời bài thêm một lần nữa. */
           dangSua.sha = kq.d.sha || dangSua.sha;
+          if (kq.d.duong) dangSua.duong = kq.d.duong;
           bangDS = null;
-          noi(L('saved', 'Saved. Cloudflare is rebuilding.'));
+          /* Máy chủ dặn gì thì nói đúng câu ấy: ca "đã ghi bản mới nhưng không
+             xoá được bản cũ" cần một việc phải làm tay, và câu mặc định
+             "đã lưu" thì giấu mất chuyện đó. */
+          noi(kq.d.soTay ? kq.d.nhac : L('saved', 'Saved. Cloudflare is rebuilding.'),
+              kq.d.soTay ? 'hong' : '');
+          xemDuong();
           return;
         }
         xong(kq.d, b);

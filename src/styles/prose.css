@@ -105,9 +105,23 @@
   text-justify:inter-word;
 }
 
-/* Cột hẹp (điện thoại đứng) thì trả về căn trái: chỉ còn 30–40 ký tự một dòng,
-   mỗi dòng chỉ chứa 8–10 từ, nên một từ xuống dòng là cả dòng giãn thấy rõ. */
-@media (max-width:560px){
+/* ── ĐO LẠI: ĐIỆN THOẠI CŨNG ĐỦ RỘNG ĐỂ CĂN ĐỀU ──
+   Luật cũ tắt căn đều dưới 560px, với lý do "chỉ còn 30–40 ký tự một dòng".
+   Con số ấy đếm bằng đơn vị `ch`, mà `ch` là bề ngang chữ số 0 — chữ rộng
+   nhất trong phông. Đo lại bằng chính chữ tiếng Việt trên màn 375px: cột chữ
+   338px, trung bình 7,5px một ký tự, ra **45 ký tự một dòng**, không phải 34.
+
+   45 ký tự là chừng 12 từ, tức 11 khoảng trắng để chia phần giãn. Một từ
+   xuống dòng thì mỗi khoảng chỉ nở thêm một hai pixel — không thành "dòng
+   sông" trắng. Nên căn đều bật cho cả điện thoại, và trang đọc GIỐNG NHAU ở
+   mọi khổ màn, thay vì mép phải thẳng ở máy bàn còn răng cưa ở điện thoại.
+
+   Ngưỡng tắt hạ xuống 360px: dưới đó (iPhone SE dựng đứng, màn gập) cột chữ
+   còn chừng 40 ký tự, và lúc ấy thì hở thật.
+
+   Đo lại con số này mỗi khi đổi `--fs-base` hoặc `--gutter` — cả hai đều kéo
+   số ký tự một dòng đi theo. */
+@media (max-width:359px){
   .prose p{text-align:left}
 }
 /* Câu dẫn trong thân bài dùng ĐÚNG khuôn của ô tóm tắt ở đầu bài (§.post-head
@@ -407,7 +421,19 @@
    CHÂN BÀI — khối tag riêng + gợi ý đọc tiếp
    ══════════════════════════════════════════════════════════════ */
 
-.post-foot{display:flex;flex-direction:column;gap:var(--s9)}
+/* ── NHỊP CUỐI BÀI: MỘT KHOẢNG, KHÔNG PHẢI HAI ──
+   Ba khối cuối bài (tag · bình luận · đọc tiếp) mỗi khối đều tự kẻ một sợi
+   vạch ở đỉnh và chừa lề trong dưới vạch ấy. Nghĩa là khoảng cách giữa hai
+   khối đã có hai nguồn: `gap` của cột flex, CỘNG lề trong của khối dưới.
+
+   `gap` cũ là 56px, cộng 20px lề trong thành 76px cho một chỗ nối mà giữa nó
+   đã có sẵn một sợi kẻ làm dấu. Đo trên điện thoại thì từ dòng cuối bài xuống
+   tới hàng tag là gần một phần tư màn hình trắng trơn — cuộn tới đó, người đọc
+   tưởng bài đã hết.
+
+   Nay `gap` xuống 24px; cộng lề trong là 44px, và có vạch kẻ ở giữa. Vạch mới
+   là thứ ngăn hai khối; khoảng trống chỉ cần đủ để vạch ấy thở. */
+.post-foot{display:flex;flex-direction:column;gap:var(--s6)}
 /* ── KHUNG BÌNH LUẬN ĐÓNG THÌ THÔI CHIẾM Ô ──
    Đóng lại, nó cao đúng 0 — nhưng nó vẫn là một ô của cột flex, nên nó ăn
    `gap` ở CẢ HAI phía: 56 + 0 + 56 = 112px trống giữa hàng tag và khối đọc
@@ -426,7 +452,7 @@
    nằm ở ĐÂY chứ không ở layout.css — `gap` của .post-foot khai trong file này,
    mà prose.css nạp sau, nên một bản ở layout.css sẽ thua chính bản gốc. */
 @media (max-width:640px){
-  .post-foot{gap:var(--s7)}
+  .post-foot{gap:var(--s5)}
 }
 
 /* ── Khối tag ──
@@ -536,9 +562,12 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 
    Ô rỗng `.rn-p--trong` giữ chỗ ở bài đầu và bài cuối danh sách: thiếu nó thì
    nút còn lại trượt về giữa, và mất luôn nghĩa "trái là lùi, phải là tới". */
+/* KHÔNG có `margin-top` ở đây: khối này là con của `.post-foot`, mà cột flực
+   ấy đã có `gap`. Khai cả hai thì chỗ nối này rộng hơn hai chỗ nối kia mà
+   không có lý do nào. */
 .rn-cap{
   display:flex;align-items:stretch;justify-content:space-between;gap:var(--s4);
-  margin-top:var(--s7);padding-top:var(--s5);
+  padding-top:var(--s5);
   border-top:1px solid var(--line);
 }
 .rn-p{
@@ -604,6 +633,28 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
    ══════════════════════════════════════════════════════════════ */
 
 .binh-luan .label{margin:0 0 var(--s2)}
+
+/* ── ĐẦU KHUNG BÌNH LUẬN ──
+   Mở khung ra mà không có dòng nào nói đây là chỗ gì thì người đọc gặp một
+   mảng trống, rồi một câu "No notes yet", rồi mấy ô nhập — phải đọc tới ô
+   nhập mới đoán ra khu vực này để làm gì. Một cái tên ở đầu khối là thứ rẻ
+   nhất chữa được chuyện đó.
+
+   Cùng khuôn với `TAGGED` ngay phía trên: Oswald hoa, cỡ nhỏ nhất, kẻ một
+   sợi ở trên. Hai khối cuối bài vì thế đọc ra là hai mục của cùng một hàng
+   thông tin, không phải hai thứ rơi vãi. */
+.bl-de{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s2) var(--s3);
+  margin:0 0 var(--s5);padding-top:var(--s5);
+  border-top:1px solid var(--line);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+}
+/* Con số đi kèm tên khối — "3 lời nhắn". Ẩn khi chưa có cái nào: `.bl-de-so`
+   rỗng thì không chiếm chỗ, và dòng chỉ còn mỗi cái tên. */
+.bl-de-so{color:var(--text-muted);font-variant-numeric:tabular-nums}
+.bl-de-so:empty{display:none}
 /* `.bl-dem` — ĐÃ BỎ, và con số thì đã đi một vòng rồi quay về: nó từng in
    trên nút, rồi rời sang hàng meta, rồi về lại trên nút. Vòng ấy đáng ghi lại,
    vì lý lẽ của lần đi ("nút là chỗ bấm, hàng meta là chỗ đọc") nghe rất xuôi
@@ -956,6 +1007,78 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 /* Con số đi kèm icon, ngay trong nút. `1ch` tối thiểu để lúc số từ 9 lên 10
    cái nút không giật ngang. */
 .bl-so{min-width:1ch;text-align:center}
+
+/* ══════════ CỤM NÚT KHI NÓ ĐI THEO NGƯỜI ĐỌC ══════════
+   Ở bài dài, cụm rời hàng meta và hiện lại ở một trong hai chỗ — cột phải
+   (khổ rộng) hoặc một cụm nổi ở mép phải (khổ hẹp). Việc dời do
+   src/js/cum-theo.js lo; ở đây chỉ là hình dáng của nó tại hai chỗ ấy. */
+
+/* ── Ở CỘT PHẢI ──
+   Xếp DỌC, và có nhãn. Ở hàng meta thì ba cái icon đứng cạnh ngày tháng, đọc
+   ra ngay là "mấy việc làm được với bài này"; đứng một mình cuối một cột thì
+   không còn gì quanh nó để đoán, nên cần một dòng tên — cùng khuôn với
+   ON THIS PAGE và READ NEXT ngay trên. */
+.cum-tt--ben{
+  display:flex;flex-direction:column;align-items:flex-start;gap:var(--s3);
+}
+.cum-tt--ben::before{
+  content:attr(data-nhan-ben);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);
+}
+.cum-tt--ben .cum-nut{gap:var(--s2)}
+
+/* ── CỤM NỔI Ở KHỔ HẸP ──
+   Mép phải, canh giữa theo chiều dọc, xếp DỌC. Vì sao không phải một thanh
+   ngang ở đáy màn: thanh đáy che mất hai ba dòng chữ cuối cùng suốt cả bài,
+   và trên iPhone nó đụng ngay vạch Home. Một cột ba nút ở mép phải chỉ ăn
+   48px bề ngang, mà 48px ấy là phần lề vốn đã trống.
+
+   `env(safe-area-inset-right)` cho màn có góc bo và thanh bên. */
+.cum-noi{
+  position:fixed;z-index:58;
+  right:calc(var(--s3) + env(safe-area-inset-right,0px));
+  bottom:calc(var(--s6) + env(safe-area-inset-bottom,0px));
+  opacity:0;transform:translateY(8px);
+  transition:opacity var(--dur) var(--ease-glass),
+             transform var(--dur) var(--ease-glass);
+  pointer-events:none;
+}
+.cum-noi--hien{opacity:1;transform:none;pointer-events:auto}
+@media (prefers-reduced-motion:reduce){.cum-noi{transition:none}}
+.cum-tt--noi{display:flex;flex-direction:column;gap:var(--s2)}
+.cum-tt--noi .cum-nut{flex-direction:column;gap:var(--s2)}
+/* ── VÌ SAO GÓC DƯỚI PHẢI, KHÔNG PHẢI GIỮA MÉP PHẢI ──
+   Giữa mép phải thì cụm nằm ngay trên khúc giữa cột chữ — chỗ mắt đang đọc —
+   và trên màn 390px nó đè lên chừng 26px cuối của mỗi dòng. Góc dưới thì nó
+   chỉ chạm hai ba dòng cuối màn, mà đó là phần người đọc sắp cuộn qua.
+   Góc dưới phải cũng là chỗ ngón cái với tới dễ nhất khi cầm một tay.
+
+   Nút TRÒN: ở đây không còn hàng chữ nào bên cạnh để canh, nên viên thuốc dài
+   đọc ra là một mẩu lạc. Nền đặc hơn hẳn và bóng đổ sâu hơn — nó đứng ĐÈ LÊN
+   chữ, không phải đứng cạnh chữ, nên phải tách hẳn ra khỏi nền. */
+.cum-tt--noi .bl-nut{
+  min-width:42px;min-height:42px;padding:0;
+  border-radius:50%;
+  background:var(--glass-tam);
+  box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
+}
+/* Có số thì nút nở ra thành viên thuốc dọc, số nằm dưới icon — vẫn gọn trong
+   40px bề ngang, không đẩy cụm rộng ra. */
+.cum-tt--noi .bl-nut:has(.bl-so:not(:empty)){
+  flex-direction:column;gap:1px;padding:5px 0;border-radius:var(--r-lg);
+}
+.cum-tt--noi .bl-so{font-size:9px;line-height:1}
+/* Câu báo "đã chép đường dẫn" không có chỗ trong một cột 40px: nó bung ra
+   bên TRÁI cụm, nền đặc, một dòng. */
+.cum-tt--noi .cum-bao{
+  position:absolute;right:calc(100% + var(--s2));top:50%;
+  transform:translateY(-50%);white-space:nowrap;
+  padding:6px var(--s3);border-radius:var(--r-pill);
+  background:var(--glass-tam);
+  box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop);
+}
 .bl-nut:hover{color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
 .bl-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bl-nut:active svg{transform:scale(.88)}
