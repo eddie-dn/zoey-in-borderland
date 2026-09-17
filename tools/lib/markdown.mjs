@@ -467,8 +467,26 @@ function bang(hang, ctx) {
     s.startsWith(':') && s.endsWith(':') ? 'center' : s.endsWith(':') ? 'right' : '');
   const than = hang.slice(2).map(oCua);
   const st = (j) => (canh[j] ? ' style="text-align:' + canh[j] + '"' : '');
+
+  /* ── BỀ RỘNG CỘT ĐỌC TỪ SỐ DẤU GẠCH ──
+     `|---|----------|` thì cột hai rộng gấp hơn ba lần cột một. Không phải
+     một cú pháp mới phải học: ai gõ bảng bằng tay vẫn gõ y như cũ, còn ai
+     muốn chỉnh thì kéo dài hàng gạch ra — thứ nhìn thẳng vào mã nguồn là
+     thấy, không cần đọc tài liệu.
+
+     CHỈ sinh `<colgroup>` khi các cột khai khác nhau. Mọi bảng đã viết đều
+     dùng số gạch bằng nhau (hoặc `---` cả loạt), nên chúng không đổi một
+     pixel nào — và một `<colgroup>` chia đều tay thì còn tệ hơn là không có,
+     vì nó khoá luôn cách trình duyệt tự cân cột theo nội dung. */
+  const soGach = oCua(hang[1]).map((x) => (x.match(/-/g) || []).length);
+  const deu = soGach.every((n) => n === soGach[0]);
+  const tong = soGach.reduce((a, b) => a + b, 0);
+  const cot = (deu || !tong) ? '' :
+    '<colgroup>' + soGach.map((n) =>
+      `<col style="width:${(n / tong * 100).toFixed(2)}%">`).join('') + '</colgroup>';
+
   ctx.tho.push(tran(hang.join(' ')));
-  return '<div class="table-wrap"><table><thead><tr>' +
+  return '<div class="table-wrap"><table>' + cot + '<thead><tr>' +
     dau.map((c, j) => '<th' + st(j) + '>' + inline(c, ctx) + '</th>').join('') +
     '</tr></thead><tbody>' +
     than.map((r) => '<tr>' +

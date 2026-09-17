@@ -2446,6 +2446,36 @@ const KIEM = [
       }
       return ra;
     }
+  },
+  {
+    /* ── DÀN TIÊU ĐỀ KHÔNG ĐƯỢC NHẢY CÓC ──
+       Trình đọc màn hình cho người dùng nhảy giữa các tiêu đề bằng phím tắt,
+       và bậc của tiêu đề CHÍNH LÀ cái dàn ý họ đi theo. Nhảy từ h1 thẳng
+       xuống h3 thì họ gặp một bậc trống: không biết mình vừa bỏ lỡ một cấp
+       hay trang thiếu mất một khối.
+
+       Đã vấp thật, và vấp ở 30 trang cùng lúc: tiêu đề trên thẻ bài để <h3>
+       trong khi trên nó chỉ có đúng một <h1>. Không ai thấy, vì trên màn hình
+       nó vẫn là chữ to chữ nhỏ đúng thứ tự — chỉ cái DÀN Ý là sai.
+
+       Kiểm trên bản ĐÃ DỰNG, không trên template: bậc cuối cùng người đọc gặp
+       là bậc trong HTML, và nó có thể tới từ ba bốn chỗ ghép lại. */
+    ten: 'Dàn tiêu đề trên mọi trang không nhảy cóc bậc',
+    muc: 'loi',
+    chay: ({ trang }) => {
+      const ra = [];
+      for (const t of trang) {
+        const bac = [...t.html.matchAll(/<h([1-6])[\s>]/g)].map((m) => +m[1]);
+        for (let i = 1; i < bac.length; i++) {
+          if (bac[i] - bac[i - 1] > 1) {
+            ra.push(`${t.url} — nhảy từ h${bac[i - 1]} thẳng xuống h${bac[i]} `
+                  + `⇒ dàn ý có một bậc trống`);
+            break;
+          }
+        }
+      }
+      return ra;
+    }
   }
 ];
 

@@ -65,6 +65,46 @@
 .sz-nut--h{font-family:var(--font-label);font-size:11px;
   font-weight:600;letter-spacing:.04em}
 .sz-nut--md{font-family:var(--font-mono);font-size:11px;letter-spacing:-.02em}
+/* ── NHÓM NÚT ──
+   Mỗi nhóm là MỘT ô của hàng flex, nên nó xuống hàng nguyên cụm chứ không bị
+   xé đôi. Vạch ngăn nay là viền trái của nhóm, không còn là một thẻ riêng —
+   nhờ vậy không bao giờ có vạch đứng lạc một mình ở đầu hàng hai.
+
+   `:first-child` bỏ viền: nhóm đầu tiên không có gì ở bên trái để ngăn cách. */
+/* ── NÚT MANG CẢ CHỮ (Blocks) ──
+   Phải nằm Ở ĐÂY, không phải ở admin.css. Gói `ql` nạp `admin.css` TRƯỚC rồi
+   mới `soan.css`, nên `.sz-nut{width:28px}` dưới đây đè lên `.sz-nut--khoi`
+   khi lớp phụ ở file kia — hai luật cùng một mức cụ thể, file sau thắng. Hậu
+   quả: nút Blocks vẫn rộng 28px còn chữ "BLOCKS" tràn ra ngoài, đè lên vạch
+   ngăn của nhóm bên cạnh. Đó chính là "ô buttons tùm lum chữ với nút".
+
+   Chữ biến mất dưới 560px: ở đó thanh nút đã phải cuộn ngang, và một nút rộng
+   gấp ba đẩy mọi thứ khác ra khỏi tầm mắt. */
+.sz-nut--khoi{width:auto;gap:5px;padding-inline:8px}
+.sz-nut-chu{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;
+}
+@media (max-width:560px){ .sz-nut-chu{display:none} }
+
+/* Mẫu gõ in bên phải mỗi dòng trong bảng Khối và bảng căn dòng. Lớp này từ
+   trước tới nay KHÔNG có luật nào — mấy mẫu `{.giua}`, `@youtube[…]` hiện ra
+   bằng phông thân bài, lẫn vào chính câu mô tả bên cạnh. */
+.sz-khoi-ma{
+  flex:none;margin-left:var(--s3);
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  padding:1px 5px;border-radius:var(--r-xs);
+  background:var(--surface-solid);color:var(--text-muted);
+  white-space:nowrap;
+}
+
+.sz-nhom{
+  display:inline-flex;align-items:center;gap:2px;
+  padding-left:5px;margin-left:2px;
+  border-left:1px solid var(--line);
+}
+.sz-nhom:first-child{border-left:0;padding-left:0;margin-left:0}
+/* Giữ lại cho bản cũ nào còn dựng thẻ này — xem `vach()` trong soan.js. */
 .sz-vach{width:1px;height:18px;margin-inline:3px;background:var(--line)}
 /* Đẩy nút xem Markdown về mép phải: nó không phải một nút định dạng, và đứng
    lẫn trong dãy kia thì bấm nhầm. */
@@ -151,7 +191,8 @@
   border:1px solid var(--line-strong);border-bottom-width:2px;
   background:var(--surface-solid);font-size:.82em;color:var(--text-muted);
 }
-.sz-doan--giua::after,.sz-doan--thuong::after{
+.sz-doan--giua::after,.sz-doan--thuong::after,
+.sz-doan--trai::after,.sz-doan--phai::after,.sz-doan--nho::after{
   content:attr(data-lop);
   display:block;margin-top:2px;
   font-family:var(--font-mono);font-size:var(--fs-3xs);
@@ -179,6 +220,9 @@
   padding:var(--s3) var(--s4);
 }
 .sz-bang--mau{display:flex;flex-wrap:wrap;gap:var(--s1)}
+/* Bảng căn dòng dùng chung khuôn với bảng Khối (mỗi dòng một tên + một câu
+   mô tả), nhưng chỉ bốn dòng nên không cần chia cột. */
+.sz-bang--can{display:flex;flex-direction:column;gap:2px}
 
 /* ── BẢNG KHỐI ──
    Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì tám ô chip xếp
@@ -403,6 +447,11 @@
 /* Tên màu nằm cạnh chấm màu. Khổ chữ và màu chữ đã do `.sz-mau` đặt, ở đây
    chỉ cần ghì dòng lại cho chấm và chữ thẳng tâm nhau. */
 .sz-mau-ten{line-height:1;white-space:nowrap}
+
+/* Ô soạn thảo phải vẽ ĐÚNG thứ trang sẽ hiện — xem `.sz-doan--giua`. Ba lớp
+   căn dòng vì thế phải có bản của mình ở đây. */
+.sz-doan--trai{text-align:left}
+.sz-doan--phai{text-align:right}
 
 /* Nút MỞ bảng màu trên thanh công cụ. Nó khác mọi nút khác ở chỗ ruột nút
    không phải một hình vẽ nét mà là một chấm ĐẶC nhiều màu — người ta tìm nút

@@ -70,6 +70,40 @@ const TAO = [
   `CREATE INDEX IF NOT EXISTS bl_trang ON binh_luan (trang, duyet, an, luc)`
 ];
 
+/* ── HAI CỘT THÊM SAU, PHẢI DÙNG `ALTER TABLE` ──
+   `CREATE TABLE IF NOT EXISTS` KHÔNG thêm cột vào một bảng đã có: nó thấy
+   bảng tồn tại rồi là bỏ qua cả câu. Bảng `binh_luan` đã chạy thật với dữ
+   liệu thật, nên hai cột này phải đi bằng `ALTER TABLE`.
+
+   Chạy RIÊNG từng câu trong try/catch, KHÔNG gộp vào `batch`: lần thứ hai trở
+   đi thì cột đã có và SQLite ném lỗi — mà trong một batch thì một câu lỗi là
+   cả batch hỏng, tức là mọi bình luận thôi gửi được kể từ lượt deploy thứ hai.
+   SQLite không có `ADD COLUMN IF NOT EXISTS`, nên nuốt lỗi là cách đúng. */
+const THEM_COT = [
+  `ALTER TABLE binh_luan ADD COLUMN mtSua TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE binh_luan ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`
+];
+
+async function noiRongBang(env) {
+  for (const sql of THEM_COT) {
+    try { await env.DB.prepare(sql).run(); } catch (e) { /* cột đã có */ }
+  }
+}
+
+/* Băm mã sửa trước khi lưu. Lưu thẳng thì ai đọc được bảng là sửa được lời
+   của mọi người — mà bảng ấy còn đi qua mọi bản sao lưu. Băm rồi thì cái nằm
+   trong D1 không mở được cửa nào. */
+async function bam(chuoi) {
+  const bit = new TextEncoder().encode(String(chuoi));
+  const ra  = await crypto.subtle.digest('SHA-256', bit);
+  return [...new Uint8Array(ra)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* Trần số lần sửa. Ba là đủ cho lỗi chính tả và một lần nghĩ lại; trên nữa thì
+   nó thôi là "sửa" mà thành "viết lại", và người đã trả lời bên dưới đang trả
+   lời một câu không còn tồn tại. */
+const TOI_DA_SUA = 3;
+
 function traLoi(data, ma = 200, cache = 'no-store') {
   return new Response(JSON.stringify(data), {
     status: ma,
@@ -145,7 +179,7 @@ export async function onRequestGet({ request, env }) {
   if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
     try {
       const kq = await env.DB.prepare(
-        `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, luc FROM binh_luan
+        `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, luc, soSua FROM binh_luan
           WHERE an = 0 ORDER BY duyet ASC, luc DESC LIMIT ?`).bind(LAY).all();
       return traLoi({ ok: true, ds: kq.results || [] });
     } catch (e) {
@@ -205,16 +239,82 @@ export async function onRequestPost({ request, env }) {
   const ma = 'bl' + Date.now().toString(36) +
              Math.random().toString(36).slice(2, 8);
 
-  await env.DB.batch([
-    ...TAO.map((sql) => env.DB.prepare(sql)),
-    env.DB.prepare(
-      `INSERT INTO binh_luan (ma, trang, ten, email, chu, cha, chuTrang, duyet, an, luc)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`
-    ).bind(ma, trang, ten, email, chu, cha, laChu ? 1 : 0, laChu ? 1 : 0,
-           new Date().toISOString())
-  ]);
+  /* Mã sửa do TRÌNH DUYỆT sinh và giữ; ở đây chỉ lưu bản băm. Không có mã thì
+     bình luận vẫn vào bình thường, chỉ là về sau không sửa được — người tắt
+     `localStorage` không vì thế mà mất đường nói. */
+  const mtSua = than.maSua ? await bam(gonChu(than.maSua, 80)) : '';
 
-  return traLoi({ ok: true, ma, chuTrang: laChu, duyet: laChu });
+  await env.DB.batch([
+    ...TAO.map((sql) => env.DB.prepare(sql))
+  ]);
+  await noiRongBang(env);
+  await env.DB.prepare(
+    `INSERT INTO binh_luan (ma, trang, ten, email, chu, cha, chuTrang, duyet, an, luc, mtSua, soSua)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 0)`
+  ).bind(ma, trang, ten, email, chu, cha, laChu ? 1 : 0, laChu ? 1 : 0,
+         new Date().toISOString(), mtSua).run();
+
+  return traLoi({ ok: true, ma, chuTrang: laChu, duyet: laChu, conSua: TOI_DA_SUA });
+}
+
+/* ══════════ NGƯỜI GÕ TỰ SỬA LỜI MÌNH ══════════
+
+   Đường này KHÔNG dùng khoá chủ trang — nó dành cho người đọc bình thường,
+   sửa đúng bình luận của chính họ.
+
+   ── XÁC THỰC MÀ KHÔNG CÓ TÀI KHOẢN ──
+   Lúc gửi, trình duyệt sinh một chuỗi ngẫu nhiên, gửi kèm, rồi cất vào
+   `localStorage` của chính máy ấy. Máy chủ chỉ lưu bản BĂM. Muốn sửa thì gửi
+   lại chuỗi gốc; băm ra khớp thì đúng là cái máy đã gõ.
+
+   Nó KHÔNG chứng minh "đúng người" — xoá lịch sử trình duyệt là mất quyền
+   sửa, và ai mượn được máy thì sửa được. Đúng mức bảo đảm cần cho một ô bình
+   luận không tài khoản: đủ để không ai sửa được lời người khác từ xa, và
+   không đòi ai phải đăng ký gì.
+
+   ── VÌ SAO DÙNG PUT CHỨ KHÔNG THÊM NHÁNH VÀO PATCH ──
+   PATCH là cửa của chủ trang và câu đầu tiên của nó là "sai khoá thì 401".
+   Nhét một nhánh không cần khoá vào đó thì câu ấy thôi đúng, và lần sửa sau
+   rất dễ nới nhầm quyền cho cả nhánh duyệt/ẩn. Hai mức quyền khác nhau thì
+   hai cửa khác nhau.
+
+   ── SỬA THÌ VỀ LẠI HÀNG CHỜ ──
+   Bình luận đã duyệt mà sửa nội dung thì phải duyệt lại: không thì đây là
+   đường vòng để đăng bất cứ thứ gì — gửi một câu hiền, chờ duyệt, rồi sửa
+   thành thứ khác. Chủ trang gửi kèm khoá thì miễn, vì lời của chủ nhà vốn
+   không qua hàng chờ. */
+export async function onRequestPut({ request, env }) {
+  if (!env.DB) return traLoi({ ok: false, loi: 'chưa gắn D1' }, 503);
+
+  let than;
+  try { than = await request.json(); } catch (e) { than = null; }
+  const ma = locMa(than && than.ma);
+  if (!ma) return traLoi({ ok: false, loi: 'thiếu mã' }, 400);
+
+  const chu = gonChu(than.noiDung, MAX_CHU);
+  if (chu.length < MIN_CHU) return traLoi({ ok: false, loi: 'ngắn quá' }, 400);
+
+  await noiRongBang(env);
+  const dong = await env.DB.prepare(
+    'SELECT mtSua, soSua, an FROM binh_luan WHERE ma = ?').bind(ma).first();
+  if (!dong || dong.an) return traLoi({ ok: false, loi: 'không có' }, 404);
+
+  if (!dong.mtSua) return traLoi({ ok: false, loi: 'khong-sua-duoc' }, 403);
+  const gui = await bam(gonChu(than.maSua, 80));
+  if (!bang(gui, dong.mtSua)) return traLoi({ ok: false, loi: 'khong-phai-cua-ban' }, 403);
+
+  if (Number(dong.soSua) >= TOI_DA_SUA) {
+    return traLoi({ ok: false, loi: 'het-luot-sua', conSua: 0 }, 409);
+  }
+
+  const laChu = laChuTrang(request, env);
+  const soMoi = Number(dong.soSua) + 1;
+  await env.DB.prepare(
+    'UPDATE binh_luan SET chu = ?, soSua = ?, duyet = ? WHERE ma = ?'
+  ).bind(chu, soMoi, laChu ? 1 : 0, ma).run();
+
+  return traLoi({ ok: true, ma, soSua: soMoi, conSua: TOI_DA_SUA - soMoi,
+                  duyet: laChu ? 1 : 0 });
 }
 
 /* ══════════ DUYỆT · ẨN ══════════

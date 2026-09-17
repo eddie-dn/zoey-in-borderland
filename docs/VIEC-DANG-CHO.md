@@ -14,34 +14,34 @@
 
 ---
 
-## B · Bàn duyệt bình luận
+## D · Theme 霜降 và bộ hình theo theme
 
-### B1. Bấm ALL thì khung vỡ
-Chọn bộ lọc **All** rồi tick vài dòng: nút xiên vẹo, và cột thao tác của
-thanh gộp (`APPROVE · UNAPPROVE · HIDE · CLEAR`) KHÔNG thẳng cột với cột thao
-tác của từng dòng bên dưới. Kiểm lại cả UI khu này.
+### D1. Điểm chút màu vào 霜降, và mây lềnh bềnh hơn
+Theme đang thuần xám — đúng chủ ý "không màu để nhìn ảnh cho thật", nhưng hơi
+lạnh. Điểm **một chút** màu vào (một sắc lam bạc rất nhạt ở quầng nền, hoặc ở
+màu nhấn) mà vẫn giữ được chất giấy.
+
+Mây thì cho **lềnh bềnh** hơn: hiện chúng trôi thuần ngang với tốc độ đều
+(`v: 0.05 + lop * 0.16` trong `dungMay`, src/js/nen.js). Thêm một nhịp dập
+dềnh rất chậm theo chiều dọc, và cho tốc độ thở ra thở vào một chút, thì nó
+ra "bồng bềnh" thay vì "trượt ngang".
+
+> Cẩn thận hai chỗ: mây ở đây màu TRẮNG nên nó chỉ hiện ra được ở chỗ có mực
+> núi để xoá; và đây là nền của một trang để ĐỌC — mọi alpha đang dưới .2 là
+> cố ý.
+
+### D2. Bộ favicon và ảnh chia sẻ đi theo theme
+- **Favicon**: hiện chỉ `calm` có bản riêng (`favicon-calm.svg`) — xem `ICON`
+  trong src/js/theme.js và khối FAVICON trong tools/build.mjs. 霜降 nền trắng
+  thì đoá hoa tím nằm trên thanh tab đọc ra là icon của một trang khác. Cần
+  một bản cho nó, và rà lại xem `dark` có nên có bản riêng không.
+- **Ảnh chia sẻ** (`npm run og`): sinh theo ba theme. Cần thêm 霜降.
+- **Ảnh bìa tự sinh** (`npm run bia`): mandala đổi màu theo theme — kiểm xem
+  nó ra gì trên bảng màu không-màu này.
 
 ---
 
 ## C · Bình luận
-
-### C0. Reply chỉ đi được một tầng
-Nút Reply chỉ hiện ở bình luận GỐC (`if (!laCon)` trong comments.js), nên trả
-lời của một trả lời thì không bấm được vào đâu. Cây vẫn hai tầng như cũ — trả
-lời của trả lời gắn vào gốc của nhánh — nhưng NÚT phải có ở mọi thẻ.
-
-### C0b. Khung bình luận làm dạng toggle
-Bấm vào khu bình luận, hoặc bấm icon bình luận, thì xổ ra **full khung**.
-Hiện nó mở một phần và phải thao tác thêm.
-
-### C5. Cho sửa bình luận sau khi gửi, tối đa 3 lần
-Người gõ xong mới thấy lỗi chính tả thì không có đường nào sửa. Cho sửa tối đa
-**3 lần**; đếm số lần sửa và khoá sau đó. Cần nghĩ cách xác thực "đúng người
-đã gõ" mà không cần tài khoản — nhiều khả năng là một mã ngắn lưu ở
-`localStorage` cùng lúc gửi bình luận.
-
----
-
 
 ### C3. "Notify me of follow-up comments by email"
 
@@ -71,28 +71,5 @@ lúc duyệt chứ không lúc gửi, không thì spam cũng kích hoạt mail).
 
 > Ô tích **không nên hiện ra** cho tới khi khoá được đặt — một ô tích thu địa
 > chỉ email rồi không bao giờ gửi gì còn tệ hơn là không có ô nào.
-
----
-
-## G · Bàn làm việc — /z-admin/
-
-### G1. Nút New post · New category chưa cùng cỡ
-Scale lại cho bằng nút bên khu bình luận.
-
-### G2. Ô soạn thảo — rà lại toàn bộ
-- **Căn dòng**: thêm nút chọn căn trái / giữa / phải / đều hai bên, kiểu các
-  app soạn thảo (một icon xổ ra bốn chế độ).
-- **Thanh nút rộng thêm, chứa được hàng thứ hai**, gom các nút cùng nhóm lại
-  cho dễ chọn.
-- **Kiểm lại từng nút và từng tính năng có chạy không**, và còn thiếu gì —
-  nhất là **nhúng ảnh, nhúng video, và khối trích dẫn**.
-
-### G3. Bảng: cho tới 5×20, và kéo được cỡ ô
-Hiện giới hạn nhỏ hơn. Cho tạo tối đa **5 cột × 20 hàng**, và cho chỉnh độ
-rộng cột / độ cao hàng một chút, kiểu kéo thả.
-
-### G4. Rà liên kết và cấu trúc cho SEO
-Kiểm hyperlink trong bài, các liên kết nội bộ, và cấu trúc trang đã chuẩn về
-content · SEM · SEO chưa. (Có sẵn `docs/SEO.md` để đối chiếu.)
 
 ---

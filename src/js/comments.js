@@ -325,9 +325,18 @@
     var nutDong = than.querySelector('.bl-lui');
     if (nutDong) nutDong.addEventListener('click', function () { nutMo.click(); });
 
+    /* ── LỐI VÀO THỨ HAI: BẤM THẲNG VÀO KHU BÌNH LUẬN ──
+       Dòng tiêu đề cuối bài là một nút, và nó bấm hộ `nutMo` chứ không tự mở
+       lấy. Một đường mở duy nhất thì `aria-expanded`, việc dời chỗ và cú cuộn
+       chỉ có một chỗ để đúng — dựng đường thứ hai là sớm muộn một đường quên
+       cập nhật một thứ. */
+    var nutKhu = khoi.querySelector('.bl-mo-khu');
+    if (nutKhu) nutKhu.addEventListener('click', function () { nutMo.click(); });
+
     nutMo.addEventListener('click', function () {
       var dangMo = nutMo.getAttribute('aria-expanded') === 'true';
       nutMo.setAttribute('aria-expanded', dangMo ? 'false' : 'true');
+      if (nutKhu) nutKhu.setAttribute('aria-expanded', dangMo ? 'false' : 'true');
       /* .hidden chứ không phải style.display: thuộc tính này vừa giấu khỏi mắt
          vừa giấu khỏi trình đọc màn hình, và bấm Tab không lọt vào được. */
       than.hidden = dangMo;
@@ -474,10 +483,10 @@
       dsEl.appendChild(trong);
       return;
     }
-    dungCay(ds).forEach(function (c) { dsEl.appendChild(veMot(c, false)); });
+    dungCay(ds).forEach(function (c) { dsEl.appendChild(veMot(c, false, c)); });
   }
 
-  function veMot(c, laCon) {
+  function veMot(c, laCon, goc) {
     var li = document.createElement('li');
     /* Thôi mang `.card`. Một bình luận ba chữ ("hay quá chị") trong một tấm
        thẻ kính bo góc lớn với lề trong 24px là một cái hộp gần trống, và mười
@@ -553,9 +562,24 @@
        Trần 12: dưới đó là một cuộc trò chuyện bình thường; trên đó thì hàng
        chấm gấp lại (`GAP_TU`) đã phải giấu đi quá nửa, tức là người đọc không
        còn thấy được mạch nữa. */
+    /* ── NÚT TRẢ LỜI CÓ Ở MỌI THẺ, KỂ CẢ THẺ CON ──
+       Bản trước chặn `if (!laCon)`, nên trả lời của một trả lời thì không bấm
+       được vào đâu: muốn nói tiếp với người vừa trả lời mình thì phải cuộn
+       ngược lên bấm Reply ở bình luận GỐC, rồi tự gõ tên người kia vào. Đó là
+       bắt người đọc làm thay việc của trang.
+
+       Cây vẫn HAI TẦNG như cũ — `dungCay` leo ngược lên gốc nhánh, nên trả
+       lời của trả lời vẫn nằm phẳng trong cùng một nhánh. Cái đổi là chỗ BẤM,
+       không phải cấu trúc: bấm ở thẻ con thì chip ghi đúng tên người ấy, và
+       bình luận gửi lên mang `cha` là mã của chính thẻ con — máy chủ lưu đúng
+       ai trả lời ai, còn lượt dựng lại thì kéo nó về tầng hai.
+
+       Trần nhánh đọc từ GỐC chứ không từ thẻ đang vẽ: thẻ con không có `con`,
+       nên hỏi nó thì trần không bao giờ chạm. */
     var TRAN_NHANH = 12;
-    if (!laCon) {
-      var day = !!(c.con && c.con.length >= TRAN_NHANH);
+    {
+      var nhanh = (goc && goc.con) ? goc.con.length : 0;
+      var day = nhanh >= TRAN_NHANH;
       var nutTra = document.createElement('button');
       nutTra.type = 'button';
       nutTra.className = 'bl-tra' + (day ? ' bl-tra--moi' : '');
@@ -566,6 +590,25 @@
         denTraLoi(c, li);
       });
       cuoi.appendChild(nutTra);
+    }
+
+    /* ── NÚT SỬA — CHỈ HIỆN Ở LỜI CỦA CHÍNH MÁY NÀY ──
+       Có mã sửa trong `localStorage` cho đúng `c.ma` thì mới hiện. Người khác
+       mở cùng trang không thấy nút này ở thẻ ấy, vì máy họ không giữ mã.
+
+       Hết ba lượt thì nút biến mất hẳn thay vì mờ đi: một cái nút bấm không
+       ăn thua gì còn khó chịu hơn là không có nút. Số lượt còn lại in ngay
+       trong nhãn, nên người sửa biết mình còn mấy lần trước khi bấm. */
+    var maSua = maSuaCua(c.ma);
+    var daSua = Number(c.soSua || 0);
+    if (maSua && daSua < 3) {
+      var nutSua = document.createElement('button');
+      nutSua.type = 'button';
+      nutSua.className = 'bl-tra bl-sua';
+      nutSua.textContent = L('edit', 'Edit') + ' · ' + (3 - daSua);
+      nutSua.title = L('editLeft', '{n} edits left').replace('{n}', 3 - daSua);
+      nutSua.addEventListener('click', function () { moOSua(c, li, nd, maSua); });
+      cuoi.appendChild(nutSua);
     }
 
     li.appendChild(dau);
@@ -579,13 +622,13 @@
        biết cặp nào của ai. */
     nutChuTrang(c, li, cuoi);
 
-    if (c.con && c.con.length) li.appendChild(veCon(c.con));
+    if (c.con && c.con.length) li.appendChild(veCon(c.con, goc));
     return li;
   }
 
   /* Nhánh trả lời. Quá 2 cái thì gấp lại — một bình luận có 15 trả lời mà bung
      hết thì đẩy mọi bình luận khác xuống tận đáy trang. */
-  function veCon(con) {
+  function veCon(con, goc) {
     var hopNhanh = document.createElement('div');
     hopNhanh.className = 'bl-nhanh';
 
@@ -604,16 +647,76 @@
       nut.addEventListener('click', function () {
         /* Chèn NGƯỢC lên đầu để thứ tự thời gian vẫn đúng sau khi bung. */
         an.forEach(function (x, i) {
-          ul.insertBefore(veMot(x, true), ul.children[i] || null);
+          ul.insertBefore(veMot(x, true, goc), ul.children[i] || null);
         });
         nut.remove();
       });
       hopNhanh.appendChild(nut);
     }
 
-    hien.forEach(function (x) { ul.appendChild(veMot(x, true)); });
+    hien.forEach(function (x) { ul.appendChild(veMot(x, true, goc)); });
     hopNhanh.appendChild(ul);
     return hopNhanh;
+  }
+
+  /* ── Ô SỬA TẠI CHỖ ──
+     Không dời cái form chính xuống đây: form ấy là để viết lời MỚI, còn đây là
+     sửa một lời đã có. Dùng chung thì phải nhớ nó đang ở chế độ nào, và cái
+     chip "đang trả lời ai" lại phải kể thêm một trạng thái nữa.
+
+     Một `<textarea>` với hai nút, dựng lúc bấm và gỡ lúc xong. Đơn giản tới
+     mức không có trạng thái nào để sai. */
+  function moOSua(c, li, nd, maSua) {
+    if (li.querySelector('.bl-osua')) return;
+
+    var o = document.createElement('div');
+    o.className = 'bl-osua';
+
+    var ta = document.createElement('textarea');
+    ta.className = 'bl-osua-chu';
+    ta.rows = 3;
+    ta.maxLength = 2000;
+    ta.value = c.noiDung;
+
+    var hang = document.createElement('div');
+    hang.className = 'bl-osua-nut';
+
+    var bThoi = document.createElement('button');
+    bThoi.type = 'button'; bThoi.className = 'btn btn--ghost';
+    bThoi.textContent = L('cancelEdit', 'Cancel');
+    bThoi.addEventListener('click', function () { o.remove(); nd.hidden = false; });
+
+    var bLuu = document.createElement('button');
+    bLuu.type = 'button'; bLuu.className = 'btn';
+    bLuu.textContent = L('saveEdit', 'Save');
+    bLuu.addEventListener('click', function () {
+      var chu = ta.value.trim();
+      if (chu.length < 2) { ta.focus(); return; }
+      bLuu.disabled = true;
+      fetch(API, {
+        method: 'PUT',
+        headers: dauKhoa({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ ma: c.ma, noiDung: chu, maSua: maSua })
+      }).then(function (r) { return r.json(); })
+        .then(function (kq) {
+          bLuu.disabled = false;
+          if (!kq.ok) { noi(L('editFail', 'Could not save the edit'), 'hong'); return; }
+          o.remove(); nd.hidden = false;
+          /* Tải lại cả danh sách chứ không chỉ đổi chữ tại chỗ: sửa xong thì
+             bình luận về lại hàng chờ duyệt (máy chủ làm vậy), nên nó có thể
+             BIẾN MẤT khỏi danh sách công khai. Đổi chữ tại chỗ thì người sửa
+             thấy lời mình còn đó, rồi tải lại trang mới thấy nó mất. */
+          noi(kq.duyet ? L('editOk', 'Saved') : L('editWait', 'Saved — waiting for review again'), 'ok');
+          tai();
+        })
+        .catch(function () { bLuu.disabled = false; noi(L('netErr'), 'hong'); });
+    });
+
+    hang.appendChild(bThoi); hang.appendChild(bLuu);
+    o.appendChild(ta); o.appendChild(hang);
+    nd.hidden = true;
+    li.insertBefore(o, nd.nextSibling);
+    ta.focus();
   }
 
   /* ══════════ 3. ĐEM FORM ĐI TRẢ LỜI ══════════ */
@@ -669,6 +772,7 @@
     if (nd.length < 2) { noi(L('tooShort'), 'hong'); form.noiDung.focus(); return; }
 
     nut.disabled = true;
+    var maSuaMoi = sinhMa();
     var chuCu = nut.textContent;
     nut.textContent = L('sending');
     noi('');
@@ -680,6 +784,7 @@
         url: TRANG,
         /* Có khoá thì tên lấy từ cấu hình, không lấy từ ô đang ẩn — ô ấy có
            thể còn sót chữ của một lượt gõ trước. */
+        maSua: maSuaMoi,
         ten: (coKhoa() && TEN_CHU) ? TEN_CHU : form.ten.value,
         email: (coKhoa() && TEN_CHU) ? '' : form.email.value,
         noiDung: nd,
@@ -691,6 +796,10 @@
       .then(function (r) { return r.json(); })
       .then(function (kq) {
         if (!kq.ok) { noi(kq.loi || L('failed'), 'hong'); return; }
+        /* Cất mã NGAY khi máy chủ xác nhận, trước cả lượt tải lại danh sách:
+           `form.reset()` ngay dưới không đụng tới nó, nhưng nếu lượt tải lại
+           hỏng giữa chừng thì quyền sửa vẫn còn. */
+        if (kq.ma) catMaSua(kq.ma, maSuaMoi);
         /* `form.reset()` xoá cả tên và email — nhưng chúng là thứ người ta vừa
            gõ và sẽ gõ lại y hệt ở lần sau. Nhớ lại ngay sau khi reset. */
         form.reset();
@@ -730,6 +839,46 @@
      Đã đăng nhập thì hai ô ấy ẩn đi và tên lấy từ site.config.json
      (`veVaiTro`), nên không có gì để nhớ và cũng không nên nhớ. */
   var KHOA_TEN = 'zoey:bl-ten';
+
+  /* ══════════ MÃ SỬA — CHÌA KHOÁ NẰM Ở MÁY NGƯỜI GÕ ══════════
+
+     Gửi bình luận thì sinh một chuỗi ngẫu nhiên, gửi kèm lên máy chủ (nơi chỉ
+     lưu bản BĂM), rồi cất bản gốc ở đây. Muốn sửa thì gửi lại chuỗi gốc.
+
+     Nó KHÔNG chứng minh "đúng người" — xoá lịch sử trình duyệt là mất quyền
+     sửa. Đúng mức bảo đảm cần cho một ô bình luận không tài khoản: đủ để
+     không ai sửa được lời người khác từ xa, mà không đòi ai đăng ký gì.
+
+     Giữ tối đa 50 mã gần nhất: một người đọc lâu năm có thể để lại vài chục
+     bình luận, mà `localStorage` thì có hạn và không nên để một tính năng nhỏ
+     ăn dần hết chỗ. */
+  var KHOA_SUA = 'zoey:bl-sua';
+  var GIU_MA = 50;
+
+  function khoSua() {
+    try { return JSON.parse(localStorage.getItem(KHOA_SUA) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function catMaSua(ma, maSua) {
+    try {
+      var k = khoSua();
+      k[ma] = maSua;
+      var ds = Object.keys(k);
+      if (ds.length > GIU_MA) ds.slice(0, ds.length - GIU_MA).forEach(function (x) { delete k[x]; });
+      localStorage.setItem(KHOA_SUA, JSON.stringify(k));
+    } catch (e) { /* chế độ riêng tư — mất quyền sửa, không mất gì khác */ }
+  }
+  function maSuaCua(ma) { return khoSua()[ma] || ''; }
+
+  function sinhMa() {
+    try {
+      var b = new Uint8Array(16);
+      crypto.getRandomValues(b);
+      return [].map.call(b, function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+    } catch (e) {
+      return String(Date.now()) + Math.random().toString(36).slice(2);
+    }
+  }
 
   function nhoTen() {
     if (coKhoa() && TEN_CHU) return;

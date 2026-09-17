@@ -507,7 +507,15 @@ const NHAN = {
   szBStop     : 'Do not',     szBStopMo   : 'something that should not be done',
   szBGallery  : 'Gallery',    szBGalleryMo: 'photos side by side',
   szBWide     : 'Wide block', szBWideMo   : 'spills past the text column',
-  szBTable    : 'Table',      szBTableMo  : '2 columns — Shift+Enter between rows',
+  szBTable    : 'Table',      szBTableMo  : 'up to 5 × 20 — Shift+Enter between rows',
+  /* Căn dòng — một nút xổ ra bốn chế độ. "Đều hai bên" là mặc định của bài,
+     nên nó không gắn lớp nào; ba cái kia gắn {.trai} · {.giua} · {.phai}. */
+  szAlign     : 'Alignment',
+  szCanDeu    : 'Justified', szCanDeuMo  : 'the default — both edges straight',
+  szCanTrai   : 'Left',      szCanTraiMo : 'ragged right edge',
+  szCanGiua   : 'Centre',    szCanGiuaMo : 'for a line or two, not a whole paragraph',
+  szCanPhai   : 'Right',     szCanPhaiMo : 'a signature, a dedication',
+  szBTableAsk : 'Size — columns × rows (up to 5 × 20):',
   szBCode     : 'Code block', szBCodeMo   : 'keeps every space and line break',
   szBTask     : 'Checklist',  szBTaskMo   : 'a list with tick boxes',
   /* Dòng mờ trong ô tiêu đề của khối — thay cho hộp thoại hỏi tiêu đề đã bỏ.
@@ -684,6 +692,14 @@ const NHAN = {
   replyTo     : 'Replying to {n}',
   cancelReply : 'Cancel reply',
   moreReplies : 'Show {n} earlier replies',
+  /* Sửa lời của chính mình — tối đa ba lượt. Con số in ngay trong nhãn nút. */
+  edit        : 'Edit',
+  editLeft    : '{n} edits left',
+  cancelEdit  : 'Cancel',
+  saveEdit    : 'Save',
+  editOk      : 'Saved',
+  editWait    : 'Saved — waiting for review again',
+  editFail    : 'Could not save the edit',
   /* Nhánh đã chạm trần: nút đổi chữ để nói rõ nó sẽ làm gì khác đi. */
   newThread   : 'Start a new thread',
   threadFull  : 'This thread is long — your reply starts a new one below.',
@@ -1250,6 +1266,12 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bGallery: NHAN.szBGallery, bGalleryMo: NHAN.szBGalleryMo,
                         bWide: NHAN.szBWide, bWideMo: NHAN.szBWideMo,
                         bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
+                        bTableAsk: NHAN.szBTableAsk,
+                        align: NHAN.szAlign,
+                        canDeu: NHAN.szCanDeu, canDeuMo: NHAN.szCanDeuMo,
+                        canTrai: NHAN.szCanTrai, canTraiMo: NHAN.szCanTraiMo,
+                        canGiua: NHAN.szCanGiua, canGiuaMo: NHAN.szCanGiuaMo,
+                        canPhai: NHAN.szCanPhai, canPhaiMo: NHAN.szCanPhaiMo,
                         bCode: NHAN.szBCode, bCodeMo: NHAN.szBCodeMo,
                         bTask: NHAN.szBTask, bTaskMo: NHAN.szBTaskMo,
                         bDeCho: NHAN.szBDeCho, bCodeAsk: NHAN.szBCodeAsk,
@@ -2135,6 +2157,9 @@ function binhLuanHTML(bai) {
   const nhanJS = attr(JSON.stringify({
     author: NHAN.author, anon: NHAN.anon, reply: NHAN.reply,
     replyTo: NHAN.replyTo, cancelReply: NHAN.cancelReply,
+    edit: NHAN.edit, editLeft: NHAN.editLeft, cancelEdit: NHAN.cancelEdit,
+    saveEdit: NHAN.saveEdit, editOk: NHAN.editOk, editWait: NHAN.editWait,
+    editFail: NHAN.editFail,
     newThread: NHAN.newThread, threadFull: NHAN.threadFull,
     moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
     sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
@@ -2167,6 +2192,21 @@ function binhLuanHTML(bai) {
           viết. Chúng vẫn đóng mặc định, và vẫn mở bằng chính cái nút trên kia
           — `aria-controls` trỏ tới #bl-than dù hai bên không chung khối cha. */''}
 
+    ${/* ── LỐI VÀO THỨ HAI, ĐẶT ĐÚNG CHỖ NGƯỜI TA TÌM ──
+          Khi khung đóng thì mọi thứ trong `.bl-than` biến mất — kể cả dòng
+          tiêu đề "NOTES 2". Nghĩa là cuối bài KHÔNG CÒN GÌ nói rằng bài này
+          có bình luận, và lối vào duy nhất là một cái icon 24px nằm ở hàng
+          meta tít trên đầu bài, cách đó cả nghìn pixel.
+
+          Nên dòng tiêu đề ra NGOÀI phần ẩn, và chính nó là nút mở: bấm vào
+          khu bình luận thì xổ ra cả khung. Cái icon trên kia vẫn chạy như cũ
+          — hai lối vào cùng mở một thứ, và cùng đi qua một đường (`nutMo`),
+          nên không có hai trạng thái nào phải giữ cho khớp. */''}
+    <button class="bl-mo-khu" type="button" aria-expanded="false" aria-controls="bl-than">
+      <span class="bl-de">${escapeHtml(NHAN.blDe)}<span class="bl-de-so" data-bl-dem></span></span>
+      <span class="bl-mo-khu-mui" aria-hidden="true"></span>
+    </button>
+
     <div class="bl-than" id="bl-than" hidden>
 
     ${/* ── KHỐI NÀY PHẢI TỰ XƯNG TÊN ──
@@ -2177,7 +2217,6 @@ function binhLuanHTML(bai) {
           Cùng khuôn với hàng `TAGGED` ngay phía trên, nên hai khối cuối bài
           đọc ra là hai mục của cùng một hàng thông tin. Con số do comments.js
           đổ vào, và để rỗng khi chưa có lời nhắn nào. */''}
-    <p class="bl-de">${escapeHtml(NHAN.blDe)}<span class="bl-de-so" data-bl-dem></span></p>
 
     ${/* Để `loiMoi` rỗng là BỎ HẲN dòng mời, không phải rơi về một câu mặc
           định — bản trước có `|| 'câu mặc định'` nên xoá chữ trong cấu hình
@@ -3301,7 +3340,17 @@ function theBai(b, { hienMuc = true } = {}) {
      thiếu mất một tag. */
   return `<article class="card the-bai">
     ${hangMeta(hienMuc ? b : { ...b, muc: [] })}
-    <h3><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h3>
+    ${/* ── <h2>, KHÔNG PHẢI <h3> ──
+          Tiêu đề trên thẻ bài là tiêu đề CẤP HAI của trang danh sách: trên nó
+          chỉ có đúng một <h1> (tên chuyên mục hoặc tên tag). Để <h3> thì dàn
+          tiêu đề nhảy cóc h1 → h3, và người đi bằng phím tắt tiêu đề của
+          trình đọc màn hình gặp một bậc trống — họ không biết mình vừa bỏ lỡ
+          một cấp hay trang thiếu mất một khối.
+
+          Đo trên bản đã dựng: 30 trang danh sách và tag đều nhảy đúng bậc
+          này. Cỡ chữ KHÔNG đổi (`.the-bai h2` giữ nguyên thang cũ) — đây
+          thuần tuý là sửa cấu trúc, không phải sửa hình. */''}
+    <h2><a class="stretch" href="${b.url}">${noiChu(escapeHtml(b.title))}</a></h2>
     <p class="the-tom">${escapeHtml(tomTat(b.summary, 150))}</p>
     ${b.tags.length ? `<div class="tag-row">${b.tags.slice(0, SL.tagMoiThe).map((t) =>
       `<span class="tag tag--tinh">${escapeHtml(t)}</span>`).join('')}</div>` : ''}

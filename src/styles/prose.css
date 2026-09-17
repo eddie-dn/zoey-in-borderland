@@ -176,6 +176,16 @@
   max-width:46ch;margin-inline:auto;
 }
 
+/* ── CĂN TRÁI VÀ CĂN PHẢI ──
+   Mặc định của `.prose p` là căn ĐỀU hai bên, nên "căn trái" ở đây là một
+   lựa chọn thật chứ không phải trạng thái rỗng: nó tắt căn đều đi.
+
+   Dùng khi nào: một đoạn lẫn nhiều mã hay nhiều liên kết dài thì căn đều
+   phải giãn khoảng trắng quá tay, lúc ấy căn trái đọc êm hơn. Căn phải thì
+   gần như chỉ dùng cho một dòng ký tên hay một lời đề tặng ở cuối bài. */
+.prose .trai{text-align:left;text-justify:auto}
+.prose .phai{text-align:right;text-justify:auto}
+
 /* ── LIÊN KẾT TRONG BÀI ──
    Gạch chân mảnh, cách chữ 3px: đọc rõ là liên kết nhưng không cắt ngang
    dấu tiếng Việt ở dưới chữ (ạ, ọ, ụ). Đây là lý do không dùng underline mặc định. */
@@ -898,6 +908,55 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   background:var(--surface-sunken);
   box-shadow:inset 0 0 0 1px var(--line);
 }
+
+/* ══════════ NÚT MỞ KHU BÌNH LUẬN ══════════
+   Nó là dòng tiêu đề "NOTES 2" ở cuối bài, và nó là một NÚT. Trông vẫn y như
+   một dòng tiêu đề — không viền, không nền — vì nó phải đọc ra là một phần
+   của trang trước đã; cái mũi tên nhỏ bên phải mới là thứ nói rằng bấm được.
+
+   Mở rộng hết bề ngang cột: vùng bấm càng rộng càng dễ trúng, và ở đây không
+   có gì khác tranh chỗ trên hàng đó. */
+.bl-mo-khu{
+  appearance:none;border:0;background:none;cursor:pointer;
+  display:flex;align-items:center;gap:var(--s3);
+  width:100%;padding:var(--s3) 0;text-align:left;
+  color:inherit;
+  transition:color var(--dur-fast);
+}
+.bl-mo-khu:hover{color:var(--accent-ink)}
+.bl-mo-khu:hover .bl-de{color:var(--accent-ink)}
+/* Mũi tên xuống, quay 180° khi khung đang mở — một dấu duy nhất nói cả hai
+   trạng thái, không cần đổi chữ. */
+.bl-mo-khu-mui{
+  flex:none;width:7px;height:7px;margin-left:auto;
+  border-right:1.6px solid var(--line-strong);
+  border-bottom:1.6px solid var(--line-strong);
+  rotate:45deg;translate:0 -2px;
+  transition:rotate var(--dur) var(--ease-glass),border-color var(--dur-fast);
+}
+.bl-mo-khu[aria-expanded="true"] .bl-mo-khu-mui{rotate:225deg;translate:0 2px}
+.bl-mo-khu:hover .bl-mo-khu-mui{border-color:var(--accent-ink)}
+
+/* ── Ô SỬA TẠI CHỖ ──
+   Chiếm trọn một dòng của hàng flex, cùng lý do với `.bl-item > .bl-form`. */
+.bl-osua{
+  flex:1 0 100%;min-width:0;
+  display:flex;flex-direction:column;gap:var(--s3);
+  margin-top:var(--s3);
+}
+.bl-osua-chu{
+  width:100%;box-sizing:border-box;
+  padding:var(--s3);border-radius:var(--r-sm);
+  border:1px solid var(--line);background:var(--surface-solid);
+  font-family:var(--font-body);font-size:calc(var(--fs-base) * .94);
+  line-height:1.62;color:var(--text);resize:vertical;
+}
+.bl-osua-chu:focus{outline:none;border-color:var(--accent)}
+.bl-osua-nut{display:flex;gap:var(--s3);justify-content:flex-end}
+/* Nút Sửa mảnh hơn nút Reply một bậc: nó là việc dọn dẹp thỉnh thoảng, không
+   phải lời mời chính. */
+.bl-sua{color:var(--text-faint)}
+.bl-sua:hover{color:var(--accent-ink)}
 
 .bl-form{display:flex;flex-direction:column;gap:var(--s4)}
 /* ── Ô SOẠN DỜI VÀO TRONG MỘT THẺ BÌNH LUẬN ──

@@ -1157,11 +1157,29 @@
          click chạy tới. Chặn ngay ở mousedown thì vùng chọn còn nguyên. */
       b.addEventListener('mousedown', function (e) { e.preventDefault(); });
       b.addEventListener('click', function (e) { e.preventDefault(); lam(b); });
-      thanh.appendChild(b);
+      (nhomNay || thanh).appendChild(b);
       return b;
     }
 
-    function vach() { thanh.appendChild(el('span', 'sz-vach')); }
+    /* ── MỖI NHÓM MỘT KHUNG, ĐỂ NÓ KHÔNG BỊ XÉ NGANG ──
+       Thanh này `flex-wrap:wrap`, nên ở khổ hẹp nó tự rớt xuống hàng hai —
+       đúng ý. Nhưng khi mỗi cái nút là một ô rời thì chỗ rớt rơi vào GIỮA một
+       nhóm: "B I 🔗" có thể thành "B I" ở hàng trên và "🔗" ở hàng dưới, và
+       cái vạch ngăn thì đứng lạc một mình ở đầu hàng.
+
+       Bọc mỗi nhóm trong một `<span>` thì cả nhóm là MỘT ô của hàng: nó xuống
+       hàng nguyên cụm hoặc không xuống. Vạch ngăn thôi là một phần tử riêng
+       mà thành đường viền trái của nhóm — bớt được chín thẻ rỗng, và không
+       bao giờ có vạch mồ côi.
+
+       `vach()` giữ nguyên tên và nguyên chỗ gọi: nó nay mở một nhóm MỚI thay
+       vì vẽ một cái vạch. Mọi chỗ gọi cũ vẫn đúng nghĩa "từ đây là nhóm
+       khác". */
+    var nhomNay = null;
+    function vach() {
+      nhomNay = el('span', 'sz-nhom');
+      thanh.appendChild(nhomNay);
+    }
 
     /* ══════════════════════════════════════════════════════════════
        THỨ TỰ TRÊN THANH: CHÍNH TRƯỚC, PHỤ SAU
@@ -1188,6 +1206,10 @@
        nào, nên một cú bấm nhầm là không có đường lùi. Hai cái nút này là đường
        lùi ấy, và chúng đứng NGOÀI CÙNG BÊN TRÁI: đó là chỗ mọi trình soạn thảo
        ba mươi năm nay vẫn để nút hoàn tác. */
+    /* Mở nhóm đầu tiên TRƯỚC nút đầu tiên: thiếu dòng này thì Undo/Redo rơi
+       thẳng vào thanh chứ không vào nhóm nào, và chúng là hai nút duy nhất có
+       thể bị xé khỏi nhau khi xuống hàng. */
+    vach();
     nut(svg(['M3 10h11a5 5 0 0 1 0 10h-3', 'M7 6 3 10l4 4']),
         L('undo', 'Undo') + ' (⌘Z)', function () { lenh('undo'); });
     nut(svg(['M21 10H10a5 5 0 0 0 0 10h3', 'M17 6l4 4-4 4']),
@@ -1212,6 +1234,20 @@
         L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); donDanhSach(); });
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
         L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); donDanhSach(); });
+
+    /* ── CĂN DÒNG: MỘT NÚT, BỐN CHẾ ĐỘ ──
+       Bốn nút rời cho bốn kiểu căn là bốn chỗ trên một thanh vốn đã chật, mà
+       ba trong bốn cái gần như không bao giờ dùng tới. Một nút xổ ra bốn dòng
+       thì chiếm một chỗ, và lúc mở ra thì cả bốn nằm cạnh nhau — chọn được
+       bằng cách SO SÁNH thay vì phải nhớ icon nào là cái nào.
+
+       "Đều hai bên" là mặc định của `.prose p`, nên nó không gắn lớp gì; ba
+       cái kia gắn `{.trai}` · `{.giua}` · `{.phai}`. Bấm lại đúng cái đang
+       bật thì gỡ ra — `doiLopDoan` vốn đã làm vậy. */
+    var nutCan = nut(svg(['M4 6h16M4 12h10M4 18h16']), L('align', 'Alignment'),
+                     function () { moBangCan(); });
+    nutCan.setAttribute('aria-expanded', 'false');
+    var bangCan = veBangCan();
     vach();
 
     /* ── CHÍNH 4: hai cửa chèn ──
@@ -1526,15 +1562,34 @@
       de(L('gNhomCau', 'Structure'));
 
 
-      dong(L('bTable', 'Table'), L('bTableMo', '2 columns — Shift+Enter between rows'), '| a | b |', function () {
+      dong(L('bTable', 'Table'), L('bTableMo', 'up to 5 × 20 — Shift+Enter between rows'), '| a | b |', function () {
         khung.focus();
+        /* ── HỎI CỠ BẢNG ──
+           Bản trước luôn chèn đúng 2×2, và muốn thêm cột thì phải tự gõ thêm
+           dấu gạch đứng vào cả ba dòng cho khớp nhau — sai một dấu là bảng
+           thôi là bảng. Hỏi một câu thì dựng sẵn đúng cỡ.
+
+           Trần 5×20. Trần CỘT là chuyện bề ngang thật: cột chữ của bài rộng
+           chừng 66 ký tự, chia sáu cột là mỗi cột mười ký tự — không còn đọc
+           được. Trần HÀNG chỉ để chặn gõ nhầm "200"; hai mươi hàng đã dài hơn
+           gần hết bảng người ta thật sự viết. */
+        var TRAN_COT = 5, TRAN_HANG = 20;
+        var tra = window.prompt(
+          L('bTableAsk', 'Size — columns × rows (up to 5 × 20):'), '2x3') || '';
+        var m = tra.replace(/\s/g, '').match(/^(\d+)[x×*,](\d+)$/i);
+        if (!m) return;
+        var nCot  = Math.max(1, Math.min(TRAN_COT,  parseInt(m[1], 10) || 2));
+        var nHang = Math.max(1, Math.min(TRAN_HANG, parseInt(m[2], 10) || 2));
+
         /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
-           bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng ba dòng liền
-           nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì phải
-           viết thêm cả một bộ đổi bảng ↔ Markdown, cho một khối dùng vài lần
-           một năm. */
+           bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng chừng ấy dòng
+           liền nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì
+           phải viết thêm cả một bộ đổi bảng ↔ Markdown. */
+        function hang(o) { return '|' + new Array(nCot + 1).join(o + '|'); }
+        var d = [hang('  '), hang('---')];
+        for (var i = 0; i < nHang; i++) d.push(hang('  '));
         document.execCommand('insertHTML', false,
-          '<p>|  |  |<br>|---|---|<br>|  |  |</p><p><br></p>');
+          '<p>' + d.join('<br>') + '</p><p><br></p>');
         capNhat();
       });
 
@@ -1620,8 +1675,15 @@
         return;
       }
       var LOP_CSS = { '{.giua}': 'sz-doan--giua', '{.thuong}': 'sz-doan--thuong',
-                      '{.nho}': 'sz-doan--nho' };
-      p.classList.remove('sz-doan--giua', 'sz-doan--thuong', 'sz-doan--nho');
+                      '{.nho}': 'sz-doan--nho',
+                      '{.trai}': 'sz-doan--trai', '{.phai}': 'sz-doan--phai' };
+      p.classList.remove('sz-doan--giua', 'sz-doan--thuong', 'sz-doan--nho',
+                         'sz-doan--trai', 'sz-doan--phai');
+      /* `__bo__` = "về mặc định": lớp đã gỡ ở dòng trên, ở đây chỉ dọn nốt
+         thuộc tính rồi thôi. Một giá trị riêng chứ không phải chuỗi rỗng, vì
+         chuỗi rỗng lọt vào nhánh so sánh bên dưới và hoá ra lại BẬT một lớp
+         tên rỗng. */
+      if (lop === '__bo__') { p.removeAttribute('data-lop'); capNhat(); return; }
       if (p.getAttribute('data-lop') === lop) {
         p.removeAttribute('data-lop');
       } else {
@@ -1635,6 +1697,41 @@
       bangMau.hidden = true;
       bangKhoi.hidden = !bangKhoi.hidden;
       nutKhoi.setAttribute('aria-expanded', bangKhoi.hidden ? 'false' : 'true');
+    }
+
+    /* ══════════ BẢNG CĂN DÒNG ══════════ */
+    function veBangCan() {
+      var b = el('div', 'sz-bang sz-bang--can');
+      b.hidden = true;
+      [['', L('canDeu', 'Justified'), L('canDeuMo', 'the default — both edges straight')],
+       ['{.trai}', L('canTrai', 'Left'), L('canTraiMo', 'ragged right edge')],
+       ['{.giua}', L('canGiua', 'Centre'), L('canGiuaMo', 'for a line or two, not a whole paragraph')],
+       ['{.phai}', L('canPhai', 'Right'), L('canPhaiMo', 'a signature, a dedication')]
+      ].forEach(function (x) {
+        var o = el('button', 'sz-khoi-nut');
+        o.type = 'button';
+        var chu = el('div', 'sz-khoi-chu');
+        chu.appendChild(el('span', 'sz-khoi-ten', x[1]));
+        chu.appendChild(el('span', 'sz-khoi-mo', x[2]));
+        o.appendChild(chu);
+        if (x[0]) o.appendChild(el('code', 'sz-khoi-ma', x[0]));
+        o.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        o.addEventListener('click', function () {
+          /* Chuỗi rỗng = về mặc định: gỡ lớp đang có, không gắn gì thêm. */
+          doiLopDoan(x[0] || '__bo__');
+          dongBang();
+        });
+        b.appendChild(o);
+      });
+      return b;
+    }
+
+    function moBangCan() {
+      bangMau.hidden = true;
+      bangKhoi.hidden = true;
+      nutKhoi.setAttribute('aria-expanded', 'false');
+      bangCan.hidden = !bangCan.hidden;
+      nutCan.setAttribute('aria-expanded', bangCan.hidden ? 'false' : 'true');
     }
 
     /* ══════════ BẢNG MÀU ══════════ */
@@ -1696,8 +1793,9 @@
     }
 
     function dongBang() {
-      bangMau.hidden = true; bangKhoi.hidden = true;
+      bangMau.hidden = true; bangKhoi.hidden = true; bangCan.hidden = true;
       nutKhoi.setAttribute('aria-expanded', 'false');
+      nutCan.setAttribute('aria-expanded', 'false');
     }
 
     /* ══════════ CHỈ DẪN ══════════
@@ -2456,6 +2554,7 @@
     khoiSoan.appendChild(oFile);
     khoiSoan.appendChild(bangKhoi);
     khoiSoan.appendChild(bangMau);
+    khoiSoan.appendChild(bangCan);
     khoiSoan.appendChild(khung);
     khoiSoan.appendChild(oMD);
     oSan.appendChild(khoiSoan);

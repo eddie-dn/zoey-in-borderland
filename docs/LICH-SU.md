@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.6.3 | 2026-09-17 | 03 | thẻ bài dùng h2 nên dàn tiêu đề thôi nhảy cóc ở 30 trang; hai phép kiểm mới cho dàn tiêu đề và cân nặng chữ |
+| V2.6.2 | 2026-09-17 | 02 | ô soạn thảo: thêm căn dòng bốn chế độ, thanh nút gom nhóm không bị xé khi xuống hàng, sửa nút Blocks tràn chữ; bảng cho tới 5x20 và chỉnh được bề rộng cột |
+| V2.6.1 | 2026-09-17 | 01 | bàn duyệt thẳng cột ở bộ lọc All; nút Reply có ở mọi thẻ; bấm khu bình luận là xổ full khung; cho sửa bình luận tối đa 3 lần |
 | V2.6.0 | 2026-09-17 | 00 | thêm theme thứ tư 霜降: nền trắng, mực đen, nền động là mây trôi qua núi thuỷ mặc; bảng lịch sử đổi sang thẻ dialog; trích dẫn AI đệm trong D1 nên một lượt gọi đủ cho cả khung giờ |
 | V2.5.9 | 2026-09-17 | 09 | theme Tĩnh lặng: nền hạ hai nấc cho thẻ trắng nổi lên, bóng đổ đậm thêm, nét chữ thân bài dày một bậc; trang About bật lại nền động ở độ mờ .22 |
 | V2.5.8 | 2026-09-17 | 08 | tooltip nút xem câu khác sang trái, thôi đè lên câu trích dẫn; giờ bình luận về liền sau tên người viết; nhớ tên và email người đã bình luận; trần 12 trả lời mỗi nhánh rồi mở nhánh mới |
@@ -210,6 +213,54 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.6.3 — 17-Sep-2026
+
+- **Dàn tiêu đề thôi nhảy cóc — 30 trang cùng lúc.** Tiêu đề trên thẻ bài để
+  `<h3>` trong khi trên nó chỉ có đúng một `<h1>`, nên mọi trang chuyên mục và
+  trang tag đều nhảy h1 → h3. Không ai thấy, vì trên màn hình nó vẫn là chữ to
+  chữ nhỏ đúng thứ tự — chỉ cái DÀN Ý là sai, và người đi bằng phím tắt tiêu
+  đề của trình đọc màn hình gặp một bậc trống. Nay `<h2>`; cỡ chữ không đổi.
+- **Rà lại toàn bộ liên kết và cấu trúc SEO.** 888 liên kết trên 48 trang: **0
+  liên kết nội bộ gãy**, mọi ảnh có `alt`, mọi trang đủ title · description ·
+  canonical · og:image · một `<h1>` · `lang`.
+- **Hai phép kiểm mới** (#65 cân nặng chữ, #66 dàn tiêu đề), đều đã tiêm lỗi.
+  Một phép kiểm thứ ba viết ra rồi gỡ đi — bộ kiểm đã có "Không có liên kết
+  nội bộ gãy" làm đúng việc ấy.
+
+## V2.6.2 — 17-Sep-2026
+
+- **Ô soạn thảo có căn dòng.** Một nút xổ ra bốn chế độ: đều hai bên (mặc
+  định), trái, giữa, phải. `{.trai}` và `{.phai}` là hai lớp mới ở khung đọc
+  bài; `{.giua}` vốn đã có.
+- **Thanh nút gom nhóm, xuống hàng nguyên cụm.** Thanh vốn đã tự rớt xuống
+  hàng hai, nhưng mỗi nút là một ô rời nên chỗ rớt rơi vào GIỮA một nhóm —
+  "B I 🔗" thành "B I" ở hàng trên và "🔗" ở hàng dưới, còn vạch ngăn thì
+  đứng lạc một mình. Kèm theo, sửa hai lỗi của lượt tách CSS:
+  `.sz-nut--khoi{width:auto}` nằm ở `admin.css` mà `.sz-nut{width:28px}` ở
+  `soan.css` — gói nạp admin trước nên luật gốc đè luật phụ, và chữ "BLOCKS"
+  tràn khỏi nút đè lên vạch bên cạnh. `.sz-khoi-ma` thì chưa từng có luật nào.
+- **Bảng tới 5×20, và chỉnh được bề rộng cột.** Bảng vốn luôn chèn đúng 2×2.
+  Nay hỏi cỡ. Bề rộng cột đọc từ SỐ DẤU GẠCH ở hàng ngăn (`|---|------|` →
+  cột hai rộng gấp đôi) — không phải cú pháp mới phải học, và bảng nào gạch
+  đều thì không sinh `<colgroup>` nên mọi bảng cũ không đổi một pixel.
+
+## V2.6.1 — 17-Sep-2026
+
+- **Bàn duyệt thẳng cột ở bộ lọc All.** Mỗi hàng là một LƯỚI RIÊNG, nên hai
+  cột cuối để `auto` thì mỗi hàng tự tính bề rộng theo chữ của chính nó:
+  "PENDING" rộng hơn "LIVE" nên cả cột nút phía sau lệch theo. Chỉ lộ ra ở
+  **All**, vì hai bộ lọc kia mỗi cái chỉ có một loại trạng thái. Nay cột trạng
+  thái rộng cố định, và ruột thanh gộp thẳng mép với hàng bên dưới.
+- **Nút Reply có ở MỌI thẻ.** Trước chỉ ở bình luận gốc, nên trả lời của một
+  trả lời thì không bấm được vào đâu — muốn nói tiếp với người vừa trả lời
+  mình thì phải cuộn ngược lên và tự gõ tên họ vào. Cây vẫn hai tầng như cũ.
+- **Bấm khu bình luận là xổ full khung, và sửa được lời đã gửi.** Khi đóng thì
+  cả dòng "NOTES 2" cũng biến mất, nên cuối bài không còn gì nói rằng bài này
+  có bình luận — lối vào duy nhất là một icon 24px ở đầu bài. Nay dòng ấy ra
+  ngoài và chính nó là nút. Kèm theo: sửa được lời mình **tối đa 3 lần**, xác
+  thực bằng một mã ngẫu nhiên lưu ở máy người gõ (máy chủ chỉ giữ bản băm), và
+  sửa xong thì bình luận về lại hàng chờ duyệt.
 
 ## V2.6.0 — 17-Sep-2026
 

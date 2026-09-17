@@ -209,6 +209,22 @@
   margin-bottom:var(--s5);
 }
 .ad-loc{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+
+/* ── NÚT CHÍNH TRONG THANH CÔNG CỤ NHỎ MỘT BẬC ──
+   `.btn` dựng cho màn hero và chân bài: `padding:12px var(--s6)`, khoảng chữ
+   .18em — một viên thuốc to, đúng vai "lời mời chính của cả trang".
+
+   Trong thanh công cụ quản trị thì nó sai vai. Cạnh nó là ô tìm và ô chọn
+   chuyên mục, cả hai `padding:5px`; một viên thuốc cao gấp đôi đứng giữa hai
+   ô ấy đọc ra là ba thứ không cùng một bộ. Và ở bàn làm việc thì "New post"
+   không phải lời mời chính — nó là một trong bốn năm việc làm ở đây.
+
+   Hạ về 7px và .12em: vẫn là nút đặc, vẫn nổi nhất thanh, nhưng cùng một
+   thang với hai ô bên cạnh. */
+.ad-thanh > .btn{
+  padding:7px var(--s5);
+  font-size:var(--fs-2xs);letter-spacing:.12em;
+}
 /* ── Ô LỌC THEO CHỮ ──
    Lọc TẠI CHỖ trên phần bảng đã tải, không hỏi máy chủ (lý do ở đầu khối bảng
    bài trong src/js/viet-bai.js). Nó đứng cạnh nút chính chứ không ở một hàng
@@ -280,7 +296,15 @@
 .ad-chon-thanh{
   position:sticky;top:calc(var(--header-h) + 2px);z-index:2;
   display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);
-  padding:8px var(--s3);margin-bottom:2px;
+  /* ── LỀ TRONG BÙ BẰNG LỀ NGOÀI ÂM ──
+     Thanh này có nền nên cần lề trong, còn hàng bên dưới thì không
+     (`padding:5px 0`). Để lề trong trơn thì nút cuối của thanh đứng lùi vào
+     12px so với nút cuối của mỗi hàng — hai thứ làm cùng một việc mà không
+     thẳng nhau.
+
+     Kéo cả thanh ra ngoài đúng bằng lề trong: nền vẫn rộng hơn hàng một chút
+     (đúng ý, nó là một thanh nổi), mà RUỘT thanh thì thẳng cột với hàng. */
+  padding:8px var(--s3);margin:0 calc(var(--s3) * -1) 2px;
   border-radius:var(--r-sm);
   background:var(--accent-wash);
   box-shadow:inset 0 0 0 1px var(--line);
@@ -290,7 +314,14 @@
   letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
   margin-right:auto;
 }
-.ad-chon-thanh .ad-lenh{text-align:left}
+/* ── NÚT GỘP DÙNG CHUNG BỀ RỘNG CỘT VỚI NÚT TỪNG HÀNG ──
+   Thanh gộp nằm ngay trên danh sách và làm đúng những việc mà nút từng hàng
+   làm. Để nó tự do theo `flex` thì bốn nút rộng theo chữ, và không cái nào
+   thẳng cột với cái nào ở dưới — mắt phải đọc lại nhãn mỗi lần nhìn xuống.
+
+   `5rem` là đúng con số `grid-auto-columns` của `.ad-lenh-hang`, nên nút cuối
+   cùng của thanh gộp và nút cuối cùng của mỗi hàng rơi vào cùng một mép. */
+.ad-chon-thanh .ad-lenh{width:5rem;text-align:right;flex:none}
 .ad-chon-bo{color:var(--text-faint)}
 .ad-dong:last-of-type{border-bottom:1px solid var(--line)}
 .ad-phu{
@@ -324,7 +355,18 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 .ad-dong--hai .ad-phu{padding-top:2px}
 /* Cột trạng thái LUÔN chiếm chỗ, kể cả khi ô rỗng — không thì mỗi dòng một bề
    rộng khác nhau và hàng nút bên phải nhảy lung tung. */
-.ad-cd{min-width:3.6rem;
+/* ── CỘT TRẠNG THÁI RỘNG CỐ ĐỊNH, KHÔNG PHẢI `min-width` ──
+   Mỗi hàng `.ad-dong` là một LƯỚI RIÊNG, nên hai cột cuối để `auto` thì mỗi
+   hàng tự tính lấy bề rộng theo chữ CỦA CHÍNH NÓ. `min-width:3.6rem` không
+   chặn được điều đó: "PENDING" rộng hơn 3,6rem nên cột phình ra, còn "LIVE"
+   thì đúng 3,6rem — hai hàng cạnh nhau lệch nhau chừng hai mươi pixel, và cả
+   cột nút phía sau lệch theo.
+
+   Chỉ lộ ra khi bấm bộ lọc **All**: hai bộ lọc kia mỗi cái chỉ có một loại
+   trạng thái, nên mọi hàng ra cùng một bề rộng và trông như thẳng cột.
+
+   `width` cố định thì hàng nào cũng đúng một bề rộng, bất kể chữ trong nó. */
+.ad-cd{width:5.4rem;flex:none;
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
 .ad-cd--nhap{color:var(--warn)}
@@ -421,15 +463,6 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 @media (prefers-reduced-motion:reduce){
   .sz-khung img.sz-anh--tai{animation:none}
 }
-
-/* Nút Blocks mang cả chữ. Chữ biến mất dưới 560px: ở đó thanh nút đã phải
-   cuộn ngang, và một nút rộng gấp ba đẩy mọi thứ khác ra khỏi tầm mắt. */
-.sz-nut--khoi{width:auto;gap:5px;padding-inline:8px}
-.sz-nut-chu{
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.07em;text-transform:uppercase;
-}
-@media (max-width:560px){ .sz-nut-chu{display:none} }
 
 /* ══════════════════════════════════════════════════════════════════════
    Ô ẢNH BÌA
