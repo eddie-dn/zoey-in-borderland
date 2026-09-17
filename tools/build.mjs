@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { docFrontMatter, kiemBai } from './lib/frontmatter.mjs';
 import { render } from './lib/markdown.mjs';
+import crypto from 'node:crypto';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
 import { docSo, docChiTiet, temNgay } from './lib/lichsu.mjs';
 import { vanTay, capNhatMoc } from './lib/moc.mjs';
@@ -566,7 +567,6 @@ const NHAN = {
      Số lượt còn lại in thẳng vào lời nhắc: "New one · 2 left today". Không có
      con số ấy thì tới lượt thứ tư nút lặng lẽ đổi việc, và người ta tưởng nó
      hỏng. */
-  quoteNew    : 'New one',
   quoteNewLeft: 'New one · {n} left today',
 
   /* ── bình luận: bàn duyệt của chủ trang ──
@@ -2836,6 +2836,72 @@ function chep(tu, den) {
   fs.cpSync(tu, den, { recursive: true });
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   VÂN TAY NỘI DUNG CHO FILE TRONG /assets/
+
+   ── VẤN ĐỀ ĐO ĐƯỢC ──
+   Một trang bài nạp 13 file .js cộng một file .css. Vì tên file không đổi
+   theo nội dung, `_headers` buộc phải khai `max-age=0, must-revalidate` —
+   nếu không thì sửa giao diện xong người đọc cũ vẫn thấy bản cũ hàng tháng.
+
+   Cái giá của `must-revalidate`: mỗi lượt xem trang là **14 vòng hỏi lại máy
+   chủ**, mỗi vòng trả về 304 "chưa đổi". Không tốn băng thông, nhưng tốn đúng
+   14 lượt đi-về. Trên 4G với độ trễ 100ms thì đó là hơn một giây chờ, mỗi
+   trang, với người đã có sẵn mọi thứ trong bộ nhớ đệm.
+
+   ── CÁCH LÀM ──
+   Gắn tám ký tự băm của chính nội dung vào tên file: `comments.a3f21c9d.js`.
+   Nội dung đổi thì tên đổi, nên `immutable, một năm` là an toàn tuyệt đối —
+   người đọc cũ KHÔNG hỏi lại lần nào, mà cũng không bao giờ mắc kẹt ở bản cũ.
+
+   ── VÌ SAO LÀ MỘT LƯỢT HẬU KỲ, KHÔNG SỬA 25 CHỖ GỌI ──
+   Đường dẫn assets nằm rải rác trong khoảng 25 chuỗi `${BASE}/assets/x.js` ở
+   file này, cộng ba chỗ trong shell.html. Sửa từng chỗ là hai mươi tám dịp
+   quên một chỗ, và chỗ quên thì im lặng 404.
+
+   Nên: dựng xong hết, rồi đi một lượt trên `dist/` — đổi tên file, và thay
+   mọi lần nhắc tới tên cũ trong HTML/JS đã sinh ra. Mọi chỗ gọi giữ nguyên
+   cách viết cũ, và thêm một file js mới cũng không phải nhớ gì thêm.
+   ══════════════════════════════════════════════════════════════════════ */
+function vanTayAssets() {
+  const thu = path.join(THU_MUC.dist, 'assets');
+  if (!fs.existsSync(thu)) return;
+
+  const doi = new Map();          /* 'style.css' → 'style.a3f21c9d.css' */
+  for (const f of fs.readdirSync(thu)) {
+    if (!/\.(js|css)$/.test(f)) continue;
+    const that = path.join(thu, f);
+    const bam = crypto.createHash('sha256')
+      .update(fs.readFileSync(that)).digest('hex').slice(0, 8);
+    const i = f.lastIndexOf('.');
+    const moi = `${f.slice(0, i)}.${bam}${f.slice(i)}`;
+    fs.renameSync(that, path.join(thu, moi));
+    doi.set(f, moi);
+  }
+  if (!doi.size) return;
+
+  /* Thay trong MỌI file đã sinh ra, không riêng .html: một file js có thể trỏ
+     tới một file js khác (hôm nay chưa, mai kia thì có). Bỏ qua ảnh và媒 khác
+     bằng danh sách đuôi. */
+  const suaTrong = (d) => {
+    for (const f of fs.readdirSync(d)) {
+      const p2 = path.join(d, f);
+      if (fs.statSync(p2).isDirectory()) { suaTrong(p2); continue; }
+      if (!/\.(html|js|css|json|xml|txt)$/.test(f)) continue;
+      let t = fs.readFileSync(p2, 'utf8');
+      let doiGi = false;
+      for (const [cu, moi] of doi) {
+        /* Khớp có ranh giới: `/assets/toc.js` không được trúng bên trong
+           `/assets/toc.js.map` hay một tên dài hơn. */
+        const re = new RegExp('/assets/' + cu.replace(/\./g, '\\.') + '(?![\\w.-])', 'g');
+        if (re.test(t)) { t = t.replace(re, '/assets/' + moi); doiGi = true; }
+      }
+      if (doiGi) fs.writeFileSync(p2, t);
+    }
+  };
+  suaTrong(THU_MUC.dist);
+}
+
 function gopCSS() {
   /* Thứ tự KHÔNG đổi được:
        tokens     trước mọi thứ, vì mọi file còn lại đọc biến của nó
@@ -4163,6 +4229,11 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'search-index.json'), JSON.stringify(chiMuc));
 
     ghi(path.join(THU_MUC.dist, 'tags.json'), JSON.stringify(bangTag));
+
+    /* SAU CÙNG, khi mọi file đã nằm yên trong dist: đổi tên file assets theo
+       vân tay nội dung rồi sửa mọi chỗ trỏ tới chúng. Đặt ở đây chứ không sớm
+       hơn vì nó phải thấy được TẤT CẢ file đã sinh ra. */
+    vanTayAssets();
   }
 
   /* ── Báo cáo ── */

@@ -26,6 +26,35 @@ import { boDau } from './lib/text.mjs';
 
 const GOC  = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(GOC, 'dist');
+
+/* ══════════════════════════════════════════════════════════════════════
+   TRA MỘT FILE TRONG /assets/ KHI TÊN NÓ CÓ VÂN TAY
+
+   Từ V16.03, build đổi `comments.js` thành `comments.afa8a87e.js` để đặt được
+   cache một năm (lý do đầy đủ ở `vanTayAssets` trong tools/build.mjs).
+
+   Phép kiểm thì vẫn nghĩ theo tên LOGIC — "trang /notes/ có nạp ghi-chu.js
+   không" — nên hai hàm này dịch giữa hai cách gọi. Không phép kiểm nào được
+   gõ thẳng tên có băm: băm đổi mỗi lần sửa file. */
+function fileAssets(ten) {
+  const thu = path.join(DIST, 'assets');
+  if (!fs.existsSync(thu)) return null;
+  const i = ten.lastIndexOf('.');
+  const dau = ten.slice(0, i), duoi = ten.slice(i);
+  const re = new RegExp('^' + dau.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                        '\\.[0-9a-f]{6,}' + duoi.replace(/\./g, '\\.') + '$');
+  const co = fs.readdirSync(thu).find((f) => f === ten || re.test(f));
+  return co ? path.join(thu, co) : null;
+}
+
+/* Trang `html` có nạp asset tên logic `ten` không. */
+function nhacAssets(html, ten) {
+  const i = ten.lastIndexOf('.');
+  const dau = ten.slice(0, i).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const duoi = ten.slice(i).replace(/\./g, '\\.');
+  return new RegExp('/assets/' + dau + '(\\.[0-9a-f]{6,})?' + duoi + '(?![\\w.-])')
+    .test(html);
+}
 const CO   = new Set(process.argv.slice(2));
 
 const mau = {
@@ -427,8 +456,8 @@ const KIEM = [
     ten: 'Bundle CSS gộp đủ mọi file trong src/styles/',
     muc: 'loi',
     chay: ({ goc, dist }) => {
-      const f = path.join(dist, 'assets', 'style.css');
-      if (!fs.existsSync(f)) return ['thiếu dist/assets/style.css'];
+      const f = fileAssets('style.css');
+      if (!f) return ['thiếu dist/assets/style.css'];
       const gop = fs.readFileSync(f, 'utf8');
       const thuMuc = path.join(goc, 'src', 'styles');
       if (!fs.existsSync(thuMuc)) return [];
@@ -477,8 +506,7 @@ const KIEM = [
       if (!fs.existsSync(thu)) return [];
       const ra = [];
       for (const x of fs.readdirSync(thu).filter((n) => n.endsWith('.js'))) {
-        const ich = path.join(dist, 'assets', x);
-        if (!fs.existsSync(ich)) {
+        if (!fileAssets(x)) {
           ra.push(`src/js/${x} không được chép sang dist/assets/ — thêm tên file ` +
                   `vào danh sách JS trong tools/build.mjs`);
           continue;
@@ -579,12 +607,28 @@ const KIEM = [
       const r = [];
       if (!/^\/media\/\*/m.test(t)) r.push('dist/_headers: chưa có luật cho /media/*');
       if (!/^\/assets\/\*/m.test(t)) r.push('dist/_headers: chưa có luật cho /assets/*');
-      /* Đây là chỗ dễ sai nhất và hậu quả nặng nhất: đặt cache dài cho assets
-         thì sửa CSS xong người đọc cũ vẫn thấy giao diện cũ hàng tháng trời. */
+      /* ── LUẬT NÀY ĐÃ ĐẢO CHIỀU Ở V16.03 ──
+         Trước đó phép kiểm bắt lỗi khi `/assets/*` đặt cache DÀI, vì tên file
+         không có vân tay nội dung. Nay build gắn vân tay (`vanTayAssets` trong
+         tools/build.mjs), nên cache dài là thứ ĐÚNG — và cache ngắn mới là
+         lỗi: nó bắt người đọc hỏi lại 14 lượt mỗi lần mở một trang, đổi lấy
+         một an toàn mà vân tay đã lo xong.
+
+         Hai vế phải khớp nhau: tên file có vân tay thì header phải dài. Kiểm
+         cả hai để không bên nào đổi một mình. */
       const kAssets = (t.match(/^\/assets\/\*[\s\S]*?(?=^\/|\Z)/m) || [''])[0];
-      if (/max-age=\s*([1-9]\d{3,})/.test(kAssets)) {
-        r.push('dist/_headers: /assets/* đang đặt cache dài — tên file không có ' +
-               'vân tay nội dung nên sửa giao diện xong người đọc cũ vẫn thấy bản cũ');
+      const coVanTay = fs.existsSync(path.join(DIST, 'assets')) &&
+        fs.readdirSync(path.join(DIST, 'assets'))
+          .some((x) => /\.[0-9a-f]{6,}\.(js|css)$/.test(x));
+      const cacheDai = /max-age=\s*([1-9]\d{4,})/.test(kAssets);
+      if (coVanTay && !cacheDai) {
+        r.push('dist/_headers: tên file assets có vân tay nội dung rồi mà ' +
+               '/assets/* vẫn đặt cache ngắn — mỗi lượt xem trang tốn 14 vòng ' +
+               'hỏi lại máy chủ không cần thiết');
+      }
+      if (!coVanTay && cacheDai) {
+        r.push('dist/_headers: /assets/* đặt cache dài nhưng tên file KHÔNG có ' +
+               'vân tay nội dung — sửa giao diện xong người đọc cũ vẫn thấy bản cũ');
       }
       return r;
     }
@@ -1246,8 +1290,8 @@ const KIEM = [
       }
 
       for (const j of ['admin.js', 'viet-bai.js', 'muc.js']) {
-        if (!ql.html.includes(`/assets/${j}`)) ra.push(`/z-admin/ không nạp ${j}`);
-        if (!fs.existsSync(path.join(goc, 'dist', 'assets', j))) {
+        if (!nhacAssets(ql.html, j)) ra.push(`/z-admin/ không nạp ${j}`);
+        if (!fileAssets(j)) {
           ra.push(`thiếu dist/assets/${j} — thêm vào danh sách chép trong tools/build.mjs`);
         }
       }
@@ -1353,7 +1397,7 @@ const KIEM = [
         if (!t.html.includes('data-gc-api=')) {
           ra.push('/notes/ không in ra data-gc-api — ô viết sẽ không bao giờ hiện');
         }
-        if (!t.html.includes('ghi-chu.js')) {
+        if (!nhacAssets(t.html, 'ghi-chu.js')) {
           ra.push('/notes/ không nạp ghi-chu.js');
         }
       }
@@ -1607,8 +1651,8 @@ const KIEM = [
     ten: 'Hai nửa hoạt hình logo chạy cùng nhịp trong bản đã dựng',
     muc: 'loi',
     chay: ({ trang, dist }) => {
-      const fCss = path.join(dist, 'assets', 'style.css');
-      if (!fs.existsSync(fCss)) return [];
+      const fCss = fileAssets('style.css');
+      if (!fCss) return [];
       const css = fs.readFileSync(fCss, 'utf8');
       /* Lấy khai báo CUỐI CÙNG: cùng độ ưu tiên thì luật sau thắng, và build
          ghi đè giá trị của cấu hình vào cuối bundle. */

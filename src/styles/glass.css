@@ -1,31 +1,12 @@
-/* ============================================================
-   LIQUID GLASS — MỘT công thức vật liệu, mọi mảnh giao diện mượn lại.
+ 
 
-   CÁCH ÁP: không bắt HTML gõ thêm class. Mảnh nào cần kính thì thêm tên nó
-   vào DANH SÁCH ở §1 dưới đây. Viết `<button class="btn">` là đủ.
-
-   Bản đầu làm kiểu utility — `<div class="card glass lift sheen">`. Bỏ, vì
-   hai lý do: HTML thành một mớ class, và quan trọng hơn, quên một class là
-   mảnh đó lặng lẽ khác hẳn mọi mảnh còn lại mà không ai nhận ra ngay.
-
-   Vật liệu có bốn tầng, thiếu tầng nào cũng ra nhựa mờ chứ không ra kính:
-     1. RUỘT      nền bán trong, đậm dần từ trên xuống
-     2. NHOÈ NỀN  backdrop-filter, có nâng bão hoà — chỉ blur không thôi thì
-                  màu sau kính ra xám bệch
-     3. VIỀN SÁNG vệt trắng mảnh ở mép trên mờ dần xuống — chỗ ánh sáng bẻ qua
-                  rìa kính, và là tầng làm nên chữ "liquid"
-     4. BÓNG ĐỔ  tách tấm kính ra khỏi nền phía sau
-   ============================================================ */
-
-/* ══════════ 1. DANH SÁCH MẢNH DÙNG KÍNH ══════════ */
+ 
 .glass,
 .site-head,
-/* Tấm menu ☰ ở khổ hẹp — CHỈ lúc đang mở. Đóng thì nó là `display:none`, mà
-   một tấm kính không nhìn thấy được thì không cần nhoè cái gì phía sau. */
+ 
 .nav-menu--mo,
 .card,
 .btn,
-.ovp,
 .bo,
 .bo-quote,
 .prose pre .copy-btn{
@@ -57,26 +38,19 @@
      Nên tấm phủ không dùng nhoè nền. Nó dựa vào `--glass-tam` — một cái ruột tự
      nó đã đủ đặc — cộng vệt sáng mép và bóng đổ. Vẫn là kính, chỉ là kính mờ.
      Bài học chung: ĐỪNG lồng backdrop-filter trong backdrop-filter. */
-  .glass,.site-head,.card,.btn,.ovp,.bo,.bo-quote,
+  .glass,.site-head,.card,.btn,.bo,.bo-quote,
   .prose pre .copy-btn{
     -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
     backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
   }
 }
 
-/* ── VỆT SÁNG MÉP — tầng làm nên chữ "liquid" ──
-   Một viền gradient thật: tô nền gradient rồi KHOÉT RUỘT bằng mask, chỉ chừa
-   lại đúng 1px ở rìa. Sáng nhất ở mép trên-trái (hướng nguồn sáng), mờ dần
-   quanh viền, gần như tắt ở mép dưới-phải. Đây là chỗ ánh sáng bẻ qua rìa kính.
-
-   Không thay được bằng `border: 1px solid`: viền đặc thì bốn cạnh sáng như
-   nhau, và mắt đọc ra ngay là một cái khung, không phải một tấm kính. */
+ 
 .glass::before,
 .site-head::before,
 .nav-menu--mo::before,
 .card::before,
 .btn::before,
-.ovp::before,
 .bo::before,
 .bo-quote::before,
 .prose pre .copy-btn::before{
@@ -94,54 +68,23 @@
   -webkit-mask-composite:xor;
   mask-composite:exclude;
   pointer-events:none;
-}
-
-/* ── BIẾN THỂ ── */
-
-/* Kính CÓ MÀU — nút chính. Đúng một nút chính mỗi màn. */
-.glass--tint,.btn:not(.btn--ghost){
+}.btn:not(.btn--ghost){
   background:var(--glass-tint);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.30), var(--glass-drop);
-}
-.glass--tint::before,.btn:not(.btn--ghost)::before{
+}.btn:not(.btn--ghost)::before{
   background:linear-gradient(150deg,rgba(255,255,255,.88) 0%,
     rgba(255,255,255,.22) 40%,transparent 72%);
-}
-
-/* Kính PHỦ — tấm bật ra đè lên nội dung đang đọc (menu ☰).
-   Ruột đặc hơn hẳn, vì thứ phía sau nó là CHỮ chứ không phải nền; lý do đầy đủ
-   ghi ở `--glass-tam` trong tokens.css. Mọi tầng còn lại của vật liệu giữ
-   nguyên — vệt sáng mép, bóng đổ, gradient chéo — nên nó vẫn đọc ra là kính,
-   chỉ là kính mờ. */
-.glass--tam,.nav-menu--mo{
+}.nav-menu--mo{
   background:var(--glass-tam);
   box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
-}
-
-/* Kính MỎNG — cho thứ nằm trong một tấm kính khác. Hai lớp blur chồng nhau
-   vừa tốn GPU vừa ra màu bệch, nên lớp trong giảm hẳn độ nhoè. */
-.glass--thin,.btn--ghost,.prose pre .copy-btn{
+}.btn--ghost,.prose pre .copy-btn{
   --glass-blur:9px;
   box-shadow:inset 0 0 0 1px var(--glass-edge);
-}
-
-/* Kính PHẲNG — thanh dính mép trên. Không bóng đổ bốn phía; tách khỏi nội dung
-   đang trôi bên dưới bằng MỘT vạch tối mảnh (--line), không phải vạch sáng:
-   vạch trắng trên nền pastel sáng thì vô hình, header trôi lẫn vào trang. */
-.glass--flat,.site-head{
+}.site-head{
   --glass-blur:22px;
   border-radius:0;
   box-shadow:0 1px 0 0 var(--line), 0 6px 20px -12px rgba(94,72,133,.5);
-}
-.glass--flat::before,.site-head::before{ padding:0 0 1px }
-
-/* ── NHỊP CHUYỂN ĐỘNG ──────────────────────────────────────
-   Hai nhịp, dùng đúng chỗ:
-     .lift   nhấc lên khi rê vào — cho thẻ, thứ có thể mở ra
-     .press  lún xuống khi bấm  — cho nút, thứ thực thi một việc
-   Cả hai chỉ động tới transform, box-shadow và filter: ba thuộc tính trình
-   duyệt chạy được trên luồng vẽ riêng, không phải tính lại bố cục. */
-.lift,.card,.bo{
+}.site-head::before{ padding:0 0 1px }.card,.bo{
   transition:transform var(--dur) var(--ease-glass),
              box-shadow var(--dur) var(--ease-glass);
   will-change:transform;
@@ -156,7 +99,7 @@
      một đoạn văn tự bay khỏi trang, mà chẳng bấm vào đâu được.
 
      Nhấc lên là tín hiệu "cái này mở ra được". Khối chữ không mở ra cái gì. */
-  .lift:hover,.card:hover,.bo:not(.bo--chu):hover{
+  .card:hover,.bo:not(.bo--chu):hover{
     transform:translateY(-3px);
     box-shadow:inset 0 0 0 1px var(--glass-edge), var(--glass-drop-lift);
   }
@@ -173,8 +116,8 @@
    Chỉ trên máy CÓ con trỏ: trên cảm ứng không có trạng thái "rê vào", hiệu ứng
    sẽ kẹt ở giữa chừng sau mỗi cú chạm. */
 @media (hover:hover) and (prefers-reduced-motion:no-preference){
-  .sheen,.btn{ overflow:hidden }
-  .sheen::after,.btn::after{
+  .btn{ overflow:hidden }
+  .btn::after{
     content:"";position:absolute;inset:0;z-index:1;
     border-radius:inherit;pointer-events:none;
     background:linear-gradient(105deg,transparent 38%,
@@ -182,7 +125,7 @@
     translate:-130% 0;
     transition:translate .62s var(--ease-glass);
   }
-  .sheen:hover::after,.btn:hover::after{ translate:130% 0 }
+  .btn:hover::after{ translate:130% 0 }
 }
 
 /* ── TÔN TRỌNG "GIẢM CHUYỂN ĐỘNG" ──
@@ -190,7 +133,7 @@
    Bỏ hẳn phần nhấc lên và lún xuống; giữ đổi màu và bóng đổ, vì đó là tín hiệu
    cho biết nút đang được nhắm tới — bỏ luôn thì không còn gì báo. */
 @media (prefers-reduced-motion:reduce){
-  .lift:hover,.card:hover,.bo:not(.bo--chu):hover{ transform:none }
+  .card:hover,.bo:not(.bo--chu):hover{ transform:none }
   .press:active,.btn:active{ transform:none }
-  .sheen::after,.btn::after{ display:none }
+  .btn::after{ display:none }
 }

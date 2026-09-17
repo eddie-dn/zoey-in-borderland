@@ -31,11 +31,20 @@
 /media/*
   Cache-Control: public, max-age=31536000, immutable
 
-# CSS/JS: tên file KHÔNG có vân tay nội dung, nên phải hỏi lại mỗi lần.
-# Đặt max-age dài ở đây thì sửa giao diện xong người đọc cũ vẫn thấy bản cũ
-# cho tới khi họ tự xoá cache — mà họ thì chẳng bao giờ làm thế.
+# ── CSS/JS: TÊN FILE MANG VÂN TAY NỘI DUNG TỪ V16.03 ──
+# Trước đó tên file cố định, nên ở đây buộc phải khai `max-age=0,
+# must-revalidate` — sửa giao diện xong mà đặt cache dài thì người đọc cũ mắc
+# kẹt ở bản cũ hàng tháng.
+#
+# Cái giá của must-revalidate: một trang bài nạp 13 file js cộng một file css,
+# tức **14 vòng hỏi lại** mỗi lượt xem trang, mỗi vòng trả về 304 "chưa đổi".
+# Không tốn băng thông, nhưng tốn đúng 14 lượt đi-về — trên 4G độ trễ 100ms là
+# hơn một giây chờ, với người đã có sẵn mọi thứ trong máy.
+#
+# Nay tên file là `comments.afa8a87e.js`: nội dung đổi thì tên đổi. Người đọc
+# cũ KHÔNG hỏi lại lần nào, mà cũng không bao giờ thấy bản cũ.
 /assets/*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=31536000, immutable
 
 # Vài header an toàn cơ bản cho mọi trang.
 /*

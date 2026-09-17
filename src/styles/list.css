@@ -1,11 +1,6 @@
-/* ============================================================
-   TRANG DANH SÁCH — trang chủ · /posts/ · /tags/ · /archive/ · /search/
+ 
 
-   Sáu trang dùng chung khuôn `.ds-trang`. Khác nhau ở phần thân, không ở
-   khung: thêm một trang danh sách mới thì không phải viết CSS mới.
-   ============================================================ */
-
-.ds-trang,.trang-chu{padding-block:var(--s9) var(--s11)}
+.ds-trang{padding-block:var(--s9) var(--s11)}
 
 /* Đầu trang danh sách: s8 (40px) là khoảng của một trang BÀI, nơi tiêu đề
    phải tách hẳn khỏi thân bài. Trang danh sách thì tiêu đề và danh sách là
@@ -1422,67 +1417,18 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
 @media (max-width:520px){
   .pt{flex-direction:column;align-items:flex-start;gap:var(--s3)}
 }
-
-/* ── LỐI ĐI DƯỚI LƯỚI BÀI Ở TRANG CHỦ ──
-   Trang chủ chỉ giữ 6 bài, nên dưới lưới phải nói rõ xem tiếp ở đâu — và có
-   HAI lối, vì hai cách tìm khác nhau: Posts xếp theo chuyên mục, Archive xếp
-   theo năm. */
-.ds-chan{
-  display:flex;flex-wrap:wrap;gap:var(--s4) var(--s7);
-  margin-top:var(--s6);padding-top:var(--s5);
-  border-top:1px solid var(--line);
-}
-/* `.ds-loi`, `.trang-chu`, `.chu-nb` — ĐÃ BỎ. Ba lớp của đời trang chủ cũ
-   (khi nó còn có lưới bài, khối "bài nổi bật" và một hàng lối đi ở chân danh
-   sách). Trang chủ nay chỉ còn màn đầu, và không HTML nào nhả ra ba tên ấy. */
-
-/* ── TRANG CHỦ ── */
-.chu-the{display:flex;flex-direction:column;gap:var(--s4);padding:var(--s7)}
-
-/* ── THẺ NỔI BẬT CÓ ẢNH ──
-   Lưới nhiều bài thì KHÔNG cần ảnh: sáu tấm gradient cạnh nhau thành một mảng
-   màu, không tấm nào nói được gì, mà trang thì nặng thêm nửa megabyte.
-
-   Một bài NỔI BẬT thì ngược lại — nó là thứ duy nhất trên màn đó, và ảnh cho
-   nó sức nặng để đọc ra là "bài chính", không phải "bài đầu danh sách".
-
-   Ảnh bên trái, chữ bên phải, tỉ lệ 5:4 — cùng khuôn với thẻ bài nổi bật của
-   Medium, Substack và The Verge. Dựng dọc (ảnh trên, chữ dưới) thì ảnh chiếm
-   hết màn đầu và tiêu đề bị đẩy xuống dưới nếp gấp. */
-.chu-the--anh{
-  display:grid;grid-template-columns:5fr 6fr;gap:0;
-  padding:0;overflow:hidden;align-items:stretch;
-}
 .chu-anh{position:relative;min-height:230px;overflow:hidden}
 .chu-anh img{
   position:absolute;inset:0;
   width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .6s var(--ease-glass);
 }
-/* Ảnh phóng rất nhẹ khi rê vào cả thẻ — dấu hiệu "mở ra được", cùng ngôn ngữ
-   với việc thẻ nhấc lên, nhưng không làm chữ nhảy. */
-.chu-the--anh:hover .chu-anh img{transform:scale(1.04)}
-.chu-chu{
-  display:flex;flex-direction:column;gap:var(--s4);
-  padding:var(--s7);min-width:0;
-}
-.chu-the--anh .chu-tom{max-width:none}
 @media (max-width:760px){
   /* Xuống một cột thì ảnh thành băng ngang 16:9 ở trên, không phải ô vuông:
      ô vuông trên màn hẹp chiếm gần nửa màn hình. */
   .chu-the--anh{grid-template-columns:1fr}
   .chu-anh{min-height:0;aspect-ratio:16 / 9}
   .chu-chu{padding:var(--s6)}
-}
-.chu-the h2{
-  margin:0;font-size:var(--fs-h2);font-style:italic;
-  line-height:var(--lh-tight);text-wrap:balance;
-}
-.chu-the h2 a{color:var(--text);text-decoration:none;background:none}
-.chu-the:hover h2 a{color:var(--accent-ink)}
-.chu-tom{
-  margin:0;max-width:60ch;font-size:var(--fs-base);line-height:1.66;
-  color:var(--text-muted);text-wrap:pretty;
 }
 /* `.ds-thanh` — ĐÃ BỎ. Hàng tiêu đề của một khối danh sách ở trang chủ cũ. */
 .ds-them{
@@ -1700,7 +1646,6 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
 /* Ở /notes/ lối ra nằm trong hàng nút của ô viết, cạnh nút Đăng — chừa cho nó
    một quãng thở để nó không đọc ra như nút thứ hai của cùng một việc. */
 .gc-ra{margin-left:var(--s3)}
-.bl-duyet-ra{margin-top:var(--s5)}
 
 /* ══════════════════════════════════════════════════════════════
    Ô SOẠN THẢO (src/js/soan.js)
@@ -1750,10 +1695,6 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
 .sz-nut--gac{text-decoration:line-through}
 .sz-nut--h{width:auto;padding:0 6px;font-family:var(--font-label);font-size:11px;
   font-weight:600;letter-spacing:.06em}
-.sz-nut--i{
-  font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:600;
-  border-radius:50%;border-color:var(--line-strong);
-}
 .sz-nut--md{width:auto;padding:0 7px;font-family:var(--font-mono);font-size:11px}
 .sz-vach{width:1px;height:18px;margin-inline:3px;background:var(--line)}
 /* Đẩy nút xem Markdown về mép phải: nó không phải một nút định dạng, và đứng
@@ -1959,12 +1900,6 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   background:linear-gradient(to bottom right,transparent 45%,var(--line-strong) 45%,
              var(--line-strong) 55%,transparent 55%);
 }
-/* ── BẢNG CHỈ DẪN ──
-   Hai nhóm, mỗi nhóm một tiêu đề nhỏ: thứ có nút, và thứ phải gõ tay. Bảng này
-   dài hơn hẳn bản trước nên nó có trần chiều cao và cuộn riêng — một bảng chỉ
-   dẫn cao 400px đẩy khung gõ xuống khỏi màn thì nó che mất đúng cái nó đang
-   giải thích. */
-.sz-bang--giup{max-height:min(46vh,420px);overflow-y:auto}
 .sz-giup-de{
   margin:var(--s3) 0 var(--s2);
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
@@ -2213,7 +2148,6 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
   .ad-lenh-hang{gap:var(--s5)}
   .ad-lenh{padding:10px 0;margin:-10px 0}
 }
-
 
 /* ══════════════════════════════════════════════════════════════════════
    THẢ ẢNH VÀO KHUNG SOẠN THẢO

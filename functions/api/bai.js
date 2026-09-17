@@ -375,7 +375,20 @@ async function cayBai(env) {
 
    Tổng số bài vẫn trả về đủ, nên giao diện nói được "20 trên 63" ngay từ
    trang đầu. */
-const MOI_TRANG = 20;
+/* ── VÀ MỘT TRẦN CỨNG KHÔNG ĐƯỢC VƯỢT ──
+   Mỗi bài trong trang là MỘT lượt gọi GitHub (phải đọc nội dung file mới lấy
+   được front matter — cây kho mã chỉ cho tên và sha). Cộng một lượt đọc cây,
+   một trang 20 bài tốn 21 lượt gọi ra ngoài.
+
+   Cloudflare Workers gói miễn phí cho **50 lượt gọi ra ngoài mỗi request**.
+   Nên 20 là an toàn, 40 thì vẫn chạy, còn 50 là hỏng — và hỏng theo kiểu khó
+   đoán nhất: mấy bài ĐẦU về bình thường, mấy bài cuối trả lỗi, nên bảng hiện
+   ra một nửa mà không có dòng báo nào.
+
+   Ai muốn nâng con số này thì phải đổi cả cách lấy dữ liệu trước (GraphQL lấy
+   nhiều blob một lượt, hoặc cache lại ở D1), không phải chỉ sửa số ở đây. */
+const TRAN_GOI_GH = 40;
+const MOI_TRANG = Math.min(20, TRAN_GOI_GH - 1);
 
 /* ══════════ GET ?ds=1[&tu=N] — MỘT TRANG CỦA BẢNG BÀI ══════════ */
 async function danhSachBai(env, tu) {

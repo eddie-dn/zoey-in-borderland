@@ -33,6 +33,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V16.04 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; npm run bia thôi sinh ảnh mồ côi; ghi rõ trần lượt gọi GitHub của trang quản trị |
+| V16.03 | 2026-09-17 | 03 | tên file assets mang vân tay nội dung; cache assets một năm thay cho 14 vòng hỏi lại mỗi lượt xem trang; phép kiểm cache đảo chiều theo |
 | V16.02 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
 | V16.01 | 2026-09-17 | 01 | có trang 404 thật thay cho trang trắng; phép kiểm bản nháp từ nay đỏ được; Cloudflare trỏ vào đúng trang ấy |
 | V16.00 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS; sửa luật cache đang giữ ảnh bìa cũ một năm |
@@ -167,6 +169,41 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V16.04 — 17-Sep-2026
+
+- **86 luật CSS trỏ vào tên lớp không tồn tại ở đâu cả.** Cả một khuôn thẻ bài
+  cũ (`.chu-the`), mấy tiện ích kính chưa bao giờ ai gọi (`.sheen`, `.lift`,
+  `.ovp`, bốn biến thể `.glass--*`), và phần còn lại của bàn duyệt đời trước.
+  Máy dò tự viết báo nhầm hai ca — `khung-b` và mấy lớp trạng thái dựng bằng
+  ghép chuỗi — nên mỗi cái đều phải soi tay trước khi xoá.
+- **Ảnh bìa nhẹ đi 28%.** Hoạ tiết mandala thêm ở V15.07 làm ảnh nặng gấp ba
+  (74 KB → 212 KB): rìa nét mềm sinh ra hàng trăm nghìn sắc độ, mà zlib thì
+  không nén được thứ không lặp lại. Bỏ bit cuối của mỗi kênh cắt 28% mà không
+  tấm nào lộ vệt dải. Thử tiếp bước 3 và 4 thì dải màu bắt đầu gãy — dừng ở 2.
+- **`npm run bia --tat-ca` thôi sinh ảnh mồ côi.** Nó dựng bìa cho MỌI bài, kể
+  cả bài đang cố ý mượn bìa của bài khác và bài còn nháp — hai tấm nằm đó
+  không ai dùng, và `npm run kiem` báo đúng chuyện ấy.
+- **Ghi rõ trần lượt gọi GitHub.** Bảng bài ở /z-admin/ tốn 1 lượt đọc cây +
+  1 lượt cho MỖI bài trong trang. Gói miễn phí của Workers cho 50 lượt gọi ra
+  ngoài mỗi request, nên 20 bài/trang là an toàn còn 50 thì hỏng — và hỏng theo
+  kiểu nửa bảng hiện ra không một dòng báo.
+
+## V16.03 — 17-Sep-2026
+
+- **Tên file assets nay mang vân tay nội dung** — `comments.afa8a87e.js`.
+- **Mỗi lượt xem trang từng tốn 14 vòng hỏi lại máy chủ.** Một trang bài nạp
+  13 file js cộng một file css; vì tên file cố định, `_headers` buộc phải khai
+  `max-age=0, must-revalidate`, nên người đọc đã có sẵn mọi thứ trong máy vẫn
+  phải hỏi 14 lần "đổi chưa?" và nhận 14 câu "chưa". Trên 4G độ trễ 100ms là
+  hơn một giây chờ, mỗi trang. Nay cache một năm, **0 vòng hỏi lại**.
+- **Làm bằng một lượt hậu kỳ, không sửa 25 chỗ gọi.** Đường dẫn assets nằm rải
+  rác trong khoảng 25 chuỗi ở `tools/build.mjs` cộng ba chỗ trong `shell.html`.
+  Dựng xong hết rồi mới đi một lượt trên `dist/`: đổi tên file, thay mọi chỗ
+  nhắc tới. Thêm một file js mới cũng không phải nhớ gì thêm.
+- **Phép kiểm cache đảo chiều theo.** Trước đó nó bắt lỗi khi `/assets/*` đặt
+  cache DÀI; nay cache ngắn mới là lỗi. Kiểm cả hai vế để tên file và header
+  không bên nào đổi một mình.
 
 ## V16.02 — 17-Sep-2026
 

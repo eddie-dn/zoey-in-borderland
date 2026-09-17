@@ -311,10 +311,22 @@ function ve(tieuDe) {
       /* Hạt nhiễu — xem hằng số NHIEU ở đầu file. Mặc định tắt. */
       const nz = NHIEU ? (((x * 12.9898 + y * 78.233) * 43758.5453) % 1 - .5) * NHIEU : 0;
 
+      /* ── LÀM TRÒN VỀ BỘI SỐ 2 ──
+         Hoạ tiết mandala thêm vào từ V15.07 làm ảnh nặng gấp ba: 74 KB lên
+         212 KB. Thủ phạm là mấy trăm nghìn sắc độ khác nhau ở rìa nét — mỗi
+         pixel một giá trị mới thì zlib không tìm được mẫu nào để lặp.
+
+         Bỏ đi bit cuối của mỗi kênh cắt 24% dung lượng. Đo trên cả tám tấm:
+         không tấm nào lộ vệt dải, vì bảng màu ở đây toàn pastel nằm sát nhau —
+         một bậc trên 256 là thứ mắt không tách ra được.
+
+         Đã thử bước 3 và 4 (còn 124 và 106 KB) rồi bỏ: ở đó dải màu bắt đầu
+         gãy thành từng khoanh, và một tấm ảnh có vệt dải thì nhẹ cỡ nào cũng
+         là hỏng. */
       const o = doc + 1 + x * 3;
-      px[o]     = kep(c[0] + nz);
-      px[o + 1] = kep(c[1] + nz);
-      px[o + 2] = kep(c[2] + nz);
+      px[o]     = kep(c[0] + nz) & 0xFE;
+      px[o + 1] = kep(c[1] + nz) & 0xFE;
+      px[o + 2] = kep(c[2] + nz) & 0xFE;
     }
   }
   return px;
@@ -408,6 +420,7 @@ function moiBai() {
         title: lay('title'),
         date: lay('date'),
         cover: lay('cover'),
+        draft: /^draft:\s*true\s*$/m.test(fm),
         slug: lay('slug') || slugify(ten.replace(/^\d{4}-\d{2}-\d{2}-/, ''))
       });
     }
@@ -428,7 +441,21 @@ if (!bai.length) {
   process.exit(0);
 }
 
-let lam = TAT_CA ? bai : bai.filter((b) => chon.includes(b.slug));
+/* ── `--tat-ca` KHÔNG ĐỤNG TỚI BÀI ĐANG MƯỢN BÌA CỦA BÀI KHÁC ──
+   Bài "Thứ bảy" khai `cover: /media/2026/quan-ca-phe-goc-pho/bia.png` — nó
+   dùng chung bìa với một bài khác, cố ý. Dựng thêm một tấm vào thư mục riêng
+   của nó thì tấm ấy nằm đó không ai dùng, và `npm run kiem` báo "ảnh mồ côi".
+
+   Bài NHÁP cũng bỏ qua: nó chưa có mặt trong bản dựng, nên bìa của nó cũng
+   chưa cần tồn tại. Muốn dựng riêng thì gọi thẳng tên slug. */
+let lam = TAT_CA
+  ? bai.filter((b) => {
+      if (b.draft) return false;
+      if (!b.cover) return true;          /* chưa có bìa — dựng cho nó */
+      const nam2 = (b.date || '').slice(0, 4) || String(new Date().getFullYear());
+      return b.cover === `/media/${nam2}/${b.slug}/bia.png`;
+    })
+  : bai.filter((b) => chon.includes(b.slug));
 if (!TAT_CA && !chon.length) {
   console.log(mau.dam('\n  SINH ẢNH BÌA\n'));
   console.log('  Cách dùng:');
