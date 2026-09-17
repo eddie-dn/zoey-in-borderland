@@ -40,9 +40,27 @@
 }
 .q-chu::before{content:"“";color:var(--accent);margin-right:2px}
 .q-chu::after{content:"”";color:var(--accent);margin-left:2px}
+/* ── TÊN TÁC GIẢ MẶC ĐÚNG BỘ ĐỒ CỦA NHÃN ──
+   Ô này từng dùng BA phông: Oswald cho nhãn "QUOTE OF THE DAY", Cormorant
+   nghiêng cho câu, và phông thân bài cho tên tác giả. Ba giọng trong một ô
+   cao chưa tới hai trăm pixel.
+
+   Tên tác giả không phải là chữ ĐỂ ĐỌC — không ai đọc một dòng ba chữ ấy như
+   đọc một câu; người ta liếc nó để biết câu kia là của ai. Đó đúng là việc
+   của một cái NHÃN, cùng loại việc với "QUOTE OF THE DAY" ngay trên và
+   "READ ON" ngay dưới. Cho nó cùng bộ đồ với hai cái ấy thì ô còn hai phông,
+   và ba mẩu chữ trong ô đọc ra đúng ba vai: nhãn · câu · nhãn.
+
+   Nhỏ hơn nhãn trên một bậc và nhạt hơn: nó là chú thích của câu, không phải
+   tiêu đề của ô. */
 .q-ai{
-  margin:0;font-size:var(--fs-sm);color:var(--text-faint);
+  margin:0;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);line-height:1.6;
 }
+/* Gạch ngang giữ lại: bỏ đi thì tên tác giả đọc ra như một nhãn thứ hai của
+   ô chứ không ra như "câu này của ai". */
 .q-ai::before{content:"— "}
 
 /* ── NÚT XEM CÂU KHÁC — GÓC TRÊN PHẢI ──

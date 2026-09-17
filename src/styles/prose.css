@@ -612,7 +612,21 @@
 /* Trong cột bên thì KHÔNG bày thành dải hai đầu: cột chỉ rộng chừng 240px,
    chia đôi ra còn 110px mỗi bên — không đủ cho một cái tên bài. Ở đây hai gợi
    ý xếp DỌC, và mũi tên tắt đi vì chúng chỉ có nghĩa khi thật sự có trái phải. */
-.ben .rn-grid{flex-direction:column;gap:0;padding-top:0;border-top:0}
+/* ── Ở CỘT BÊN THÌ CẦN ĐƯỜNG KẺ ──
+   Dải hai đầu ở cột chữ không cần kẻ: hai gợi ý nằm CẠNH nhau, nên khoảng
+   trống giữa chúng đã nói ra là hai thứ. Ở cột bên thì chúng xếp DỌC, và hai
+   khối chữ chồng lên nhau theo chiều dọc mà không có gì ngăn thì đọc ra như
+   một khối bốn dòng — nhất là khi cả hai đều mở đầu bằng một nhãn viết hoa
+   trông giống hệt nhau.
+
+   Một sợi kẻ trên mỗi dòng, cộng một sợi dưới nhãn "READ NEXT" để cả khối có
+   mép trên. Chỉ `+ .rn-dong` chứ không phải mọi dòng: dòng đầu đã có sợi của
+   khối rồi, thêm nữa là hai sợi sát nhau. */
+.ben .rn-grid{
+  flex-direction:column;gap:0;
+  padding-top:var(--s3);border-top:1px solid var(--line);
+}
+.ben .rn-dong + .rn-dong{border-top:1px solid var(--line);margin-top:var(--s2)}
 .ben .rn-dong,
 /* `:last-child` phải nhắc lại ở đây: luật căn phải của dải hai đầu cũng là
    hai lớp, mà nó đứng SAU trong file nên thắng nếu chỉ viết `.ben .rn-dong`. */

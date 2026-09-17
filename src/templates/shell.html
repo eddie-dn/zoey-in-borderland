@@ -55,8 +55,9 @@
 
      Suy ra tên file từ chính href đang có, không dán lại đường dẫn: trang chạy
      dưới thư mục con thì {{base}} khác rỗng, mà dán tay là sớm muộn lệch. */
-  if(t==='calm'){var ic=document.querySelector('link[rel=icon]');
-    if(ic)ic.href=ic.href.replace('favicon.svg','favicon-calm.svg');}
+  var IC={calm:'favicon-calm.svg',frost:'favicon-frost.svg'};
+  if(IC[t]){var ic=document.querySelector('link[rel=icon]');
+    if(ic)ic.href=ic.href.replace('favicon.svg',IC[t]);}
 }catch(e){}})();
 </script>
 

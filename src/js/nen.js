@@ -829,6 +829,22 @@
         /* Dải gần trôi nhanh hơn dải xa — thị sai, và nó là thứ duy nhất ở
            đây nói ra chiều sâu, vì màu thì cả bốn dải gần như nhau. */
         v: 0.05 + lop * 0.16,
+        /* ── BA CON SỐ LÀM NÊN "LỀNH BỀNH" ──
+           Bản đầu mây trôi thuần ngang với một tốc độ không đổi. Đúng về vật
+           lý — gió thổi một chiều — nhưng nhìn ra là TRƯỢT chứ không ra là
+           trôi: mắt bắt được ngay cái đều đặn, và một thứ đều đặn thì thôi
+           là mây mà thành một thanh cuộn.
+
+           `pha` cho mỗi dải một điểm xuất phát riêng trên vòng sin, để chúng
+           không bao giờ cùng lên cùng xuống. `bien` là biên độ dập dềnh dọc,
+           tính theo CỠ dải — dải to bồng bềnh rộng hơn dải nhỏ, y như mây
+           thật. `nhip` là tốc độ thở: dải xa thở chậm hơn dải gần.
+
+           Tất cả đều rất nhỏ. Đây là nền của một trang để đọc; chuyển động
+           đủ để thấy khi nhìn thẳng vào, không đủ để bắt mắt lúc đang đọc. */
+        pha: Math.random() * Math.PI * 2,
+        bien: r * (0.04 + lop * 0.05),
+        nhip: 0.0016 + lop * 0.0022,
         /* Mây TRẮNG trên giấy trắng: nó không tự hiện ra, nó chỉ XOÁ BỚT mực
            của núi phía dưới. Đó đúng là cách mây được vẽ trong tranh thuỷ
            mặc — chỗ trắng là chỗ chừa lại, không phải chỗ tô thêm. Nên alpha
@@ -872,24 +888,30 @@
         veNui(c, H0 * 0.86, H0 * 0.10, 0.105, 5.1);
       },
 
-      ve: function () {
+      ve: function (t) {
         ctx.clearRect(0, 0, W, H);
         if (nui) ctx.drawImage(nui, 0, 0, W, H);
 
         for (var i = 0; i < may.length; i++) {
           var m = may[i];
-          m.x += m.v;
+          var song = Math.sin(t * m.nhip + m.pha);
+          /* Tốc độ ngang cũng thở theo cùng nhịp ấy, biên độ một phần tư: dải
+             mây thật lúc nhanh lúc chậm theo túi gió. Dùng CHUNG một sóng với
+             cú dập dềnh dọc, không phải hai sóng rời — hai sóng lệch nhau thì
+             dải bò thành hình số tám. */
+          m.x += m.v * (1 + song * 0.25);
+          var ly = song * m.bien;
           if (m.x - m.r * 2.4 > W) { may[i] = moiMay(false); continue; }
           for (var k = 0; k < m.cum.length; k++) {
             var q = m.cum[k];
-            var g = ctx.createRadialGradient(m.x + q.dx, m.y + q.dy, 0,
-                                             m.x + q.dx, m.y + q.dy, q.rr);
+            var g = ctx.createRadialGradient(m.x + q.dx, m.y + q.dy + ly, 0,
+                                             m.x + q.dx, m.y + q.dy + ly, q.rr);
             g.addColorStop(0, 'rgba(255,255,255,' + m.mo.toFixed(3) + ')');
             g.addColorStop(0.55, 'rgba(250,251,252,' + (m.mo * 0.6).toFixed(3) + ')');
             g.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = g;
             ctx.beginPath();
-            ctx.arc(m.x + q.dx, m.y + q.dy, q.rr, 0, Math.PI * 2);
+            ctx.arc(m.x + q.dx, m.y + q.dy + ly, q.rr, 0, Math.PI * 2);
             ctx.fill();
           }
         }

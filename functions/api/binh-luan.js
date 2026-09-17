@@ -84,10 +84,17 @@ const THEM_COT = [
   `ALTER TABLE binh_luan ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`
 ];
 
+/* Nhớ trong isolate: hai câu ALTER chỉ cần chạy MỘT lần cho mỗi isolate, mà
+   bàn duyệt thì gọi mỗi lượt tải. Không nhớ thì mỗi lượt xem hàng chờ là hai
+   vòng D1 thừa, và cả hai đều ném lỗi rồi bị nuốt — tốn mà không làm gì. */
+let daNoiRong = false;
+
 async function noiRongBang(env) {
+  if (daNoiRong) return;
   for (const sql of THEM_COT) {
     try { await env.DB.prepare(sql).run(); } catch (e) { /* cột đã có */ }
   }
+  daNoiRong = true;
 }
 
 /* Băm mã sửa trước khi lưu. Lưu thẳng thì ai đọc được bảng là sửa được lời
@@ -177,13 +184,33 @@ export async function onRequestGet({ request, env }) {
   if (cho) {
     if (chuaDatKhoa(env)) return traLoi(LOI_CHUA_DAT, 503);
   if (!laChuTrang(request, env)) return traLoi({ ok: false, loi: 'sai khoá' }, 401);
+    /* ── PHẢI NỚI BẢNG TRƯỚC KHI ĐỌC ──
+       Câu dưới chọn cả `soSua`, mà cột ấy do `noiRongBang` thêm vào. Nếu chỉ
+       gọi nó ở POST/PUT thì trên một kho đã có dữ liệu từ trước mà chưa ai
+       gửi bình luận mới kể từ lượt deploy, cột chưa tồn tại — SQLite ném
+       `no such column`, và cái `catch` bên dưới nuốt mất.
+
+       ĐÃ XẢY RA THẬT, ngay lượt deploy đầu: bàn duyệt báo "Nothing waiting"
+       trong khi mọi bình luận vẫn nằm nguyên trong bảng. Không mất dữ liệu,
+       nhưng nhìn thì y như mất sạch. */
+    await noiRongBang(env);
     try {
       const kq = await env.DB.prepare(
         `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, luc, soSua FROM binh_luan
           WHERE an = 0 ORDER BY duyet ASC, luc DESC LIMIT ?`).bind(LAY).all();
       return traLoi({ ok: true, ds: kq.results || [] });
     } catch (e) {
-      return traLoi({ ok: true, ds: [] });
+      /* ── KHÔNG BIẾN LỖI THÀNH "KHÔNG CÓ GÌ" ──
+         Bản trước trả thẳng `{ok:true, ds:[]}` cho MỌI lỗi. Nó biến một câu
+         truy vấn hỏng thành một hàng chờ rỗng — trạng thái trông y hệt như
+         khi mọi thứ đang chạy đúng, nên không ai đi tìm nguyên nhân. Chính nó
+         giấu mất lỗi `no such column` ở trên.
+
+         Bảng chưa tồn tại thì đúng là "chưa có gì" — đó là lần đầu chạy, và
+         im lặng là đúng. Mọi lỗi khác phải nói ra. */
+      const loi = String((e && e.message) || e);
+      if (/no such table/i.test(loi)) return traLoi({ ok: true, ds: [] });
+      return traLoi({ ok: false, loi: loi, ds: [] }, 500);
     }
   }
 
@@ -197,8 +224,13 @@ export async function onRequestGet({ request, env }) {
         WHERE trang = ? AND duyet = 1 AND an = 0 ORDER BY luc ASC LIMIT ?`
     ).bind(trang, LAY).all();
   } catch (e) {
-    /* Bảng chưa có (chưa ai bình luận) là chuyện bình thường, không phải lỗi. */
-    return traLoi({ ok: true, ds: [] }, 200, 'public, max-age=30');
+    /* Bảng chưa có (chưa ai bình luận) là chuyện bình thường, không phải lỗi.
+       Nhưng CHỈ chuyện ấy: mọi lỗi khác mà cũng trả về "không có gì" thì một
+       câu truy vấn hỏng trông y hệt một bài chưa ai bình luận — xem chú thích
+       dài ở nhánh hàng chờ phía trên. */
+    const loi = String((e && e.message) || e);
+    if (/no such table/i.test(loi)) return traLoi({ ok: true, ds: [] }, 200, 'public, max-age=30');
+    return traLoi({ ok: false, loi: loi, ds: [] }, 500);
   }
   /* Cache 30 giây ở biên. Một bình luận chậm nửa phút mới hiện với người lạ là
      chấp nhận được; chính người vừa gửi thì thấy câu báo "đang chờ duyệt", nên

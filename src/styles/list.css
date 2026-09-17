@@ -626,7 +626,7 @@
   gap:var(--s2);
 }
 .hero-quote .q-chu{font-size:clamp(15px,.86rem + .42vw,19px);line-height:1.38}
-.hero-quote .q-ai{font-size:12px}
+.hero-quote .q-ai{font-size:var(--fs-3xs)}
 .hero-quote .q-nut{top:var(--s3);right:var(--s3);width:26px;height:26px}
 .hero-quote .q-nut svg{width:13px;height:13px}
 /* Màn thấp: ô trích dẫn là thứ bỏ được đầu tiên ở cột trái — cửa vào trang

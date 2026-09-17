@@ -98,20 +98,25 @@ const BANG = {
   sao:    '#EFC2E9', tim2:   '#C8A8E9',
   /* Tĩnh lặng — nước */
   suong:  '#DAE8F5', troi:   '#BAD9F4', suoi:   '#9FD3EA',
-  reu:    '#A8DED6', nuoc:   '#E9F1FA'
+  reu:    '#A8DED6', nuoc:   '#E9F1FA',
+  /* 霜降 — giấy và mực. Ba sắc xám ngả lam bạc, cộng một nốt mực đủ đậm để
+     hoa văn còn đọc ra được trên nền gần trắng. */
+  giay:   '#FBFCFD', suong2: '#ECEEF0', bac:    '#D4DAE0',
+  khoi:   '#96A1AC', muc:    '#2A3440'
 };
-/* ── MẤY CẶP MÀU, TRẢI KHẮP BA THEME ──
+/* ── MẤY CẶP MÀU, TRẢI KHẮP BỐN THEME ──
    Bài nào rơi vào cặp nào là do TÊN BÀI quyết định — tất định, nên cùng một
    bài luôn ra cùng một tấm.
 
-   Sáu cặp đầu là Sakura (bảng màu mặc định của trang), rồi ba cặp Thiên hà và
-   ba cặp Tĩnh lặng. Trước bản này cả mười hai bài đều rơi vào một họ hồng-tím:
-   nhìn từng tấm thì đẹp, nhưng một feed có bốn năm đường dẫn của blog này hiện
-   ra bốn năm tấm gần như trùng nhau, và mắt thôi phân biệt được bài nào với
-   bài nào.
+   Sáu cặp đầu là Sakura (bảng màu mặc định của trang), rồi ba cặp Thiên hà,
+   ba cặp Tĩnh lặng, và hai cặp 霜降. Trước bản này cả mười hai bài đều rơi vào
+   một họ hồng-tím: nhìn từng tấm thì đẹp, nhưng một feed có bốn năm đường dẫn
+   của blog này hiện ra bốn năm tấm gần như trùng nhau, và mắt thôi phân biệt
+   được bài nào với bài nào.
 
-   Tỉ lệ 6/3/3 là cố ý: Sakura vẫn là bảng màu chính của trang, hai bảng kia
-   là biến tấu. Muốn đều nhau thì thêm cặp cho hai bảng sau. */
+   Tỉ lệ 6/3/3/2 là cố ý: Sakura vẫn là bảng màu chính của trang, ba bảng kia
+   là biến tấu. 霜降 chỉ hai cặp vì nó gần như không có màu — bốn tấm giấy
+   trắng liền nhau thì lại đúng cái "trùng nhau" vừa chữa xong. */
 const CAP = [
   ['paper', 'violet', 'coral'],
   ['lav',   'peri',   'orchid'],
@@ -124,7 +129,9 @@ const CAP = [
   ['dem2',  'sao',    'peri'],
   ['nuoc',  'suoi',   'reu'],
   ['suong', 'troi',   'suoi'],
-  ['nuoc',  'reu',    'troi']
+  ['nuoc',  'reu',    'troi'],
+  ['giay',  'khoi',   'bac'],
+  ['suong2','muc',    'khoi']
 ];
 
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];

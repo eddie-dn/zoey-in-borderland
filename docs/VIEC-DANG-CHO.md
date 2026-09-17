@@ -14,33 +14,6 @@
 
 ---
 
-## D · Theme 霜降 và bộ hình theo theme
-
-### D1. Điểm chút màu vào 霜降, và mây lềnh bềnh hơn
-Theme đang thuần xám — đúng chủ ý "không màu để nhìn ảnh cho thật", nhưng hơi
-lạnh. Điểm **một chút** màu vào (một sắc lam bạc rất nhạt ở quầng nền, hoặc ở
-màu nhấn) mà vẫn giữ được chất giấy.
-
-Mây thì cho **lềnh bềnh** hơn: hiện chúng trôi thuần ngang với tốc độ đều
-(`v: 0.05 + lop * 0.16` trong `dungMay`, src/js/nen.js). Thêm một nhịp dập
-dềnh rất chậm theo chiều dọc, và cho tốc độ thở ra thở vào một chút, thì nó
-ra "bồng bềnh" thay vì "trượt ngang".
-
-> Cẩn thận hai chỗ: mây ở đây màu TRẮNG nên nó chỉ hiện ra được ở chỗ có mực
-> núi để xoá; và đây là nền của một trang để ĐỌC — mọi alpha đang dưới .2 là
-> cố ý.
-
-### D2. Bộ favicon và ảnh chia sẻ đi theo theme
-- **Favicon**: hiện chỉ `calm` có bản riêng (`favicon-calm.svg`) — xem `ICON`
-  trong src/js/theme.js và khối FAVICON trong tools/build.mjs. 霜降 nền trắng
-  thì đoá hoa tím nằm trên thanh tab đọc ra là icon của một trang khác. Cần
-  một bản cho nó, và rà lại xem `dark` có nên có bản riêng không.
-- **Ảnh chia sẻ** (`npm run og`): sinh theo ba theme. Cần thêm 霜降.
-- **Ảnh bìa tự sinh** (`npm run bia`): mandala đổi màu theo theme — kiểm xem
-  nó ra gì trên bảng màu không-màu này.
-
----
-
 ## C · Bình luận
 
 ### C3. "Notify me of follow-up comments by email"

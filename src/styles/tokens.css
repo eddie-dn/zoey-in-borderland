@@ -670,8 +670,9 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
    ── PHÂN TÁCH DO ĐƯỜNG KẺ, KHÔNG DO NỀN ──
    Nền trắng và mặt thẻ trắng thì chênh lệch màu bằng 0 — không có cách nào
    khác. Nên ở đây đường kẻ gánh toàn bộ việc nói ra mép, đúng như mực nói ra
-   hình trên giấy. `--line` đo 1,82:1 trên nền; đó là trần đi được mà chưa
-   thành một khung đen.
+   hình trên giấy. `--line` đo 1,53:1 — nghe thấp, nhưng đó là trần của một
+   đường kẻ trên giấy trắng: đậm hơn nữa thì nó thôi là nét mực mà thành một
+   cái khung.
 
    Cùng bài toán với Tĩnh lặng, nhưng lời giải ngược: ở kia nền hạ hai nấc để
    thẻ trắng nổi lên, ở đây nền không hạ được (giấy phải là giấy), nên đổi
@@ -690,31 +691,43 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Hai quầng xám cực nhạt, không phải màu: chúng chỉ để mặt giấy thôi phẳng
      tuyệt đối, vì một mặt phẳng trắng tuyệt đối trên màn hình đọc ra như lỗi
      hiển thị chứ không ra như giấy. */
+  /* ── MỘT CHÚT MÀU, KHÔNG HƠN ──
+     Bản đầu hai quầng nền thuần xám (#F7F8F9 · #F2F4F5). Đúng chủ ý "không
+     màu để nhìn ảnh cho thật", nhưng ra hơi lạnh — giấy thật không bao giờ
+     xám tuyệt đối, nó luôn ngả một phía.
+
+     Nay ngả LAM BẠC ở quầng trên và ẤM rất nhẹ ở quầng dưới: hai đầu một
+     trục, nên mặt giấy có chiều thay vì phẳng đều. Cả hai đều dưới 4 điểm
+     bão hoà — nhìn riêng thì không ai gọi được tên màu, mà bỏ đi thì thấy
+     ngay là thiếu. Đó là mức "điểm chút màu" mà theme này chịu được: thêm
+     nữa là nó thôi là giấy. */
   --bg-tint:
-    radial-gradient(120% 70% at 12% -6%, #F7F8F9 0%, rgba(247,248,249,0) 55%),
-    radial-gradient(110% 60% at 88% 104%, #F2F4F5 0%, rgba(242,244,245,0) 58%);
+    radial-gradient(120% 70% at 12% -6%, #F4F8FB 0%, rgba(244,248,251,0) 55%),
+    radial-gradient(110% 60% at 88% 104%, #F7F5F2 0%, rgba(247,245,242,0) 58%);
   --surface:rgba(255,255,255,.96);
   --surface-solid:#FFFFFF;
   /* Nền lõm phải TỐI hơn nền, không sáng hơn — trên giấy trắng thì không còn
      phía sáng nào nữa. */
   --surface-sunken:#F1F3F4;
 
-  --text:#111315;                    /* mực — 17,4:1 trên giấy */
+  --text:#111315;                    /* mực — 18,62:1 trên giấy */
   --text-muted:#44494E;              /* 9,1:1  */
   --text-faint:#5C6166;              /* 6,4:1  */
   --text-invert:#FFFFFF;
   --btn-ink:#111315;
 
-  --accent:#9AA0A6;                  /* trang trí: 1,82:1 — đúng vai nét mờ */
-  --accent-ink:#2B3138;              /* chữ link — 12,3:1 */
+  /* Màu nhấn ngả lam bạc thay vì xám tuyệt đối — cùng một lượng màu với quầng
+     nền, để viền và chấm không đọc ra như một chất liệu khác. */
+  --accent:#96A1AC;                  /* trang trí: 2,63:1 trên giấy */
+  --accent-ink:#2A3440;              /* chữ link — 12,62:1 */
   --accent-ink-hover:#111315;
-  --accent-2:#B4B9BE;
-  --accent-3:#CDD1D5;
-  --accent-wash:rgba(154,160,166,.16);
+  --accent-2:#B0BAC4;
+  --accent-3:#C9D1D9;
+  --accent-wash:rgba(150,161,172,.16);
 
   /* Đường kẻ gánh toàn bộ việc phân tách ở theme này, nên nó đi xa nhất có
-     thể: .20 đo 1,82:1. Trên nữa là thành một cái khung, mà giấy thì không
-     có khung. */
+     thể: .20 đo 1,53:1 trên giấy. Trên nữa là thành một cái khung, mà giấy
+     thì không có khung. */
   --line:rgba(17,19,21,.20);
   --line-strong:rgba(17,19,21,.34);
   --sel-bg:rgba(154,160,166,.34);

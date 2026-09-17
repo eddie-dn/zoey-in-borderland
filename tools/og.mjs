@@ -41,7 +41,7 @@ const RA = path.join(GOC, 'public');
 const W = 1200, H = 630;
 const DEM = Math.round((W - H) / 2);   /* đệm trên/dưới khi vẽ vào khung vuông */
 
-/* Ba bảng màu, chép từ src/styles/tokens.css. Đổi màu ở đó thì đổi cả ở đây —
+/* Bốn bảng màu, chép từ src/styles/tokens.css. Đổi màu ở đó thì đổi cả ở đây —
    không có cách nào đọc CSS custom property từ Node mà không dựng cả trang. */
 const THEME = {
   'og':            { nen: '#FAF6FD', muc: '#3E2F56', logo: '#7A52B8', nhan: '#6A587F',
@@ -50,9 +50,17 @@ const THEME = {
   'og-thien-ha':   { nen: '#120C22', muc: '#F6EFFB', logo: '#EFC2E9', nhan: '#9E93AC',
                      quang: [['#2B1E4C', 50, 38, 125, 85], ['#3A2560', 86, 90, 80, 55],
                              ['#1B1233', 50, 38, 190, 120]] },
-  'og-tinh-lang':  { nen: '#E9F1FA', muc: '#15303E', logo: '#0B5A78', nhan: '#365665',
+  'og-tinh-lang':  { nen: '#DCE8F5', muc: '#15303E', logo: '#0B5A78', nhan: '#365665',
                      quang: [['#F4FAFF', 10, -4, 120, 70], ['#CFE4F8', 94, 2, 90, 55],
-                             ['#D3E9E6', 50, 104, 120, 60]] }
+                             ['#D3E9E6', 50, 104, 120, 60]] },
+  /* 霜降 — giấy trắng, mực đen. Hai quầng rất nhạt, một ngả lam bạc một ngả
+     ấm, y như `--bg-tint` của theme. Nền ở đây KHÔNG dùng #FFFFFF: ảnh chia
+     sẻ nằm trên nền trắng của Facebook và Messenger, nên một ảnh nền trắng
+     thì mất luôn mép và đọc ra như chữ trôi giữa giao diện của họ. #FBFCFD
+     đủ để thấy ảnh là một tấm. */
+  'og-suong-giang':{ nen: '#FBFCFD', muc: '#111315', logo: '#2A3440', nhan: '#5C6166',
+                     quang: [['#F4F8FB', 10, -4, 120, 70], ['#EEF2F6', 94, 2, 90, 55],
+                             ['#F7F5F2', 50, 104, 120, 60]] }
 };
 
 /* Logo ở trạng thái nghỉ — hai nét, lấy nguyên từ docs/logo/01-nghi.svg. */
@@ -145,4 +153,4 @@ try {
 } finally {
   fs.rmSync(tam, { recursive: true, force: true });
 }
-console.log('\n  Xong. Ba tấm nằm trong public/ — npm run build là chúng sang dist/.');
+console.log('\n  Xong. Bốn tấm nằm trong public/ — npm run build là chúng sang dist/.');

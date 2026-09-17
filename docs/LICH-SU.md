@@ -58,6 +58,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.6.7 | 2026-09-17 | 07 | sửa lỗi bàn duyệt báo rỗng: câu truy vấn chọn cột soSua trước khi cột ấy được thêm; và thôi biến mọi lỗi truy vấn thành không có gì |
+| V2.6.6 | 2026-09-17 | 06 | khối đọc tiếp ở cột bên có lại đường kẻ giữa các dòng |
+| V2.6.5 | 2026-09-17 | 05 | 霜降 có favicon và ảnh chia sẻ riêng; ảnh bìa tự sinh thêm hai cặp màu giấy-mực; ảnh chia sẻ Tĩnh lặng theo nền mới |
+| V2.6.4 | 2026-09-17 | 04 | ô trích dẫn còn hai phông, tên tác giả mặc cùng bộ đồ với nhãn; 霜降 điểm lam bạc và mây lềnh bềnh thay vì trượt ngang đều |
 | V2.6.3 | 2026-09-17 | 03 | thẻ bài dùng h2 nên dàn tiêu đề thôi nhảy cóc ở 30 trang; hai phép kiểm mới cho dàn tiêu đề và cân nặng chữ |
 | V2.6.2 | 2026-09-17 | 02 | ô soạn thảo: thêm căn dòng bốn chế độ, thanh nút gom nhóm không bị xé khi xuống hàng, sửa nút Blocks tràn chữ; bảng cho tới 5x20 và chỉnh được bề rộng cột |
 | V2.6.1 | 2026-09-17 | 01 | bàn duyệt thẳng cột ở bộ lọc All; nút Reply có ở mọi thẻ; bấm khu bình luận là xổ full khung; cho sửa bình luận tối đa 3 lần |
@@ -213,6 +217,58 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.6.7 — 17-Sep-2026
+
+- **Bàn duyệt báo "Nothing waiting" trong khi bình luận vẫn còn nguyên.** Lượt
+  thêm tính năng sửa bình luận (V2.6.1) đưa cột `soSua` vào câu truy vấn hàng
+  chờ, nhưng cột ấy chỉ được `ALTER TABLE` thêm vào ở lượt POST/PUT. Trên một
+  kho đã có dữ liệu mà chưa ai gửi bình luận mới kể từ lượt deploy, cột chưa
+  tồn tại — SQLite ném `no such column`, và cái `catch` nuốt mất. **Không mất
+  dữ liệu**, nhưng nhìn thì y như mất sạch.
+- **Và đây mới là lỗi nặng hơn: `catch` biến MỌI lỗi thành "không có gì".**
+  Một câu truy vấn hỏng trả về đúng cái trạng thái của một hàng chờ rỗng —
+  trông y hệt lúc mọi thứ đang chạy đúng, nên không ai đi tìm nguyên nhân.
+  Nay chỉ "bảng chưa tồn tại" mới im lặng; mọi lỗi khác trả về `ok:false` kèm
+  lời báo thật.
+- Hai câu `ALTER TABLE` nay nhớ trong isolate, thôi chạy lại mỗi lượt tải.
+
+## V2.6.6 — 17-Sep-2026
+
+- **Đọc tiếp ở cột bên có lại đường kẻ.** Lúc đổi khối này sang dải hai đầu
+  (V2.5.7) thì bỏ hết đường kẻ — đúng ở cột chữ, nơi hai gợi ý nằm CẠNH nhau
+  nên khoảng trống đã nói ra là hai thứ. Nhưng ở cột bên chúng xếp DỌC, và hai
+  khối chữ chồng lên nhau mà không có gì ngăn thì đọc ra như một khối bốn
+  dòng — nhất là khi cả hai đều mở đầu bằng một nhãn viết hoa trông giống hệt.
+
+## V2.6.5 — 17-Sep-2026
+
+- **霜降 có favicon riêng.** Đoá hoa tím trên một trang giấy trắng đọc ra là
+  thứ DUY NHẤT có màu trong cả cái tab. Nền xám sương, nét mực. Không dùng nền
+  trắng: thanh tab chế độ sáng vốn đã gần trắng, icon nền trắng thì mất luôn
+  mép bo góc và trôi vào nền tab.
+- **Ảnh chia sẻ thêm tấm thứ tư.** Cùng lý do và cùng cách dựng với ba tấm
+  kia — `npm run og`. Kèm theo, tấm Tĩnh lặng đổi nền theo bảng màu mới của
+  theme ấy (V2.5.9).
+- **Ảnh bìa tự sinh thêm hai cặp màu giấy–mực.** Tỉ lệ nay 6/3/3/2: 霜降 chỉ
+  hai cặp vì nó gần như không có màu, mà bốn tấm giấy trắng liền nhau trong
+  một feed thì lại đúng cái "trùng nhau" mà bảng cặp này sinh ra để tránh.
+
+## V2.6.4 — 17-Sep-2026
+
+- **Ô trích dẫn còn hai phông.** Nó từng dùng ba: Oswald cho nhãn, Cormorant
+  nghiêng cho câu, và phông thân bài cho tên tác giả — ba giọng trong một ô
+  cao chưa tới hai trăm pixel. Tên tác giả không phải chữ ĐỂ ĐỌC; người ta
+  liếc nó để biết câu kia của ai, đúng việc của một cái nhãn. Nay nó mặc cùng
+  bộ đồ với "QUOTE OF THE DAY" ngay trên và "READ ON" ngay dưới.
+- **霜降 điểm một chút màu.** Hai quầng nền thuần xám đổi thành một ngả lam
+  bạc, một ngả ấm rất nhẹ — hai đầu một trục, nên mặt giấy có chiều thay vì
+  phẳng đều. Cả hai đều dưới bốn điểm bão hoà: nhìn riêng không ai gọi được
+  tên màu, mà bỏ đi thì thấy ngay là thiếu.
+- **Mây lềnh bềnh thay vì trượt ngang đều.** Mỗi dải nay có pha riêng, một
+  biên độ dập dềnh dọc tính theo cỡ dải, và tốc độ ngang thở theo cùng nhịp
+  ấy. Dùng CHUNG một sóng cho cả hai chuyển động — hai sóng lệch nhau thì dải
+  mây bò thành hình số tám.
 
 ## V2.6.3 — 17-Sep-2026
 

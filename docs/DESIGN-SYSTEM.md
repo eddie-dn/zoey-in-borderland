@@ -21,6 +21,8 @@
 | Nhấn (trang trí) | `#E3AADD` | `#E3AADD` | `#7ABFDE` | `#9AA0A6` |
 | Nhấn (chữ đọc được) | `#7A52B8` | `#EFC2E9` | `#0B5A78` | `#2B3138` |
 | Nền động màn đầu | cánh hoa rơi | đĩa thiên hà | thác nước | mây trôi qua núi |
+| Favicon | `favicon.svg` | `favicon.svg` | `favicon-calm.svg` | `favicon-frost.svg` |
+| Ảnh chia sẻ | `og.jpg` | `og-thien-ha.jpg` | `og-tinh-lang.jpg` | `og-suong-giang.jpg` |
 
 > **霜降** (Sương giáng) là tiết khí thứ mười tám, quãng cuối tháng Mười — lúc
 > sương bắt đầu đọng thành giá. Ba theme kia đều có MÀU làm chất riêng; theme

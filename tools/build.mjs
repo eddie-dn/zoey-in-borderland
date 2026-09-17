@@ -2373,7 +2373,12 @@ function readNextHTML(bai, congKhai) {
    tấm cố định — đổi ảnh sau khi đã chia sẻ chỉ tổ làm thẻ cũ hỏng.
 
    Băm bằng tổng mã ký tự: không cần mạnh, chỉ cần TẤT ĐỊNH và rải tạm đều. */
-const OG_THEME = ['/og.jpg', '/og-thien-ha.jpg', '/og-tinh-lang.jpg'];
+/* Bốn tấm, một cho mỗi theme. Thêm một tấm vào mảng này thì băm tự rải lại —
+   nhưng nó cũng ĐỔI tấm của những bài đã chia sẻ trước đó, vì băm chia theo
+   độ dài mảng. Đó là cái giá chấp nhận được khi thêm theme, và là lý do
+   KHÔNG nên đụng vào mảng này vì bất cứ lý do nào khác. */
+const OG_THEME = ['/og.jpg', '/og-thien-ha.jpg', '/og-tinh-lang.jpg',
+                  '/og-suong-giang.jpg'];
 
 /* ══════════ HAI NÚT GỐC CỦA ĐỒ THỊ DỮ LIỆU ══════════
 
@@ -4273,10 +4278,11 @@ ${u.map((x) => `  <url>\n    <loc>${x.loc}</loc>\n    <lastmod>${x.mod}</lastmod
    tối mờ gần như không thấy. Nền riêng giữ cho nó đọc được ở cả hai chỗ.
 
    ── HAI BẢN, KHÔNG PHẢI BA ──
-   Trang có ba theme, nhưng favicon chỉ cần hai bản:
+   Trang có bốn theme, và cần ba bản favicon:
 
-     light · dark  →  favicon.svg        nền lavender, nét tím
-     calm          →  favicon-calm.svg   nền xanh sương, nét xanh đá
+     light · dark  →  favicon.svg         nền lavender, nét tím
+     calm          →  favicon-calm.svg    nền xanh sương, nét xanh đá
+     frost (霜降)  →  favicon-frost.svg   nền xám sương, nét mực
 
    `calm` phải có bản riêng vì nó là theme DUY NHẤT đổi hẳn tông: cả bảng màu
    chuyển sang xanh lạnh, nên một đoá hoa tím nằm trong tab đọc ra như icon của
@@ -4288,9 +4294,19 @@ ${u.map((x) => `  <url>\n    <loc>${x.loc}</loc>\n    <lastmod>${x.mod}</lastmod
    thành một vệt. Nền lavender ở đúng chỗ ấy lại nổi rõ. Tức bản "khớp theme"
    cho dark thua chính bản không khớp — nên không làm.
 
-   Đổi màu thì đổi ở đây, KHÔNG phải ở hai chỗ. Cả hai cặp màu đều là token có
+   `frost` cũng phải có bản riêng, và vì một lý do KHÁC với calm: nó không đổi
+   tông mà bỏ hẳn màu. Đoá hoa tím trên một trang giấy trắng đọc ra là một vệt
+   màu lạc — thứ duy nhất có màu trong cả cái tab. Nền xám sương và nét mực thì
+   nó đọc ra là cùng một bộ với trang.
+
+   KHÔNG dùng nền trắng cho bản này: favicon nằm trên thanh tab, mà thanh tab
+   chế độ sáng vốn đã gần trắng — icon nền trắng thì mất luôn hình dáng bo góc
+   và trôi vào nền tab. #ECEEF0 đủ để thấy mép mà vẫn đọc ra là giấy.
+
+   Đổi màu thì đổi ở đây, KHÔNG phải ở hai chỗ. Cả ba cặp màu đều là token có
    thật trong src/styles/tokens.css (raw-lav · accent-ink của light; raw-suong ·
-   accent-ink của calm), không phải màu bốc ra cho vừa mắt. */
+   accent-ink của calm; raw-suong · accent-ink của frost), không phải màu bốc
+   ra cho vừa mắt. */
 const faviconLa = (nen, net) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
 <rect width="48" height="48" rx="11" fill="${nen}"/>
 <g fill="none" stroke="${net}" stroke-linecap="round">
@@ -4306,6 +4322,7 @@ const faviconLa = (nen, net) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox
 
 const FAVICON      = faviconLa('#F4E7FB', '#7a52b8');   /* light · dark */
 const FAVICON_CALM = faviconLa('#DAE8F5', '#0B5A78');   /* calm */
+const FAVICON_FROST = faviconLa('#ECEEF0', '#2A3440');  /* frost · 霜降 */
 
 /* ══════════════ 6. CHẠY ══════════════ */
 
@@ -4431,6 +4448,7 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, 'so-tay.json'), SO_TAY());
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
     ghi(path.join(THU_MUC.dist, 'favicon-calm.svg'), FAVICON_CALM);
+    ghi(path.join(THU_MUC.dist, 'favicon-frost.svg'), FAVICON_FROST);
     nuongNguonQuote();
 
     /* Gợi ý chỉ lấy trong danh sách CÔNG KHAI: gợi ý cả bản nháp thì bạn đọc

@@ -47,7 +47,7 @@
      Lượt đặt ĐẦU TIÊN không nằm ở đây mà ở đoạn script trong <head>: thẻ
      <link rel=icon> là HTML tĩnh nên trình duyệt tải bản mặc định ngay, đợi
      file này tải xong mới đổi thì loé một nhịp. */
-  var ICON = { calm: 'favicon-calm.svg' };
+  var ICON = { calm: 'favicon-calm.svg', frost: 'favicon-frost.svg' };
 
   /* Nhãn lấy từ data-* mà build gắn sẵn, không gõ cứng ở đây — cả bộ chữ
      giao diện nằm ở bảng NHAN trong tools/build.mjs. Nhãn nói theme SẮP
