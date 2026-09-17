@@ -1,7 +1,7 @@
 ---
 title: Vô thức tập thể, và cái cớ để tin vào giấc mơ
 date: 2026-09-14
-summary: Jung nói có một tầng ký ức không thuộc về riêng ai. Bài này vừa là ghi chép về ý đó, vừa là bản demo đầy đủ mọi khối viết được trên blog.
+summary: Jung nói có một tầng ký ức không thuộc về riêng ai. Nếu tầng ấy có thật thì một phần những gì mình tưởng là của mình hoá ra là đồ mượn.
 tags: [tâm lý, jung, ghi chép]
 cover: /media/2026/vo-thuc-tap-the/bia.png
 coverAlt: Một quầng sáng tím hồng toả ra từ tâm, bao quanh là hai vòng tròn nét đứt
@@ -10,10 +10,6 @@ coverAlt: Một quầng sáng tím hồng toả ra từ tâm, bao quanh là hai 
 Có những hình ảnh quay lại trong giấc mơ của những người chưa từng gặp nhau, ở
 những nơi chưa từng nghe tên nhau. Jung gọi tầng đó là **vô thức tập thể** — và
 gọi những hình ảnh lặp lại ấy là *cổ mẫu*.
-
-Bài này cũng đồng thời là **bản demo**: mỗi khối viết được trên blog đều xuất
-hiện ít nhất một lần ở đây. Mở `content/posts/tam-ly/2026-09-14-vo-thuc-tap-the.md`
-ra xem là thấy cách gõ.
 
 ## Ba tầng của tâm trí
 
@@ -45,6 +41,8 @@ truyền lại, mà là một **khuynh hướng** tạo ra hình ảnh.
 >
 > — diễn giải tự do, không phải trích nguyên văn
 
+Ba cái khung hay được nhắc tới nhất, và chỗ dễ bắt gặp chúng nhất:
+
 | Cổ mẫu | Xuất hiện dưới dạng | Hay gặp ở |
 |---|---|---:|
 | Người Mẹ | che chở, cũng có thể nuốt chửng | cổ tích, quảng cáo |
@@ -61,13 +59,37 @@ Chỉ ghi.
 - [ ] Ba tuần liền, không bỏ ngày nào
 - [ ] Đọc lại cả xấp một lượt, tìm cái gì lặp lại
 
+Ba tuần là vì dưới đó thì chưa đủ để thấy cái gì lặp lại, mà trên đó thì phần
+lớn người ta bỏ dở.
+
 :::warn Một điều nên biết trước
 Đây là chuyện tự quan sát cho vui và cho hiểu mình, **không phải trị liệu**.
 Nếu giấc mơ đang làm bạn mất ngủ hoặc hoảng sợ thật sự, chuyện cần làm là gặp
 người có chuyên môn, không phải đọc thêm sách.
 :::
 
-### Đoạn mã ghi chép
+## Còn lại là việc của mình
+
+Thứ Jung để lại không phải một bộ câu trả lời, mà là một cách hỏi: *cái này
+trong mình, có thật là của mình không?*
+
+Câu hỏi đó không giải quyết được buổi tối nào cả. Nhưng nó làm mấy giấc mơ bớt
+vô nghĩa đi một chút.
+
+:::stop Đừng làm
+Đừng đem cổ mẫu ra giải thích hành vi của người khác. Nó là công cụ soi vào
+trong, không phải cái nhãn dán lên người ta.
+:::
+
+---
+
+## Phụ lục — mọi khối viết được trên blog
+
+Phần dưới đây không thuộc bài; nó là **bản demo**. Mỗi khối viết được trên blog
+đều xuất hiện ít nhất một lần ở đây, để lúc cần thì mở
+`content/posts/tam-ly/2026-09-14-vo-thuc-tap-the.md` ra xem cách gõ.
+
+### Khối mã
 
 Mình dùng một file `.md` mỗi tháng, mở đầu bằng đúng mấy dòng này:
 
@@ -84,7 +106,7 @@ for (let d = 1; d <= soNgay; d++) {
 Chạy `node dem.js > thang-9.md`, thế là xong khung. Phần còn lại là việc của
 buổi sáng.
 
-## Ảnh và video chèn vào bài
+### Ảnh và video
 
 Ba khổ ảnh dùng được: mặc định nằm gọn trong cột chữ, `{.wide}` rộng hơn cột
 chữ, `{.full}` tràn hết bề ngang màn hình.
@@ -106,19 +128,4 @@ ra thì chỉ có ảnh bìa, không có script nào của Google chạy:
 :::tip Mẹo đặt ảnh
 Để ảnh của bài trong `public/media/<năm>/<slug-bài>/`. Mỗi bài một thư mục riêng
 thì sau này xoá bài là xoá gọn cả ảnh, không còn ảnh mồ côi nằm lại.
-:::
-
----
-
-## Còn lại là việc của mình
-
-Thứ Jung để lại không phải một bộ câu trả lời, mà là một cách hỏi: *cái này
-trong mình, có thật là của mình không?*
-
-Câu hỏi đó không giải quyết được buổi tối nào cả. Nhưng nó làm mấy giấc mơ bớt
-vô nghĩa đi một chút.
-
-:::stop Đừng làm
-Đừng đem cổ mẫu ra giải thích hành vi của người khác. Nó là công cụ soi vào
-trong, không phải cái nhãn dán lên người ta.
 :::

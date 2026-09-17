@@ -1780,6 +1780,33 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
 .sz-khung a{color:var(--accent-ink);text-decoration:underline}
 .sz-khung hr{border:0;border-top:1px solid var(--line-strong);margin-block:1.2em}
 .sz-khung img{max-width:100%;height:auto;border-radius:var(--r-xs)}
+/* ── DẤU HIỆU CHO THỨ CHỈ THẤY ĐƯỢC Ở BÀI ĐÃ DỰNG ──
+   Ảnh `{.wide}` / `{.full}` và đoạn `{.giua}` chỉ khác nhau ở TRANG THẬT.
+   Trong khung gõ, khung hẹp hơn cột chữ thật nên không tả lại được. Nên ở đây
+   chỉ cần một dấu đủ để biết "tấm này đã đặt rộng rồi" — một nhãn nhỏ ở góc,
+   không phải một bản xem trước giả. */
+.sz-khung img.sz-anh--wide,.sz-khung img.sz-anh--full{
+  box-shadow:0 0 0 2px var(--accent);
+}
+/* Nhãn viết THẲNG trong `content`, không lấy qua `attr()`: attr() cần một
+   thuộc tính có thật trên phần tử, mà ở đây thông tin nằm ở TÊN LỚP của tấm
+   ảnh bên trong — hai lớp, hai luật, rõ hơn là một luật cộng một thuộc tính
+   phải nhớ gắn. */
+.sz-khung p:has(> img.sz-anh--wide)::after{content:"wide — rộng hơn cột chữ"}
+.sz-khung p:has(> img.sz-anh--full)::after{content:"full — tràn hết bề ngang"}
+.sz-khung p:has(> img.sz-anh--wide)::after,
+.sz-khung p:has(> img.sz-anh--full)::after{
+  display:block;margin-top:4px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.06em;color:var(--accent-ink);
+}
+.sz-doan--giua{text-align:center}
+.sz-doan--giua::after,.sz-doan--thuong::after{
+  content:attr(data-lop);
+  display:block;margin-top:2px;
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);
+}
 /* Tám lớp màu phải hiện ra NGAY TRONG KHUNG GÕ, không chỉ ở bài đã dựng:
    tô màu mà không thấy màu thì cái nút ấy coi như không có. Luật trong
    prose.css chỉ với tới `.prose`, nên chép tên lớp sang đây. */

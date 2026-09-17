@@ -355,6 +355,13 @@
          trong một mục danh sách đã mang lề thụt, mà ngắt thêm ở đó thì dòng
          tràn ra mất lề và nhảy khỏi mục. */
       d = nhaLopCuoi(d);
+      /* ── LỚP CỦA CẢ ĐOẠN ──
+         `{.giua}`, `{.thuong}` là thuộc tính của ĐOẠN, không phải chữ trong
+         đoạn. Giữ chúng ở `data-lop` thì người viết không phải né mấy ký tự ấy
+         mỗi lần sửa câu cuối, và bấm nút lần nữa là gỡ ra — thứ không làm được
+         nếu để chúng nằm lẫn trong chữ. */
+      var lopDoan = c.getAttribute && c.getAttribute('data-lop');
+      if (d.trim() && lopDoan) d += ' ' + lopDoan;
       if (d.trim()) ra.push(thut + (thut ? d : xuongDong(d)));
       else if (the === 'P' || the === 'DIV') ra.push('');
     }
@@ -714,9 +721,27 @@
            lại mọc ra, và `git diff` kêu ở mấy dòng bảng sau mỗi lượt sửa dù
            chẳng ai động vào chúng. Nhánh văn xuôi thì KHÔNG cắt: ở đó hai dấu
            cách cuối dòng là cú ngắt dòng cứng người viết cố ý đặt. */
-        ra.push('<p>' + nhoMD(laDong
+        var chuDoan = laDong
           ? doan.map(function (d) { return d.replace(/\s+$/, ''); }).join('  \n')
-          : doan.join('\n')) + '</p>');
+          : doan.join('\n');
+        /* Cụm lớp ở CUỐI đoạn đi vào `data-lop`, không ở lại trong chữ — để
+           nút bật/tắt được và để người viết khỏi thấy cú pháp giữa bài.
+
+           TRỪ dòng ẢNH và dòng VIDEO đứng một mình: ở đó cụm lớp thuộc về
+           chính tấm ảnh / cái video, và nó phải DÍNH LIỀN dấu ngoặc đóng —
+           `![x](y){.wide}`, không có dấu cách. Bộ dựng bắt nó bằng một biểu
+           thức đòi `)` rồi tới `{` ngay; chen một dấu cách vào là cả cụm lớp
+           rơi ra thành chữ thường giữa bài. `trong()` đã lo phần ấy qua
+           `data-lop` của chính thẻ <img>, nên ở đây chỉ cần tránh đường. */
+        var laMedia = /^\s*(!\[[^\]]*\]\([^)]*\)|@[a-z]+\\?\[[^\]]*\\?\]\([^)]*\))\s*(\{[^}]*\})?\s*$/i
+                        .test(chuDoan);
+        var mLop = laMedia ? null : chuDoan.match(/\s*(\{[.\w\s=\/-]*\})\s*$/);
+        var thuocLop = '';
+        if (mLop && /\./.test(mLop[1])) {
+          thuocLop = ' data-lop="' + mLop[1].replace(/"/g, '') + '"';
+          chuDoan = chuDoan.slice(0, mLop.index);
+        }
+        ra.push('<p' + thuocLop + '>' + nhoMD(chuDoan) + '</p>');
       }
       else i++;
     }
@@ -1025,6 +1050,20 @@
 
     function vach() { thanh.appendChild(el('span', 'sz-vach')); }
 
+    /* ── Nhóm 0: hoàn tác ──
+       ⌘Z vẫn chạy sẵn vì đây là một vùng soạn thảo thật, nhưng CHỈ trên bàn
+       phím. Trên điện thoại — nơi phần lớn bài được gõ — không có phím tắt
+       nào, nên một cú bấm nhầm là không có đường lùi. Hai cái nút này là đường
+       lùi ấy.
+
+       Chúng đứng NGOÀI CÙNG BÊN TRÁI: mắt tìm nút hoàn tác ở đầu thanh, đó là
+       chỗ mọi trình soạn thảo ba mươi năm nay vẫn để nó. */
+    nut(svg(['M3 10h11a5 5 0 0 1 0 10h-3', 'M7 6 3 10l4 4']),
+        L('undo', 'Undo') + ' (⌘Z)', function () { lenh('undo'); });
+    nut(svg(['M21 10H10a5 5 0 0 0 0 10h3', 'M17 6l4 4-4 4']),
+        L('redo', 'Redo') + ' (⇧⌘Z)', function () { lenh('redo'); });
+    vach();
+
     /* ── Nhóm 1: nét trong dòng ── */
     var nDam = nut('B', L('bold', 'Bold') + ' (⌘B)', function () { lenh('bold'); }, 'sz-nut--dam');
     var nNgh = nut('I', L('italic', 'Italic') + ' (⌘I)', function () { lenh('italic'); }, 'sz-nut--ngh');
@@ -1046,6 +1085,18 @@
         L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); });
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
         L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); });
+    /* Thụt vào / thụt ra: cách DUY NHẤT để có danh sách lồng nhau. Gõ dấu cách
+       ở đầu dòng không ra danh sách con — contenteditable coi đó là chữ. */
+    nut(svg(['M9 6h11M9 12h11M9 18h11', 'M3 9l3 3-3 3']),
+        L('indent', 'Indent — makes a sub-list'), function () { lenh('indent'); });
+    nut(svg(['M9 6h11M9 12h11M9 18h11', 'M6 9l-3 3 3 3']),
+        L('outdent', 'Outdent'), function () { lenh('outdent'); });
+    /* Trả một tiêu đề hoặc một khối trích dẫn về ĐOẠN THƯỜNG. Trước đây chỉ có
+       một đường: bấm Enter ở một tiêu đề rỗng. Ai lỡ biến nguyên một đoạn thành
+       H2 thì không có cách nào lùi ngoài hoàn tác. */
+    nut('¶', L('para', 'Back to a normal paragraph'), function () {
+      lenh('formatBlock', 'p');
+    }, 'sz-nut--h');
     vach();
 
     /* ── Nhóm 3: chèn ── */
@@ -1178,7 +1229,106 @@
         capNhat();
       });
 
+      /* ── VIDEO ──
+         Hai dạng, và bộ dựng phân biệt chúng bằng chính chữ đầu dòng:
+           @youtube[<mã>](chú thích)  — chỉ tải iframe của Google KHI bấm play
+           @video[/media/x.mp4](…)    — file tự chứa
+
+         Dán cả đường dẫn YouTube cũng được: rút lấy mã ở đây, để người viết
+         khỏi phải biết "mã video" là đoạn nào trong cái link dài ấy. */
+      dong(L('bYoutube', 'YouTube'), L('bYoutubeMo', 'loads only when someone presses play'), function () {
+        var u = window.prompt(L('bYtAsk', 'YouTube link or video id:'), '') || '';
+        u = u.trim();
+        if (!u) return;
+        var ma = (u.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,})/) || [])[1]
+              || (/^[\w-]{6,}$/.test(u) ? u : '');
+        if (!ma) { window.alert(L('bYtSai', 'Could not find a video id in that.')); return; }
+        var chu = window.prompt(L('bCapAsk', 'Caption (can be empty):'), '') || '';
+        khung.focus();
+        document.execCommand('insertHTML', false,
+          '<p>@youtube\\[' + ma + '\\](' + chu.replace(/[<>&()]/g, '') + '){.wide}</p><p><br></p>');
+        capNhat();
+      });
+
+      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm you uploaded'), function () {
+        var u = window.prompt(L('bVidAsk', 'Video path (starts with /media/):'), '/media/') || '';
+        u = u.trim();
+        if (!/^(https?:\/\/|\/)/.test(u)) return;
+        var chu = window.prompt(L('bCapAsk', 'Caption (can be empty):'), '') || '';
+        khung.focus();
+        document.execCommand('insertHTML', false,
+          '<p>@video\\[' + u.replace(/[<>&()]/g, '') + '\\](' +
+          chu.replace(/[<>&()]/g, '') + '){.wide}</p><p><br></p>');
+        capNhat();
+      });
+
+      /* ── BỀ NGANG CỦA MỘT TẤM ẢNH ──
+         `{.wide}` và `{.full}` là thuộc tính của ĐÚNG một tấm ảnh, nên nó
+         không thể là một khối chèn vào — nó là một phép đổi trên tấm ảnh con
+         trỏ đang đứng cạnh. Bấm vòng: thường → rộng → tràn → thường. */
+      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), function () {
+        var anh = anhGanConTro();
+        if (!anh) { window.alert(L('bAnhChua', 'Put the cursor next to an image first.')); return; }
+        var VONG = ['', '{.wide}', '{.full}'];
+        var nay = anh.getAttribute('data-lop') || '';
+        var ke = VONG[(VONG.indexOf(nay) + 1) % VONG.length];
+        if (ke) anh.setAttribute('data-lop', ke); else anh.removeAttribute('data-lop');
+        anh.classList.remove('sz-anh--wide', 'sz-anh--full');
+        if (ke === '{.wide}') anh.classList.add('sz-anh--wide');
+        if (ke === '{.full}') anh.classList.add('sz-anh--full');
+        capNhat();
+      });
+
+      /* ── HAI LỚP CỦA CẢ ĐOẠN ──
+         Bật/tắt trên đoạn con trỏ đang đứng. Giữ ở `data-lop` chứ không gõ
+         thẳng vào chữ: gõ vào chữ thì mỗi lần sửa câu cuối phải né ba ký tự,
+         và không có cách nào bấm lần nữa để bỏ. */
+      dong(L('bGiua', 'Centre this paragraph'), L('bGiuaMo', 'for a line that stands alone'), function () {
+        doiLopDoan('{.giua}');
+      });
+      dong(L('bThuong', 'Not a lead-in'), L('bThuongMo', 'stops the first paragraph being larger'), function () {
+        doiLopDoan('{.thuong}');
+      });
+
       return b;
+    }
+
+    /* Tấm ảnh gần con trỏ nhất: trong chính đoạn đang đứng, hoặc — nếu đoạn ấy
+       không có ảnh nào — tấm cuối cùng phía trên nó. */
+    function anhGanConTro() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return null;
+      var n = s.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      if (!o || !khung.contains(o)) return null;
+      var khoiO = o.closest ? o.closest('p, figure, li, div') : null;
+      if (khoiO) {
+        var trong = khoiO.querySelector('img');
+        if (trong) return trong;
+      }
+      var moi = khung.querySelectorAll('img');
+      return moi.length ? moi[moi.length - 1] : null;
+    }
+
+    function doiLopDoan(lop) {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return;
+      var n = s.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var p = o && o.closest ? o.closest('p') : null;
+      if (!p || !khung.contains(p)) {
+        window.alert(L('bDoanChua', 'Put the cursor in a paragraph first.'));
+        return;
+      }
+      if (p.getAttribute('data-lop') === lop) {
+        p.removeAttribute('data-lop');
+        p.classList.remove('sz-doan--giua', 'sz-doan--thuong');
+      } else {
+        p.setAttribute('data-lop', lop);
+        p.classList.remove('sz-doan--giua', 'sz-doan--thuong');
+        p.classList.add(lop === '{.giua}' ? 'sz-doan--giua' : 'sz-doan--thuong');
+      }
+      capNhat();
     }
 
     function moBangKhoi() {

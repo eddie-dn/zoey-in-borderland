@@ -142,6 +142,20 @@
 }
 .prose .lead strong{color:var(--text);font-weight:600}
 
+/* ── ĐOẠN CĂN GIỮA ──
+   Bộ dựng đã nhận `{.giua}` ở cuối đoạn từ lâu (nó rơi thẳng vào `class` của
+   thẻ <p>), nhưng chưa bao giờ có luật CSS nào cho nó — gõ vào thì đoạn ấy
+   trông y hệt đoạn thường, và không ai biết vì sao. Nay có luật, và có nút.
+
+   `text-align` phải ghi đè cả căn đều hai bên ở `.prose p`, nên nó đứng SAU.
+   Cột chữ hẹp lại một nhịp: một đoạn căn giữa dài bằng cả khổ chữ thì hai mép
+   răng cưa ở cả hai bên, đọc ra là chữ bị xô chứ không ra là một câu được
+   tách riêng. Dùng cho một hai câu, không dùng cho cả đoạn văn. */
+.prose .giua{
+  text-align:center;text-wrap:balance;
+  max-width:46ch;margin-inline:auto;
+}
+
 /* ── LIÊN KẾT TRONG BÀI ──
    Gạch chân mảnh, cách chữ 3px: đọc rõ là liên kết nhưng không cắt ngang
    dấu tiếng Việt ở dưới chữ (ạ, ọ, ụ). Đây là lý do không dùng underline mặc định. */
@@ -754,12 +768,24 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 }
 .bl-dong-trang:hover{color:var(--accent-ink);text-decoration:underline}
 .bl-dong-nut{display:flex;gap:var(--s3);align-items:center}
+/* ── "HIDE" PHẢI BẤM TRÚNG ĐƯỢC BẰNG NGÓN TAY ──
+   Đo trên màn 390px: nút này ra đúng 24×18px, nằm ngay cạnh một nút Approve
+   rộng 106px. Ngón tay cỡ trung bình phủ chừng 45px, nên hai nút ấy là một cái
+   bẫy — và cái dễ bấm nhầm lại là cái GIẤU HẲN một bình luận.
+
+   Giữ nguyên dáng chữ gạch chân (nó là hành động phụ, không phải nút chính),
+   chỉ nới vùng bấm ra bằng lề trong. Trên máy có con trỏ thì 18px đã đủ, nên
+   phần nới này chỉ có ở khổ hẹp. */
 .bl-dong-an{
   font:inherit;font-size:var(--fs-2xs);cursor:pointer;
   background:none;border:none;padding:0;color:var(--text-faint);
   text-decoration:underline;text-underline-offset:3px;
 }
 .bl-dong-an:hover{color:var(--bad)}
+@media (max-width:640px){
+  .bl-dong-nut{gap:var(--s5)}
+  .bl-dong-an{padding:13px var(--s3);margin:-13px 0}
+}
 .bl-duyet-quen{
   margin-top:var(--s4);
   font:inherit;font-size:var(--fs-2xs);cursor:pointer;
