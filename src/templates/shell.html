@@ -81,13 +81,18 @@
     <nav class="nav" aria-label="Main">
       <!-- Bốn mục điều hướng bọc trong một lớp: ở khổ rộng lớp này tàng hình
            (`display:contents`) nên lưới thanh đầu trang không biết nó có mặt;
-           ở khổ hẹp nó thành tấm menu thả xuống dưới nút ☰. -->
-      <div class="nav-menu">{{nav}}</div>
-      <button class="ico-btn nav-nut" type="button"
-              aria-expanded="false" aria-controls="nav-menu"
-              aria-label="{{menuLabel}}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-      </button>
+           ở khổ hẹp nó thành tấm menu thả xuống dưới nút ☰.
+
+           TÌM KIẾM ĐI THEO HAI ĐƯỜNG, và chỉ hiện một đường mỗi lúc:
+             ≥640px  một nút hình kính lúp trên thanh (`{{napTimKiem}}` dưới đây)
+             <640px  một DÒNG CHỮ trong tấm menu này
+
+           Ở khổ điện thoại, thanh đầu trang chỉ còn chừng 180px cho ba cái nút
+           hình đứng cạnh tên blog. Bỏ bớt một cái là tên blog thở ra được, mà
+           tìm kiếm thì chẳng mất đi đâu — nó xuống nằm cùng chỗ với bốn mục
+           điều hướng kia, tức là đúng chỗ người ta mở ra để đi tới một trang. -->
+      <div class="nav-menu">{{nav}}{{timTrongMenu}}
+      </div>
       {{napTimKiem}}
       <!-- BA nhãn đi kèm dưới dạng data-*: theme.js xoay vòng giữa chúng mỗi
            lần bấm, nên nó phải có SẴN CẢ BA chứ không tự chế chữ. Gõ cứng
@@ -104,6 +109,21 @@
         <!-- Giọt nước rơi xuống, cộng một gợn sóng dưới chân. Chỉ mỗi giọt thì
              ở cỡ 24px nó đọc ra là một cái lá; có gợn thì đọc ra là NƯỚC. -->
         <svg class="i-giot" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2c3.1 3.8 4.9 6.5 4.9 8.7a4.9 4.9 0 0 1-9.8 0c0-2.2 1.8-4.9 4.9-8.7Z"/><path d="M4.2 19.4c1.5 0 1.5 1.5 3 1.5s1.5-1.5 3-1.5 1.5 1.5 3 1.5 1.5-1.5 3-1.5 1.5 1.5 3 1.5"/></svg>
+      </button>
+      <!-- NÚT ☰ ĐỨNG CUỐI HÀNG, sát mép phải nhất.
+           Nó là thứ chứa mọi đường đi còn lại, nên nó phải nằm ở góc — góc là
+           chỗ ngón cái với tới dễ nhất khi cầm điện thoại một tay, và là chỗ
+           mọi ứng dụng khác cũng để cái menu của chúng. Trước bản này nó đứng
+           TRƯỚC nút theme, tức là cái nút quan trọng nhất trên điện thoại lại
+           nằm khuất vào trong.
+
+           Đổi chỗ trong HTML chứ không bằng `order` của CSS: thứ tự Tab của
+           bàn phím đi theo HTML, nên đảo bằng CSS là mắt thấy một đằng, phím
+           Tab chạy một nẻo. -->
+      <button class="ico-btn nav-nut" type="button"
+              aria-expanded="false" aria-controls="nav-menu"
+              aria-label="{{menuLabel}}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
     </nav>
   </div>

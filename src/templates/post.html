@@ -19,19 +19,24 @@
 
     <h1>{{title}}</h1>
 
-    <!-- Hàng meta bám ngay dưới tiêu đề: ngày đăng gốc, mốc cập nhật gần nhất,
-         và lượt xem. Trước đây có "phút đọc" — bỏ đi, vì nó là con số MÁY ĐOÁN
-         từ số chữ, còn lượt xem là con số THẬT. Xem docs/DESIGN-SYSTEM.md §18. -->
+    <!-- MỘT HÀNG duy nhất dưới tiêu đề: ngày đăng · mốc cập nhật · lượt xem,
+         rồi tới cụm tim · chia sẻ · bình luận.
+
+         Trước bản này chúng là HAI hàng: hàng meta ở trên, hàng nút (có cả
+         nhãn "LEAVE A NOTE") ở dưới. Hai hàng cho hai thứ vốn nói về cùng một
+         bài, mà lại lặp cả nội dung — trái tim đếm số ở hàng trên, trái tim
+         bấm được ở hàng dưới. Gộp lại thì mất một hàng, mất một nhãn, và mỗi
+         con số chỉ còn đúng một chỗ để xuất hiện.
+
+         "Phút đọc" đã bỏ từ lâu: nó là con số MÁY ĐOÁN từ số chữ, còn lượt xem
+         là con số THẬT. Xem docs/DESIGN-SYSTEM.md §18. -->
     <div class="meta-row">
       <time datetime="{{dateISO}}">{{dateText}}</time>
       {{mocBlock}}
       {{xemBlock}}
       {{draftBadge}}
+      {{cumDau}}
     </div>
-
-    <!-- Cụm tim · chia sẻ · bình luận, CHỈ ở khung ảnh (khung C). Lý do ba
-         đường đi khác nhau ghi ở `cumODau` trong tools/build.mjs. -->
-    {{cumDau}}
 
     {{summaryBlock}}
   </header>
@@ -48,21 +53,24 @@
   </article>
 
   <!-- ── THỨ TỰ CUỐI BÀI ──
-       tag → gợi ý đọc tiếp → "Leave a note".
+       tag → khung bình luận → gợi ý đọc tiếp.
 
-       Cụm nút đứng SAU phần gợi ý bài, không phải trước. Đọc xong một bài thì
-       câu hỏi đầu tiên trong đầu là "đọc gì nữa", không phải "viết gì". Đặt ô
-       viết trước danh sách gợi ý là chen một việc nặng vào giữa lúc người ta
-       đang muốn đi tiếp — và chính vì thế phần lớn sẽ lướt qua nó.
+       Khung bình luận đứng NGAY DƯỚI hàng tag, không phải sau danh sách gợi
+       ý. Nó mặc định đóng, nên ở trạng thái thường nó không chiếm gì cả — chỉ
+       là một chỗ trống chờ sẵn. Cái quyết định thứ tự là lúc nó MỞ: người đọc
+       bấm nút bình luận ở đầu bài, và thứ mở ra phải nằm ở chỗ đoán được. Ngay
+       sau tag là chỗ ấy — cùng chỗ mọi trang ảnh vẫn để phần bình luận.
 
-       Sau danh sách thì khác: ai đã đọc hết gợi ý mà vẫn còn ở lại là người
-       thật sự có gì để nói.
+       Đặt nó sau danh sách gợi ý thì mỗi lần mở là phải cuộn qua trọn danh
+       sách mới thấy ô viết, và danh sách thì bị đẩy đi đâu mất giữa chừng.
 
-       Ba con số (lượt xem · lượt thích · bình luận) vẫn ở hàng meta ĐẦU bài —
-       chúng là thông tin để đọc lướt, không phải việc để làm. -->
+       Gợi ý đọc tiếp ở lại cuối cùng: nó là đường ĐI KHỎI bài, nên nó đi sau
+       mọi lý do để ở lại. (Khung A đưa khối này lên cột bên — xem build.mjs.)
+
+       Ba con số vẫn ở hàng meta ĐẦU bài, trên chính các nút của chúng. -->
   <footer class="post-foot">
     {{tagBlock}}
-    {{readNext}}
     {{binhLuan}}
+    {{readNext}}
   </footer>
 </div>

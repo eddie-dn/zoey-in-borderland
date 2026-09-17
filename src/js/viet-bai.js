@@ -98,9 +98,37 @@
      tới. "Ẩn" làm được mọi điều người ta thật sự cần khi muốn xoá (bài biến
      khỏi trang, không ai đọc được nữa) mà vẫn lấy lại được bằng một cú bấm. */
 
-  var bangDS = null;      /* danh sách bài đã tải về, giữ để lọc tại chỗ */
+  /* ── BẢNG BÀI TẢI THEO TRANG ──
+     Máy chủ phải MỞ TỪNG FILE mới biết tiêu đề và trạng thái của một bài, nên
+     một bảng 60 bài là 60 lượt gọi ra GitHub — quá hạn mức của một request
+     Worker, và chậm cả chục giây kể cả khi lọt.
+
+     Nay nó xin từng trang 20 bài (`?ds=1&tu=N`), và `bangDS` là phần ĐÃ TẢI,
+     cộng dồn qua từng lượt. Ba con số đi kèm:
+       `tong`  tổng số bài trong kho — biết ngay từ trang đầu, vì nó đếm trên
+               cây thư mục chứ không phải trên mấy file vừa mở;
+       `con`   còn trang nữa không;
+       `cut`   GitHub cắt bớt chính cái cây ấy (kho quá lớn) — chuyện khác hẳn,
+               và không có nút nào chữa được.
+
+     Lọc theo trạng thái và lọc theo tên đều chạy TRÊN PHẦN ĐÃ TẢI, và giao
+     diện nói rõ điều đó. Lọc trên máy chủ thì mỗi lần gõ một chữ là một vòng
+     mở sáu chục file — đắt hơn hẳn việc bấm "tải thêm" một hai lần. */
+  var bangDS = null;      /* mảng bài ĐÃ tải, cộng dồn qua từng trang */
+  var dangTai = false;    /* chặn hai cú bấm "tải thêm" chồng lên nhau */
   var dangSua = null;     /* {duong, sha, fm, khoaKhac} của bài đang mở */
   var locTrang = '';      /* '' = tất cả */
+  var locChu = '';        /* lọc theo tên bài, chạy trên phần đã tải */
+
+  /* Bỏ dấu để gõ "tam ly" cũng tìm ra "tâm lý" — cùng phép với ô tìm kiếm của
+     trang (src/js/search.js). `normalize` có ở mọi trình duyệt còn sống; bọc
+     try cho chắc, hỏng thì rơi về so khớp có dấu. */
+  function khongDau(x) {
+    try {
+      return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd');
+    } catch (e) { return String(x).toLowerCase(); }
+  }
 
   var TEN_TRANG = { hien: 'Live', nhap: 'Draft', an: 'Hidden' };
 
@@ -110,6 +138,13 @@
       '<div class="vb-thanh">' +
         '<button type="button" class="btn btn--chinh" data-moi>' +
           tho(L('newPost', 'New post')) + '</button>' +
+        '<label class="vb-tim">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/></svg>' +
+          '<input type="search" data-tim autocomplete="off" spellcheck="false" ' +
+                 'placeholder="' + tho(L('find', 'Filter by title')) + '" ' +
+                 'aria-label="' + tho(L('find', 'Filter by title')) + '">' +
+        '</label>' +
         '<div class="vb-loc" data-loc></div>' +
       '</div>' +
       '<div class="vb-bang" data-bang>' +
@@ -118,23 +153,55 @@
       '<p class="vb-noi"></p>';
 
     hop.querySelector('[data-moi]').addEventListener('click', function () { khungViet(); });
-    if (bangDS) veHang(); else taiBang();
+
+    var oTim = hop.querySelector('[data-tim]');
+    if (oTim) {
+      oTim.value = locChu;
+      /* Vẽ lại ngay từng phím, không chờ: bảng nằm sẵn trong bộ nhớ nên lọc
+         là một phép `filter` trên vài chục dòng — đặt một cái hẹn 200ms ở đây
+         chỉ làm ô gõ có cảm giác trễ mà không tiết kiệm được gì. */
+      oTim.addEventListener('input', function () {
+        locChu = oTim.value.trim();
+        veHang();
+        /* `veHang` dựng lại phần bảng chứ không dựng lại thanh trên, nên ô gõ
+           không mất tiêu điểm — nhưng phòng khi sau này có người đổi. */
+        if (document.activeElement !== oTim) oTim.focus();
+      });
+    }
+
+    if (bangDS) veHang(); else taiBang(0);
   }
 
-  function taiBang() {
-    fetch(api + '?ds=1', { cache: 'no-store', headers: K.dau() })
+  /* `tu = 0` là tải lại từ đầu; lớn hơn 0 là xin thêm một trang và CỘNG vào
+     phần đã có. Một hàm cho cả hai đường: hai hàm thì hai chỗ phải nhớ cập
+     nhật `tong`, `con`, `cut` cho khớp. */
+  function taiBang(tu) {
+    if (dangTai) return;
+    dangTai = true;
+    var them = tu > 0;
+    var nutThem = hop.querySelector('[data-them]');
+    if (nutThem) { nutThem.disabled = true; nutThem.textContent = L('working', '…'); }
+
+    fetch(api + '?ds=1&tu=' + (tu || 0), { cache: 'no-store', headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
+        dangTai = false;
         if (!kq.d || !kq.d.ok) {
+          if (them) { veHang(); noi(loiChu(kq.d), 'hong'); return; }
           var o = hop.querySelector('[data-bang]');
           if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' + tho(loiChu(kq.d)) + '</p>';
           return;
         }
-        bangDS = kq.d.bai || [];
-        bangDS.cut = kq.d.cut; bangDS.tran = kq.d.tran; bangDS.tong = kq.d.tong;
+        var moi = kq.d.bai || [];
+        bangDS = them ? bangDS.concat(moi) : moi;
+        bangDS.tong = kq.d.tong;
+        bangDS.con  = kq.d.con === true;
+        bangDS.cut  = kq.d.cut === true;
         veHang();
       })
       .catch(function () {
+        dangTai = false;
+        if (them) { veHang(); noi(L('netErr', 'Network hiccup. Try again in a moment.'), 'hong'); return; }
         var o = hop.querySelector('[data-bang]');
         if (o) o.innerHTML = '<p class="vb-cho vb-noi--hong">' +
           tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
@@ -169,9 +236,24 @@
       });
     }
 
-    var ds = bangDS.filter(function (b) { return !locTrang || b.trang === locTrang; });
+    var chu = locChu ? khongDau(locChu) : '';
+    var ds = bangDS.filter(function (b) {
+      if (locTrang && b.trang !== locTrang) return false;
+      if (chu && khongDau(b.title).indexOf(chu) < 0) return false;
+      return true;
+    });
+
+    /* ── KHÔNG CÓ DÒNG NÀO: HAI CÂU KHÁC NHAU ──
+       "Chưa có bài nào" và "không bài nào ĐÃ TẢI khớp với chữ đang gõ" là hai
+       tình huống khác hẳn — câu thứ hai còn có đường đi tiếp (tải thêm), câu
+       thứ nhất thì không. Nói chung một câu là để người dùng tự đoán, và đoán
+       sai thì họ đi tìm một bài vốn đang nằm ở trang chưa tải. */
     if (!ds.length) {
-      oBang.innerHTML = '<p class="vb-cho">' + tho(L('empty', 'Nothing here.')) + '</p>';
+      oBang.innerHTML = '<p class="vb-cho">' +
+        tho(chu || locTrang ? L('noMatch', 'Nothing matches, in what is loaded so far.')
+                            : L('empty', 'Nothing here.')) + '</p>' +
+        chanBang();
+      noiNutThem();
       return;
     }
 
@@ -188,12 +270,9 @@
             tho(b.trang === 'an' ? L('unhide', 'Unhide') : L('hide', 'Hide')) + '</button>' +
         '</span>' +
       '</div>';
-    }).join('') +
-    (bangDS.cut
-      ? '<p class="vb-cho">' + tho(
-          (L('capped', 'Showing the {n} newest of {t} posts.'))
-            .replace('{n}', bangDS.tran).replace('{t}', bangDS.tong)) + '</p>'
-      : '');
+    }).join('') + chanBang();
+
+    noiNutThem();
 
     [].slice.call(oBang.querySelectorAll('.vb-dong')).forEach(function (d) {
       var duong = d.getAttribute('data-d');
@@ -202,6 +281,37 @@
         doiAn(duong, e.target);
       });
     });
+  }
+
+  /* ── CHÂN BẢNG: "ĐANG XEM 20 TRÊN 63" + NÚT TẢI THÊM ──
+     Con số phải nói ra, không phải để đẹp: thiếu nó thì một bài cũ không thấy
+     trong bảng là chuyện mơ hồ — chưa tải, hay đã xoá? Có con số thì câu trả
+     lời nằm ngay đó. */
+  function chanBang() {
+    if (!bangDS) return '';
+    var h = '';
+    if (bangDS.tong > bangDS.length) {
+      h += '<p class="vb-cho vb-chan">' +
+             tho(L('shown', 'Loaded {n} of {t}.')
+                   .replace('{n}', bangDS.length).replace('{t}', bangDS.tong)) +
+             (bangDS.con
+               ? ' <button type="button" class="vb-nho" data-them>' +
+                   tho(L('more', 'Load more')) + '</button>'
+               : '') +
+           '</p>';
+    }
+    /* Cây kho mã bị GitHub cắt bớt — không phải chuyện phân trang, và không có
+       nút nào chữa được. Nói riêng một dòng. */
+    if (bangDS.cut) {
+      h += '<p class="vb-cho vb-noi--hong">' +
+             tho(L('capped', 'The repository is too large to list in full.')) + '</p>';
+    }
+    return h;
+  }
+
+  function noiNutThem() {
+    var n = hop.querySelector('[data-them]');
+    if (n) n.addEventListener('click', function () { taiBang(bangDS.length); });
   }
 
   /* ── ẨN / BỎ ẨN ──
@@ -233,7 +343,8 @@
         nut.disabled = false;
         if (!d || !d.ok) { nut.textContent = cu; noi(loiChu(d), 'hong'); return; }
         /* Cập nhật ngay trong bảng đang mở, không tải lại cả danh sách: tải
-           lại là bốn chục lượt gọi ra GitHub cho một cú bấm. */
+           lại là hai chục lượt gọi ra GitHub cho một cú bấm — và nó còn vứt
+           mất mọi trang đã bấm "tải thêm" để có. */
         for (var i = 0; i < bangDS.length; i++) {
           if (bangDS[i].duong === duong) { bangDS[i].trang = d.trang; bangDS[i].sha = d.sha; }
         }

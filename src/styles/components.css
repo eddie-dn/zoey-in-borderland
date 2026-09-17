@@ -515,13 +515,10 @@ body.so-khoa{overflow:hidden}
   stroke-linecap:round;stroke-linejoin:round;
   transform:translateY(.02em);
 }
-.meta-row .thich{color:var(--text-muted);font-variant-numeric:tabular-nums}
-/* Máy này đã bấm thích: tim tô đặc, đúng như nút cuối bài. Hai chỗ nói cùng
-   một trạng thái thì phải nói giống nhau. */
-.meta-row .thich--bam{color:var(--bad)}
-.meta-row .thich--bam .i-nho{fill:currentColor}
-/* Ô số bình luận dùng chung lớp `.thich` với ô lượt thích — cùng khuôn
-   "icon + số", chỉ khác cái icon. Đặt tên lớp theo VIỆC (một con số ở hàng
-   meta) chứ không theo nội dung, nên thêm con số thứ ba không phải thêm một
-   bộ luật thứ ba. */
-.meta-row [data-bl-so]{color:var(--text-muted)}
+/* `.thich` và `[data-bl-so]` ĐÃ RỜI KHỎI HÀNG META.
+   Lượt thích và số bình luận từng là hai ô chữ ở đây, cạnh lượt xem. Nay chúng
+   in ngay trong hai cái NÚT sinh ra chúng — `.bl-so` ở prose.css. Lý do đầy đủ
+   ở `xemHTML` trong tools/build.mjs và ở docs/DESIGN-SYSTEM.md §18.5.
+
+   Ở lại đúng một ô "icon + số" trong hàng này: lượt xem. Nó không có nút, nên
+   nó thật sự chỉ là một con số để đọc. */

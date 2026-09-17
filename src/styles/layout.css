@@ -656,9 +656,22 @@
    mà luật ấy khai `display` và đứng sau — bằng điểm chọn lọc thì cái sau thắng,
    nên nút ☰ hiện cả ở khổ rộng. Thêm một bậc chọn lọc là đủ. */
 .nav .nav-nut{display:none}
+/* Dòng "Search" trong tấm menu ☰ chỉ sống ở khổ hẹp — ở khổ rộng đã có nút
+   kính lúp trên thanh, và bày cả hai là hai đường tới cùng một trang nằm cách
+   nhau 30px. */
+.nav .nav-tim{display:none}
 
 /* Dưới 640px: bốn mục chữ thu vào một tấm menu thả xuống từ nút ☰. */
 @media (max-width:640px){
+  /* Ba nút hình cạnh nhau trên một thanh rộng 390px thì tên blog chỉ còn chừng
+     150px. Kính lúp là nút dễ bỏ nhất trong ba: tìm kiếm không phải việc người
+     ta làm mỗi lần mở trang, và nó vẫn còn nguyên một dòng trong tấm menu. */
+  .nav .nap-tim{display:none}
+  .nav .nav-tim{display:flex;align-items:center;gap:var(--s3)}
+  .nav .nav-tim svg{
+    width:15px;height:15px;flex:none;
+    fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;
+  }
   /* `.nav .nav-text` chứ KHÔNG phải `.nav a.nav-text`: mục trỏ tới trang chưa
      dựng được render thành <span>, không phải <a>, nên luật cũ không bắt được
      chúng. Hậu quả: bốn mục nav vẫn hiện ở 390px, chiếm hết bề ngang, và tên
@@ -870,9 +883,25 @@
      thức: mép thẳng hàng đổi lấy dòng dài hơn. Muốn quay lại thì đặt cột đầu
      về `minmax(0,calc(var(--measure) + var(--s8)))` và thêm
      `justify-content:center`. */
+  /* ── CỘT PHẢI RỘNG SẴN, KHÔNG NỚI RA LÚC BẤM ──
+     Đời trước cột này rộng 280px và bị kéo lên 400px ngay khi người đọc bấm
+     nút bình luận — vì 280px thì một ô tên, một ô email và khung soạn ba dòng
+     gãy sau bốn năm chữ. Nhưng cái giá là cả trang giật một nhịp: cột chữ hẹp
+     lại, mọi dòng xô lại một lượt, đúng lúc người ta đang nhìn nó.
+
+     Nay một con số duy nhất, 320px, dùng cho cả hai trạng thái. Đủ cho khung
+     soạn (một dòng chừng 34 ký tự — bình luận vốn ngắn), và mục lục ở cỡ ấy
+     cũng thở hơn hẳn. Bấm nút thì chỉ NỘI DUNG trong cột đổi; bề ngang không
+     nhúc nhích, nên không có nhịp giật nào.
+
+     Khoảng cách hai cột rút từ --s9 (56px) xuống --s8 (40px): cột rộng thêm
+     40px phải lấy từ đâu đó, và lấy từ cái rãnh giữa thì cột chữ không mất gì.
+
+     Đổi con số này thì đổi luôn ở chú thích đầu khối ĐÓNG MỞ trong
+     src/js/comments.js — đó là chỗ duy nhất còn nhắc tới nó. */
   .post-layout.khung-a{
-    grid-template-columns:minmax(0,1fr) 280px;
-    column-gap:var(--s9);
+    grid-template-columns:minmax(0,1fr) 320px;
+    column-gap:var(--s8);
     padding-inline:var(--gutter);
   }
   /* Đặt chỗ TƯỜNG MINH, không để lưới tự xếp. Tự xếp thì nó lấp theo hàng:
@@ -907,18 +936,23 @@
   .khung-a .post-foot{grid-column:1;grid-row:3}
   .khung-a .ben      {grid-column:2;grid-row:2}
 
-  /* ── ĐANG BÌNH LUẬN: CỘT PHẢI NỚI RA ──
-     280px vừa cho một mục lục, nhưng một ô nhập tên, một ô email và một khung
-     soạn ba dòng thì không: mỗi dòng gãy sau bốn năm chữ, và gõ trong đó giống
-     gõ trong một khe hẹp. 400px là chỗ một dòng chứa được chừng 45 ký tự —
-     ngắn hơn thân bài, nhưng bình luận vốn ngắn.
+  /* `.khung-a--bl` KHÔNG còn đổi bề ngang cột. Lớp này ở lại vì `.ben--bl`
+     vẫn cần nó cho hai việc khác: tắt mục lục / "đọc tiếp", và thôi dính khi
+     cuộn. Bề ngang thì cố định — xem chú thích ở `.post-layout.khung-a`. */
+}
 
-     Cột chữ KHÔNG hẹp lại theo: nó giữ nguyên `--measure`, và phần rộng thêm
-     lấy từ lề hai bên (lưới có `justify-content:center`). Bóp cột chữ thì mỗi
-     lần mở khung bình luận là cả bài xô dòng lại một lượt. */
-  .post-layout.khung-a--bl{
-    grid-template-columns:minmax(0,1fr) 400px;
-  }
+/* ── NHỊP DỌC CO LẠI Ở KHỔ ĐIỆN THOẠI ──
+   Mấy khoảng cách lớn của trang bài là số CỐ ĐỊNH (--s10 = 72px, --s9 = 56px),
+   còn màn hình thì không. 72px trên màn 1440 là một quãng thở; trên màn 375 nó
+   là một phần mười một chiều cao màn hình, và ở đó nó thôi làm nhịp — nó thành
+   một mảng trống người đọc phải cuộn qua để biết bài chưa hết.
+
+   Chỉ co BA chỗ lớn nhất, và chỉ ở ngoài rìa bài. Nhịp bên trong thân bài
+   không đụng tới: nó đã tính theo cỡ chữ (`--flow` ở prose.css) nên tự co
+   đúng tỉ lệ rồi. */
+@media (max-width:640px){
+  .post-layout{padding-block:var(--s6) var(--s8)}
+  .post-foot{margin-top:var(--s8)}
 }
 
 .toc{font-size:var(--fs-sm);line-height:1.55}
@@ -1166,6 +1200,26 @@
   padding-inline:var(--gutter);
 }
 .khung-c .bang-anh{order:-1;margin-bottom:var(--s7)}
+/* ── MỘT LỀ, KHÔNG PHẢI HAI ──
+   Lưới `.prose` tự chừa một lề rộng `--gutter` ở hai bên cột chữ (xem đầu
+   prose.css) — đúng ở khung A, nơi `.post-layout` không có lề nào. Nhưng khung
+   này CÓ: `padding-inline` ngay trên. Hai lề nói cùng một chuyện cộng lại,
+   và trên màn 375px cột chữ mất 37px mỗi bên — 20% bề ngang màn hình để vẽ
+   hai đường lề, trong khi băng ảnh ngay trên chỉ lùi vào 19px.
+
+   Đo được ngay bằng mắt: mép chữ thụt vào so với mép ảnh đúng một quãng, mà
+   không có lý do nào cho quãng ấy.
+
+   Nay lưới chữ căng hết ô của nó, còn lề thì để `.post-layout` lo — một chỗ
+   quyết định, và chữ thẳng mép với ảnh. Mỗi dòng dài thêm 13%.
+
+   `.wide`/`.full` trong khung này mất phần thò ra, và đó là đúng: ở một cột
+   rộng 338px thì "thò ra 19px" không đọc ra là chủ ý, chỉ đọc ra là lệch. */
+.khung-c .prose{
+  grid-template-columns:
+    [full-start wide-start text-start] minmax(0,1fr) [text-end wide-end full-end];
+}
+.khung-c :is(.post-head,.post-foot){width:100%}
 
 @media (min-width:900px){
   .post-layout.khung-c{
@@ -1181,8 +1235,9 @@
   .khung-c .post-foot{grid-column:2;grid-row:3}
   /* Ba khối chữ ở cột phải thôi tự khoá bề ngang: cột đã hẹp sẵn rồi, khoá thêm
      lần nữa là chữ co vào giữa một cột vốn đã vừa. */
-  .khung-c :is(.post-head,.post-foot){width:100%}
-  .khung-c .prose{grid-template-columns:[full-start][wide-start][text-start] minmax(0,1fr) [text-end][wide-end][full-end]}
+  /* Hai luật của khổ hẹp (`.khung-c .prose` và `:is(.post-head,.post-foot)`)
+     đã đúng cho cả khổ này — cột phải vốn đã hẹp, khoá thêm lần nữa là chữ co
+     vào giữa một cột vừa vặn. Không lặp lại ở đây. */
 }
 
 /* Không có mục lục ở khung C: bài ngắn thì mục lục là thừa, và cột phải đã dành

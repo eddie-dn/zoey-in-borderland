@@ -111,6 +111,60 @@
     return String(s).replace(/([\\`*\[\]{}])/g, '\\$1');
   }
 
+  /* ── TRẢ LẠI CỤM LỚP Ở CUỐI DÒNG ──
+     Bộ dựng đọc `{.wide}`, `{.full}`, `{.thuong}`, `{.gallery poster=/x.jpg}`
+     ở đuôi một đoạn hoặc một dòng `:::` như CÚ PHÁP, không như chữ. Nhưng
+     `thoat()` bôi dấu chéo ngược lên mọi dấu ngoặc nhọn — nó phải làm thế, vì
+     cú pháp màu `{tím: …}` cũng dùng đúng cặp ngoặc ấy và một câu văn có
+     ngoặc nhọn thật thì không được biến mất vào một thẻ span.
+
+     Nên ở đây nhả lại đúng một trường hợp: cụm NẰM CUỐI dòng mà bên trong
+     toàn là lớp (`.x`) hoặc thuộc tính (`k=v`). Một câu kết thúc bằng
+     `{ghi chú}` không lọt qua được cửa ấy, và vẫn ra dấu ngoặc thật. */
+  function nhaLopCuoi(s) {
+    return String(s).replace(/\\\{([^{}\\]*)\\\}(\s*)$/, function (ca, trong, sau) {
+      var muc = trong.trim().split(/\s+/);
+      var ok = trong.trim() !== '' && muc.every(function (t) {
+        return t.charAt(0) === '.' || t.indexOf('=') > 0;
+      });
+      return ok ? '{' + trong + '}' + sau : ca;
+    });
+  }
+
+  /* ── TRẢ LẠI CÚ PHÁP MỞ ĐẦU MỘT DÒNG ──
+     Cùng phép với `nhaLopCuoi`, cho hai thứ khác:
+
+       ```js        mở (hoặc đóng) một khối mã
+       - [ ]        ô đánh dấu việc
+
+     `thoat()` bôi dấu chéo ngược lên dấu huyền và dấu ngoặc vuông — đúng khi
+     chúng nằm giữa câu, sai khi chúng MỞ ĐẦU một dòng, vì ở đó chúng là cú
+     pháp chứ không phải chữ. Không nhả lại thì một khối mã gõ trong ô soạn
+     thảo in nguyên mấy dấu chéo ra giữa bài.
+
+     Neo vào ĐẦU DÒNG, nên một câu văn có dấu ngoặc vuông ở giữa không lọt qua
+     được. Chạy một lần trên chuỗi cuối cùng, vì cả hai đều là luật theo DÒNG —
+     mà "dòng" chỉ thành hình sau khi mọi khối đã nối lại với nhau. */
+  function nhaDauDong(s) {
+    /* Cờ "đang ở trong khối mã" để làm nốt một việc dọn: mỗi dòng gõ bằng
+       Shift+Enter kết thúc bằng HAI DẤU CÁCH — đó là cách Markdown ghi một cú
+       xuống dòng cứng. Trong văn xuôi chúng vô hình; trong khối mã thì chúng
+       đi thẳng vào file .md và nằm lại ở đuôi mọi dòng mã, thứ mà trình soạn
+       thảo nào cũng tô đỏ và `git diff` thì hiện ra. */
+    var trongMa = false;
+    return String(s).split('\n').map(function (d) {
+      var ra = d
+        .replace(/^(\s*)((?:\\`){3,})/, function (_, le, ba) {
+          return le + ba.replace(/\\/g, '');
+        })
+        .replace(/^(\s*(?:[-*+]\s+)?)\\\[( |x|X)\\\]/, '$1[$2]');
+      var vach = /^\s*`{3,}/.test(ra);
+      if (trongMa && !vach) ra = ra.replace(/\s+$/, '');
+      if (vach) trongMa = !trongMa;
+      return ra;
+    }).join('\n');
+  }
+
   function boc(dau, chu, cuoi) {
     if (!chu) return '';
     var tr = chu.match(/^\s*/)[0];
@@ -188,7 +242,7 @@
 
       if (c.nodeType === 3) {
         var t = c.nodeValue.trim();
-        if (t) ra.push(thut + thoat(t));
+        if (t) ra.push(thut + nhaLopCuoi(thoat(t)));
         continue;
       }
       if (c.nodeType !== 1) continue;
@@ -268,6 +322,7 @@
       /* Chỉ ngắt lại khi đoạn đứng ở cấp NGOÀI CÙNG (`thut` rỗng). Đoạn nằm
          trong một mục danh sách đã mang lề thụt, mà ngắt thêm ở đó thì dòng
          tràn ra mất lề và nhảy khỏi mục. */
+      d = nhaLopCuoi(d);
       if (d.trim()) ra.push(thut + (thut ? d : xuongDong(d)));
       else if (the === 'P' || the === 'DIV') ra.push('');
     }
@@ -344,11 +399,11 @@
   function sangMD(goc) {
     var ra = [];
     khoi(goc, ra, '');
-    return ra.join('\n\n')
+    return nhaDauDong(ra.join('\n\n')
       .replace(/ /g, ' ')          /* dấu cách cứng do contenteditable đẻ ra */
       .replace(/[ \t]+$/gm, function (m) { return m === '  ' ? m : ''; })
       .replace(/\n{3,}/g, '\n\n')
-      .trim();
+      .trim());
   }
 
   /* ══════════════ ĐỌC MARKDOWN VÀO KHUNG ══════════════
@@ -601,34 +656,191 @@
      execCommand không có lệnh nào bọc vùng chọn vào một thẻ có class, nên ba
      nút Màu, Tô nền và Mã dùng hàm này.
 
-     `surroundContents` là đường ngắn, nhưng nó NÉM LỖI khi vùng chọn cắt ngang
-     ranh giới thẻ — bôi từ giữa một chữ đậm sang chữ thường là đúng trường hợp
-     ấy, và đó là cách bôi đen thường gặp nhất. Nên bắt lỗi rồi rơi xuống cách
-     dài: lấy nội dung ra, nhét vào thẻ mới, đặt lại vào chỗ cũ. */
-  function bocChon(tao) {
-    var s = window.getSelection();
-    if (!s || !s.rangeCount || s.isCollapsed) return null;
-    var r = s.getRangeAt(0);
-    var v = tao();
-    try {
-      r.surroundContents(v);
-    } catch (e) {
-      v.appendChild(r.extractContents());
-      r.insertNode(v);
+     ── VÌ SAO KHÔNG CÒN LÀ `surroundContents` ──
+     Bản trước gọi `range.surroundContents(span)`, và rơi về `extractContents`
+     khi nó ném lỗi. Hai chỗ hỏng, cả hai đều im lặng:
+
+       1. TÔ LẠI MỘT CỤM ĐÃ CÓ MÀU thì màu BIẾN MẤT, không đổi sang màu mới.
+          Chỗ gọi phải gỡ lớp cũ trước (`goBoc`), mà phép gỡ ấy thay cả thẻ
+          bằng chữ trần — tức là huỷ luôn vùng chọn. Lượt bọc ngay sau đó đọc
+          `getSelection()` ra một vùng rỗng và lặng lẽ không làm gì.
+          Đây đúng là "bấm màu mà không thấy màu chạy".
+
+       2. BÔI ĐEN QUA HAI ĐOẠN VĂN thì `extractContents` lôi cả thẻ <p> ra,
+          rồi nhét chúng VÀO TRONG một <span> — HTML thành `<span><p>…</p></span>`
+          nằm cạnh một <p> khác, hai đoạn văn bị cắt thành bốn, và Markdown
+          xuất ra dính liền hai đoạn vào nhau.
+
+     ── CÁCH LÀM MỚI: ĐI TỪNG NÚT CHỮ ──
+     Cắt hai đầu vùng chọn cho khớp mép chữ, gom đúng những NÚT CHỮ nằm trong
+     đó, rồi bọc từng nút một. Không nút khối nào bị động tới, nên cấu trúc
+     đoạn văn còn nguyên dù bôi qua bao nhiêu đoạn. Lớp cũ cùng loại thì gỡ
+     bằng cách TÁCH ĐÔI nó — phần chữ ngoài vùng chọn giữ nguyên màu cũ. */
+
+  /* Tách cây từ `t` lên tới `toi` (không kể `toi`), sao cho nhánh chứa `t`
+     không còn anh em nào. Đây là phép mở đường để gỡ một lớp bọc ra khỏi ĐÚNG
+     phần chữ đang chọn mà không đụng phần còn lại của lớp ấy. */
+  function tachTren(t, toi) {
+    var n = t;
+    while (n.parentNode && n.parentNode !== toi) {
+      var cha = n.parentNode;
+      if (n.previousSibling) {
+        var truoc = cha.cloneNode(false);
+        while (cha.firstChild !== n) truoc.appendChild(cha.firstChild);
+        cha.parentNode.insertBefore(truoc, cha);
+      }
+      if (n.nextSibling) {
+        var sau = cha.cloneNode(false);
+        while (n.nextSibling) sau.appendChild(n.nextSibling);
+        cha.parentNode.insertBefore(sau, cha.nextSibling);
+      }
+      n = cha;
     }
-    /* Chọn lại đúng phần vừa bọc: bấm Tím rồi bấm Đậm là hai lượt liền nhau
-       trên cùng một cụm chữ, mà mất vùng chọn thì lượt thứ hai rơi vào chỗ
-       khác — hoặc không rơi vào đâu cả. */
-    s.removeAllRanges();
-    var r2 = document.createRange();
-    r2.selectNodeContents(v);
-    s.addRange(r2);
-    return v;
+    return n;
   }
 
-  /* Gỡ một lớp bọc khi con trỏ đang nằm trong nó — bấm Tím lần nữa để bỏ tím.
-     Không có phép gỡ thì mỗi lần đổi ý là một lớp span nữa chồng lên, và
-     Markdown ra `{tím: {hồng: chữ}}`. */
+  /* Có lớp bọc loại `hop` nào đang ôm `t` không? */
+  function coBoc(t, khung, hop) {
+    var n = t.parentNode;
+    while (n && n !== khung) { if (n.nodeType === 1 && hop(n)) return true; n = n.parentNode; }
+    return false;
+  }
+
+  /* Gỡ mọi lớp bọc loại `hop` đang ôm `t`, và CHỈ gỡ phần của `t`. */
+  function goBocQuanh(t, khung, hop) {
+    var ngoai = null, n = t.parentNode;
+    while (n && n !== khung) { if (n.nodeType === 1 && hop(n)) ngoai = n; n = n.parentNode; }
+    if (!ngoai || !ngoai.parentNode) return;
+    tachTren(t, ngoai.parentNode);
+    /* Gom chuỗi tổ tiên TRƯỚC khi gỡ: gỡ xong thì `t.parentNode` đã đổi, mà
+       đi từ trong ra ngoài thì các tham chiếu bên ngoài vẫn còn nguyên. */
+    var chuoi = [], m = t.parentNode;
+    while (m && m !== khung) { chuoi.push(m); if (m === ngoai) break; m = m.parentNode; }
+    chuoi.forEach(function (v) {
+      if (v.nodeType === 1 && hop(v) && v.parentNode) thayBangChu(v);
+    });
+  }
+
+  /* Cắt hai đầu vùng chọn cho khớp mép chữ, rồi trả về đúng những nút chữ nằm
+     trong đó. Mảng rỗng = không có gì để bọc. */
+  function nutChuTrongChon(khung) {
+    try { return nutChu1(khung); } catch (e) { return []; }
+  }
+  function nutChu1(khung) {
+    var s = window.getSelection();
+    if (!s || !s.rangeCount || s.isCollapsed) return [];
+    var r = s.getRangeAt(0);
+    if (!khung.contains(r.commonAncestorContainer)) return [];
+
+    /* Cùng một nút chữ ở cả hai đầu: cắt hai nhát, lấy khúc giữa. Phải làm
+       riêng — cắt đầu trước thì mốc cuối trỏ vào một nút đã ngắn đi.
+
+       ĐỌC HAI MỐC RA BIẾN TRƯỚC KHI CẮT. `splitText` dời mốc của mọi Range
+       đang sống trong nút ấy: mốc nào lớn hơn chỗ cắt thì nhảy sang nút mới và
+       trừ đi đúng chỗ cắt, mốc nào BẰNG chỗ cắt thì ở lại nút cũ. Nên sau nhát
+       cắt đầu, `r.startOffset` còn 6 (ở nút cũ) trong khi `r.endOffset` đã
+       thành 4 (ở nút mới) — hiệu của chúng ra âm, và `splitText(-2)` ném lỗi
+       ngay giữa cú bấm. Đúng lỗi này từng làm nút màu im lặng không chạy. */
+    if (r.startContainer === r.endContainer && r.startContainer.nodeType === 3) {
+      var t = r.startContainer;
+      var d0 = r.startOffset, d1 = r.endOffset;
+      if (d1 <= d0) return [];
+      var giua = d0 > 0 ? t.splitText(d0) : t;
+      if (d1 - d0 < giua.nodeValue.length) giua.splitText(d1 - d0);
+      return giua.nodeValue ? [giua] : [];
+    }
+
+    /* Cắt ĐUÔI trước rồi mới cắt ĐẦU: `splitText` giữ phần trước ở nút cũ, nên
+       mốc cuối (nút, offset) vẫn đúng sau nhát cắt của chính nó. */
+    if (r.endContainer.nodeType === 3 &&
+        r.endOffset > 0 && r.endOffset < r.endContainer.nodeValue.length) {
+      r.endContainer.splitText(r.endOffset);
+    }
+    if (r.startContainer.nodeType === 3 &&
+        r.startOffset > 0 && r.startOffset < r.startContainer.nodeValue.length) {
+      r.setStart(r.startContainer.splitText(r.startOffset), 0);
+    }
+
+    var ds = [];
+    var di = document.createTreeWalker(khung, NodeFilter.SHOW_TEXT, null);
+    var n;
+    while ((n = di.nextNode())) {
+      if (!n.nodeValue) continue;
+      /* `comparePoint` trả 0 khi điểm nằm TRONG vùng (kể cả đúng mép). Hỏi cả
+         hai đầu của nút: chỉ nút nằm TRỌN trong vùng mới được bọc — mà sau hai
+         nhát cắt trên thì mọi nút đáng bọc đều nằm trọn. */
+      try {
+        if (r.comparePoint(n, 0) !== 0) continue;
+        if (r.comparePoint(n, n.nodeValue.length) !== 0) continue;
+      } catch (e) { continue; }
+      ds.push(n);
+    }
+    return ds;
+  }
+
+  function chonLai(ds) {
+    var s = window.getSelection();
+    if (!s || !ds.length || !ds[0].parentNode) return;
+    try {
+      var r = document.createRange();
+      r.setStartBefore(ds[0]);
+      r.setEndAfter(ds[ds.length - 1]);
+      s.removeAllRanges(); s.addRange(r);
+    } catch (e) {}
+  }
+
+  /* Gộp hai vỏ giống hệt nhau nằm cạnh nhau. Bôi qua một cụm chữ có sẵn thẻ
+     <strong> ở giữa thì ra ba nút chữ, tức ba cái <span class="c-tim"> liền
+     nhau — Markdown xuất ra `{tím: a}{tím: b}{tím: c}`, đọc được nhưng bẩn. */
+  function gopKe(ds) {
+    ds.forEach(function (t) {
+      var v = t.parentNode;
+      if (!v || v.nodeType !== 1) return;
+      var truoc = v.previousSibling;
+      if (truoc && truoc.nodeType === 1 && truoc.nodeName === v.nodeName &&
+          truoc.className === v.className && truoc.className !== '') {
+        while (v.firstChild) truoc.appendChild(v.firstChild);
+        v.parentNode.removeChild(v);
+      }
+    });
+  }
+
+  /* `tao()`   dựng cái vỏ mới.
+     `laNo(n)`  nhận ra vỏ ĐÚNG CÁI NÀY đã có sẵn → bấm lại lần nữa là gỡ ra.
+     `goCa(n)`  nhận ra vỏ CÙNG HỌ cần gỡ trước khi bọc; mặc định là `laNo`.
+
+     Hai vị từ, không phải một, vì với MÀU chúng khác nhau: bấm Lục lên một cụm
+     đang Tím thì "đã là cái này chưa" trả lời KHÔNG (nên phải bọc), còn "có vỏ
+     cùng họ phải gỡ không" trả lời CÓ (nên phải gỡ Tím trước). Gộp làm một thì
+     hoặc là không gỡ được — ra `{tím: {lục: chữ}}`, một cụm lồng mà bộ dựng
+     không đọc nổi — hoặc là không bọc được.
+
+     Trả về `false` khi KHÔNG có gì được chọn; mọi trường hợp khác trả về thứ
+     khác `false`, để chỗ gọi phân biệt được "không có vùng chọn" với "đã làm
+     xong việc". */
+  function bocChon(khung, tao, laNo, goCa) {
+    var ds = nutChuTrongChon(khung);
+    if (!ds.length) return false;
+    goCa = goCa || laNo;
+
+    var daCo = !!laNo && ds.every(function (t) { return coBoc(t, khung, laNo); });
+    if (goCa) ds.forEach(function (t) { goBocQuanh(t, khung, goCa); });
+    if (daCo) { chonLai(ds); return true; }
+
+    ds.forEach(function (t) {
+      if (!t.parentNode) return;
+      var v = tao();
+      t.parentNode.insertBefore(v, t);
+      v.appendChild(t);
+    });
+    gopKe(ds);
+    chonLai(ds);
+    return ds[0].parentNode || true;
+  }
+
+  /* Gỡ một lớp bọc khi con trỏ đang nằm trong nó mà KHÔNG bôi đen gì — dùng
+     cho nút "dọn định dạng". Có vùng chọn thì `bocChon` lo, và nó gỡ chính
+     xác hơn (chỉ phần được chọn). */
   function goBoc(khung, hop) {
     var s = window.getSelection();
     if (!s || !s.rangeCount) return false;
@@ -690,8 +902,9 @@
     var nNgh = nut('I', L('italic', 'Italic') + ' (⌘I)', function () { lenh('italic'); }, 'sz-nut--ngh');
     var nGac = nut('S', L('strike', 'Strikethrough'), function () { lenh('strikeThrough'); }, 'sz-nut--gac');
     nut(svg('M9 6 4 12l5 6M15 6l5 6-5 6'), L('code', 'Code'), function () {
-      if (goBoc(khung, function (n) { return n.nodeName === 'CODE'; })) { capNhat(); return; }
-      bocChon(function () { return document.createElement('code'); });
+      bocChon(khung, function () { return document.createElement('code'); },
+              function (n) { return n.nodeName === 'CODE'; }) ||
+        goBoc(khung, function (n) { return n.nodeName === 'CODE'; });
       capNhat();
     });
     vach();
@@ -717,8 +930,9 @@
 
     /* ── Nhóm 4: nhấn mạnh ── */
     nut(svg(['M5 19h14', 'M8 15 12 5l4 10z']), L('mark', 'Highlight'), function () {
-      if (goBoc(khung, function (n) { return n.nodeName === 'MARK'; })) { capNhat(); return; }
-      bocChon(function () { return document.createElement('mark'); });
+      bocChon(khung, function () { return document.createElement('mark'); },
+              function (n) { return n.nodeName === 'MARK'; }) ||
+        goBoc(khung, function (n) { return n.nodeName === 'MARK'; });
       capNhat();
     });
 
@@ -752,12 +966,19 @@
         o.appendChild(el('span', 'sz-mau-ten', m.ten));
         o.addEventListener('mousedown', function (e) { e.preventDefault(); });
         o.addEventListener('click', function () {
-          goBoc(khung, function (n) { return !!lopMau(n); });
-          bocChon(function () {
-            var s = document.createElement('span');
-            s.className = 'c-' + m.ma;
-            return s;
-          });
+          /* MỘT lượt gọi lo cả hai việc — gỡ màu cũ rồi bọc màu mới — và nó
+             giữ vùng chọn suốt quá trình. Bản trước gọi `goBoc` trước rồi
+             `bocChon` sau: phép gỡ huỷ vùng chọn, nên lượt bọc ngay sau đó
+             không còn gì để bọc, và bấm đổi màu ra thành xoá màu. */
+          bocChon(khung, function () {
+            var sp = document.createElement('span');
+            sp.className = 'c-' + m.ma;
+            return sp;
+          }, function (n) { return lopMau(n) === m.ma; },
+             function (n) { return !!lopMau(n); }) ||
+            /* Không bôi đen mà con trỏ đang đứng trong một cụm cùng màu: hiểu
+               là "bỏ màu này đi". */
+            goBoc(khung, function (n) { return lopMau(n) === m.ma; });
           dongBang();
           capNhat();
         });
@@ -769,7 +990,12 @@
       xoa.appendChild(el('span', 'sz-mau-ten', L('noColor', 'Remove colour')));
       xoa.addEventListener('mousedown', function (e) { e.preventDefault(); });
       xoa.addEventListener('click', function () {
-        goBoc(khung, function (n) { return !!lopMau(n); });
+        /* `bocChon` với `tao` trả về một vỏ TRUNG TÍNH: nó gỡ mọi lớp màu
+           trong vùng chọn rồi bọc lại bằng một <span> trần, thứ mà sangMD bỏ
+           qua như không có. Đường này gỡ đúng phần được chọn, không gỡ cả cụm. */
+        bocChon(khung, function () { return document.createElement('span'); },
+                function (n) { return !!lopMau(n); }) ||
+          goBoc(khung, function (n) { return !!lopMau(n); });
         dongBang(); capNhat();
       });
       b.appendChild(xoa);
@@ -787,14 +1013,41 @@
     function dongBang() { bangMau.hidden = true; bangGiup.hidden = true; }
 
     /* ══════════ CHỈ DẪN ══════════
-       Viết thành từng gạch đầu dòng NGẮN, mỗi dòng một việc. Đây là thứ đọc
-       lúc đang quên, không phải thứ ngồi học — một đoạn văn xuôi ở đây thì
-       người ta đóng lại và đi đoán tiếp. */
+
+       ── HAI PHẦN, VÌ CÓ HAI LOẠI NGƯỜI ĐỌC NÓ ──
+       Phần trên là những thứ có NÚT trên thanh: ai quên thì liếc một dòng là
+       xong. Phần dưới là những thứ KHÔNG có nút — khối ghi chú, ảnh tràn lề,
+       bảng — phải gõ tay bằng cú pháp.
+
+       Phần dưới sinh ra vì một chuyện cụ thể: bài "Vô thức tập thể" dùng bốn
+       kiểu khối `:::`, một dải ảnh, một bảng và một khối mã, mà trong ô soạn
+       thảo không có chỗ nào nói rằng những thứ ấy tồn tại. Người viết bài sau
+       mở ô này ra chỉ thấy mười cái nút, và không có đường nào đoán ra là còn
+       mười thứ nữa gõ được.
+
+       Mỗi dòng đúng MỘT việc, và có mẫu gõ sẵn ngay trong dòng — đây là thứ
+       liếc lúc đang quên, không phải thứ ngồi học. Ai muốn chép nguyên mẫu thì
+       bôi đen dòng đó là chép được. */
     function veBangGiup() {
       var b = el('div', 'sz-bang sz-bang--giup');
       b.hidden = true;
-      var ds = el('ul', 'sz-giup-ds');
-      [
+
+      function nhom(de, ds) {
+        b.appendChild(el('p', 'sz-giup-de', de));
+        var ul = el('ul', 'sz-giup-ds');
+        ds.forEach(function (x) {
+          var li = el('li');
+          if (typeof x === 'string') { li.textContent = x; }
+          else {
+            li.appendChild(el('code', 'sz-giup-ma', x[0]));
+            li.appendChild(document.createTextNode(' ' + x[1]));
+          }
+          ul.appendChild(li);
+        });
+        b.appendChild(ul);
+      }
+
+      nhom(L('gHelp1', 'The buttons'), [
         L('h1', 'Select some text, then press a button — no syntax to remember.'),
         L('h2t', 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).'),
         L('h3t', 'Colour: select → press the dot → pick one. Press the same one again to remove.'),
@@ -803,8 +1056,27 @@
         L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
         L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
         L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
-      ].forEach(function (chu) { ds.appendChild(el('li', null, chu)); });
-      b.appendChild(ds);
+      ]);
+
+      /* Mấy khối này KHÔNG có nút, và sẽ không có: mỗi cái là một nút nữa trên
+         một thanh đã chật, để dùng vài lần một bài. Gõ tay thì ba dòng, và
+         dòng mở khối tự nói ra nó là khối gì. */
+      nhom(L('gHelp2', 'Typed by hand — no button'), [
+        [':::note  Tiêu đề', L('gNote', 'boxed aside. Close it with ::: on its own line.')],
+        [':::tip · :::warn · :::stop', L('gCallout', 'same box, three other tones.')],
+        [':::gallery', L('gGallery', 'photos side by side. Put the image lines inside.')],
+        [':::wide · :::full', L('gWide', 'let a block spill past the text column.')],
+        ['{.wide} {.full}', L('gLop', 'at the END of an image line — same, for one image.')],
+        ['{.thuong}', L('gThuong', 'at the end of the FIRST paragraph: stops it becoming the lead-in.')],
+        ['| a | b |', L('gBang', 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|')],
+        ['```js', L('gMa', 'a code block — same paragraph, Shift+Enter between lines, ``` to close.')],
+        ['- [ ] · - [x]', L('gViec', 'a checklist: make a bullet list, then type this at the start of an item.')]
+      ]);
+
+      b.appendChild(el('p', 'sz-giup-chan',
+        L('gChan', 'A ::: line goes in a paragraph of its own. A table or code block keeps ' +
+                   'its rows inside ONE paragraph — Shift+Enter, not Enter. Images always go ' +
+                   'in with the image button, never typed. Press </> to see what will be sent.')));
       return b;
     }
 

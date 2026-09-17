@@ -1509,7 +1509,21 @@ const KIEM = [
          · đúng MỘT cụm mỗi trang bài
          · nó đứng SAU khối "đọc tiếp" (thứ tự trong HTML, nên đúng ở mọi khổ)
          · số bình luận ở hàng meta, KHÔNG in trên nút */
-    ten: 'Mỗi trang bài có đúng một cụm tim · chia sẻ · bình luận, đặt sau "đọc tiếp"',
+    /* ── MỘT CỤM NÚT, MỘT CHỖ ĐỨNG, MỌI KHUNG ──
+       Cụm tim · chia sẻ · bình luận nằm CUỐI HÀNG META, mọi khung bài như
+       nhau. Đời trước nó đi ba đường tuỳ khung và phép kiểm này canh cả ba;
+       nay chỉ còn một đường, nên phép kiểm canh đúng một điều — và canh chặt
+       hơn hẳn, vì "một chỗ duy nhất" chỉ có nghĩa khi không có ngoại lệ nào
+       lọt qua.
+
+       Canh luôn hai chuyện đi kèm, vì cả hai đều hỏng ÂM THẦM:
+         · hai ô đếm phải nằm TRÊN NÚT (`data-thich-so`, `data-bl-so` trong
+           `.cum-nut`). Chúng từng là hai ô chữ riêng ở hàng meta; để sót một
+           bản cũ ở đâu đó là bài ấy hiện hai trái tim.
+         · khung bình luận phải đứng NGAY SAU hàng tag, trước khối "đọc tiếp".
+           Sai thứ tự thì cú bấm nút bình luận mở ra một khung nằm dưới cả
+           danh sách gợi ý — vẫn chạy, chỉ là nhảy tới sai chỗ. */
+    ten: 'Cụm tim · chia sẻ · bình luận: đúng một cụm, nằm trong hàng meta',
     muc: 'loi',
     chay: ({ trang }) => {
       const ra = [];
@@ -1517,36 +1531,55 @@ const KIEM = [
         if (!/class="post-layout/.test(t.html)) continue;
         const so = (t.html.match(/class="cum-tt"/g) || []).length;
         if (so !== 1) { ra.push(`${t.url} — có ${so} cụm tương tác, phải đúng 1`); continue; }
-        const iCum = t.html.indexOf('class="cum-tt"');
-        const iDoc = t.html.indexOf('class="read-next"');
-        const iDau = t.html.indexOf('class="post-head"');
-        /* Tìm `</header>` SAU đầu bài: thẻ đầu tiên trong trang là của thanh
-           đầu trang (`<header class="site-head">`), không phải của bài. */
-        const iChu = t.html.indexOf('</header>', iDau);
-        /* ── KHUNG ẢNH ĐI ĐƯỜNG KHÁC, VÀ ĐÓ LÀ CỐ Ý ──
-           Khung C bày bài như một trang ảnh: cụm nút lên ngay dưới tiêu đề, vì
-           ở đó người ta thả tim ngay sau khi xem chứ không cuộn xuống đáy tìm
-           nút. Hai khung kia là bài ĐỌC, và ở đó cụm phải đứng sau khối "đọc
-           tiếp". Canh cả hai chiều: đặt nhầm đường nào cũng là một trang cư xử
-           khác hẳn mấy trang anh em mà không ai báo. */
-        if (/post-layout khung-c/.test(t.html)) {
-          if (!(iCum > iDau && iCum < iChu)) {
-            ra.push(`${t.url} — khung ảnh: cụm tương tác phải nằm trong đầu bài`);
-          }
-        } else if (iDoc >= 0 && iCum < iDoc) {
-          ra.push(`${t.url} — cụm tương tác đứng TRƯỚC khối "đọc tiếp"`);
+
+        /* Cụm phải nằm TRONG `<div class="meta-row"> … </div>`. Tìm mốc đóng
+           bằng `</div>` đầu tiên sau hàng meta: hàng ấy chỉ chứa span, time và
+           button, không có div lồng nào. */
+        const iHang = t.html.indexOf('class="meta-row"');
+        const iHet  = iHang < 0 ? -1 : t.html.indexOf('</div>', iHang);
+        const iCum  = t.html.indexOf('class="cum-tt"');
+        if (!(iHang >= 0 && iCum > iHang && iCum < iHet)) {
+          ra.push(`${t.url} — cụm tương tác không nằm trong hàng meta`);
         }
-        if (!t.html.includes('data-bl-so')) {
-          ra.push(`${t.url} — hàng meta thiếu ô số bình luận`);
+
+        const cum = iCum < 0 ? '' : t.html.slice(iCum, t.html.indexOf('</span>\n  </span>', iCum) + 20);
+        for (const [re, chu] of [
+          [/class="bl-nut bl-tim\b/,  'thiếu nút tim'],
+          [/class="bl-nut bl-chia\b/, 'thiếu nút chia sẻ'],
+          [/class="bl-nut bl-mo\b/,   'thiếu nút bình luận'],
+          [/data-thich-so/,           'thiếu ô đếm lượt thích trên nút tim'],
+          [/data-bl-so/,              'thiếu ô đếm bình luận trên nút bình luận']
+        ]) {
+          if (!re.test(cum)) ra.push(`${t.url} — ${chu}`);
+        }
+
+        /* Hai ô đếm cũ ở hàng meta: một trái tim để đọc cạnh một trái tim để
+           bấm. Nếu còn, nghĩa là xemHTML chưa được dọn. */
+        const hang = iHang < 0 ? '' : t.html.slice(iHang, iHet);
+        if (/class="thich"/.test(hang)) {
+          ra.push(`${t.url} — hàng meta còn ô đếm rời; số phải nằm trên nút`);
         }
         if (/class="bl-dem"/.test(t.html)) {
-          ra.push(`${t.url} — còn ô đếm trên nút bình luận; số phải ở hàng meta`);
+          ra.push(`${t.url} — còn ô đếm kiểu cũ trên nút bình luận`);
         }
-        if (!/class="bl-nut bl-chia"/.test(t.html)) {
-          ra.push(`${t.url} — thiếu nút chia sẻ`);
+        if (/class="cum-nhan"/.test(t.html)) {
+          ra.push(`${t.url} — còn nhãn "Leave a note"; ba icon đã nói thay nó`);
         }
         if (!/class="btn btn--ghost bl-dong"/.test(t.html)) {
           ra.push(`${t.url} — khung bình luận thiếu nút Back`);
+        }
+
+        /* Thứ tự chân bài: tag → bình luận → đọc tiếp. Khung A không có khối
+           "đọc tiếp" ở chân bài (nó lên cột bên), nên chỉ canh khi có mặt. */
+        const iTag = t.html.indexOf('class="post-tags"');
+        const iBL  = t.html.indexOf('class="binh-luan"');
+        const iDoc = Math.max(t.html.indexOf('class="read-next"'),
+                              t.html.indexOf('class="rn-cap"'));
+        if (iTag >= 0 && iBL >= 0 && iBL < iTag) {
+          ra.push(`${t.url} — khung bình luận đứng trước hàng tag`);
+        }
+        if (iDoc >= 0 && iBL >= 0 && iDoc < iBL && iDoc > iTag) {
+          ra.push(`${t.url} — khối "đọc tiếp" chen vào giữa tag và bình luận`);
         }
       }
       return ra;

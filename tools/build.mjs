@@ -298,7 +298,15 @@ const NHAN = {
   vbEmptyList : 'Nothing here.',
   /* {n} bài đang xem, {t} tổng số. Trần này có thật — mỗi bài là một lượt gọi
      ra GitHub, mà Workers giới hạn số lượt trong một request. */
-  vbCapped    : 'Showing the {n} newest of {t} posts.',
+  /* ── BA CÂU CỦA BẢNG BÀI TẢI THEO TRANG ──
+     `vbShown` là câu thường trực khi còn bài chưa tải; `vbCapped` nay CHỈ nói
+     về trường hợp GitHub cắt bớt chính cây kho mã — hiếm, và không có nút nào
+     chữa được, nên nó phải nói khác hẳn câu kia. */
+  vbShown     : 'Loaded {n} of {t}.',
+  vbMore      : 'Load more',
+  vbFind      : 'Filter by title',
+  vbNoMatch   : 'Nothing matches, in what is loaded so far.',
+  vbCapped    : 'The repository is too large to list in full.',
   vbClash     : 'This post changed somewhere else. Go back and reopen it to get the latest version.',
 
   /* ── NHÃN CỦA KHUNG SOẠN THẢO (src/js/soan.js) ──
@@ -339,6 +347,26 @@ const NHAN = {
   szH6t       : 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.',
   szH7t       : 'Drafts save to this device on their own; closing the tab is safe.',
   szH8t       : 'Press </> to see the exact Markdown that will go to GitHub.',
+  /* ── PHẦN HAI CỦA BẢNG CHỈ DẪN: THỨ KHÔNG CÓ NÚT ──
+     Mười cú pháp mà bộ dựng hiểu nhưng thanh nút không có chỗ cho. Chúng có
+     thật và đang được dùng (xem bài "Vô thức tập thể"), nên chúng phải được
+     NÓI RA ở đâu đó trong chính ô soạn thảo — không thì người viết bài sau chỉ
+     biết những gì có nút.
+
+     Mỗi dòng là phần GIẢI THÍCH; mẫu gõ nằm trong src/js/soan.js, vì mẫu ấy là
+     cú pháp chứ không phải chữ giao diện — dịch nó sang tiếng khác là hỏng. */
+  szGHelp1    : 'The buttons',
+  szGHelp2    : 'Typed by hand — no button',
+  szGNote     : 'boxed aside. Close it with ::: on its own line.',
+  szGCallout  : 'same box, three other tones.',
+  szGGallery  : 'photos side by side. Put the image lines inside.',
+  szGWide     : 'let a block spill past the text column.',
+  szGLop      : 'at the END of an image line — same, for one image.',
+  szGThuong   : 'at the end of the FIRST paragraph: stops it becoming the lead-in.',
+  szGBang     : 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|',
+  szGMa       : 'a code block — same paragraph, Shift+Enter between lines, ``` to close.',
+  szGViec     : 'a checklist: make a bullet list, then type this at the start of an item.',
+  szGChan     : 'A ::: line goes in a paragraph of its own. A table or code block keeps its rows inside ONE paragraph — Shift+Enter, not Enter. Images always go in with the image button, never typed. Press </> to see what will be sent.',
   vbNeedBoth  : 'Both a title and some text are needed.',
   vbSending   : 'Sending…',
   vbDone      : 'Pushed to the repository',
@@ -921,6 +949,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         hide: NHAN.vbHide, unhide: NHAN.vbUnhide, back: NHAN.vbBack,
                         save: NHAN.vbSave, saved: NHAN.vbSaved, working: NHAN.vbWorking,
                         empty: NHAN.vbEmptyList, capped: NHAN.vbCapped, clash: NHAN.vbClash,
+                        shown: NHAN.vbShown, more: NHAN.vbMore,
+                        find: NHAN.vbFind, noMatch: NHAN.vbNoMatch,
                         locked: NHAN.khLocked, draftAsk: NHAN.vbDraftAsk,
                         crash: NHAN.vbCrash,
                         toolbar: NHAN.szToolbar, bold: NHAN.szBold,
@@ -935,7 +965,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         imgAsk: NHAN.szImgAsk, imgAlt: NHAN.szImgAlt,
                         h1: NHAN.szH1t, h2t: NHAN.szH2t, h3t: NHAN.szH3t,
                         h4t: NHAN.szH4t, h5t: NHAN.szH5t, h6t: NHAN.szH6t,
-                        h7t: NHAN.szH7t, h8t: NHAN.szH8t
+                        h7t: NHAN.szH7t, h8t: NHAN.szH8t,
+                        gHelp1: NHAN.szGHelp1, gHelp2: NHAN.szGHelp2,
+                        gNote: NHAN.szGNote, gCallout: NHAN.szGCallout,
+                        gGallery: NHAN.szGGallery, gWide: NHAN.szGWide,
+                        gLop: NHAN.szGLop, gThuong: NHAN.szGThuong,
+                        gBang: NHAN.szGBang, gMa: NHAN.szGMa,
+                        gViec: NHAN.szGViec, gChan: NHAN.szGChan
                       }))}"`
                    : '',
                  ((duong === '/notes/' || duong === '/z-admin/') &&
@@ -1010,10 +1046,21 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     toDark    : attr(NHAN.toDark),
     toCalm    : attr(NHAN.toCalm),
     nav       : navHTML(duong),
+    /* Nút kính lúp trên thanh — CHỈ từ 640px trở lên; dưới đó layout.css giấu
+       nó và `timTrongMenu` thế chỗ. Hai khối cùng trỏ về một trang, nhưng
+       không bao giờ hiện cùng lúc. */
     napTimKiem: coTrang('/search/')
-      ? `<a class="ico-btn tip" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
+      ? `<a class="ico-btn tip nap-tim" href="${BASE}/search/" aria-label="${NHAN.search}" data-tip="${NHAN.search}">` +
         `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
         `<path d="M16.2 16.2 21 21"/></svg></a>` : '',
+    /* Dòng "Search" trong tấm menu ☰, chỉ có mặt ở khổ hẹp. Mang cả icon lẫn
+       chữ: bốn mục trên nó là chữ trơn, nên một icon ở đây vừa đủ để mắt nhận
+       ra "cái này không phải một trang trong bộ bốn kia" mà không phải kẻ thêm
+       một đường phân cách. */
+    timTrongMenu: coTrang('/search/')
+      ? `\n        <a class="nav-text nav-tim" href="${BASE}/search/">` +
+        `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/>` +
+        `<path d="M16.2 16.2 21 21"/></svg>${escapeHtml(NHAN.search)}</a>` : '',
     /* Ghi chú đã thế chỗ Tags trên thanh đầu trang, nhưng trang tag vẫn còn và
        vẫn nên có đường vào — chân trang là chỗ của nó. Bỏ hẳn Tags khỏi cả hai
        nơi thì mấy chục trang tag thành trang mồ côi: Google vẫn giữ trong chỉ
@@ -1498,7 +1545,7 @@ function logoHTML(dong) {
     (dong ? bui : '') +
     `</svg>`;
 }
-function tocHTML(headings, docTiep, cum) {
+function tocHTML(headings, docTiep) {
   /* MỘT mục trở lên là dựng mục lục. Ngưỡng cũ là hai, và hậu quả không nằm ở
      cái mục lục: nó nằm ở BỐ CỤC. Lưới khổ rộng khai sẵn hai cột, nên bài không
      có mục lục vẫn bị giữ chỗ 210px cho một cột trống, và khung chữ nằm lệch
@@ -1546,62 +1593,81 @@ function tocHTML(headings, docTiep, cum) {
       </nav>
     </details>` : ''}
     ${docTiep || ''}
-    ${/* Cụm tim · chia sẻ · bình luận đứng CUỐI cột bên, dưới khối "đọc tiếp".
-          Thứ tự ấy là thứ tự của câu hỏi trong đầu người đọc: đang ở đâu trong
-          bài (mục lục) → đọc gì nữa (gợi ý) → có gì muốn nói không.
+    ${/* ── CỤM TIM · CHIA SẺ · BÌNH LUẬN ĐÃ RỜI KHỎI CỘT NÀY ──
+          Nó từng đứng cuối cột bên, dưới khối "đọc tiếp". Thứ tự ấy đọc đúng
+          theo câu hỏi trong đầu người đọc — đang ở đâu (mục lục) → đọc gì nữa
+          (gợi ý) → có gì muốn nói không — nhưng nó sinh ra một BẢN SAO THỨ HAI
+          của cùng một cụm nút: bản ở hàng meta thì mọi khổ màn đều có, bản ở
+          cột bên thì chỉ ≥1080px mới có, và cả hai cùng nằm trong tầm mắt lúc
+          mới mở bài.
 
-          Đặt nó lên đầu cột thì nó chen vào trước cả hai câu kia, và một lời
-          mời viết bình luận lúc người ta còn chưa đọc xong là lời mời sai
-          lúc. */''}
-    ${cum || ''}
+          Nay chỉ còn bản ở hàng meta — ngay dưới tiêu đề, cùng dòng với ngày
+          đăng và lượt xem (xem `cumTuongTac`). Cột bên giữ đúng hai việc điều
+          hướng của nó, và nhận thêm khung bình luận khi người đọc bấm mở. */''}
   </aside>`;
 }
 
-/* ══════════ CỤM TƯƠNG TÁC: TIM · BÌNH LUẬN · CHIA SẺ ══════════
+/* ══════════ CỤM TƯƠNG TÁC: TIM · CHIA SẺ · BÌNH LUẬN ══════════
 
-   ── VÌ SAO KHÔNG CÒN Ở CHÂN BÀI ──
-   Chân bài là chỗ người đọc vừa đọc xong và đang đi tiếp. Đặt nút ở đó nghĩa
-   là ai đổi ý lúc đang đọc dở phải cuộn ngược xuống tận cuối mới bấm được —
-   và phần lớn thì không cuộn, họ chỉ đọc tiếp rồi đóng tab.
+   ── MỘT DÒNG, MỘT CHỖ, MỌI KHUNG BÀI ──
+   Trước bản này cụm đi ba đường tuỳ khung (đầu bài · cột bên · chân bài), còn
+   ba con số nó điều khiển thì nằm tách ra ở hàng meta. Hai hệ quả:
 
-   Cột bên đi THEO suốt bài (nó dính khi cuộn), nên cụm nút có mặt đúng lúc
-   người ta đang có cảm xúc về bài, chứ không phải lúc đã đóng bài trong đầu.
+     · cùng một thứ nằm ba chỗ → mở một bài khác kiểu là phải đi tìm lại nó;
+     · trái tim hiện HAI LẦN trên cùng một màn — một cái để ĐỌC số ở hàng meta,
+       một cái để BẤM ở dưới. Người đọc thấy tim thì bấm, mà cái họ thấy trước
+       lại đúng là cái không bấm được.
+
+   Nay đúng một chỗ: CUỐI HÀNG META, ngay sau ngày đăng và lượt xem. Cùng một
+   dòng, nên dưới tiêu đề không mọc thêm khối nào; và con số về nằm TRÊN chính
+   cái nút sinh ra nó — bấm tim là số nhảy ngay tại chỗ vừa bấm.
 
    ── BA NÚT, BA MỨC CÔNG SỨC ──
-   Tim là mức rẻ nhất: một cú bấm, không phải nghĩ ra câu nào. Chia sẻ là mức
-   giữa: không tốn chữ, nhưng đưa bài ra ngoài. Bình luận là mức đắt nhất.
-   Xếp theo đúng thứ tự ấy từ trái sang phải — nút rẻ nhất nằm chỗ ngón tay
-   chạm tới trước.
+   Tim rẻ nhất: một cú bấm, không phải nghĩ ra câu nào. Chia sẻ ở giữa: không
+   tốn chữ, nhưng đưa bài ra ngoài. Bình luận đắt nhất. Xếp đúng thứ tự ấy từ
+   trái sang phải — nút rẻ nhất nằm chỗ ngón tay chạm tới trước.
 
    ── SỐ ĐẾM ẨN KHI BẰNG KHÔNG ──
-   "0 bình luận" là một con số nói rằng chưa ai nói gì — tức là một lời nhắc
-   về sự vắng mặt, ngay cạnh cái nút mời người ta lên tiếng. Không có số thì
-   icon chỉ còn nói "bấm vào đây để viết". Cùng một trạng thái, hai cách kể. */
+   "0 bình luận" là một lời nhắc về sự vắng mặt, đặt ngay cạnh cái nút mời
+   người ta lên tiếng. Không có số thì icon chỉ còn nói "bấm vào đây để viết". */
 function cumTuongTac(bai) {
   const c = CAU.binhLuan || {};
   if (c.bat === false) return '';
-  return `<div class="cum-tt">
-    <p class="cum-nhan">${escapeHtml(NHAN.comments)}</p>
-    <div class="cum-nut">
-      <button class="bl-nut bl-tim" type="button"
+  /* Toàn `<span>`, không có thẻ khối nào: cả cụm là MỘT ô của hàng meta — một
+     hàng flex — và một thẻ khối lồng giữa hàng chữ là chỗ trình duyệt hay tự ý
+     ngắt dòng. */
+  return `<span class="cum-tt">
+    <span class="cum-nut">
+      <button class="bl-nut bl-tim tip" type="button"
               data-thich="${attr(BASE + '/api/thich')}"
+              data-tip="${attr(NHAN.blLike)}"
               aria-pressed="false" aria-label="${attr(NHAN.blLike)}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
+        <span class="bl-so" data-thich-so hidden></span>
       </button>
-      <button class="bl-nut bl-chia" type="button"
+      <button class="bl-nut bl-chia tip" type="button"
               data-chia="${attr(CAU.url + bai.url)}"
               data-de="${attr(bai.title)}"
+              data-tip="${attr(NHAN.blShare)}"
               data-nhan="${attr(JSON.stringify({ copied: NHAN.shareCopied, fail: NHAN.shareFail }))}"
               aria-label="${attr(NHAN.blShare)}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 13.5 14.5 16m0-8L9.5 10.5M7 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm15-5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0 11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/></svg>
       </button>
-      <button class="bl-nut bl-mo" type="button" aria-expanded="false" aria-controls="bl-than"
+      ${/* `data-o` nói cho comments.js biết khung bình luận của BÀI NÀY mở ra ở
+            đâu, để nó khỏi phải suy ra từ tên lớp của lưới:
+              'ben'  → cột phải (khung A, khổ ≥1080px)
+              'cho'  → tại chỗ, ngay dưới hàng tag (khung ảnh và mọi khung khác)
+            Quyết định nằm gọn ở `binhLuanODau`. */''}
+      <button class="bl-nut bl-mo tip" type="button" aria-expanded="false" aria-controls="bl-than"
+              data-o="${binhLuanODau(bai)}"
+              data-tip="${attr(NHAN.comments)}"
               aria-label="${attr(NHAN.comments)}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
+        <span class="bl-so" data-bl-so hidden></span>
       </button>
-    </div>
-    <p class="cum-bao" role="status" aria-live="polite"></p>
-  </div>`;
+    </span>
+    <span class="cum-bao" role="status" aria-live="polite"></span>
+  </span>`;
 }
 
 function crumbsHTML(bai) {
@@ -1733,21 +1799,15 @@ function binhLuanHTML(bai) {
            data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
     ${/* Vạch kẻ có hạt kim cương ở giữa (`.eyebrow`) ĐÃ BỎ khỏi đây: khối "đọc
           tiếp" ngay trên đã có một vạch y hệt, và hai vạch giống nhau cách
-          nhau 80px thì cái nào cũng thôi làm dấu mở đầu.
+          nhau 80px thì cái nào cũng thôi làm dấu mở đầu. */''}
 
-          Cụm nút ở đây chỉ còn trong MỘT trường hợp: khung không có cột bên
-          thật VÀ không phải khung ảnh. Ba đường đi đầy đủ ghi ở `cumODau`. */''}
-    ${cumODau(bai) === 'chan' ? cumTuongTac(bai) : ''}
+    ${/* ── HÀNG NÚT KHÔNG Ở ĐÂY ──
+          Tim, chia sẻ và bình luận nằm chung một cụm ở CUỐI HÀNG META đầu bài
+          (cumTuongTac). Lý do đầy đủ ghi ở đó.
 
-    ${/* ── HÀNG NÚT ĐÃ RỜI KHỎI ĐÂY ──
-          Tim, chia sẻ và bình luận nay nằm chung một cụm ở CỘT BÊN
-          (cumTuongTac ở trên). Lý do đầy đủ ghi ở đó; tóm lại: cột bên đi theo
-          suốt lúc cuộn, còn chân bài chỉ có mặt khi người đọc đã đọc xong.
-
-          Còn lại ở đây đúng phần việc của khối này: danh sách lời nhắn và ô
-          viết. Chúng vẫn đóng mặc định, và vẫn mở bằng chính cái nút ở cột
-          bên — `aria-controls` trỏ tới #bl-than dù hai bên không còn chung
-          một khối cha. */''}
+          Còn lại ở khối này đúng phần việc của nó: danh sách lời nhắn và ô
+          viết. Chúng vẫn đóng mặc định, và vẫn mở bằng chính cái nút trên kia
+          — `aria-controls` trỏ tới #bl-than dù hai bên không chung khối cha. */''}
 
     <div class="bl-than" id="bl-than" hidden>
 
@@ -1805,34 +1865,63 @@ function binhLuanHTML(bai) {
   </section>`;
 }
 
-/* Cột bên chỉ GIỮ được khối đọc tiếp khi nó thật sự là một cột: khung A, và
-   bài có ít nhất một tiêu đề mục (không có mục thì `.ben` rỗng và lưới bỏ cột
-   ấy đi). Mọi trường hợp khác trả về false và khối rơi xuống chân bài. */
-function benGiuDocTiep(bai) {
+/* Cột bên chỉ là CỘT THẬT ở khung A, và chỉ khi bài có ít nhất một tiêu đề
+   mục — không có mục thì `.ben` rỗng và lưới bỏ luôn cột ấy đi. Hai khung kia
+   không có cột bên: B là bìa tràn màn, C là băng ảnh dính bên trái. */
+function coCotBen(bai) {
   return bai.khung === 'a' && bai.headings.length > 0;
 }
 
-/* ── CỤM NÚT ĐỨNG ĐÂU: BA ĐƯỜNG, MỘT CHỖ QUYẾT ĐỊNH ──
-     'ben'  cột bên thật, dưới khối "đọc tiếp" — khung A có mục lục
-     'dau'  ngay dưới tiêu đề — khung C, khung ẢNH
-     'chan' cuối bài, sau khối "đọc tiếp" — mọi trường hợp còn lại
+/* ── KHUNG BÌNH LUẬN MỞ RA Ở ĐÂU ──
+     'ben'  cột phải, thế chỗ mục lục và "đọc tiếp" — khung A có cột bên
+     'cho'  tại chỗ, ngay dưới hàng tag — khung ảnh và mọi khung còn lại
 
-   Khung C bày bài như một trang ảnh: băng ảnh chiếm hẳn một cột và là thứ
-   người ta tới để xem. Ở đó thói quen giống mạng ảnh hơn giống blog — xem
-   xong thả tim ngay, không cuộn xuống đáy tìm nút. Nên cụm lên ngay dưới
-   tiêu đề: bấm tim là đếm luôn tại chỗ, bấm bình luận thì nhảy xuống khung
-   viết (comments.js lo cú cuộn ấy).
+   Khung ảnh bày bài như một trang ảnh: băng ảnh chiếm hẳn cột trái và dính
+   khi cuộn, nên không còn cột nào để nhường. Ở đó bấm bình luận là NHẢY TỚI
+   khung viết nằm ngay dưới hàng tag — đúng chỗ người ta quen tìm ở một trang
+   ảnh, và đúng thứ tự vẫn thấy ở mọi mạng ảnh.
 
-   Hai khung kia là bài ĐỌC. Ở đó một lời mời viết bình luận trước khi người
-   ta đọc xong là lời mời sai lúc, nên cụm ở cuối — hoặc trong cột bên, nơi nó
-   đi theo suốt bài mà không chắn đường.
+   Cụm nút thì KHÔNG rẽ nhánh nữa — nó luôn ở cuối hàng meta. Chỉ ĐÍCH ĐẾN của
+   cú bấm là khác, và trị số này nói điều đó cho comments.js qua `data-o`. */
+function binhLuanODau(bai) {
+  return coCotBen(bai) ? 'ben' : 'cho';
+}
 
-   `benLaCot()` đời trước đã bỏ: câu hỏi "khung này có cột bên thật không" nay
-   nằm gọn trong hàm dưới đây, và ở src/js/comments.js — nơi hỏi thẳng DOM. */
-function cumODau(bai) {
-  if (bai.khung === 'c') return 'dau';
-  if (benGiuDocTiep(bai)) return 'ben';
-  return 'chan';
+/* ── "ĐỌC TIẾP" Ở KHUNG ẢNH: MỘT CẶP LÙI / TỚI ──
+   Khung ảnh đọc như một tấm bưu thiếp — một băng ảnh, một khối chữ ngắn. Dán
+   vào cuối nó một danh sách gợi ý ba dòng, mỗi dòng có nhãn loại và ngày
+   tháng, là thêm một khối chữ nặng ngang cả phần chữ của chính bài.
+
+   Nên ở đây nó co lại thành đúng thứ một trang ảnh cần: hai đường đi — LÙI về
+   bài cũ hơn ở mép trái, TỚI bài mới hơn ở mép phải. Cùng cử chỉ với việc lật
+   ảnh trong chính băng ảnh phía trên, nên không phải học thêm gì.
+
+   Chữ nhỏ, một dòng, KHÔNG ngày tháng: tên bài đủ để quyết định đi hay không,
+   còn ngày thì đã có nguyên một trang kho lưu lo.
+
+   `congKhai` xếp mới nhất trước, nên bài CŨ HƠN nằm ở chỉ số lớn hơn. Đầu và
+   cuối danh sách chỉ có một phía — phía kia để một ô rỗng giữ chỗ, để nút còn
+   lại không trượt sang giữa khung. */
+function docTiepCap(bai, congKhai) {
+  const i = congKhai.findIndex((b) => b.url === bai.url);
+  if (i < 0) return '';
+  const moi = congKhai[i - 1];     /* mới hơn → bên phải */
+  const cu  = congKhai[i + 1];     /* cũ hơn  → bên trái */
+  if (!moi && !cu) return '';
+
+  const o = (b, ben, nhan, mui) => b ? `
+    <a class="rn-p rn-p--${ben}" href="${b.url}" rel="${ben === 'lui' ? 'prev' : 'next'}">
+      <span class="rn-p-mui" aria-hidden="true">${mui}</span>
+      <span class="rn-p-chu">
+        <span class="rn-p-nhan">${nhan}</span>
+        <span class="rn-p-ten">${escapeHtml(b.titleNgan || b.title)}</span>
+      </span>
+    </a>` : '<span class="rn-p rn-p--trong" aria-hidden="true"></span>';
+
+  return `<nav class="rn-cap" aria-label="${attr(NHAN.readNext)}">
+    ${o(cu,  'lui', NHAN.older, '←')}
+    ${o(moi, 'toi', NHAN.newer, '→')}
+  </nav>`;
 }
 
 function readNextHTML(bai, congKhai) {
@@ -1906,37 +1995,35 @@ function trangBai(bai, congKhai) {
     dateISO     : bai.date,
     dateText    : ngayAnh(bai.date),
     mocBlock    : mocHTML(bai),
-    xemBlock    : xemHTML(bai, true),
+    xemBlock    : xemHTML(bai),
     draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
 
     cover       : coverHTML(bai),
     body        : bai.html,
     tagBlock    : tagBlockHTML(bai),
-    readNext    : benGiuDocTiep(bai) ? '' : readNextHTML(bai, congKhai),
-    binhLuan    : binhLuanHTML(bai),
     /* ── "ĐỌC TIẾP" NẰM Ở ĐÂU: TUỲ KHUNG BÀI ──
        Khung A có cột bên thật (mục lục dính khi cuộn ≥1080px), nên khối đọc
        tiếp vào đó: nó đi theo suốt lúc đọc, có mặt đúng lúc người ta bắt đầu
        nghĩ "đọc gì tiếp".
 
-       Khung B và C KHÔNG có cột bên — B là bìa tràn màn, C là băng ảnh dính
-       bên trái. Nhét vào `.ben` ở hai khung ấy thì nó nằm chồng lên băng ảnh,
-       đúng nghĩa đen. Nên ở đó nó về lại dòng chảy, ĐỨNG SAU khối bình luận:
-       bấm mở khung bình luận là nó bị đẩy xuống, chứ không phải nó che mất
-       chỗ vừa mở ra. */
-    /* ── MỘT CHỖ ĐỨNG DUY NHẤT, MỌI KHUNG ──
-       Bản trước cụm nút đi hai đường: khung A vào cột bên, khung B và C lên đầu
-       bài. Cùng một thứ nằm hai chỗ tuỳ khung là người đọc phải đi tìm lại nó
-       mỗi lần mở một bài khác kiểu — mà ba khung ấy chỉ khác nhau ở cách bày
-       ẢNH, không khác nhau ở chuyện thả tim hay viết một dòng.
+       Khung ẢNH đổi hẳn sang một cặp LÙI / TỚI gọn trong một dòng — lý do ở
+       `docTiepCap`. Khung B giữ danh sách dài, và về lại dòng chảy ở chân bài.
 
-       Nay cụm luôn ở ngay dưới hàng meta, cùng chỗ với ba con số nó điều khiển.
+       Ở chân bài, khối này đứng SAU khung bình luận: bấm mở bình luận là nó bị
+       đẩy xuống, chứ không phải nó che mất chỗ vừa mở ra. */
+    readNext    : coCotBen(bai) ? ''
+                : bai.khung === 'c' ? docTiepCap(bai, congKhai)
+                : readNextHTML(bai, congKhai),
+    binhLuan    : binhLuanHTML(bai),
+    /* ── MỘT CHỖ ĐỨNG DUY NHẤT, MỌI KHUNG ──
+       Cụm tim · chia sẻ · bình luận nằm CUỐI HÀNG META, không rẽ nhánh theo
+       khung nữa. Lý do đầy đủ ghi ở `cumTuongTac`.
+
        Cột bên giữ đúng việc của nó: mục lục, đọc tiếp, và — khi người đọc bấm
        bình luận ở khổ rộng — chính khung bình luận (xem comments.js). */
-    cumDau      : cumODau(bai) === 'dau' ? cumTuongTac(bai) : '',
+    cumDau      : cumTuongTac(bai),
     toc         : tocHTML(bai.headings,
-                          benGiuDocTiep(bai) ? readNextHTML(bai, congKhai) : '',
-                          cumODau(bai) === 'ben' ? cumTuongTac(bai) : ''),
+                          coCotBen(bai) ? readNextHTML(bai, congKhai) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 
@@ -2502,29 +2589,23 @@ function mocHTML(b) {
    Ô thích để RỖNG và `hidden` lúc dựng: con số do src/js/comments.js đổ vào
    sau khi hỏi máy chủ, cùng lượt hỏi mà nút tim cuối bài vẫn phải gọi. Chưa
    gắn D1 thì nó ở nguyên trạng thái ẩn, và hàng meta chỉ ngắn đi một mục. */
-function xemHTML(b, day) {
-  const mat = `<svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>`;
-  const tim = `<span class="thich" data-thich-so hidden><svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg><span class="thich-so"></span></span>`;
-  /* ── BA CON SỐ, MỘT KHUÔN ──
-     Lượt xem · lượt thích · số bình luận. Trước bản này chúng ở ba nơi và ba
-     dạng: lượt xem và lượt thích ở hàng meta đầu bài, còn số bình luận thì in
-     ngay trên cái NÚT bình luận — nên hai cái đầu là chữ để đọc, cái thứ ba là
-     một phần của nút bấm, và không cái nào so được với cái nào.
+function xemHTML(b) {
+  /* ── CHỈ CÒN LƯỢT XEM Ở HÀNG META ──
+     Lượt thích và số bình luận từng đứng ngay đây, cạnh lượt xem, dưới dạng
+     "icon + số" để ĐỌC. Hai ô ấy nay in trên chính hai cái NÚT sinh ra chúng
+     (xem `cumTuongTac`) — vẫn cùng một hàng, chỉ lùi sang phải vài chục pixel.
 
-     Nay cả ba ở cùng một hàng, cùng cỡ chữ, cùng kiểu "icon + số". Và nút bấm
-     thôi mang số: nút là chỗ BẤM, hàng meta là chỗ ĐỌC. Một con số xuất hiện
-     đúng một lần thì không có chỗ nào để hai bản trôi lệch nhau. */
-  const bl = (CAU.binhLuan || {}).bat === false ? '' :
-    `<span class="thich" data-bl-so hidden><svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg><span class="bl-so-chu"></span></span>`;
-  /* ── THẺ BÀI CHỈ CÓ LƯỢT XEM ──
-     Ô lượt thích và ô số bình luận do comments.js đổ số vào, mà file ấy chỉ
-     chạy trên TRANG BÀI. Trên một trang danh sách chúng nằm đó rỗng và `hidden`
-     vĩnh viễn — mỗi thẻ hai khối markup không bao giờ hiện, nhân với số bài
-     trên trang. Lượt xem thì khác: xem.js chạy ở mọi trang và đổ số cho từng
-     thẻ, nên nó ở lại. */
-  const so = day ? tim + bl : '';
-  if (!(CAU.luotXem || {}).bat) return so;
-  return `<span class="xem" data-xem="${attr(b.url)}" hidden>${mat}</span>${so}`;
+     Vì sao gộp: bày một trái tim để đọc ngay cạnh một trái tim để bấm là nói
+     hai lần cùng một chuyện, và người đọc bấm vào cái họ thấy trước — đúng cái
+     không bấm được. Gộp rồi thì con số nhảy ngay tại chỗ vừa bấm.
+
+     Lượt xem ở lại vì nó KHÔNG có nút: không ai "bấm để xem", nên nó thuần tuý
+     là một con số để đọc. Nó cũng là con số duy nhất còn dùng được trên THẺ
+     BÀI ở trang danh sách — xem.js chạy ở mọi trang, còn comments.js thì chỉ
+     chạy ở trang bài, nên hai ô kia ở đó sẽ nằm rỗng và `hidden` vĩnh viễn. */
+  if (!(CAU.luotXem || {}).bat) return '';
+  const mat = `<svg class="i-nho" viewBox="0 0 24 24" aria-hidden="true"><path d="M1.8 12S5.5 5.5 12 5.5 22.2 12 22.2 12 18.5 18.5 12 18.5 1.8 12 1.8 12Z"/><circle cx="12" cy="12" r="3.2"/></svg>`;
+  return `<span class="xem" data-xem="${attr(b.url)}" hidden>${mat}</span>`;
 }
 function theBai(b, { hienMuc = true } = {}) {
   /* HAI tag trên thẻ, không phải ba. Ba cái thì ở bề ngang một cột lưới thường
@@ -2879,24 +2960,27 @@ function cacTrangPosts(bai) {
      chừng 40px, nên năm dòng vẫn thấp hơn một hàng thẻ cũ mà nói được nhiều
      hơn — và năm bài là đủ để đoán ra một chuyên mục viết về cái gì. */
   const MOI_TRANG_MUC = 6;
-  /* Ba bài mỗi ô. Ô bento cao bằng nhau mới xếp thành lưới đẹp, mà chuyên mục
-     thì không đều nhau — mục một bài và mục bốn bài cạnh nhau là hai ô lệch
-     hẳn chiều cao. Ba là con số vừa đủ để đoán ra mục này viết về cái gì, và
-     đủ thấp để ô nào cũng gần bằng ô nào. */
+  /* Ba bài mỗi ô — đủ để đoán ra mục này viết về cái gì, và đủ ngắn để cả
+     trang vẫn liếc hết trong một hai màn. Các ô cao bằng nhau bất kể mục có
+     mấy bài: xem `.muc-khoi` ở list.css. */
   const MOI_MUC = 3;
 
   const thuMuc = mucCap1.map((x) => {
     const trong = theoNgay.filter((b) => b.muc.some((y) => y.url === x.url));
     const duong = x.url.replace(BASE, '');
     const moTa = tenMuc(duong.replace('/posts/', '').replace(/\/$/, '')).description || '';
+    /* ── ĐẦU Ô: MỘT DÒNG, TÊN MỤC + SỐ BÀI ──
+       "See all" đã rời khỏi dòng này xuống CHÂN ô. Ở đầu ô nó là một lời mời
+       đi tiếp đặt ngay trước danh sách mà nó mời người ta bỏ qua; ở chân ô nó
+       đứng sau ba cái tên bài, tức là sau khi người đọc đã có cớ để muốn xem
+       thêm. Nó cũng là thứ đóng đáy ô lại, nên ô nào cũng kết thúc giống nhau
+       dù bên trên có mấy dòng. */
     return `<section class="muc-khoi">
       <div class="muc-dau">
         <h2><a href="${x.url}">${escapeHtml(x.ten)}</a></h2>
         <span class="muc-so">${trong.length}</span>
-        ${moTa ? `<p class="muc-mo">${escapeHtml(moTa)}</p>` : ''}
-        ${trong.length > MOI_MUC
-          ? `<a class="ds-them" href="${x.url}">${NHAN.seeAll} →</a>` : ''}
       </div>
+      ${moTa ? `<p class="muc-mo">${escapeHtml(moTa)}</p>` : ''}
       ${/* ── DÒNG, KHÔNG PHẢI THẺ ──
             Mỗi tấm thẻ chở một tiêu đề, một ngày, một câu tóm tắt và hai tag —
             và chiếm chỗ bằng chừng bốn dòng chữ. Trên một trang mà việc duy
@@ -2914,6 +2998,9 @@ function cacTrangPosts(bai) {
             <time class="mc-ngay" datetime="${b.date}">${ngayAnh(b.date).replace(/ \d{4}$/, '')}</time>
           </a>
         </li>`).join('')}</ol>
+      ${trong.length > MOI_MUC
+        ? `<a class="ds-them muc-them" href="${x.url}">${NHAN.seeAll} →</a>`
+        : `<span class="muc-them muc-them--trong" aria-hidden="true"></span>`}
     </section>`;
   }).join('');
 

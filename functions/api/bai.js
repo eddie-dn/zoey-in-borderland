@@ -284,24 +284,36 @@ async function cayBai(env) {
   return { ma: 200, ds, cut: du.truncated === true };
 }
 
-/* Trần số bài đọc front matter trong MỘT lượt. Mỗi bài là một lượt gọi ra
-   GitHub, mà Workers chỉ cho một số lượt hữu hạn trong một request (50 ở gói
-   miễn phí). 40 chừa chỗ cho lượt lấy cây và mấy lượt lặt vặt.
+/* ── MỘT TRANG BAO NHIÊU BÀI ──
+   Mỗi bài trong bảng là MỘT lượt gọi ra GitHub (phải mở file mới biết tiêu đề
+   và trạng thái), mà Cloudflare Workers chỉ cho một số lượt hữu hạn trong một
+   request — 50 ở gói miễn phí.
 
-   Vượt trần thì danh sách trả về kèm cờ `cut`, và giao diện nói thẳng ra là
-   đang xem 40 bài mới nhất — im lặng cắt bớt thì có ngày một bài cũ biến mất
-   khỏi bảng mà không ai hiểu vì sao. */
-const TRAN_DS = 40;
+   Đời trước con số này là 40 và là một cái TRẦN CỨNG: bài thứ 41 trở đi không
+   có đường nào mở ra từ /z-admin/ nữa, chỉ còn một dòng "đang xem 40 bài mới
+   nhất" mà không có nút nào đi tiếp. Với một blog viết đều thì đó là hạn dùng,
+   không phải giới hạn kỹ thuật.
 
-/* ══════════ GET ?ds=1 — BẢNG BÀI ══════════ */
-async function danhSachBai(env) {
+   Nay nó là CỠ MỘT TRANG, và có `?tu=` để xin trang kế. Hạ xuống 20 vì hai lẽ:
+   trang đầu hiện ra nhanh gấp đôi (20 lượt gọi thay vì 40), và 20 dòng vừa một
+   màn — quá đó thì phải cuộn, mà đã phải cuộn thì thà bấm một nút.
+
+   Tổng số bài vẫn trả về đủ, nên giao diện nói được "20 trên 63" ngay từ
+   trang đầu. */
+const MOI_TRANG = 20;
+
+/* ══════════ GET ?ds=1[&tu=N] — MỘT TRANG CỦA BẢNG BÀI ══════════ */
+async function danhSachBai(env, tu) {
   const { ma, ds, cut } = await cayBai(env);
   if (!ds) {
     return ra({ ok: false, loi: 'github',
                 chiTiet: `không đọc được cây kho mã (GitHub trả ${ma})` }, 502);
   }
 
-  const lay = ds.slice(0, TRAN_DS);
+  /* Kẹp về khoảng hợp lệ chứ không tin con số gửi lên: `?tu=-5` hay `?tu=abc`
+     thì `slice` trả về những thứ rất khó đoán. */
+  const bd = Math.max(0, Math.min(Number(tu) || 0, ds.length));
+  const lay = ds.slice(bd, bd + MOI_TRANG);
   const bai = await Promise.all(lay.map(async (x) => {
     const r = await goiGH(env,
       `/repos/${env.GH_REPO}/contents/${x.path}?ref=${encodeURIComponent(nhanh(env))}`);
@@ -321,8 +333,11 @@ async function danhSachBai(env) {
     };
   }));
 
-  return ra({ ok: true, bai, tong: ds.length, cut: cut || ds.length > TRAN_DS,
-              tran: TRAN_DS });
+  /* `cut` nay chỉ còn nói về một chuyện: CÂY KHO MÃ bị GitHub cắt bớt (kho quá
+     lớn). Chuyện "còn bài chưa tải" là `con`, và nó có nút để đi tiếp — hai
+     trạng thái khác hẳn nhau, nên chúng phải là hai cờ khác nhau. */
+  return ra({ ok: true, bai, tong: ds.length, tu: bd,
+              con: bd + lay.length < ds.length, cut: cut === true });
 }
 
 /* ══════════ GET ?doc=… — MỘT BÀI ══════════ */
@@ -385,7 +400,7 @@ export async function onRequestGet({ request, env }) {
      thêm hai đường /api mới. Mỗi đường mới là một chỗ nữa phải nhớ canh khoá,
      và ba việc này dùng chung y hệt bộ canh ở trên. */
   const u = new URL(request.url);
-  if (u.searchParams.get('ds') === '1') return danhSachBai(env);
+  if (u.searchParams.get('ds') === '1') return danhSachBai(env, u.searchParams.get('tu'));
   const mo = u.searchParams.get('doc');
   if (mo) return docMotBai(env, mo);
 

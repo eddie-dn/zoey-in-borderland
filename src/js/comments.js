@@ -55,12 +55,13 @@
      khung nào giữ lại hàng nút tại chỗ thì bản trong khối phải thắng — nút
      gần với khối nó điều khiển là nút đúng. */
   function tim1(sel) { return khoi.querySelector(sel) || document.querySelector(sel); }
-  /* Số bình luận in ở HÀNG META đầu bài, cạnh lượt xem và lượt thích — không
-     in trên chính cái nút. Nút là chỗ BẤM, hàng meta là chỗ ĐỌC; và ba con số
-     của một bài đứng cùng một hàng thì mới so được với nhau. Ô ấy nằm ngoài
-     khối bình luận nên tìm từ `document`. */
+  /* ── SỐ BÌNH LUẬN IN TRÊN CHÍNH CÁI NÚT ──
+     Nó từng đứng riêng ở hàng meta, cạnh lượt xem. Tách ra như thế thì một
+     bài có hai biểu tượng bong bóng cạnh nhau: một cái mang số mà bấm không
+     được, một cái bấm được mà không mang số.
+
+     Nay `[data-bl-so]` LÀ chính cái span mang con số, nằm trong nút. */
   var demEl = document.querySelector('[data-bl-so]');
-  var demChu = demEl ? demEl.querySelector('.bl-so-chu') : null;
   var nutMo = tim1('.bl-mo');
   var moLuc = Date.now();
 
@@ -112,12 +113,10 @@
   var tim = tim1('.bl-tim');
   if (tim) (function () {
     var api = tim.getAttribute('data-thich');
-    /* Con số hiện ở HÀNG META đầu bài, cạnh lượt xem — không hiện trên chính
-       cái nút. Nút là chỗ BẤM, hàng meta là chỗ ĐỌC, và tách hai việc ra thì
-       không có chỗ nào phải vừa đủ to để bấm vừa đủ nhỏ để không tranh chỗ.
-       Ô ấy nằm ngoài khối bình luận nên tìm từ `document`. */
+    /* Con số nằm TRONG chính cái nút tim (xem `cumTuongTac` ở build.mjs): bấm
+       một phát là số nhảy ngay dưới ngón tay, không phải liếc sang chỗ khác
+       để biết cú bấm có ăn hay không. */
     var soEl = document.querySelector('[data-thich-so]');
-    var soChu = soEl ? soEl.querySelector('.thich-so') : null;
     var KHO = 'zib-thich:' + TRANG;
     var daBam = false;
     try { daBam = localStorage.getItem(KHO) === '1'; } catch (e) {}
@@ -127,11 +126,11 @@
       tim.setAttribute('aria-pressed', daBam ? 'true' : 'false');
       tim.classList.toggle('bl-tim--bam', daBam);
       if (soEl) {
-        /* Ẩn hẳn khi chưa ai thích: một trái tim kèm số 0 ở đầu bài đọc ra là
-           "chưa ai thích bài này", mà đó là câu không cần nói ra. */
+        /* Ẩn hẳn khi chưa ai thích: một trái tim kèm số 0 đọc ra là "chưa ai
+           thích bài này", mà đó là câu không cần nói ra. `.bl-so:empty` ở
+           prose.css lo phần nút co lại thành hình tròn gọn. */
         soEl.hidden = so <= 0;
-        soEl.classList.toggle('thich--bam', daBam);
-        if (soChu) soChu.textContent = so > 0 ? String(so) : '';
+        soEl.textContent = so > 0 ? String(so) : '';
       }
     }
 
@@ -174,16 +173,32 @@
 
   /* ══════════ ĐÓNG MỞ CẢ KHỐI ══════════
 
-     ── KHỔ RỘNG: KHUNG BÌNH LUẬN CHIẾM LUÔN CỘT PHẢI ──
-     Ở khổ rộng, khung bình luận mở ra ở CUỐI bài nghĩa là người đọc phải cuộn
-     xuống tận đáy để viết — và lúc đang viết thì bài không còn trong tầm mắt.
-     Muốn trích một câu trong bài thì phải cuộn lên đọc, nhớ lấy, cuộn xuống gõ.
+     ── HAI ĐƯỜNG, VÀ BUILD ĐÃ CHỌN SẴN ──
+     Nút mang `data-o`:
 
-     Cột phải thì nằm ngang tầm bài và dính theo lúc cuộn. Chuyển khung sang
-     đó là vừa đọc vừa viết được, và đó đúng là việc người ta đang làm.
+       'ben'  khung bình luận DỜI sang cột phải (khung A, khổ ≥1080px)
+       'cho'  khung mở TẠI CHỖ, ngay dưới hàng tag — khung ảnh, khung B
+
+     Trước đây file này tự suy ra đường đi bằng cách hỏi DOM xem lưới có mang
+     `khung-a` không. Suy ra được, nhưng nó là bản sao thứ hai của một luật đã
+     có ở tools/build.mjs (`binhLuanODau`) — và hai bản sao thì sớm muộn lệch
+     nhau. Nay build nói thẳng, ở đây chỉ việc đọc.
+
+     ── VÌ SAO KHUNG A DỜI SANG CỘT PHẢI ──
+     Mở ở cuối bài nghĩa là người đọc phải cuộn xuống tận đáy để viết, và lúc
+     đang viết thì bài không còn trong tầm mắt — muốn trích một câu là phải
+     cuộn lên đọc, nhớ lấy, cuộn xuống gõ. Cột phải nằm ngang tầm bài, nên vừa
+     đọc vừa viết được, và đó đúng là việc người ta đang làm.
 
      Mục lục và "đọc tiếp" nhường chỗ trong lúc ấy: cả hai là thứ để ĐI TIẾP,
      mà người đang viết bình luận thì chưa đi đâu cả.
+
+     ── CỘT PHẢI KHÔNG NỚI RA NỮA ──
+     Bản trước cột phải rộng 280px lúc thường và bị kéo lên 400px ngay khi bấm
+     nút — cả trang giật một nhịp, và bài bên trái hẹp lại đúng lúc người đọc
+     đang nhìn nó. Nay cột rộng sẵn 320px ở mọi lúc (xem layout.css): đủ cho ô
+     nhập tên và khung soạn ba dòng, mà mục lục ở đó cũng dễ đọc hơn. Bấm nút
+     thì chỉ NỘI DUNG trong cột đổi, bề ngang không nhúc nhích.
 
      ── DI CHUYỂN NÚT DOM, KHÔNG PHẢI DỰNG BẢN SAO ──
      Chép ra một khung thứ hai thì có hai cái form, hai danh sách, và mọi thứ
@@ -194,11 +209,10 @@
   if (nutMo && than) {
     var ben  = document.querySelector('.ben');
     var luoi = document.querySelector('.post-layout');
-    /* Chỉ khung A mới có cột bên THẬT (xem benLaCot trong tools/build.mjs), và
-       lưới hai cột ấy chỉ bật từ 1080px. Dưới ngưỡng đó `.ben` là
+    /* Lưới hai cột chỉ bật từ 1080px. Dưới ngưỡng đó `.ben` là
        `display:contents`, nên dời khung vào đấy chẳng chuyển nó đi đâu cả. */
     var rong = window.matchMedia('(min-width:1080px)');
-    var duocDoi = !!(ben && luoi && luoi.classList.contains('khung-a'));
+    var duocDoi = !!(ben && luoi && nutMo.getAttribute('data-o') === 'ben');
     var moc = null;
 
     function doiCho(vaoBen) {
@@ -234,17 +248,24 @@
       than.hidden = dangMo;
       doiCho(!dangMo && rong.matches);
       /* ── ĐƯA MẮT TỚI CHỖ VỪA MỞ ──
-         Nút nằm ở đầu bài, còn khung — trừ trường hợp vừa dời sang cột bên —
-         mở ra ở CUỐI bài, cách chỗ vừa bấm cả nghìn pixel. Bấm xong mà màn
-         hình không đổi gì thì đọc ra là nút hỏng, không đọc ra là "nó mở ở
-         dưới kia".
+         Nút nằm ở đầu bài, còn khung — trừ lúc vừa dời sang cột bên — mở ra ở
+         DƯỚI hàng tag, cách chỗ vừa bấm cả nghìn pixel. Bấm xong mà màn hình
+         không đổi gì thì đọc ra là nút hỏng, không đọc ra là "nó mở ở dưới
+         kia". Đây chính là cú nhảy tới khung viết ở khung ảnh.
 
-         Bản trước chỉ cuộn ở khổ hẹp, vì lúc ấy khổ rộng nào cũng dời được
-         khung sang cột bên. Nhưng chỉ khung A có cột bên thật — khung B và C ở
-         khổ rộng rơi đúng vào cái bẫy ấy: bấm, và không có gì xảy ra. Nay điều
-         kiện hỏi đúng câu cần hỏi: khung có ĐƯỢC DỜI hay không. */
+         `start` chứ không `nearest`: `nearest` cuộn ĐÚNG VỪA ĐỦ để khung lọt
+         vào màn, nên ở một bài ngắn nó gần như không nhúc nhích. `start` đưa
+         hẳn đầu khung lên đầu vùng nhìn — người đọc thấy rõ mình vừa được
+         chuyển tới đâu. */
       if (!dangMo && !(duocDoi && rong.matches)) {
-        than.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        than.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        /* Con trỏ vào thẳng ô viết: mở khung bình luận là để viết, và nếu đã
+           cuộn tới nơi rồi thì bắt gõ thêm một cú bấm nữa là thừa. Chờ hết cú
+           cuộn mới focus — focus sớm thì trình duyệt tự nhảy, đè lên cuộn mượt. */
+        setTimeout(function () {
+          var o = than.querySelector('textarea');
+          if (o) { try { o.focus({ preventScroll: true }); } catch (e) { o.focus(); } }
+        }, 420);
       }
       /* Đóng lại thì đưa mắt VỀ chỗ cái nút — không thì người đọc đóng khung ở
          cuối bài xong còn đứng nguyên dưới đó, nhìn một khoảng trống vừa co
@@ -321,7 +342,7 @@
          cạnh một cái icon bong bóng đọc ra là "chưa ai nói gì", mà đó là câu
          không cần nói ra ngay dưới tiêu đề bài. */
       demEl.hidden = ds.length === 0;
-      if (demChu) demChu.textContent = ds.length ? String(ds.length) : '';
+      demEl.textContent = ds.length ? String(ds.length) : '';
     }
     if (!ds.length) {
       var trong = document.createElement('li');

@@ -408,6 +408,26 @@
    ══════════════════════════════════════════════════════════════ */
 
 .post-foot{display:flex;flex-direction:column;gap:var(--s9)}
+/* ── KHUNG BÌNH LUẬN ĐÓNG THÌ THÔI CHIẾM Ô ──
+   Đóng lại, nó cao đúng 0 — nhưng nó vẫn là một ô của cột flex, nên nó ăn
+   `gap` ở CẢ HAI phía: 56 + 0 + 56 = 112px trống giữa hàng tag và khối đọc
+   tiếp, mà không có gì trong đó. Trên điện thoại đó là một phần bảy màn hình
+   để trắng, và người đọc cuộn qua tưởng bài đã hết.
+
+   Điều kiện viết ngược ("ẩn TRỪ KHI bên trong có một .bl-than đang mở") để bắt
+   luôn ca thứ hai: ở khổ rộng khung A, comments.js DỜI HẲN `.bl-than` sang cột
+   phải, nên khối này còn lại một cái vỏ rỗng — cũng phải biến mất.
+
+   Trình duyệt không hiểu `:has` thì bỏ qua cả luật và mọi thứ về đúng như
+   trước: thừa chỗ, không hỏng. */
+.post-foot > .binh-luan:not(:has(> .bl-than:not([hidden]))){display:none}
+/* Cùng lý do với `.post-layout` ở layout.css: khoảng cách 56px giữa ba khối
+   cuối bài là đúng nhịp ở khổ rộng, là mảng trống ở khổ 375px. Luật này phải
+   nằm ở ĐÂY chứ không ở layout.css — `gap` của .post-foot khai trong file này,
+   mà prose.css nạp sau, nên một bản ở layout.css sẽ thua chính bản gốc. */
+@media (max-width:640px){
+  .post-foot{gap:var(--s7)}
+}
 
 /* ── Khối tag ──
    Tag chuyển từ đầu bài xuống đây. Ở đầu bài chúng chen giữa tiêu đề và câu
@@ -448,7 +468,7 @@
    Bậc 3 cố ý bỏ phông tiêu đề nghiêng cho tiêu đề bài: cột này là chỗ ĐIỀU
    HƯỚNG, không phải chỗ trưng bày. Một cột hẹp mà trộn hai phông thì mắt đọc
    ra hai danh sách rời nhau, trong khi chúng chỉ là hai lối đi cạnh nhau. */
-.ben :is(.toc-title, .read-next .label, .cum-nhan){
+.ben :is(.toc-title, .read-next .label){
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;
   color:var(--text-faint);margin:0 0 var(--s4);
@@ -505,14 +525,89 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
   .rn-kind{grid-column:1 / -1}
 }
 
+/* ══════════ CẶP LÙI / TỚI — KHUNG ẢNH ══════════
+   Hai đầu một thanh: bài cũ hơn nép mép TRÁI, bài mới hơn nép mép PHẢI, mũi
+   tên quay ra ngoài. Đọc ra ngay là một trục thời gian, không phải một danh
+   sách — và nó lặp đúng cử chỉ lật ảnh ở băng ảnh phía trên.
+
+   `space-between` chứ không phải lưới hai cột đều: hai tên bài dài ngắn khác
+   nhau, mà ép chúng bằng nhau thì cái ngắn phải ôm một mảng trống, còn cái dài
+   bị cắt sớm hơn cần thiết. Mỗi bên lấy đúng chỗ nó cần, tối đa nửa thanh.
+
+   Ô rỗng `.rn-p--trong` giữ chỗ ở bài đầu và bài cuối danh sách: thiếu nó thì
+   nút còn lại trượt về giữa, và mất luôn nghĩa "trái là lùi, phải là tới". */
+.rn-cap{
+  display:flex;align-items:stretch;justify-content:space-between;gap:var(--s4);
+  margin-top:var(--s7);padding-top:var(--s5);
+  border-top:1px solid var(--line);
+}
+.rn-p{
+  display:flex;align-items:center;gap:var(--s3);
+  flex:0 1 auto;max-width:48%;min-width:0;
+  padding:var(--s2) 0;
+  color:var(--text-muted);text-decoration:none;background:none;
+  transition:color var(--dur-fast),transform var(--dur-fast);
+}
+.rn-p--trong{flex:0 1 48%;pointer-events:none}
+.rn-p--toi{flex-direction:row-reverse;text-align:right}
+/* Mũi tên trong một ô tròn có viền: ở cỡ chữ nhỏ, một dấu ← trần trên nền
+   trang đọc ra là dấu câu, không đọc ra là nút. */
+.rn-p-mui{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:50%;
+  box-shadow:inset 0 0 0 1px var(--line);
+  font-size:14px;line-height:1;
+  transition:box-shadow var(--dur-fast),color var(--dur-fast),
+             background var(--dur-fast);
+}
+.rn-p-chu{display:flex;flex-direction:column;gap:1px;min-width:0}
+.rn-p-nhan{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);
+}
+/* Phông THÂN BÀI, không phải phông tiêu đề nghiêng — và đây là một ngoại lệ
+   có chủ ý của "MỘT KHUÔN DÒNG" (xem đầu src/styles/list.css). Lý do giống hệt
+   ngoại lệ ở cột bên: chỗ này là ĐIỀU HƯỚNG, không phải chỗ trưng bày, và cả
+   khung ảnh vốn chỉ có một khối chữ ngắn — một tiêu đề nghiêng cỡ lớn ở chân
+   trang sẽ to hơn chính bài vừa đọc. */
+.rn-p-ten{
+  font-family:var(--font-body);font-size:var(--fs-xs);font-weight:500;
+  line-height:1.35;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+a.rn-p:hover{color:var(--accent-ink)}
+a.rn-p:hover .rn-p-ten{color:var(--accent-ink)}
+a.rn-p:hover .rn-p-mui{
+  color:var(--accent-ink);background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--accent);
+}
+a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
+a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
+@media (prefers-reduced-motion:reduce){a.rn-p:hover .rn-p-mui{transform:none}}
+@media (max-width:520px){
+  /* ── Ở BÀI ĐẦU VÀ BÀI CUỐI, MỘT NÚT ĐƯỢC CẢ HÀNG ──
+     Ô rỗng giữ chỗ tồn tại để nút còn lại không trượt vào giữa hàng — cần
+     thiết ở khổ rộng. Ở 375px thì nó lấy mất nửa hàng của cái nút DUY NHẤT
+     đang có, và tên bài bị cắt sau ba chữ dù bên cạnh trống trơn.
+
+     Nay ô rỗng co về 0 và nút thật lấy hết chỗ thừa; hai nút cạnh nhau thì
+     `space-between` vẫn đẩy chúng về hai mép như cũ. Tên bài ở lại — nó là
+     thứ quyết định có bấm hay không. */
+  .rn-p{max-width:100%}
+  .rn-p--trong{flex:0 0 0;min-width:0}
+  .rn-cap{gap:var(--s3)}
+  .rn-p-mui{width:26px;height:26px}
+}
+
 /* ══════════════════════════════════════════════════════════════
    KHUNG BÌNH LUẬN
    ══════════════════════════════════════════════════════════════ */
 
 .binh-luan .label{margin:0 0 var(--s2)}
-/* `.bl-dem` — ĐÃ BỎ. Số bình luận từng in ngay trên nút bấm; nay nó về hàng
-   meta đầu bài cùng lượt xem và lượt thích (xem xemHTML trong tools/build.mjs).
-   Nút là chỗ bấm, hàng meta là chỗ đọc. */
+/* `.bl-dem` — ĐÃ BỎ, và con số thì đã đi một vòng rồi quay về: nó từng in
+   trên nút, rồi rời sang hàng meta, rồi về lại trên nút. Vòng ấy đáng ghi lại,
+   vì lý lẽ của lần đi ("nút là chỗ bấm, hàng meta là chỗ đọc") nghe rất xuôi
+   mà kết quả trên màn hình là hai trái tim cạnh nhau. Lớp nay là `.bl-so`. */
 .bl-moi{font-size:var(--fs-sm);color:var(--text-muted);margin:0 0 var(--s5)}
 
 /* ── BÀN DUYỆT (/#duyet) ──
@@ -786,48 +881,36 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
 .prose .c-lam {color:var(--c-lam)}
 .prose .c-xam {color:var(--c-xam)}
 
-/* ══════════ HAI NÚT CUỐI BÀI: TIM · BÌNH LUẬN ══════════
-   Thay cho cả một khung bình luận bày sẵn. Lý do ở chỗ dựng `binhLuanHTML`
-   trong tools/build.mjs. */
-/* ── CỤM TƯƠNG TÁC Ở CỘT BÊN ──
-   Tim · chia sẻ · bình luận. Nằm trên cùng cột bên, TRÊN cả mục lục: nó là
-   thứ người đọc quay lại tìm, còn mục lục là thứ họ liếc một lần lúc mới vào.
+/* ══════════ CỤM TIM · CHIA SẺ · BÌNH LUẬN ══════════
+   Nằm CUỐI HÀNG META, ngay sau ngày đăng và lượt xem — một ô flex như mọi ô
+   khác của hàng ấy. Lý do đầy đủ ở `cumTuongTac` trong tools/build.mjs.
 
-   Trước đây ba nút này ở chân bài trong một khối `.bl-dau` — luật ấy đã bỏ,
-   và nó vốn còn trùng tên với `.bl-dau` của MỖI dòng bình luận (tên người +
-   giờ gửi). Hai luật cùng tên chồng lên nhau trong cùng một file, cái sau ăn
-   cái trước; may là hai nơi không bao giờ hiện cùng lúc nên chưa ai thấy.
-
-   Rồi có một bản cho cụm đi hai đường: khung A vào cột bên, khung B và C lên
-   đầu bài. Cũng bỏ nốt — cùng một thứ nằm hai chỗ tuỳ khung là người đọc phải
-   đi tìm lại nó mỗi lần mở một bài khác kiểu. Nay đúng MỘT chỗ, mọi khung. */
-/* Nằm NGANG, ngay dưới hàng ngày tháng / lượt xem / lượt thích / bình luận —
-   tức là dán vào đúng ba con số nó điều khiển. Không viền dưới: ngay dưới nó
-   đã là đoạn tóm tắt có viền trái riêng, hai đường kẻ sát nhau thì đọc ra là
-   khung bị vỡ. */
+   Nó từng là một khối riêng xuống dòng, có nhãn "LEAVE A NOTE" ở trên và ba
+   nút cỡ lớn ở dưới. Hai dòng cho một việc, và nhãn ấy nói lại đúng thứ ba cái
+   icon đã nói. Bỏ cả hai. */
 .cum-tt{
-  display:flex;flex-flow:row wrap;align-items:center;
-  gap:var(--s3) var(--s4);
-  margin:var(--s4) 0 0;
+  display:inline-flex;align-items:center;flex-wrap:wrap;
+  gap:var(--s2) var(--s3);
 }
-.cum-nhan{
-  margin:0;
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;
-  color:var(--text-faint);
-}
-.cum-nut{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap}
-/* Câu báo "đã chép đường dẫn". */
+/* Hàng meta chèn một dấu · trước mỗi ô kế tiếp (xem components.css). Trước một
+   cụm NÚT thì dấu ấy sai: nó là dấu ngăn giữa hai mẩu CHỮ, mà đây là chỗ hàng
+   đổi từ chữ sang nút. Thay bằng một quãng thở rộng hơn — khoảng trắng nói
+   "sang phần khác" rõ hơn một dấu chấm giữa hai viên thuốc. */
+.meta-row > .cum-tt::before{content:none;margin:0}
+.meta-row > .cum-tt{margin-left:var(--s2)}
+.cum-nut{display:inline-flex;gap:6px;align-items:center}
+/* Câu báo "đã chép đường dẫn". Nằm cùng hàng, ngay sau ba cái nút: nó chỉ sống
+   vài giây, và bắt cả hàng xuống dòng để chở một câu ngắn thì cứ mỗi lần bấm
+   chia sẻ là bài lại nhích xuống một nhịp. */
 .cum-bao{
   margin:0;
-  font-size:var(--fs-2xs);color:var(--accent-ink);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent-ink);
 }
 .cum-bao--hong{color:var(--bad)}
-
-/* Câu báo xuống HÀNG RIÊNG (ép chiếm trọn bề ngang) thay vì chen vào cuối
-   hàng nút: chen vào thì lúc nó hiện ra, cả hàng nút bị đẩy sang trái. */
-.cum-bao{flex:0 0 100%}
 .cum-bao:empty{display:none}
+.meta-row > * + .cum-bao::before{content:none;margin:0}
 
 /* ── NÚT "BACK" PHẢI TRÔNG RA MỘT CÁI NÚT ──
    `.btn--ghost` vốn là nút kính mỏng: nó dựa vào nền phía sau để lộ mép. Trong
@@ -849,22 +932,30 @@ a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
   color:var(--accent-ink);background:var(--accent-wash);
 }
 
+/* ── CỠ NÚT: VỪA MỘT HÀNG CHỮ, VẪN ĐỦ TO ĐỂ BẤM BẰNG NGÓN TAY ──
+   Nút nay đứng lẫn trong hàng meta, nên nó không được cao hơn hàng ấy mấy —
+   một viên thuốc 33px giữa một dòng chữ 20px thì cả hàng đọc ra là bị đội lên.
+   Ô bấm thật vẫn giữ 32px nhờ `min-height`; phần thừa ra so với viền là vùng
+   bấm, không phải vùng vẽ. */
 .bl-nut{
   appearance:none;cursor:pointer;
-  display:inline-flex;align-items:center;gap:7px;
-  padding:7px var(--s4);border-radius:var(--r-pill);
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  min-height:32px;padding:4px 11px;border-radius:var(--r-pill);
   background:none;box-shadow:inset 0 0 0 1px var(--line);
   color:var(--text-muted);
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.1em;font-variant-numeric:tabular-nums;
+  letter-spacing:.06em;font-variant-numeric:tabular-nums;
   transition:color var(--dur-fast),box-shadow var(--dur-fast),
              background var(--dur-fast);
 }
 .bl-nut svg{
-  width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;
+  width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round;
   transition:fill var(--dur-fast),stroke var(--dur-fast),transform .28s var(--spring);
 }
+/* Con số đi kèm icon, ngay trong nút. `1ch` tối thiểu để lúc số từ 9 lên 10
+   cái nút không giật ngang. */
+.bl-so{min-width:1ch;text-align:center}
 .bl-nut:hover{color:var(--accent-ink);box-shadow:inset 0 0 0 1px var(--accent)}
 .bl-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bl-nut:active svg{transform:scale(.88)}

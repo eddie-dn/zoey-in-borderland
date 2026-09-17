@@ -50,7 +50,7 @@ src/styles/     …· list (chưa kể ở dòng trên)
 src/js/         theme · nen · toc · media · comments · duyet · copy-guard
                 reveal · so-tay · quote · search · trang-so · moc · bang-anh
                 xem · ghi-chu · viet-bai · admin · khoa · soan · man-dau
-                chia-se · logo-nhip
+                chia-se · logo-nhip · menu
 src/templates/  shell.html · post.html · page.html
 tools/          build · new-post · anh · bia · og · nen · dev · version
                 kiem-dinh · ghi-chu-keo · og-font/ · lib/
@@ -159,6 +159,15 @@ không phải đợi một dịch vụ bên thứ ba nào. Không bình luận n
 mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web — mở `/z-admin/`
 là có cả ô viết ghi chú lẫn hàng chờ duyệt. Làm được từ điện thoại, không cần
 mở máy, không cần dựng lại trang.
+
+**Tim · chia sẻ · bình luận nằm chung MỘT hàng với ngày đăng**, ở mọi kiểu bài,
+và mỗi con số in ngay trên cái nút sinh ra nó. Bấm nút bình luận thì bài dài mở
+khung viết ở cột phải, còn bài ảnh thì nhảy thẳng tới ô viết dưới hàng tag —
+`docs/DESIGN-SYSTEM.md` §18.5.
+
+**Bảng bài ở `/z-admin/` tải từng trang 20 bài**, có nút tải thêm và ô lọc theo
+tên (gõ không dấu cũng ra). Mỗi bài là một lượt gọi ra GitHub, nên tải cả kho
+trong một lượt vừa chậm vừa chạm hạn mức của Cloudflare Workers.
 
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.

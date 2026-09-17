@@ -152,13 +152,21 @@
    Luật chung — ai lệch thì phải có lý do ghi ngay tại chỗ lệch:
      · tiêu đề   phông tiêu đề, nghiêng, --fs-h4, một dòng, cắt bằng dấu …
      · nhãn/ngày Oswald hoa, --fs-3xs, --text-faint, số dùng bản đều bề ngang
-     · ngăn cách sợi kẻ --line ở ĐÁY mỗi dòng, dòng đầu có thêm kẻ trên
+     · ngăn cách một sợi kẻ --line giữa hai dòng, và kẻ ở hai đầu danh sách
      · rê chuột  đổi MÀU chữ + đẩy sang phải var(--s2); KHÔNG đổi nền
                  (đổi nền thì hai sợi kẻ trên dưới phải đổi theo mới không hở)
 
-   Ngoại lệ đã biết: trong CỘT BÊN (`.ben`), tiêu đề đổi sang phông thân bài và
-   cỡ nhỏ hơn — cột ấy hẹp, và ở đó nó là chỗ điều hướng chứ không phải chỗ
-   trưng bày. Lý do đầy đủ ở prose.css.
+   NGOẠI LỆ ĐÃ BIẾT — cả ba cùng một lý do, và lý do ấy là VAI của danh sách:
+   chỗ nào là chỗ ĐIỀU HƯỚNG (quét mắt tìm một cái tên) thì tiêu đề đổi sang
+   phông thân bài, cỡ --fs-sm, không nghiêng. Chỗ nào là chỗ TRƯNG BÀY (mời
+   người ta dừng lại ở một bài) thì giữ Cormorant nghiêng.
+
+     .hero-dong   TRƯNG BÀY — giữ nguyên luật chung
+     .rn-dong     TRƯNG BÀY — giữ nguyên luật chung
+     .ben .rn-*   điều hướng — cột hẹp (lý do đầy đủ ở prose.css)
+     .mc-dong     điều hướng — ô bento rộng chừng 300px (list.css)
+     .kho-dong    điều hướng — kho lưu là bảng tra, không phải chỗ lướt xem
+     .rn-p        điều hướng — cặp lùi/tới ở khung ảnh (prose.css)
 
    Chi tiết và bảng so sánh: docs/DESIGN-SYSTEM.md §17.5. */
 
@@ -1166,20 +1174,51 @@
    có mấy mảng, trước khi phải đọc một tiêu đề bài nào. */
 /* ── LƯỚI BENTO CỦA TRANG POSTS ──
    Mỗi ô là một chuyên mục: tên · số bài · một dòng mô tả · ba bài mới nhất ·
-   "See all". Ô tự co theo bề ngang, tối thiểu 300px — dưới cỡ ấy một dòng bài
-   bị cắt giữa tiêu đề, mà tiêu đề là thứ duy nhất người ta đọc để chọn.
+   "See all" ở chân ô. Ô tự co theo bề ngang, tối thiểu 280px.
 
-   `align-items:start` để ô thấp KHÔNG bị kéo cao bằng ô cao nhất hàng: chuyên
-   mục một bài mà cao bằng chuyên mục ba bài thì nó có một mảng trống ở đáy,
-   và mảng ấy đọc ra là thiếu chứ không ra là thoáng. */
+   ── MỌI Ô CAO BẰNG NHAU, KỂ CẢ Ô MỘT BÀI ──
+   Đời trước để `align-items:start`, cho ô thấp giữ đúng chiều cao nội dung
+   của nó. Lý do khi ấy: một mục một bài mà bị kéo cao bằng mục ba bài thì đáy
+   ô có một mảng trống, và mảng trống ấy đọc ra là THIẾU.
+
+   Đo lại trên trang thật thì cái đọc ra là hỏng lại là chuyện khác: sáu ô cao
+   thấp so le nhau, mỗi hàng một đường chân răng cưa. Một lưới bento mà các ô
+   không khớp mép thì nó thôi là lưới, chỉ còn là mấy cái hộp xếp gần nhau.
+
+   Nay ô nào cũng căng hết ô lưới (mặc định `stretch`), và mảng trống ở đáy có
+   người giữ chỗ: "See all" — hoặc một ô rỗng cùng chiều cao khi mục chưa đủ
+   bài — bị `margin-top:auto` đẩy xuống sát đáy. Nhờ vậy ô nào cũng KẾT THÚC
+   giống nhau, và khoảng trống nằm giữa danh sách với chân ô đọc ra là chỗ
+   CHỪA SẴN cho bài sắp có, không phải chỗ bị hụt. */
+/* ── SỐ CỘT KHAI THẲNG, KHÔNG DÙNG `auto-fill` ──
+   `auto-fill` tiện, nhưng nó không cho biết ĐANG có mấy cột — mà luật chiều
+   cao bằng nhau bên dưới chỉ đúng khi có từ hai cột trở lên. Khai thẳng thì
+   hai luật đi cùng nhau trong một khối, và không có khổ màn nào rơi vào giữa. */
 .muc-luoi{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-  gap:var(--s5);
-  align-items:start;
+  grid-template-columns:minmax(0,1fr);
+  gap:var(--s4);
 }
+@media (min-width:640px){
+  .muc-luoi{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    /* `1fr` cho MỌI hàng, không chỉ trong một hàng: thiếu dòng này thì hàng
+       trên cao theo ô cao nhất của nó, hàng dưới cao theo ô cao nhất của nó,
+       và hai hàng lệch nhau — vẫn là lưới răng cưa, chỉ là răng to hơn. */
+    grid-auto-rows:1fr;
+  }
+}
+@media (min-width:1000px){
+  .muc-luoi{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* MỘT CỘT thì không ô nào nằm cạnh ô nào, nên không có mép nào để khớp — mà
+   `grid-auto-rows:1fr` vẫn kéo ô một bài cao bằng ô ba bài. Trên điện thoại
+   đó là một cột dọc toàn khoảng trống, phải cuộn qua để tới ô sau. Chiều cao
+   bằng nhau là luật của LƯỚI; một cột thì nó là danh sách, và luật ấy không
+   áp dụng. (Không cần luật riêng — `grid-auto-rows` chỉ khai từ 640px lên.) */
 .muc-khoi{
-  padding:var(--s5) var(--s5) var(--s4);
+  display:flex;flex-direction:column;
+  padding:var(--s4) var(--s5) var(--s3);
   border-radius:var(--r-md);
   background:var(--surface);
   box-shadow:inset 0 0 0 1px var(--line);
@@ -1187,19 +1226,60 @@
 }
 .muc-khoi:hover{box-shadow:inset 0 0 0 1px var(--line-strong)}
 
+/* ── ĐẦU Ô ──
+   KHÔNG có đường kẻ trên. Ô đã có viền bao quanh rồi; thêm một sợi kẻ ngang
+   ngay bên trong viền ấy là vẽ hai lần cùng một mép, và ở lưới sáu ô thì sáu
+   sợi kẻ cụt ấy là thứ đập vào mắt trước cả tên chuyên mục.
+
+   ── VÀ KHÔNG DÙNG PHÔNG TIÊU ĐỀ NGHIÊNG ──
+   Tên chuyên mục từng là Cormorant nghiêng cỡ --fs-h3 — đúng bộ chữ và gần
+   đúng cỡ của chữ "All posts" ngay trên đầu trang. Sáu cái tên mục vì thế đọc
+   ngang hàng với tiêu đề của cả trang, và trang mất luôn thứ bậc: cái gì cũng
+   là tiêu đề thì không cái nào là tiêu đề.
+
+   Oswald hoa, giãn chữ, cỡ nhỏ hơn hẳn: nó đọc ra là NHÃN của một ngăn — đúng
+   việc nó làm — và không còn tranh chỗ với bất cứ thứ gì. Cùng bộ chữ với
+   hàng chip lọc ngay phía trên, nên hai thứ ấy đọc ra là một bộ. */
+.muc-dau{
+  display:flex;align-items:baseline;gap:var(--s3);
+  margin-bottom:var(--s2);
+}
+.muc-dau h2{
+  margin:0;min-width:0;
+  font-family:var(--font-label);font-size:var(--fs-sm);font-weight:600;
+  font-style:normal;letter-spacing:.12em;text-transform:uppercase;
+  line-height:1.3;
+}
+.muc-dau h2 a{color:var(--text);text-decoration:none;background:none;
+  transition:color var(--dur-fast)}
+.muc-dau h2 a:hover{color:var(--accent-ink)}
+.muc-so{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;color:var(--text-faint);
+  font-variant-numeric:tabular-nums;
+}
+.muc-mo{
+  margin:0 0 var(--s3);
+  font-size:var(--fs-xs);line-height:1.5;color:var(--text-muted);
+  /* Hai dòng là trần. Mô tả dài ngắn khác nhau thì ô nào cũng đẩy danh sách
+     bài xuống một độ cao khác — mà ba danh sách thẳng hàng nhau mới liếc
+     được cả lưới trong một lượt. */
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;
+}
+
 /* ── DANH SÁCH BÀI TRONG MỘT CHUYÊN MỤC ──
-   Cùng khuôn với ba dòng bài ở màn đầu trang chủ (`.hero-ds`): số thứ tự nhỏ
-   bên trái, tiêu đề ở giữa, ngày bên phải, ngăn nhau bằng một sợi kẻ. Hai chỗ
-   làm cùng một việc — điểm danh bài theo thứ tự mới nhất trước — nên chúng
-   phải trông như nhau; người đọc đi từ trang chủ sang /posts/ mà gặp hai kiểu
-   danh sách thì phải học lại cách đọc một thứ mình vừa đọc xong. */
-.mc-ds{list-style:none;margin:var(--s4) 0 0;padding:0}
-.mc-dong{border-bottom:1px solid var(--line)}
-.mc-dong:first-child{border-top:1px solid var(--line)}
+   Cùng khuôn với ba dòng bài ở màn đầu trang chủ (`.hero-ds`) về CẤU TRÚC —
+   số thứ tự, tiêu đề, ngày, ngăn nhau bằng sợi kẻ — nhưng chữ thì nhỏ hơn và
+   dùng phông thân bài. Đây là ngoại lệ có ghi của "MỘT KHUÔN DÒNG" ở đầu file
+   này, cùng lý do với ngoại lệ ở cột bên: ô bento rộng chừng 300px, và một
+   tiêu đề Cormorant nghiêng --fs-h4 trong đó thì ba dòng đã hết ô. */
+.mc-ds{list-style:none;margin:0;padding:0}
+.mc-dong{border-top:1px solid var(--line)}
 .mc-dong a{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;
-  align-items:baseline;gap:var(--s4);
-  padding:11px 2px;color:var(--text);text-decoration:none;background:none;
+  align-items:baseline;gap:var(--s3);
+  padding:8px 2px;color:var(--text);text-decoration:none;background:none;
   transition:color var(--dur-fast),padding-left var(--dur-fast);
 }
 /* Đẩy nhẹ sang phải khi rê chuột, thay cho đổi nền: một dòng đổi nền thì cả
@@ -1212,8 +1292,8 @@
   letter-spacing:.08em;color:var(--text-faint);font-variant-numeric:tabular-nums;
 }
 .mc-tt{
-  font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:var(--fs-h4);line-height:1.25;
+  font-family:var(--font-body);font-style:normal;font-weight:500;
+  font-size:var(--fs-sm);line-height:1.35;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .mc-ngay{
@@ -1221,6 +1301,24 @@
   letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
   font-variant-numeric:tabular-nums;white-space:nowrap;
 }
+/* ── CHÂN Ô ──
+   `margin-top:auto` đẩy nó xuống đáy, và chính nó là thứ làm mọi ô kết thúc
+   giống nhau. Ô chưa đủ bài thì vẫn có một bản RỖNG cùng chiều cao giữ chỗ —
+   bỏ hẳn thì đáy ô ấy hụt lên mất một hàng, đúng cái vừa chữa xong ở trên. */
+.muc-them{
+  display:block;margin-top:auto;padding-top:var(--s3);
+  border-top:1px solid var(--line);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;
+  color:var(--text-faint);text-decoration:none;background:none;
+  transition:color var(--dur-fast);
+}
+a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
+.muc-them--trong{
+  /* Cao đúng bằng một dòng nhãn, để nó thay được chỗ bản có chữ. */
+  min-height:calc(var(--fs-3xs) * 1.4);
+}
+
 /* Khổ hẹp: ngày xuống dòng dưới tiêu đề. Giữ ba cột ở 360px thì tiêu đề còn
    chưa tới 150px và bị cắt sau ba bốn chữ — mà tiêu đề mới là thứ người ta
    đọc để chọn. */
@@ -1229,39 +1327,7 @@
   .mc-tt{white-space:normal}
   .mc-ngay{grid-column:2;font-size:var(--fs-3xs)}
 }
-.muc-dau{
-  display:grid;
-  grid-template-columns:auto auto 1fr auto;
-  align-items:baseline;gap:var(--s3) var(--s4);
-  margin-bottom:var(--s5);padding-top:var(--s4);
-  border-top:1px solid var(--line);
-}
-.muc-dau h2{
-  margin:0;font-size:var(--fs-h3);font-style:italic;line-height:1.15;
-}
-.muc-dau h2 a{color:var(--text);text-decoration:none;background:none;
-  transition:color var(--dur-fast)}
-.muc-dau h2 a:hover{color:var(--accent-ink)}
-.muc-so{
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:.1em;color:var(--text-faint);
-  font-variant-numeric:tabular-nums;
-}
-/* Dòng mô tả xuống hàng riêng, chiếm trọn bề ngang: để nó nằm cùng hàng với
-   tên mục thì hàng ấy vừa có chữ nghiêng cỡ lớn vừa có chữ thường cỡ nhỏ, và
-   đường chân chữ so le trông như xếp nhầm. */
-.muc-mo{
-  grid-column:1 / -1;grid-row:2;margin:0;
-  font-size:var(--fs-sm);line-height:1.5;color:var(--text-muted);
-  max-width:60ch;
-}
-.muc-dau .ds-them{grid-column:4;grid-row:1;justify-self:end}
 
-@media (max-width:560px){
-  .muc-dau{grid-template-columns:auto 1fr auto}
-  .muc-dau .ds-them{grid-column:3}
-  .muc-khoi + .muc-khoi{margin-top:var(--s7)}
-}
 /* ══════════ BỘ SỐ TRANG ══════════
    Chỉ có mặt khi danh sách dài hơn một trang, và do JavaScript dựng ra — nên
    người tắt JavaScript thấy trọn danh sách, không thấy bộ số. Đó là trạng thái
@@ -1403,19 +1469,28 @@
 /* ── KHO LƯU ──
    Danh sách dày chứ không phải lưới thẻ: kho lưu là chỗ đi TÌM một bài đã biết
    tên, không phải chỗ lướt xem có gì. Thẻ to làm việc tìm chậm đi. */
-.kho-nam{margin-bottom:var(--s7)}
+.kho-nam{margin-bottom:var(--s8)}
 .kho-nam:last-child{margin-bottom:0}
+/* ── ĐẦU NĂM: MỘT NHÃN, KHÔNG PHẢI MỘT TIÊU ĐỀ ──
+   Cùng phép chữa với đầu ô bento (xem `.muc-dau`), cùng lý do: con số năm
+   từng là Cormorant nghiêng --fs-h3, tức gần đúng bộ chữ và cỡ chữ của chính
+   tiêu đề "Archive" ở đầu trang — nên mỗi năm đọc ngang hàng với tiêu đề của
+   cả trang, và trang mất thứ bậc.
+
+   Và KHÔNG có đường kẻ dưới nữa. Dòng bài đầu tiên ngay bên dưới đã mang một
+   sợi kẻ trên; hai sợi cách nhau 14px thì đọc ra là một cái khung hở, không
+   ra là một dấu mở đầu. Bỏ sợi của năm, giữ sợi của danh sách — đường kẻ
+   thuộc về danh sách, vì nó lặp lại ở mọi dòng. */
 .kho-so{
   display:flex;align-items:baseline;gap:var(--s3);
-  margin:0 0 var(--s3);padding-bottom:var(--s2);
-  border-bottom:1px solid var(--line);
-  font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:var(--fs-h3);color:var(--text);
+  margin:0 0 var(--s2);
+  font-family:var(--font-label);font-style:normal;font-weight:600;
+  font-size:var(--fs-sm);letter-spacing:.14em;color:var(--text);
   font-variant-numeric:tabular-nums;
 }
 .kho-dem{
-  font-family:var(--font-label);font-style:normal;font-size:var(--fs-2xs);
-  font-weight:500;letter-spacing:var(--ls-label);color:var(--text-faint);
+  font-family:var(--font-label);font-style:normal;font-size:var(--fs-3xs);
+  font-weight:600;letter-spacing:.08em;color:var(--text-faint);
 }
 .kho-ds{list-style:none;margin:0;padding:0;
   display:flex;flex-direction:column;gap:2px}
@@ -1425,10 +1500,13 @@
 .kho-dong{
   display:flex;align-items:baseline;gap:var(--s4);
   padding:7px 2px;
-  border-bottom:1px solid var(--line);
+  border-top:1px solid var(--line);
   transition:color var(--dur-fast),padding-left var(--dur-fast);
 }
-.kho-dong:first-child{border-top:1px solid var(--line)}
+/* Kẻ ở ĐỈNH mỗi dòng cộng một kẻ ở đáy dòng cuối — thay cho "kẻ ở đáy mọi
+   dòng + kẻ thêm ở đỉnh dòng đầu". Cùng số đường, nhưng cách này ghép liền
+   với nhãn năm ngay trên mà không sinh ra hai sợi sát nhau. */
+.kho-ds > .kho-dong:last-child{border-bottom:1px solid var(--line)}
 .kho-dong:hover{padding-left:var(--s2)}
 .kho-dong time{
   flex:none;width:5.2em;
@@ -1436,10 +1514,15 @@
   letter-spacing:.08em;color:var(--text-faint);
   font-variant-numeric:tabular-nums;text-transform:uppercase;
 }
+/* Phông thân bài, không phải Cormorant nghiêng — ngoại lệ có ghi của "MỘT
+   KHUÔN DÒNG" ở đầu file này. Kho lưu là chỗ đi TÌM một bài đã biết tên, và
+   một danh sách để quét mắt thì đọc nhanh hơn ở phông thân bài cỡ nhỏ: hai
+   mươi dòng Cormorant nghiêng cỡ --fs-h4 xếp chồng nhau là hai mươi khối chữ
+   trang trí, không phải một bảng tra. */
 .kho-dong a{
   flex:1;min-width:0;color:var(--text);text-decoration:none;background:none;
-  font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:var(--fs-h4);line-height:1.25;
+  font-family:var(--font-body);font-style:normal;font-weight:500;
+  font-size:var(--fs-sm);line-height:1.4;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .kho-dong:hover a{color:var(--accent-ink)}
@@ -1707,10 +1790,35 @@
   background:linear-gradient(to bottom right,transparent 45%,var(--line-strong) 45%,
              var(--line-strong) 55%,transparent 55%);
 }
+/* ── BẢNG CHỈ DẪN ──
+   Hai nhóm, mỗi nhóm một tiêu đề nhỏ: thứ có nút, và thứ phải gõ tay. Bảng này
+   dài hơn hẳn bản trước nên nó có trần chiều cao và cuộn riêng — một bảng chỉ
+   dẫn cao 400px đẩy khung gõ xuống khỏi màn thì nó che mất đúng cái nó đang
+   giải thích. */
+.sz-bang--giup{max-height:min(46vh,420px);overflow-y:auto}
+.sz-giup-de{
+  margin:var(--s3) 0 var(--s2);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.sz-giup-de:first-child{margin-top:0}
 .sz-giup-ds{
   margin:0;padding-left:1.1em;
   display:flex;flex-direction:column;gap:5px;
   font-size:var(--fs-xs);line-height:1.5;color:var(--text-muted);
+}
+/* Mẫu gõ in bằng phông máy chữ, trên một nền chìm: mắt tách ngay được phần
+   PHẢI GÕ ĐÚNG TỪNG KÝ TỰ ra khỏi phần giải thích bằng tiếng người. */
+.sz-giup-ma{
+  font-family:var(--font-mono);font-size:.92em;
+  padding:.1em .4em;border-radius:var(--r-xs);
+  background:var(--surface-solid);color:var(--text);
+  white-space:nowrap;
+}
+.sz-giup-chan{
+  margin:var(--s3) 0 0;padding-top:var(--s3);
+  border-top:1px solid var(--line);
+  font-size:var(--fs-2xs);line-height:1.5;color:var(--text-faint);
 }
 
 /* ── Ô XEM MARKDOWN ──
@@ -1761,7 +1869,39 @@
   margin-bottom:var(--s5);
 }
 .vb-loc{display:flex;flex-wrap:wrap;gap:5px;margin-left:auto}
+/* ── Ô LỌC THEO TÊN ──
+   Lọc TẠI CHỖ trên phần bảng đã tải, không hỏi máy chủ (lý do ở đầu khối bảng
+   bài trong src/js/viet-bai.js). Nó đứng cạnh nút "Bài mới" chứ không ở một
+   hàng riêng: một bảng làm việc thì mọi thứ điều khiển nó phải nằm chung một
+   thanh, không thì mỗi việc lại thêm một hàng. */
+.vb-tim{
+  display:flex;align-items:center;gap:var(--s2);
+  flex:1 1 11rem;max-width:18rem;min-width:0;
+  padding:6px var(--s4);border-radius:var(--r-pill);
+  background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--text-faint);
+  transition:box-shadow var(--dur-fast),color var(--dur-fast);
+}
+.vb-tim:focus-within{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent-ink)}
+.vb-tim svg{
+  width:14px;height:14px;flex:none;
+  fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;
+}
+.vb-tim input{
+  flex:1;min-width:0;
+  border:0;background:none;outline:none;padding:0;
+  font-family:var(--font-body);font-size:var(--fs-xs);color:var(--text);
+}
+/* Nút xoá riêng của Safari/Chrome trong <input type=search> vẽ một chữ × đặc,
+   không ăn theo theme — bỏ đi, ô ngắn thế này xoá bằng phím nhanh hơn. */
+.vb-tim input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 .vb-bang{display:flex;flex-direction:column}
+/* Dòng "đã tải 20 trên 63" + nút tải thêm, ngay dưới dòng bài cuối. */
+.vb-chan{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s3);
+  padding-top:var(--s4);
+}
 .vb-dong{
   display:grid;
   grid-template-columns:5.5rem minmax(0,1fr) auto auto;
