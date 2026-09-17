@@ -190,6 +190,42 @@ Lỗi "câu không dùng được" giờ kèm luôn `finishReason`: rỗng vì b
 (`SAFETY`), vì hết token (`MAX_TOKENS`) hay vì lý do khác là ba chuyện sửa ở ba
 chỗ khác hẳn nhau, mà nhìn "0 ký tự" thì không phân biệt nổi.
 
+### 2.6 · Lưới đỡ model bung cả ở 400, không chỉ 404/403
+
+Bản trước chỉ lùi sang model dự phòng khi gặp 404 hoặc 403. Đo trên trang đang
+chạy thì model chính trả về:
+
+```
+400 INVALID_ARGUMENT — Request contains an invalid argument.
+```
+
+Lưới dựng ở 404/403 không bung, và ô trích dẫn chết lặng y như lúc chưa có lưới.
+
+**Cách khoanh vùng — Google kiểm KHOÁ trước thân yêu cầu.** Khoá sai thì mọi
+lượt gọi đều trả đúng một câu `API key not valid. Please pass a valid API key.`,
+kể cả khi cố tình gửi thân rỗng hay tên model bịa (đã thử cả bốn ca). Nhận được
+câu **khác** nghĩa là khoá hợp lệ, và chỗ Google chê nằm ở thân yêu cầu. Mà
+thân ấy đúng chuẩn: một phần `text` 710 ký tự, `temperature`, `maxOutputTokens`
+— không có gì để chê. Còn lại đúng một biến: chính cái bí danh model.
+
+Nay lùi ở cả ba mã `400 · 403 · 404`. Cái giá là một lượt gọi thừa khi thân
+yêu cầu hỏng thật — rẻ, vì đó là nhánh lỗi.
+
+Hai chỗ nữa để lần sau đỡ mò:
+
+- **Lời báo nêu tên cả hai model.** Chỉ kể lỗi của model sau thì người đọc log
+  tưởng model chính vẫn ổn, rồi đi sửa nhầm chỗ.
+- **`details[].fieldViolations[]` được đưa ra.** Với `INVALID_ARGUMENT`, trường
+  `message` chỉ là một câu vô hồn — "Request contains an invalid argument." —
+  không nói trường nào. Chỗ có thông tin thật là mảng `details`, nơi Google chỉ
+  đích danh `field` và `description`. Bản trước bỏ qua hẳn mảng ấy.
+
+:::note Muốn thử thẳng một model cụ thể mà không sửa mã
+Khai `GEMINI_MODEL_QUOTE` (model chính) hoặc `GEMINI_MODEL` (model dự phòng)
+dạng **Text** ở Cloudflare → Settings → Runtime → Variables and Secrets. Hai
+biến trỏ cùng một tên thì hàm không lùi, chỉ gọi một lượt.
+:::
+
 ---
 
 ## 3 · Nút "Another one"

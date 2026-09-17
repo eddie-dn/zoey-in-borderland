@@ -61,6 +61,13 @@ const HET_GIO_MS = 2600;
    định là alias `-latest` nên Google ra bản mới cũng tự theo. */
 const MODEL_MAC_DINH = 'gemini-flash-lite-latest';
 
+/* Lưới đỡ. Phải là một bí danh KHÁC hẳn cái trên, không phải một số hiệu ghim
+   cứng: ghim số hiệu là hẹn trước một ngày phải đi sửa (bản trước ghim
+   `gemini-2.0-flash`, tra lại thì chính nó đã bị Google tắt). Khai đè được
+   bằng biến `GEMINI_MODEL` ở Cloudflare, tiện lúc cần thử một model cụ thể mà
+   không phải sửa mã. */
+const MODEL_DU_PHONG = 'gemini-flash-latest';
+
 /* Trần VÀ sàn. Trần chặn câu lê thê tràn khung. Sàn cũng cần: câu 30 ký tự thì
    ô chừa hẳn một mảng trống bên phải, nhìn như bị cắt cụt — bản gốc đã vấp
    đúng chỗ này và phải nới trần lên sau khi bỏ `text-wrap:balance`. */
@@ -242,7 +249,10 @@ export async function onRequest(context) {
   }
 
   try {
-    let { kq, vi } = await thu(env.GEMINI_MODEL_QUOTE || MODEL_MAC_DINH);
+    const mChinh   = env.GEMINI_MODEL_QUOTE || MODEL_MAC_DINH;
+    const mDuPhong = env.GEMINI_MODEL || MODEL_DU_PHONG;
+
+    let { kq, vi } = await thu(mChinh);
     /* ── LÙI MỘT LẦN, VÀ LÙI VỀ MỘT BÍ DANH KHÁC ──
        Tên model sai hoặc chưa được cấp → 404/403.
 
@@ -258,11 +268,42 @@ export async function onRequest(context) {
          · dự phòng  gemini-flash-latest        bản flash đầy đủ
        Hai bí danh KHÁC NHAU, nên cái này hỏng cái kia vẫn còn. Google bỏ đồng
        thời cả hai thì mới hết đường, và lúc ấy thì ghim số hiệu cũng chẳng cứu
-       được gì. */
-    if (kq.status === 404 || kq.status === 403) {
-      ({ kq, vi } = await thu(env.GEMINI_MODEL || 'gemini-flash-latest'));
+       được gì.
+
+       ── VÌ SAO LÙI CẢ KHI GẶP 400 ──
+       Bản trước chỉ lùi ở 404/403, và đó là một lỗ thật: đo trên trang đang
+       chạy, model chính trả về
+
+         400 INVALID_ARGUMENT — Request contains an invalid argument.
+
+       Google kiểm KHOÁ TRƯỚC thân yêu cầu — khoá sai thì mọi lượt gọi đều trả
+       đúng một câu "API key not valid", kể cả khi cố tình gửi thân rỗng hay
+       tên model bịa (đã thử cả bốn ca). Nhận được câu KHÁC nghĩa là khoá hợp
+       lệ và thân yêu cầu mới là chỗ Google chê. Mà thân ấy đúng chuẩn: một
+       phần `text` 710 ký tự, `temperature` 1, `maxOutputTokens`. Không có gì
+       để chê.
+
+       Còn lại đúng một biến: chính cái bí danh. Google trả 400 chứ không phải
+       404 cho một bí danh mà khoá này không được cấp — nên lưới đỡ dựng ở
+       404/403 không bao giờ bung ra, và ô trích dẫn chết lặng y như lúc chưa
+       có lưới.
+
+       Nay lùi ở cả ba mã. Cái giá là một lượt gọi thừa khi thân yêu cầu hỏng
+       thật — rẻ, vì đó là nhánh lỗi, và đổi lại là cái lưới hoạt động đúng lúc
+       cần nhất. */
+    if (!kq.ok && (kq.status === 400 || kq.status === 403 || kq.status === 404)
+        && mDuPhong !== mChinh) {
+      const loiDau = kq.status + (vi ? ' · ' + vi : '');
+      ({ kq, vi } = await thu(mDuPhong));
+      /* Kể lại CẢ HAI lời báo, kèm tên model. Chỉ kể cái sau thì người đọc log
+         tưởng model chính vẫn ổn, và đi sửa nhầm chỗ. */
+      if (!kq.ok) {
+        throw new Error(`gemini · ${mChinh}: ${loiDau} · ${mDuPhong}: `
+          + kq.status + (vi ? ' · ' + vi : ''));
+      }
     }
-    if (!kq.ok) throw new Error('gemini ' + kq.status + (vi ? ' · ' + vi : ''));
+    if (!kq.ok) throw new Error(`gemini ${kq.status}` + (vi ? ' · ' + vi : '')
+      + ` (model ${mChinh})`);
 
     const j = await kq.json();
     const ungVien = (j.candidates || [])[0] || {};
@@ -318,7 +359,23 @@ async function doiLoi(kq) {
     let du = null;
     try { du = JSON.parse(tho); } catch (e) {}
     const loi = (du && du.error) || {};
-    return ([loi.status, loi.message].filter(Boolean).join(' — ') || tho).slice(0, 200);
+
+    /* ── ĐỪNG DỪNG Ở `message` ──
+       Với INVALID_ARGUMENT, `message` chỉ là đúng một câu vô hồn: "Request
+       contains an invalid argument." Không nói trường nào, không nói vì sao —
+       đọc xong vẫn không biết đi sửa ở đâu.
+
+       Chỗ có thông tin thật là `details[].fieldViolations[]`, nơi Google chỉ
+       đích danh `field` và `description`. Bản trước bỏ qua hẳn mảng ấy, nên tự
+       vứt đi đúng thứ mình cần. Google không phải lúc nào cũng kèm, nhưng khi
+       có thì nó là câu trả lời. */
+    const viPham = []
+      .concat(...(loi.details || []).map((d) => d.fieldViolations || []))
+      .map((v) => [v.field, v.description].filter(Boolean).join(': '))
+      .filter(Boolean);
+
+    return ([loi.status, loi.message, ...viPham].filter(Boolean).join(' — ') || tho)
+      .slice(0, 300);
   } catch (e) { return ''; }
 }
 

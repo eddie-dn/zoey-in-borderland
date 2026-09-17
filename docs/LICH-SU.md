@@ -168,6 +168,11 @@
   không ngày nào trùng.
 - **Bấm "xem câu khác" thì câu ấy được giữ lại.** Trước bấm ra câu ưng ý, tải
   lại trang một cái là mất. Nay nó ở lại tới hết khung giờ.
+- **Lưới đỡ khi nhà cung cấp AI từ chối nay thật sự bung ra.** Nó chỉ dựng cho
+  hai kiểu từ chối, mà kiểu đang gặp trên trang lại là kiểu thứ ba — nên cái
+  lưới nằm im đúng lúc cần nhất. Nay đỡ cả ba, và khi vẫn hỏng thì lời báo nêu
+  đủ tên từng model cùng chỗ sai cụ thể, thay vì một câu chung chung không lần
+  ra được.
 
 ## V12.06 — 17-Sep-2026
 
