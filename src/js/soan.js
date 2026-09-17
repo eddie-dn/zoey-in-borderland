@@ -344,6 +344,37 @@
       if (the === 'H4')                 { ra.push(thut + '#### ' + trong(c)); continue; }
       if (the === 'HR')                 { ra.push(thut + '---'); continue; }
 
+      /* ── BẢNG: MỘT <table> THẬT TRONG Ô SOẠN, RA MẤY DÒNG GẠCH ĐỨNG ──
+         Đời trước chèn thẳng mấy dòng `| | |` vào một đoạn văn và để người
+         viết tự gõ giữa hai dấu gạch. Nhìn ra đúng như nó là: một mớ ký tự.
+         Không thấy được đâu là ô nào, thêm một cột là phải đếm tay lại cả
+         bảng, và gõ lố một dấu là bảng thôi là bảng.
+
+         Nay trong ô soạn nó là một `<table>` có ô bấm vào gõ được, và chỉ tới
+         lúc lưu mới đổi ra cú pháp Markdown. Hàng đầu là `<thead>` — đúng
+         hàng mà bộ dựng hiểu là hàng tiêu đề.
+
+         Dấu `|` người viết lỡ gõ TRONG một ô phải được thoát, không thì nó
+         cắt ô ấy làm đôi lúc đọc lại. */
+      if (the === 'TABLE') {
+        var hangB = [];
+        var oHang = c.querySelectorAll('tr');
+        for (var hi = 0; hi < oHang.length; hi++) {
+          var oO = oHang[hi].children, cot = [];
+          for (var ci = 0; ci < oO.length; ci++) {
+            cot.push(trong(oO[ci]).replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim());
+          }
+          hangB.push('| ' + cot.join(' | ') + ' |');
+          /* Dòng gạch ngăn đi ngay sau hàng tiêu đề — đó là thứ nói cho bộ
+             dựng biết bảng bắt đầu từ đâu. */
+          if (hi === 0) {
+            hangB.push('|' + new Array(oO.length + 1).join('---|'));
+          }
+        }
+        ra.push(thut + hangB.join('\n' + thut));
+        continue;
+      }
+
       if (the === 'PRE') {
         var ngon = c.getAttribute && c.getAttribute('data-ngon');
         ra.push(thut + '```' + (ngon || '') + '\n'
@@ -547,6 +578,31 @@
       .join('  \n');
   }
 
+  /* Tách một dòng bảng thành các ô. Bỏ dấu `|` ngoài cùng hai đầu, rồi cắt ở
+     mỗi `|` KHÔNG có dấu `\` đứng trước — dấu ấy là do sangMD thoát ra. */
+  function oCuaHang(d) {
+    return d.trim().replace(/^\||\|$/g, '')
+      .split(/(?<!\\)\|/)
+      .map(function (x) { return x.replace(/\\\|/g, '|').trim(); });
+  }
+
+  function bangTuMD(ds) {
+    var dau = oCuaHang(ds[0]);
+    var than = [];
+    for (var i = 2; i < ds.length; i++) than.push(oCuaHang(ds[i]));
+    var h = '<table class="sz-bang-o"><thead><tr>';
+    for (var k = 0; k < dau.length; k++) h += '<th>' + nhoMD(dau[k]) + '</th>';
+    h += '</tr></thead><tbody>';
+    for (var r = 0; r < than.length; r++) {
+      h += '<tr>';
+      for (var c2 = 0; c2 < dau.length; c2++) {
+        h += '<td>' + nhoMD(than[r][c2] || '') + '</td>';
+      }
+      h += '</tr>';
+    }
+    return h + '</tbody></table>';
+  }
+
   function sangMD(goc) {
     var ra = [];
     khoi(goc, ra, '');
@@ -708,6 +764,17 @@
          warn · stop · gallery · wide · full, và danh sách ấy có thể dài thêm.
          Giữ nguyên tên loại rồi trả lại y như cũ lúc lưu là cách duy nhất để
          một khối kiểu mới đi qua khung soạn thảo mà không bị nghiền nát. */
+      /* ── BẢNG ĐỌC NGƯỢC LẠI ──
+         Nhận ra bằng đúng thứ bộ dựng nhận: một dòng mở đầu bằng `|`, và ngay
+         dòng sau là dòng gạch ngăn. Thiếu dòng gạch ngăn thì đó là đoạn văn
+         có dấu gạch đứng, không phải bảng — cứ để nguyên. */
+      if (/^\s*\|/.test(d) && dong[i + 1] && /^\s*\|[\s:|-]*-[\s:|-]*\|\s*$/.test(dong[i + 1])) {
+        var oBang = [];
+        while (i < dong.length && /^\s*\|/.test(dong[i])) { oBang.push(dong[i]); i++; }
+        ra.push(bangTuMD(oBang));
+        continue;
+      }
+
       var moKhoi = d.match(/^:::\s*([\w-]+)\s*(.*)$/);
       if (moKhoi) {
         i++;
@@ -1299,9 +1366,20 @@
                        function () { moBangMedia(); });
     nutMedia.setAttribute('aria-expanded', 'false');
     var bangMedia = veBangMedia();
-    nut(svg(['M5 5h14v14H5z', 'M8 5v14', 'M11 10h5M11 14h3']),
-        L('callout', 'Callout box — click its label to change the type'),
-        function () { chenKhoi('note', ''); });
+    /* ── BỐN LOẠI, CHỌN NGAY LÚC CHÈN ──
+       Bản trước bấm là ra thẳng một khối `note`, rồi muốn đổi loại thì bấm
+       vào cái nhãn trên khối. Cơ chế ấy vẫn còn (và vẫn tiện lúc sửa bài cũ),
+       nhưng nó bắt người ta phải BIẾT trước đã — mà cái duy nhất nói ra điều
+       đó là một dòng chú thích hiện khi rê chuột.
+
+       Nay nút mở một bảng bốn dòng, mỗi dòng một chấm đúng màu nó sẽ hiện ra
+       trên trang. Chọn màu là việc làm lúc chèn, nên chỗ chọn phải ở ngay chỗ
+       chèn. */
+    var nutNhan = nut(svg(['M5 5h14v14H5z', 'M8 5v14', 'M11 10h5M11 14h3']),
+                      L('callout', 'Callout box'),
+                      function () { moBangNhan(); });
+    nutNhan.setAttribute('aria-expanded', 'false');
+    var bangNhan = veBangNhan();
     vach(1);
 
 
@@ -1412,8 +1490,9 @@
        hẳn nhau — không có gì để so sánh trong một bảng cả. */
     nut(svg(['M3 5h18v14H3z', 'M3 10h18', 'M9 5v14', 'M15 5v14']),
         L('bTable', 'Table'), chenBang);
+    var bangNgon = veBangNgon();
     nut(svg(['M4 4h16v16H4z', 'M10 9l-3 3 3 3', 'M14 9l3 3-3 3']),
-        L('bCode', 'Code block'), chenMa);
+        L('bCode', 'Code block'), function () { moBangNgon(); });
     nut(svg(['M4 5h5v5H4z', 'M12 7.5h8', 'M4 14h5v5H4z', 'M12 16.5h8', 'M5.3 7.5l1.2 1.2 2.2-2.4']),
         L('bTask', 'Checklist'), chenViec);
     vach(2);
@@ -1556,43 +1635,148 @@
     }
 
     /* ══════════ BA KHỐI CẤU TRÚC ══════════ */
+    /* ── KHUNG ĐẶT CỠ BẢNG ──
+       Bản trước hỏi bằng `window.prompt` với một ô chữ, và câu hỏi là "cỡ —
+       cột × hàng (tối đa 5 × 20)". Ai cũng phải tự dịch ý mình ra một chuỗi
+       kiểu `3x4`, gõ sai một ký tự là không có bảng nào hiện ra và cũng không
+       có lời nào giải thích. Hộp thoại ấy còn nhảy lên đỉnh màn hình, cách
+       chỗ đang gõ cả một chiều dài trang.
+
+       Nay là một khung ngay trong trang, hai cái nút cộng trừ cho mỗi chiều,
+       và một bảng XEM TRƯỚC vẽ đúng cỡ đang chọn — không phải dịch gì cả.
+
+       Trần 5×20 giữ nguyên. Trần CỘT là chuyện bề ngang thật: cột chữ của bài
+       rộng chừng 66 ký tự, chia sáu cột là mỗi cột mười ký tự — không còn đọc
+       được. Trần HÀNG chỉ để chặn gõ nhầm; hai mươi hàng đã dài hơn gần hết
+       bảng người ta thật sự viết. */
+    var TRAN_COT = 5, TRAN_HANG = 20;
+
     function chenBang() {
-      khung.focus();
-      /* ── HỎI CỠ BẢNG ──
-         Bản trước luôn chèn đúng 2×2, và muốn thêm cột thì phải tự gõ thêm
-         dấu gạch đứng vào cả ba dòng cho khớp nhau — sai một dấu là bảng
-         thôi là bảng. Hỏi một câu thì dựng sẵn đúng cỡ.
+      var nCot = 3, nHang = 3;
+      var kh = el('dialog', 'sz-cat sz-bang-hoi');
+      var xem = el('div', 'sz-bang-xem');
 
-         Trần 5×20. Trần CỘT là chuyện bề ngang thật: cột chữ của bài rộng
-         chừng 66 ký tự, chia sáu cột là mỗi cột mười ký tự — không còn đọc
-         được. Trần HÀNG chỉ để chặn gõ nhầm "200"; hai mươi hàng đã dài hơn
-         gần hết bảng người ta thật sự viết. */
-      var TRAN_COT = 5, TRAN_HANG = 20;
-      var tra = window.prompt(
-        L('bTableAsk', 'Size — columns × rows (up to 5 × 20):'), '2x3') || '';
-      var m = tra.replace(/\s/g, '').match(/^(\d+)[x×*,](\d+)$/i);
-      if (!m) return;
-      var nCot  = Math.max(1, Math.min(TRAN_COT,  parseInt(m[1], 10) || 2));
-      var nHang = Math.max(1, Math.min(TRAN_HANG, parseInt(m[2], 10) || 2));
+      function soDong(ten, lay, dat, tran) {
+        var h = el('div', 'sz-bang-so');
+        h.appendChild(el('span', 'sz-bang-nhan', ten));
+        var tru = el('button', 'sz-bang-nut', '−');
+        var so  = el('span', 'sz-bang-gia', String(lay()));
+        var cong = el('button', 'sz-bang-nut', '+');
+        tru.type = cong.type = 'button';
+        function ve() { so.textContent = String(lay()); veXem(); }
+        tru.addEventListener('click', function () { if (lay() > 1) { dat(lay() - 1); ve(); } });
+        cong.addEventListener('click', function () { if (lay() < tran) { dat(lay() + 1); ve(); } });
+        h.appendChild(tru); h.appendChild(so); h.appendChild(cong);
+        return h;
+      }
 
-      /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
-         bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng chừng ấy dòng
-         liền nhau — thứ nó cần. Dựng <table> thật trong khung soạn thảo thì
-         phải viết thêm cả một bộ đổi bảng ↔ Markdown. */
-      function hangB(o) { return '|' + new Array(nCot + 1).join(o + '|'); }
-      var d = [hangB('  '), hangB('---')];
-      for (var i = 0; i < nHang; i++) d.push(hangB('  '));
-      document.execCommand('insertHTML', false,
-        '<p>' + d.join('<br>') + '</p><p><br></p>');
-      capNhat();
+      /* Bảng xem trước dựng lại từ đầu mỗi lần đổi số: ở cỡ tối đa là 100 ô,
+         rẻ hơn nhiều so với việc giữ và đối chiếu từng ô một. */
+      function veXem() {
+        xem.innerHTML = '';
+        var t = document.createElement('table');
+        for (var r = 0; r <= nHang; r++) {
+          var tr = document.createElement('tr');
+          for (var c = 0; c < nCot; c++) {
+            tr.appendChild(document.createElement(r === 0 ? 'th' : 'td'));
+          }
+          t.appendChild(tr);
+        }
+        xem.appendChild(t);
+      }
+
+      kh.appendChild(el('p', 'sz-bang-de', L('bTableAsk', 'How big?')));
+      kh.appendChild(soDong(L('bTableCot', 'Columns'),
+        function () { return nCot; }, function (v) { nCot = v; }, TRAN_COT));
+      kh.appendChild(soDong(L('bTableHang', 'Rows'),
+        function () { return nHang; }, function (v) { nHang = v; }, TRAN_HANG));
+      kh.appendChild(xem);
+      kh.appendChild(el('p', 'sz-bang-mach', L('bTableMach',
+        'The first row is the header. Tab moves to the next cell.')));
+
+      var hangNut = el('div', 'sz-bang-nuts');
+      var thoi = el('button', 'btn btn--ghost', L('huy', 'Cancel'));
+      var lam  = el('button', 'btn', L('bTableOk', 'Insert'));
+      thoi.type = lam.type = 'button';
+      hangNut.appendChild(thoi); hangNut.appendChild(lam);
+      kh.appendChild(hangNut);
+
+      function dong2() { try { kh.close(); } catch (e) {} kh.remove(); }
+      thoi.addEventListener('click', dong2);
+      kh.addEventListener('cancel', function () { kh.remove(); });
+      lam.addEventListener('click', function () {
+        dong2();
+        khung.focus();
+        var h = '<table class="sz-bang-o"><thead><tr>';
+        for (var c = 0; c < nCot; c++) h += '<th><br></th>';
+        h += '</tr></thead><tbody>';
+        for (var r = 0; r < nHang; r++) {
+          h += '<tr>';
+          for (var c2 = 0; c2 < nCot; c2++) h += '<td><br></td>';
+          h += '</tr>';
+        }
+        h += '</tbody></table><p><br></p>';
+        document.execCommand('insertHTML', false, h);
+        capNhat();
+        /* Con trỏ vào ô đầu tiên — mở bảng ra là để gõ vào nó. */
+        var t2 = khung.querySelectorAll('table.sz-bang-o');
+        var o1 = t2.length && t2[t2.length - 1].querySelector('th');
+        if (o1) {
+          var r2 = document.createRange();
+          r2.selectNodeContents(o1); r2.collapse(true);
+          var s2 = window.getSelection(); s2.removeAllRanges(); s2.addRange(r2);
+        }
+      });
+
+      veXem();
+      document.body.appendChild(kh);
+      try { kh.showModal(); } catch (e) { kh.setAttribute('open', ''); }
     }
 
-    function chenMa() {
+    /* ── TAB ĐI Ô KẾ TRONG BẢNG ──
+       Trong một `contenteditable`, Tab mặc định nhảy ra khỏi cả khung soạn —
+       nên gõ xong một ô là mất chỗ. Mọi trình soạn bảng đều cho Tab đi sang ô
+       bên phải, hết hàng thì xuống đầu hàng dưới; Shift+Tab đi ngược. Tab ở ô
+       cuối cùng thì thêm hẳn một hàng mới, vì đó luôn là thứ người ta định
+       làm tiếp. */
+    khung.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      var s2 = window.getSelection();
+      if (!s2 || !s2.rangeCount) return;
+      var n = s2.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var oNay = o && o.closest ? o.closest('td, th') : null;
+      if (!oNay || !khung.contains(oNay)) return;
+      e.preventDefault();
+      var bang = oNay.closest('table');
+      var ds = [].slice.call(bang.querySelectorAll('th, td'));
+      var i = ds.indexOf(oNay) + (e.shiftKey ? -1 : 1);
+      if (i < 0) return;
+      if (i >= ds.length) {
+        var hangCuoi = bang.querySelector('tbody') || bang;
+        var soCot = bang.querySelectorAll('tr')[0].children.length;
+        var tr = document.createElement('tr');
+        for (var c = 0; c < soCot; c++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createElement('br'));
+          tr.appendChild(td);
+        }
+        hangCuoi.appendChild(tr);
+        ds = [].slice.call(bang.querySelectorAll('th, td'));
+        capNhat();
+      }
+      var oKe = ds[i];
+      if (!oKe) return;
+      var r = document.createRange();
+      r.selectNodeContents(oKe); r.collapse(true);
+      s2.removeAllRanges(); s2.addRange(r);
+    });
+
+    function chenMa(ngon) {
       khung.focus();
-      var ngon = window.prompt(L('bCodeAsk', 'Language (js, css, python… — can be empty):'), '') || '';
+      var n = String(ngon || '').trim().replace(/[^\w-]/g, '');
       document.execCommand('insertHTML', false,
-        '<pre' + (ngon.trim() ? ' data-ngon="' + ngon.trim().replace(/[^\w-]/g, '') + '"' : '') +
-        '> </pre><p><br></p>');
+        '<pre' + (n ? ' data-ngon="' + n + '"' : '') + '> </pre><p><br></p>');
       capNhat();
     }
 
@@ -1653,8 +1837,88 @@
       capNhat();
     }
 
+    /* Một dòng của bảng bật ra: chấm màu · tên · câu mô tả · cú pháp. */
+    function dongChon(b, cham, ten, mo, cu, lam) {
+      var o = el('button', 'sz-khoi-nut');
+      o.type = 'button';
+      var trai = el('span', 'sz-khoi-chu');
+      var hangC = el('span', 'sz-khoi-hang');
+      if (cham) {
+        var ch = el('span', 'sz-khoi-cham');
+        ch.style.setProperty('--m', cham);
+        hangC.appendChild(ch);
+      }
+      hangC.appendChild(el('span', 'sz-khoi-ten', ten));
+      trai.appendChild(hangC);
+      if (mo) trai.appendChild(el('span', 'sz-khoi-mo', mo));
+      o.appendChild(trai);
+      if (cu) o.appendChild(el('code', 'sz-khoi-cu', cu));
+      o.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      o.addEventListener('click', function () { lam(); dongBang(); });
+      b.appendChild(o);
+      return o;
+    }
+
+    /* ── BỐN KHUNG NHẤN ──
+       Thứ khác nhau THẬT giữa chúng là MÀU, nên mỗi dòng mang một chấm đúng
+       bằng màu nó sẽ hiện ra trên trang; `--cl` lấy thẳng tên biến của
+       `.callout--*` trong prose.css, nên đổi màu ở đó là chấm ở đây đổi theo.
+       Câu mô tả tả VIỆC — dùng cái này khi nào — chứ không tả cơ chế; bốn câu
+       "cùng một cái hộp" thì đọc xong vẫn không chọn được cái nào. */
+    function veBangNhan() {
+      var b = el('div', 'sz-bang sz-bang--khoi');
+      b.hidden = true;
+      [['note', 'var(--accent-ink)', L('bNote', 'Note'), L('bNoteMo', 'a side point, out of the main flow')],
+       ['tip',  'var(--ok)',         L('bTip', 'Tip'),   L('bTipMo', 'a shortcut, something that helps')],
+       ['warn', 'var(--warn)',       L('bWarn', 'Heads up'), L('bWarnMo', 'worth knowing before you start')],
+       ['stop', 'var(--bad)',        L('bStop', 'Do not'),   L('bStopMo', 'something that should not be done')]
+      ].forEach(function (x) {
+        dongChon(b, x[1], x[2], x[3], ':::' + x[0], function () { chenKhoi(x[0], ''); });
+      });
+      b.appendChild(el('p', 'sz-bang-mach', L('bLoaiDoi', 'Click to change: note → tip → warn → stop')));
+      return b;
+    }
+
+    /* ── NGÔN NGỮ CỦA KHỐI MÃ ──
+       Bản trước hỏi bằng `window.prompt`: một hộp thoại trắng của trình duyệt
+       ghi "Language (js, css, python… — can be empty)". Không nói ra nó DÙNG
+       ĐỂ LÀM GÌ, nên câu trả lời thường là bấm OK cho xong.
+
+       Nó chỉ có đúng một tác dụng: TÔ MÀU CÚ PHÁP cho khối mã trên trang đã
+       dựng. Nên bảng này nói thẳng điều đó ở dòng đầu, rồi bày sẵn mấy thứ
+       hay dùng — và một lối ra "không tô màu" cho khối mã chỉ là chữ. */
+    function veBangNgon() {
+      var b = el('div', 'sz-bang sz-bang--khoi');
+      b.hidden = true;
+      b.appendChild(el('p', 'sz-bang-mach', L('bCodeMach',
+        'Pick the language so the code gets syntax colours on the page.')));
+      [['', L('bCodeTron', 'No colours'), L('bCodeTronMo', 'plain text in a box')],
+       ['js', 'JavaScript', ''], ['html', 'HTML', ''], ['css', 'CSS', ''],
+       ['python', 'Python', ''], ['bash', 'Shell', ''], ['json', 'JSON', ''],
+       ['sql', 'SQL', ''], ['md', 'Markdown', '']
+      ].forEach(function (x) {
+        dongChon(b, '', x[1], x[2], x[0] ? '```' + x[0] : '```', function () { chenMa(x[0]); });
+      });
+      return b;
+    }
+
+    function moBangNhan() {
+      bangMau.hidden = true; bangMedia.hidden = true; bangNgon.hidden = true;
+      nutMedia.setAttribute('aria-expanded', 'false');
+      bangNhan.hidden = !bangNhan.hidden;
+      nutNhan.setAttribute('aria-expanded', bangNhan.hidden ? 'false' : 'true');
+    }
+
+    function moBangNgon() {
+      bangMau.hidden = true; bangMedia.hidden = true; bangNhan.hidden = true;
+      nutMedia.setAttribute('aria-expanded', 'false');
+      nutNhan.setAttribute('aria-expanded', 'false');
+      bangNgon.hidden = !bangNgon.hidden;
+    }
+
     function moBangMedia() {
-      bangMau.hidden = true;
+      bangMau.hidden = true; bangNhan.hidden = true; bangNgon.hidden = true;
+      nutNhan.setAttribute('aria-expanded', 'false');
       bangMedia.hidden = !bangMedia.hidden;
       nutMedia.setAttribute('aria-expanded', bangMedia.hidden ? 'false' : 'true');
     }
@@ -1713,14 +1977,17 @@
     /* Hai bảng, một chỗ đứng: mở cái này thì cái kia đóng. Chồng lên nhau thì
        bảng dưới vẫn ăn được cú bấm mà không ai thấy nó ở đó. */
     function moBangMau() {
-      bangMedia.hidden = true;
+      bangMedia.hidden = true; bangNhan.hidden = true; bangNgon.hidden = true;
       nutMedia.setAttribute('aria-expanded', 'false');
+      nutNhan.setAttribute('aria-expanded', 'false');
       bangMau.hidden = !bangMau.hidden;
     }
 
     function dongBang() {
       bangMau.hidden = true; bangMedia.hidden = true;
+      bangNhan.hidden = true; bangNgon.hidden = true;
       nutMedia.setAttribute('aria-expanded', 'false');
+      nutNhan.setAttribute('aria-expanded', 'false');
     }
 
     function chenLink() {
@@ -2343,6 +2610,72 @@
       if (khiDoi) { try { khiDoi(); } catch (e) {} }
     }
 
+    /* ══════════ THANH KHỔ ẢNH — BẤM VÀO ẢNH LÀ HIỆN RA ══════════
+       Ba khổ, đúng ba khổ mà bộ dựng hiểu: thường (nằm trong cột chữ), `.wide`
+       (rộng hơn cột chữ), `.full` (tràn hết bề ngang màn hình). Không có khổ
+       thứ tư, và cũng không có "kéo góc cho to nhỏ tuỳ ý": một con số pixel
+       không viết ra được thành Markdown, nên nó sẽ biến mất ở lượt lưu.
+
+       Trước bản này, đổi khổ nằm sau một dòng trong bảng Media và bắt phải đặt
+       con trỏ đúng cạnh tấm ảnh — mà ảnh vừa cắt xong thì con trỏ chẳng ở đâu
+       cả. Nay bấm thẳng vào tấm ảnh là ba khổ hiện ra ngay dưới nó, khổ đang
+       dùng sáng lên. */
+    var KHO_ANH = [['', L('anhThuong', 'Normal')],
+                   ['{.wide}', L('anhRong', 'Wide')],
+                   ['{.full}', L('anhTran', 'Full')]];
+    var thanhAnh = el('div', 'sz-anh-thanh');
+    thanhAnh.hidden = true;
+    var nutKho = KHO_ANH.map(function (x) {
+      var b = el('button', 'sz-anh-nut', x[1]);
+      b.type = 'button';
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      b.addEventListener('click', function () {
+        if (!anhDangChon) return;
+        if (x[0]) anhDangChon.setAttribute('data-lop', x[0]);
+        else anhDangChon.removeAttribute('data-lop');
+        anhDangChon.classList.remove('sz-anh--wide', 'sz-anh--full');
+        if (x[0] === '{.wide}') anhDangChon.classList.add('sz-anh--wide');
+        if (x[0] === '{.full}') anhDangChon.classList.add('sz-anh--full');
+        capNhat();
+        /* Đổi khổ là đổi cả chiều cao tấm ảnh, nên thanh phải đi theo. */
+        datThanhAnh(anhDangChon);
+      });
+      thanhAnh.appendChild(b);
+      return b;
+    });
+
+    var anhDangChon = null;
+
+    function datThanhAnh(a) {
+      anhDangChon = a;
+      if (!a) { thanhAnh.hidden = true; return; }
+      var nay = a.getAttribute('data-lop') || '';
+      for (var i = 0; i < nutKho.length; i++) {
+        nutKho[i].classList.toggle('sz-anh-nut--bat', KHO_ANH[i][0] === nay);
+      }
+      /* Ảnh vừa chèn có thể chưa xong bố cục ở nhịp này — lúc ấy chiều cao
+         bằng 0 và thanh rơi lên đỉnh tấm ảnh. Đợi nó tải xong rồi đặt lại. */
+      if (!a.complete || !a.getBoundingClientRect().height) {
+        a.addEventListener('load', function () {
+          if (anhDangChon === a) datThanhAnh(a);
+        }, { once: true });
+      }
+      var rA = a.getBoundingClientRect();
+      var rK = khoiSoan.getBoundingClientRect();
+      thanhAnh.hidden = false;
+      thanhAnh.style.left = Math.round(rA.left - rK.left + rA.width / 2) + 'px';
+      thanhAnh.style.top  = Math.round(rA.bottom - rK.top - 6) + 'px';
+    }
+
+    khung.addEventListener('click', function (e) {
+      var a = e.target && e.target.nodeName === 'IMG' ? e.target : null;
+      datThanhAnh(a && khung.contains(a) ? a : null);
+    });
+    /* Cuộn hay đổi cỡ cửa sổ thì toạ độ cũ hết đúng — cất thanh đi còn hơn để
+       nó đứng lạc một chỗ nào đó trên màn. */
+    addEventListener('scroll', function () { if (anhDangChon) datThanhAnh(null); }, { passive: true });
+    addEventListener('resize', function () { if (anhDangChon) datThanhAnh(null); }, { passive: true });
+
     /* ══════════ ĐỔI LOẠI KHUNG NHẤN NGAY TRÊN NHÃN ══════════
        Bốn khung nhấn chỉ khác nhau ở MÀU, và màu ấy nay hiện ngay trong khung
        gõ (xem `.sz-khoi[data-khoi]` trong soan.css). Nên cách tự nhiên nhất
@@ -2460,7 +2793,10 @@
     khoiSoan.appendChild(thanh);
     khoiSoan.appendChild(oBao);
     khoiSoan.appendChild(oFile);
+    khoiSoan.appendChild(thanhAnh);
     khoiSoan.appendChild(bangMedia);
+    khoiSoan.appendChild(bangNhan);
+    khoiSoan.appendChild(bangNgon);
     khoiSoan.appendChild(bangMau);
     khoiSoan.appendChild(khung);
     khoiSoan.appendChild(oMD);
@@ -2469,7 +2805,7 @@
     /* Bấm ra ngoài thì đóng bảng đang mở. Nghe trên `document` chứ không trên
        khối: bấm vào ô Tiêu đề phía trên cũng phải đóng nó. */
     document.addEventListener('mousedown', function (e) {
-      if (!khoiSoan.contains(e.target)) dongBang();
+      if (!khoiSoan.contains(e.target)) { dongBang(); datThanhAnh(null); }
     });
 
     try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}

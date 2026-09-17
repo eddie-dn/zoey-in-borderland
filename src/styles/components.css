@@ -41,6 +41,9 @@
 }
 /* Nút phụ là kính TRONG, không màu — để nó cũng có màu nhấn thì màn nào cũng
    có hai thứ tranh nhau làm nút chính. */
+/* Cỡ nhỏ: cho những chỗ mà việc đã xong và cái nút chỉ còn mở đường đi
+   tiếp — ở đó một cái nút cỡ nút Đăng là hô to một việc nhỏ. */
+.btn--nho{padding:8px var(--s5);font-size:var(--fs-2xs);letter-spacing:.14em}
 .btn--ghost{color:var(--text-muted)}
 .btn--ghost:hover{color:var(--text)}
 

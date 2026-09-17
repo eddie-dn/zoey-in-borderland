@@ -198,6 +198,91 @@
 .sz-khung .c-cham{color:var(--c-cham)}
 .sz-khung .c-oliu{color:var(--c-oliu)}
 
+/* ══════════ THANH KHỔ ẢNH ══════════
+   Nổi ngay dưới tấm ảnh vừa bấm. Neo theo `.sz` (khối soạn), nên nó cần khối
+   ấy làm mốc — xem `position:relative` ở `.sz` ngay dưới. */
+.sz{position:relative}
+.sz-anh-thanh{
+  position:absolute;z-index:6;transform:translateX(-50%);
+  display:flex;gap:2px;padding:3px;
+  border-radius:var(--r-pill);
+  background:var(--surface-solid);
+  box-shadow:inset 0 0 0 1px var(--line),var(--glass-drop);
+}
+.sz-anh-nut{
+  appearance:none;border:0;background:none;cursor:pointer;
+  padding:5px var(--s3);border-radius:var(--r-pill);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+  white-space:nowrap;
+}
+.sz-anh-nut:hover{color:var(--accent-ink);background:var(--surface-sunken)}
+.sz-anh-nut--bat{color:var(--accent-ink);background:var(--accent-wash)}
+
+/* ══════════ BẢNG TRONG Ô SOẠN ══════════
+   Một `<table>` thật, gõ thẳng vào ô. Vẽ gần giống bảng trên trang đã dựng —
+   hàng tiêu đề có nền, hàng chẵn nhạt hơn — vì ô soạn phải bày ra đúng thứ
+   trang sẽ hiện. Khác một điểm: ở đây MỌI ô đều có đường kẻ bao quanh, kể cả
+   đường dọc. Trên trang đã dựng thì không, nhưng lúc đang gõ thì phải nhìn ra
+   ranh giới ô mới biết mình đang đứng ở ô nào. */
+.sz-khung table.sz-bang-o{
+  border-collapse:collapse;width:100%;margin:1em 0;
+  font-size:var(--fs-sm);line-height:1.6;
+}
+.sz-khung .sz-bang-o :is(th,td){
+  border:1px solid var(--line);
+  padding:8px var(--s3);text-align:left;vertical-align:top;
+  min-width:3em;
+}
+.sz-khung .sz-bang-o th{
+  background:var(--accent-wash);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
+}
+.sz-khung .sz-bang-o tbody tr:nth-child(even){background:var(--surface-sunken)}
+/* Ô đang gõ sáng lên: trong một lưới ô trống giống hệt nhau, con trỏ nhấp nháy
+   một mình không đủ để nói mình đang ở đâu. */
+.sz-khung .sz-bang-o :is(th,td):focus{outline:none}
+.sz-khung .sz-bang-o :is(th,td):focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+
+/* ══════════ KHUNG ĐẶT CỠ BẢNG ══════════
+   Dùng chung khuôn `.sz-cat` (khung cắt ảnh) cho phần nền và cách canh giữa. */
+.sz-bang-hoi{
+  width:min(320px,calc(100vw - 32px));
+  padding:var(--s5);text-align:left;
+}
+.sz-bang-de{
+  margin:0 0 var(--s4);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);
+}
+.sz-bang-so{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3)}
+.sz-bang-nhan{
+  flex:1;font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+}
+.sz-bang-nut{
+  appearance:none;cursor:pointer;
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--line-strong);background:var(--surface-solid);
+  color:var(--text);font-size:15px;line-height:1;
+}
+.sz-bang-nut:hover{border-color:var(--accent);color:var(--accent-ink)}
+.sz-bang-gia{
+  min-width:1.6em;text-align:center;
+  font-family:var(--font-mono);font-size:var(--fs-sm);color:var(--text);
+}
+/* Bảng xem trước: chỉ có ô rỗng, nên nó nói đúng một điều — cỡ. */
+.sz-bang-xem{margin:var(--s4) 0;overflow:hidden}
+.sz-bang-xem table{border-collapse:collapse;width:100%;table-layout:fixed}
+.sz-bang-xem :is(th,td){border:1px solid var(--line);height:16px}
+.sz-bang-xem th{background:var(--accent-wash)}
+.sz-bang-mach{
+  margin:0 0 var(--s4);font-size:var(--fs-2xs);line-height:1.45;
+  color:var(--text-faint);
+}
+.sz-bang-nuts{display:flex;gap:var(--s3);justify-content:flex-end}
+
 /* ── HAI BẢNG BẬT RA ──
    Không dùng `position:absolute`: ở khổ điện thoại một bảng thả nổi hoặc tràn
    khỏi mép phải, hoặc phải đo lại vị trí mỗi lần bàn phím bật lên. Đẩy khung

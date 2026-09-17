@@ -374,6 +374,7 @@ const NHAN = {
   vbHide      : 'Hide',
   vbUnhide    : 'Unhide',
   vbBack      : 'Back',
+  vbCommitLabel: 'Commit',
   vbSave      : 'Save',
   vbSaved     : 'Saved. Cloudflare is rebuilding.',
   vbWorking   : '…',
@@ -473,7 +474,22 @@ const NHAN = {
   szCanTrai   : 'Left',
   szCanGiua   : 'Centre',
   szCanPhai   : 'Right',
-  szBTableAsk : 'Size — columns × rows (up to 5 × 20):',
+  /* Khung đặt cỡ bảng — hỏi bằng hai cặp nút cộng trừ và một bảng xem trước,
+     không còn bắt gõ một chuỗi kiểu "3x4" vào hộp thoại của trình duyệt. */
+  szBTableAsk : 'How big?',
+  szBTableCot : 'Columns',
+  szBTableHang: 'Rows',
+  szBTableOk  : 'Insert',
+  szBTableMach: 'The first row is the header. Tab moves to the next cell.',
+  szHuy       : 'Cancel',
+  /* Ba khổ ảnh — bấm vào tấm ảnh trong ô soạn là hiện ra ngay dưới nó. */
+  szAnhThuong : 'Normal',
+  szAnhRong   : 'Wide',
+  szAnhTran   : 'Full',
+  /* Bảng ngôn ngữ của khối mã: nói ra nó DÙNG ĐỂ LÀM GÌ, không chỉ hỏi tên. */
+  szBCodeMach : 'Pick the language so the code gets syntax colours on the page.',
+  szBCodeTron : 'No colours',
+  szBCodeTronMo: 'plain text in a box',
   szBCode     : 'Code block', szBCodeMo   : 'keeps every space and line break',
   szBTask     : 'Checklist',  szBTaskMo   : 'a list with tick boxes',
   /* Dòng mờ trong ô tiêu đề của khối — thay cho hộp thoại hỏi tiêu đề đã bỏ.
@@ -1171,6 +1187,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         needBoth: NHAN.vbNeedBoth,
                         sending: NHAN.vbSending, done: NHAN.vbDone,
                         building: NHAN.vbBuilding, seeCommit: NHAN.vbSeeCommit,
+                        commitLabel: NHAN.vbCommitLabel,
                         another: NHAN.vbAnother, failed: NHAN.vbFailed,
                         noConfig: NHAN.vbNoConfig, seeDoc: NHAN.vbSeeDoc,
                         loading: NHAN.vbLoading, badKey: NHAN.badKey, netErr: NHAN.netErr,
@@ -1213,6 +1230,13 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bWide: NHAN.szBWide, bWideMo: NHAN.szBWideMo,
                         bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
                         bTableAsk: NHAN.szBTableAsk,
+                        bTableCot: NHAN.szBTableCot, bTableHang: NHAN.szBTableHang,
+                        bTableOk: NHAN.szBTableOk, bTableMach: NHAN.szBTableMach,
+                        huy: NHAN.szHuy,
+                        anhThuong: NHAN.szAnhThuong, anhRong: NHAN.szAnhRong,
+                        anhTran: NHAN.szAnhTran,
+                        bCodeMach: NHAN.szBCodeMach, bCodeTron: NHAN.szBCodeTron,
+                        bCodeTronMo: NHAN.szBCodeTronMo,
                         canTrai: NHAN.szCanTrai,
                         canGiua: NHAN.szCanGiua,
                         canPhai: NHAN.szCanPhai,
@@ -1973,14 +1997,6 @@ function cumTuongTac(bai) {
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7a4.3 4.3 0 0 1 7.5-2.9 4.3 4.3 0 0 1 7.5 2.9c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
         <span class="bl-so" data-thich-so hidden></span>
       </button>
-      <button class="bl-nut bl-chia tip" type="button"
-              data-chia="${attr(CAU.url + bai.url)}"
-              data-de="${attr(bai.title)}"
-              data-tip="${attr(NHAN.blShare)}"
-              data-nhan="${attr(JSON.stringify({ copied: NHAN.shareCopied, fail: NHAN.shareFail }))}"
-              aria-label="${attr(NHAN.blShare)}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 13.5 14.5 16m0-8L9.5 10.5M7 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm15-5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0 11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/></svg>
-      </button>
       ${/* `data-o` nói cho comments.js biết khung bình luận của BÀI NÀY mở ra ở
             đâu, để nó khỏi phải suy ra từ tên lớp của lưới:
               'ben'  → cột phải (khung A, khổ ≥1080px)
@@ -1992,6 +2008,14 @@ function cumTuongTac(bai) {
               aria-label="${attr(NHAN.comments)}">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 12.6c0 3.6-3.8 6.5-8.5 6.5a10 10 0 0 1-2.6-.33L4.5 20.5l1.3-3.6a6.2 6.2 0 0 1-2.3-4.7c0-3.6 3.8-6.5 8.5-6.5s8.5 2.9 8.5 6.5Z"/></svg>
         <span class="bl-so" data-bl-so hidden></span>
+      </button>
+      <button class="bl-nut bl-chia tip" type="button"
+              data-chia="${attr(CAU.url + bai.url)}"
+              data-de="${attr(bai.title)}"
+              data-tip="${attr(NHAN.blShare)}"
+              data-nhan="${attr(JSON.stringify({ copied: NHAN.shareCopied, fail: NHAN.shareFail }))}"
+              aria-label="${attr(NHAN.blShare)}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 13.5 14.5 16m0-8L9.5 10.5M7 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm15-5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0 11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/></svg>
       </button>
     </span>
     <span class="bao cum-bao" role="status" aria-live="polite"></span>
@@ -2287,7 +2311,7 @@ function docTiepCap(bai, congKhai) {
   </nav>`;
 }
 
-function readNextHTML(bai, congKhai) {
+function readNextHTML(bai, congKhai, oBen) {
   const ds = goiY(bai, congKhai);
   if (!ds.length) return '';
 
@@ -2305,9 +2329,22 @@ function readNextHTML(bai, congKhai) {
       <span class="rn-meta">${ngayAnh(b.date)}</span>
     </a>`).join('');
 
-  return `<section class="read-next">
-    <div class="eyebrow"><i></i></div>
-    <p class="label">${NHAN.readNext}</p>
+  /* ── NHÃN VÀ VẠCH NGĂN CHỈ CÓ Ở CỘT BÊN ──
+     Trong cột bên, khối này là một MỤC của cột — nó đứng cạnh mục lục, nên nó
+     cần một dòng nhãn để nói mình là mục nào.
+
+     Ở chân bài thì không. Ngay phía trên nó đã là hàng tag, và hàng tag kết
+     thúc bằng một đường kẻ; thêm một vạch ngăn có chấm giữa rồi một dòng chữ
+     hoa giãn ly nữa là BA lần ngắt mạch liên tiếp trong chừng trăm pixel, chỉ
+     để giới thiệu hai cái liên kết. Mà hai dòng ấy tự nói ra chúng là gì:
+     mỗi dòng đã mang sẵn nhãn RELATED · NEWER · OLDER ở đầu.
+
+     Điều kiện là CHỖ ĐỨNG, không phải tên khung: một bài khung `post left`
+     không có tiêu đề mục nào thì cũng chẳng có cột bên, và nó rơi vào đúng
+     cảnh ấy. */
+  return `<section class="read-next${oBen ? '' : ' read-next--gon'}">
+    ${oBen ? `<div class="eyebrow"><i></i></div>
+    <p class="label">${NHAN.readNext}</p>` : ''}
     <div class="rn-grid">${the}</div>
   </section>`;
 }
@@ -2550,7 +2587,7 @@ function trangBai(bai, congKhai) {
        đẩy xuống, chứ không phải nó che mất chỗ vừa mở ra. */
     readNext    : coCotBen(bai) ? ''
                 : bai.khung === 'insta' ? docTiepCap(bai, congKhai)
-                : readNextHTML(bai, congKhai),
+                : readNextHTML(bai, congKhai, false),
     binhLuan    : binhLuanHTML(bai),
     /* ── MỘT CHỖ ĐỨNG DUY NHẤT, MỌI KHUNG ──
        Cụm tim · chia sẻ · bình luận nằm CUỐI HÀNG META, không rẽ nhánh theo
@@ -2560,7 +2597,7 @@ function trangBai(bai, congKhai) {
        bình luận ở khổ rộng — chính khung bình luận (xem comments.js). */
     cumDau      : cumTuongTac(bai),
     toc         : tocHTML(bai.headings,
-                          coCotBen(bai) ? readNextHTML(bai, congKhai) : ''),
+                          coCotBen(bai) ? readNextHTML(bai, congKhai, true) : ''),
     bangAnh     : bangAnhHTML(bai)
   });
 

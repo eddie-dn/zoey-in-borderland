@@ -174,14 +174,47 @@
    `.vb-cho` ở lại, nhưng nay là lớp phụ của `.trong` (components.css): nó là
    trạng thái ĐANG CHỜ, không phải một dòng báo tin. */
 .vb-cho{margin:0}
-.vb-xong{display:flex;flex-direction:column;gap:var(--s3)}
-.vb-xong-de{
-  margin:0;font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+/* ── MÀN HÌNH SAU KHI ĐĂNG ──
+   Việc đã xong, nên màn này chỉ còn hai nhiệm vụ: nói bài nằm ở đâu và bao
+   giờ lên, rồi mở hai đường đi tiếp. Gom hết vào một khối hẹp có nền, thay
+   vì năm mảnh rời trải hết bề ngang cột. */
+.vb-xong{
+  display:flex;flex-direction:column;gap:var(--s3);
+  max-width:38rem;
+  padding:var(--s5) var(--s5) var(--s4);
+  border-radius:var(--r-md);
+  background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
 }
-.vb-xong-chu{margin:0;font-size:var(--fs-md);font-style:italic}
-.vb-xong-ds{margin:0;padding-left:1.1em;font-size:var(--fs-xs);color:var(--text-muted)}
+.vb-xong-de{
+  display:flex;align-items:center;gap:var(--s2);
+  margin:0;font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--ok);
+}
+.vb-xong-tick{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:17px;height:17px;border-radius:50%;
+  background:var(--ok-wash);color:var(--ok);
+  font-size:10px;letter-spacing:0;
+}
+.vb-xong-chu{margin:0;font-size:var(--fs-md);font-style:italic;font-weight:400;line-height:1.3}
+/* Hai dòng thông tin thành một lưới NHÃN · GIÁ TRỊ. Danh sách chấm tròn cũ
+   bắt mắt đi từ chấm sang chữ rồi mới tới thứ cần đọc; ở đây nhãn nằm sẵn
+   bên trái, mắt nhảy thẳng vào cột phải. */
+.vb-xong-ds{
+  display:grid;grid-template-columns:auto minmax(0,1fr);
+  gap:2px var(--s4);margin:var(--s2) 0 0;
+  font-size:var(--fs-xs);
+}
+.vb-xong-ds dt{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
+  padding-top:2px;
+}
+.vb-xong-ds dd{margin:0;min-width:0;color:var(--text-muted);overflow-wrap:anywhere}
 .vb-xong-ds code{font-size:var(--fs-xs)}
+.vb-xong-nhac{margin:var(--s2) 0 0;font-size:var(--fs-2xs)}
+.vb-xong-nut{display:flex;gap:var(--s3);margin-top:var(--s3)}
 
 /* ══════════════════════════════════════════════════════════════════════
    BẢNG LÀM VIỆC `.ad-*` — MỘT KHUÔN CHO MỌI DANH SÁCH Ở /z-admin/

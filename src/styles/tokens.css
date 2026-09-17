@@ -594,7 +594,15 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   /* Hai nốt phụ đậm theo cùng một bậc: chúng đi chung trong --glass-tint, và
      một dải gradient có một nốt đậm hai nốt nhạt thì đọc ra là bị lem. Chữ
      trên nút chính vẫn còn 5,8:1 ở chặng tối nhất. */
-  --accent-2:#8FD0C6;                 /* nốt lục giữ lại — xem mục 4 ở trên */
+  /* ── NỐT NÀY TỪNG QUÁ LỤC ──
+     `#8FD0C6` là lục rêu thật, còn `--accent` là lam trời. Dải `--glass-tint`
+     đi từ nốt này sang nốt kia, nên nút chính của theme ra một vệt CHUYỂN HẲN
+     HỆ MÀU — xanh lá ở đầu này, xanh dương ở đầu kia. Trên một cái nút bo tròn
+     cỡ nút Send thì nó đọc ra là một mảng loang, không ra một cái nút.
+     `#8FCBD8` vẫn ngả lục đủ để dải gradient có chỗ đổi (mục 4 ở trên còn
+     nguyên lý do), nhưng nằm trong cùng một họ với lam. Tương phản với chữ
+     trên nút: 7,68:1. */
+  --accent-2:#8FCBD8;                 /* nốt lục giữ lại — xem mục 4 ở trên */
   --accent-3:#A6CCEA;
   --accent-wash:rgba(122,191,222,.16);
 

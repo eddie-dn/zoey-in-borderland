@@ -58,6 +58,11 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.6 | 2026-09-18 | 06 | ô soạn: bấm vào ảnh là hiện thanh ba khổ; màn hình sau khi đăng gom lại một khối gọn; bảng trên trang có hàng kẻ xen kẽ |
+| V2.8.5 | 2026-09-18 | 05 | ô soạn: bảng nay là bảng thật gõ thẳng vào ô, có khung đặt cỡ và Tab sang ô kế; khối mã và khung nhấn đều có bảng chọn |
+| V2.8.4 | 2026-09-18 | 04 | khối đọc tiếp ở chân bài bỏ nhãn và vạch ngăn; cụm cuối hàng meta đổi thứ tự thành tim, bình luận, chia sẻ; nút chính theme Tĩnh lặng thôi loang hai hệ màu |
+| V2.8.3 | 2026-09-18 | 03 | nền 霜降 xếp lại dãy núi và tính bước sóng theo bề ngang thật nên khổ điện thoại thôi lởm chởm; vòng ngày đêm nhanh hơn; nền động ở trang tĩnh hiện rõ hơn |
+| V2.8.2 | 2026-09-18 | 02 | nền 霜降: mặt trời mọc từ sau dãy núi xa, đĩa sáng vẽ lại mượt như mặt trăng, bỏ mây và cho sương thở rõ hơn |
 | V2.8.1 | 2026-09-18 | 01 | trang giới thiệu hiện tên blog trên thanh đầu như mọi trang khác; thẻ chuyên mục thôi bị kéo cao theo hàng trên; bộ dựng nhắc khi ảnh chân dung gần như trống |
 | V2.8.0 | 2026-09-17 | 00 | phép kiểm mới: bắt một lớp CSS bị khai hai lần cùng một thuộc tính trong một file |
 | V2.7.9 | 2026-09-17 | 09 | nền động bốn theme hiện rõ hơn; nền 霜降 vẽ lại trăng và cho bầu trời đổi màu trọn một vòng ngày đêm |
@@ -231,6 +236,82 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.6 — 18-Sep-2026
+
+- **Bấm vào ảnh trong ô soạn là hiện thanh ba khổ** — thường · rộng · tràn —
+  và khổ đang dùng sáng lên. Trước đó đổi khổ nằm sau một dòng trong bảng
+  Media và bắt phải đặt con trỏ đúng cạnh tấm ảnh, mà ảnh vừa cắt xong thì con
+  trỏ chẳng ở đâu cả. (Ba khổ là đúng ba khổ bộ dựng hiểu; một con số pixel
+  tuỳ ý không viết ra được thành Markdown nên nó sẽ mất ở lượt lưu.)
+- **Màn hình sau khi đăng gom lại một khối gọn.** Việc đã xong rồi, màn ấy chỉ
+  còn trả lời hai câu và mở hai đường đi tiếp — nhưng nó đang trải năm mảnh
+  rời hết bề ngang cột, với một cái nút to bằng nút Đăng. Nay là một thẻ hẹp
+  có nền: dấu tích, tên bài, hai dòng nhãn–giá trị, hai nút cùng cỡ vừa.
+- **Bảng trên trang có hàng kẻ xen kẽ.** Bảng bốn cột trở lên thì đọc một hàng
+  là mắt đi ngang cả trăm pixel rồi quay về, và đúng chỗ quay về là chỗ nhảy
+  nhầm dòng.
+
+## V2.8.5 — 18-Sep-2026
+
+- **Bảng trong ô soạn nay là BẢNG THẬT.** Trước đó nó chèn mấy dòng `| | |`
+  vào một đoạn văn và để người viết gõ giữa hai dấu gạch — nhìn ra đúng như nó
+  là: một mớ ký tự, không thấy được ô nào là ô nào, thêm một cột là phải đếm
+  tay lại cả bảng. Nay bấm vào ô nào gõ ô đó, **Tab** sang ô kế, Tab ở ô cuối
+  thì thêm một hàng; tới lúc lưu mới đổi ra cú pháp Markdown.
+- **Khung đặt cỡ bảng thay cho câu hỏi "3x4".** Hai cặp nút cộng trừ và một
+  bảng xem trước vẽ đúng cỡ đang chọn. Không còn phải dịch ý mình ra một chuỗi,
+  và không còn hộp thoại của trình duyệt nhảy lên đỉnh màn hình.
+- **Khối mã và khung nhấn đều có bảng chọn.** Khối mã: một bảng nói thẳng
+  ngôn ngữ dùng để TÔ MÀU CÚ PHÁP, bày sẵn tám thứ hay dùng và một dòng "no
+  colours". Khung nhấn: bốn loại, mỗi dòng một chấm đúng màu nó sẽ hiện ra —
+  chọn màu là việc lúc chèn, nên chỗ chọn phải ở ngay chỗ chèn.
+
+## V2.8.4 — 18-Sep-2026
+
+- **Khối đọc tiếp ở chân bài bỏ nhãn và vạch ngăn.** Ngay trên nó đã là hàng
+  tag, mà hàng tag kết thúc bằng một đường kẻ; thêm một vạch có chấm giữa rồi
+  một dòng chữ hoa nữa là ba lần ngắt mạch liên tiếp trong chừng trăm pixel,
+  chỉ để giới thiệu hai cái liên kết vốn đã tự mang nhãn RELATED · NEWER ·
+  OLDER. Ở cột bên thì giữ nhãn — ở đó nó là tên của một mục trong cột.
+- **Cụm cuối hàng meta đổi thứ tự: tim · bình luận · chia sẻ.** Chia sẻ lùi về
+  cuối vì nó là việc làm SAU khi đã đọc xong và đã thích.
+- **Nút chính theme Tĩnh lặng thôi loang hai hệ màu.** Dải nền nút đi từ một
+  nốt lục rêu sang lam trời — trên một cái nút bo tròn cỡ nút Send thì nó đọc
+  ra là một mảng loang. Nốt ấy kéo về cùng họ với lam, vẫn còn đủ ngả lục để
+  dải gradient có chỗ đổi.
+
+## V2.8.3 — 18-Sep-2026
+
+- **Dãy núi 霜降 xếp lại, và thôi lởm chởm trên điện thoại.** Bước sóng của
+  đường sống núi trước nay tính theo TỈ LỆ bề ngang, nên màn nào cũng chừng ấy
+  ngọn — nhét đủ số ngọn của một màn 1400px vào một cái điện thoại 375px thì
+  chúng chen nhau thành hàng răng cưa. Nay bước sóng đo bằng pixel: màn hẹp
+  thấy ít ngọn hơn, mỗi ngọn vẫn rộng đúng chừng ấy.
+- **Mỗi dãy có thêm một nét sống núi.** Sương xoá mực, nên một dãy chìm trong
+  sương thì tan biến hoàn toàn và bức tranh mất khung. Nét mảnh chạy dọc đường
+  sống giữ lại cái khung ấy: sương mỏng đi là viền hiện ra trước tiên.
+- **Vòng ngày đêm nhanh hơn** (100 giây còn 70), và **nền động ở trang tĩnh
+  hiện rõ hơn** — .30 lên .50. Trang giới thiệu là một lưới THẺ, mỗi thẻ có
+  mặt nền riêng, nên hạ độ hiện của nền không làm chữ dễ đọc hơn chút nào; chỉ
+  làm mấy cái khe giữa thẻ trống trơn.
+
+## V2.8.2 — 18-Sep-2026
+
+- **Mặt trời mọc từ sau dãy núi xa.** Nó nay được vẽ TRƯỚC cả dãy xa nhất, nên
+  thứ hiện ra đầu tiên lúc rạng là một quầng sáng dâng lên từ phía sau cụm núi
+  cao, rồi cái đĩa mới từ từ trồi khỏi đường sống. Bản trước vẽ nó sau dãy xa:
+  mặt trời nhảy ra nguyên vẹn ngay từ nhịp đầu, không có chặng "rạng" nào.
+- **Đĩa mặt trời vẽ lại theo đúng cách mặt trăng được vẽ** — cùng một dải
+  chuyển tám chặng, khác nhau đúng ở chỗ đổ mực hay lấy mực. Ba chặng thì mắt
+  bắt ra chỗ gãy ngay cả khi rất mờ, và đó là cái làm nó trông như một miếng
+  dán tròn.
+- **Bỏ mây, cho sương thở.** Mấy đám mây trôi ngang là ba bọng mờ chồng nhau,
+  và ở độ đậm nào chúng cũng đọc ra là vệt bẩn trên giấy. Phần chuyển động nay
+  dồn hết vào sương: ba dải, ba nhịp lệch nhau, lúc dày tan cả một tầng núi
+  vào giấy, lúc mỏng thì nét sống núi hiện lại. Vệt sáng dưới nước cũng vẽ lại
+  thành một cột những vệt ngang rời nhau, và **mặt trăng nay có bóng** — trước
+  nó xoá vào chỗ không có gì để xoá nên không bao giờ hiện ra.
 
 ## V2.8.1 — 18-Sep-2026
 

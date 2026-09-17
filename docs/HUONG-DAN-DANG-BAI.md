@@ -361,6 +361,11 @@ Nội dung.
 
 Không ghi nhãn thì lấy nhãn mặc định (`Ghi chú` · `Mẹo` · `Lưu ý` · `Đừng làm`).
 
+> **Trong ô soạn ở `/z-admin/`:** nút khung nhấn mở một bảng bốn dòng, mỗi
+> dòng một chấm đúng màu nó sẽ hiện ra. Chèn rồi mà muốn đổi loại thì **bấm
+> thẳng vào chữ `note` trên khối** — nó xoay note → tip → warn → stop, và cả
+> khối đổi màu ngay tại chỗ.
+
 ### 3.6 · Khối mã
 
 ````markdown
@@ -371,6 +376,10 @@ const x = 1;
 
 Tên ngôn ngữ hiện ở góc khối. Người đọc có nút **Chép** ở góc phải.
 
+> **Tên ngôn ngữ để làm gì:** để tô màu cú pháp. Không khai thì khối vẫn ra
+> đúng khối mã, chỉ là chữ một màu. Trong ô soạn, nút khối mã mở một bảng bày
+> sẵn mấy thứ hay dùng cộng một dòng **No colours** cho khối chỉ chứa chữ.
+
 ### 3.7 · Chú thích cho riêng mình
 
 ```markdown
@@ -379,6 +388,34 @@ Tên ngôn ngữ hiện ở góc khối. Người đọc có nút **Chép** ở 
 
 Chú thích `<!-- -->` **bị bỏ hẳn khi dựng**, không lọt ra HTML. Ghi chú riêng
 viết thoải mái, bạn đọc bấm "Xem mã nguồn" cũng không thấy.
+
+### 3.8 · Bảng
+
+```markdown
+| Cổ mẫu | Xuất hiện dưới dạng | Hay gặp ở |
+|---|---|---:|
+| Người Mẹ | che chở, cũng có thể nuốt chửng | cổ tích |
+| Cái Bóng | phần mình chối bỏ | giấc mơ xấu |
+```
+
+**Hàng đầu là hàng tiêu đề** — nó có nền riêng trên trang. Dòng thứ hai là
+dòng gạch ngăn, và nó bắt buộc: thiếu nó thì cả khối chỉ là mấy đoạn văn đầy
+dấu gạch đứng. Thêm dấu `:` vào dòng ấy để căn cột: `|---:|` là dồn phải,
+`|:---:|` là căn giữa.
+
+Số dấu gạch `-` quyết định **bề rộng cột**: `|---|------|` cho cột hai rộng
+gấp đôi cột một.
+
+Các hàng trong thân bảng tự có nền xen kẽ nhạt, để mắt bám được một hàng dài
+mà không nhảy nhầm dòng. Bảng rộng quá khung thì tự trượt ngang trong khung
+của nó, không kéo cả trang trượt theo.
+
+> **Trong ô soạn ở `/z-admin/`:** nút bảng mở một khung hỏi cỡ bằng hai cặp
+> nút cộng trừ, có bảng xem trước — không phải gõ "3x4" vào đâu cả. Chèn xong
+> thì nó là **một cái bảng thật**, bấm vào ô nào gõ ô đó; **Tab** sang ô kế,
+> **Shift+Tab** lùi lại, và Tab ở ô cuối cùng thì thêm một hàng mới. Tối đa
+> 5 cột × 20 hàng — trên 5 cột thì mỗi cột còn chừng mười ký tự, không đọc
+> được nữa.
 
 ---
 

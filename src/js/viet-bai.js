@@ -1198,19 +1198,32 @@
     if (soan) soan.boNhap();
     soan = null;
     hop.innerHTML =
+      /* ── MÀN HÌNH SAU KHI ĐĂNG ──
+         Bản trước xếp năm khối rời nhau thành một cột: một nhãn, một tiêu đề
+         nghiêng, một danh sách chấm tròn, một dòng báo, rồi một cặp nút trong
+         đó cái chính to bằng nút Đăng ở biểu mẫu. Việc đã xong rồi — màn này
+         chỉ còn phải trả lời hai câu ("bài nằm ở đâu" và "bao giờ lên") và mở
+         hai đường đi tiếp. Một cái nút to cỡ ấy ở đây là hô to một việc nhỏ.
+
+         Nay: một dấu tích, tiêu đề bài, hai dòng thông tin thành một khối gọn
+         có nền, và hai nút cùng cỡ vừa. */
       '<div class="vb-xong">' +
-        '<p class="vb-xong-de">' + tho(L('done', 'Pushed to the repository')) + '</p>' +
-        '<p class="vb-xong-chu">' + tho(b.title) + '</p>' +
-        '<ul class="vb-xong-ds">' +
-          '<li>' + tho(L('willBe', 'Will live at')) + ' <code>' + tho(d.duongBai) + '</code></li>' +
-          (d.commit ? '<li><a href="' + tho(d.commit) + '" target="_blank" rel="noopener">' +
-            tho(L('seeCommit', 'See the commit on GitHub')) + '</a></li>' : '') +
-        '</ul>' +
-        '<p class="bao">' + tho(d.nhac || L('building',
+        '<p class="vb-xong-de"><span class="vb-xong-tick" aria-hidden="true">✓</span> ' +
+          tho(L('done', 'Pushed to the repository')) + '</p>' +
+        '<h3 class="vb-xong-chu">' + tho(b.title) + '</h3>' +
+        '<dl class="vb-xong-ds">' +
+          '<dt>' + tho(L('willBe', 'Will live at')) + '</dt>' +
+          '<dd><code>' + tho(d.duongBai) + '</code></dd>' +
+          (d.commit ? '<dt>' + tho(L('commitLabel', 'Commit')) + '</dt>' +
+            '<dd><a href="' + tho(d.commit) + '" target="_blank" rel="noopener">' +
+            tho(L('seeCommit', 'See the commit on GitHub')) + '</a></dd>' : '') +
+        '</dl>' +
+        '<p class="bao vb-xong-nhac">' + tho(d.nhac || L('building',
           'Cloudflare is rebuilding. The post goes live in about a minute.')) + '</p>' +
-        '<div class="vb-nut">' +
-          '<button type="button" class="ad-lenh" data-ve>' + tho(L('back', 'Back')) + '</button>' +
-          '<button type="button" class="btn" data-nua>' +
+        '<div class="vb-xong-nut">' +
+          '<button type="button" class="btn btn--ghost btn--nho" data-ve>' +
+            tho(L('back', 'Back')) + '</button>' +
+          '<button type="button" class="btn btn--nho" data-nua>' +
             tho(L('another', 'Write another')) + '</button>' +
         '</div>' +
       '</div>';

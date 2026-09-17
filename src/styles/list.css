@@ -557,7 +557,16 @@
    nghĩa là đã mất một nhịp đọc. Ở .22 thì phải NHÌN VÀO khoảng trống mới
    thấy, tức là nó chỉ hiện ra đúng lúc người ta rời mắt khỏi chữ. Đó là chỗ
    một cái nền nên đứng. */
-.nen-boc > .nen-canvas{opacity:.3}
+/* ── TRANG TĨNH: .30 → .50 ──
+   .22 rồi .30 đều dựa trên một hình dung sai: rằng nền ở đây phủ lên chữ.
+   Nó không — trang giới thiệu là một lưới THẺ, mỗi thẻ có mặt nền riêng, nên
+   nền động chỉ hiện ra ở khe giữa các thẻ và ở lề trang. Hạ nó xuống không
+   làm chữ dễ đọc hơn chút nào; chỉ làm mấy cái khe ấy trống trơn.
+
+   Ở Galaxy và 霜降 thì hạ tay là mất hẳn: một trời sao ở .30 đọc ra là nhiễu
+   màn hình, còn dãy núi 霜降 nằm ở đáy khung nên phần lọt qua khe gần như
+   trắng. .50 thì cả bốn theme đều nhận ra được mình đang ở trang nào. */
+.nen-boc > .nen-canvas{opacity:.5}
 
 /* ── LƯỚI BA CỘT ──
    Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi

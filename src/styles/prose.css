@@ -417,6 +417,12 @@
   letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
   background:var(--accent-wash);white-space:nowrap;
 }
+/* ── HÀNG XEN KẼ ──
+   Bảng bốn cột trở lên, đọc một hàng là mắt phải đi ngang cả trăm pixel rồi
+   quay về — và đúng chỗ quay về là chỗ nhảy nhầm sang hàng khác. Một nền rất
+   nhạt ở hàng chẵn đủ để mắt bám được cả hàng, mà không tới mức đọc ra là
+   "hàng này khác hàng kia". */
+.prose tbody tr:nth-child(even){background:var(--surface-sunken)}
 .prose tbody tr:last-child :is(th,td){border-bottom:none}
 
 /* ── LINH TINH ── */
@@ -579,6 +585,9 @@
 
 /* ── Gợi ý đọc tiếp ── */
 .read-next .label{margin:0 0 var(--s5)}
+/* Bản không nhãn (ở chân bài) — xem `readNextHTML`. Không có nhãn thì cũng
+   không còn thứ gì chừa khoảng cách cho hàng đầu tiên, nên khối tự chừa. */
+.read-next--gon{margin-top:var(--s6)}
 /* ══════════ MỘT THANG CHỮ CHO CẢ CỘT BÊN ══════════
 
    Cột bên chở ba khối sinh ra ở ba chỗ khác nhau trong mã — mục lục
