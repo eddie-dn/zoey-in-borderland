@@ -934,6 +934,35 @@ const KIEM = [
     }
   },
   {
+    /* ── MỘT DÒNG SỔ CHỞ TỐI ĐA BỐN VIỆC ──
+       Cột "Sửa chính" hiện ra trong ngăn phiên bản ở chân trang, tức là người
+       đọc blog mở ra xem được. Sáu bảy mệnh đề nối bằng dấu chấm phẩy ở đó là
+       một khối chữ không ai đọc hết — và cả cuốn sổ mất tác dụng.
+
+       `tools/version.mjs` đã chặn ngay lúc ghi. Phép kiểm này soi lại, vì có
+       những dòng vào sổ bằng đường khác: sửa tay, trộn nhánh, hay một bản công
+       cụ cũ hơn.
+
+       ── VÌ SAO CHỈ SOI DÒNG MỚI NHẤT ──
+       Sổ có sẵn mấy dòng chở năm việc, từ trước lúc có luật này. Số phiên bản
+       đã in ra chân trang và đã lên kho mã, nên sửa lại là sửa lịch sử — mà
+       bắt cả bảng thì phép kiểm đỏ vĩnh viễn ở những dòng không ai được phép
+       động vào, và một phép kiểm đỏ vĩnh viễn thì chỉ có một kết cục: người ta
+       thôi nhìn nó. Dòng đầu là dòng đang được in ra trang NGAY LÚC NÀY, và
+       cũng là dòng duy nhất còn sửa được. */
+    ten: 'Dòng mới nhất trong sổ phiên bản chở tối đa 4 việc',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const so = docSo(goc);
+      if (so.loi || !so.ban.length) return [];
+      const moi = so.ban[0];
+      const viec = moi.suaChinh.split(';').map((x) => x.trim()).filter(Boolean);
+      if (viec.length <= 4) return [];
+      return [`${moi.ten} — dòng này chở ${viec.length} việc, tối đa 4. ` +
+              `Chia ra thành ${moi.ten} và bản vá kế tiếp (đuôi chạy tới 09).`];
+    }
+  },
+  {
     ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi, không dùng số kiêng',
     muc: 'loi',
     chay: ({ goc }) => {
@@ -1532,14 +1561,43 @@ const KIEM = [
     chay: () => {
       const doc = fs.readFileSync(path.join(GOC, 'README.md'), 'utf8');
       const ra = [];
+      /* Khối liệt kê của một thư mục trong bản đồ file ở README: dòng mở đầu
+         bằng chính đường dẫn ấy, rồi mọi dòng thụt vào tiếp sau. */
+      const layKhoi = (dau) => {
+        const dong = doc.split('\n');
+        const giu = [];
+        for (let i = 0; i < dong.length; i++) {
+          if (!dong[i].startsWith(dau)) continue;
+          giu.push(dong[i]);
+          for (let j = i + 1; j < dong.length && /^\s+\S/.test(dong[j]); j++) giu.push(dong[j]);
+        }
+        return giu.join('\n');
+      };
+
       for (const [thu, mo] of [['src/js', 'src/js/'], ['functions/api', 'functions/api/']]) {
         const d = path.join(GOC, thu);
         if (!fs.existsSync(d)) continue;
+        const khoiKe = layKhoi(mo);
+        if (!khoiKe) { ra.push(`README không có khối liệt kê cho ${mo}`); continue; }
         for (const f of fs.readdirSync(d)) {
           if (!f.endsWith('.js') || f.startsWith('_')) continue;
           const ten = f.replace(/\.js$/, '');
-          /* Bản đồ viết tên có lúc kèm đuôi .js, có lúc không — chấp cả hai. */
-          if (!doc.includes(f) && !new RegExp('\\b' + ten.replace(/-/g, '\\-') + '\\b').test(doc)) {
+          /* ── TÌM TRONG ĐÚNG KHỐI CỦA THƯ MỤC ẤY, KHÔNG TÌM CẢ README ──
+             Bản trước khớp tên TRẦN bằng ranh giới từ, trên toàn bộ file. Điều
+             đó biến mọi tên file ngắn thành một từ tiếng Việt hoặc một tên
+             công cụ: `functions/api/anh.js` vừa thêm vào đã xanh ngay, vì
+             README có sẵn `npm run anh` và một `tools/ … anh …` chẳng liên
+             quan gì. Một file mới toanh coi như đã được kể tới, mà chưa ai
+             viết một dòng nào về nó.
+
+             Không siết sang "phải kèm đuôi .js" được: bản đồ file trong README
+             cố ý viết tên trần cho gọn (`theme · nen · toc · …`), và bắt thêm
+             đuôi là bắt viết lại cả bản đồ cho một phép kiểm.
+
+             Nên siết ở PHẠM VI: chỉ đọc khối liệt kê của chính thư mục ấy —
+             dòng mở đầu bằng tên thư mục, cộng mọi dòng thụt vào ngay dưới nó. */
+          if (!khoiKe.includes(f) &&
+              !new RegExp('(^|[^\\w-])' + ten.replace(/-/g, '\\-') + '($|[^\\w-])').test(khoiKe)) {
             ra.push(`README chưa nhắc tới ${mo}${f}`);
           }
         }

@@ -36,6 +36,7 @@ import * as xem      from './functions/api/xem.js';
 import * as quote    from './functions/api/quote.js';
 import * as bai      from './functions/api/bai.js';
 import * as thich    from './functions/api/thich.js';
+import * as anh      from './functions/api/anh.js';
 
 /* Bảng tra, không phải chuỗi if: thêm một hàm là thêm một dòng ở đây, và tên
    đường dẫn nằm ngay cạnh module lo nó — đọc một chỗ là biết trang có những
@@ -46,7 +47,8 @@ const CUA = {
   '/api/xem':       xem,
   '/api/quote':     quote,
   '/api/bai':       bai,
-  '/api/thich':     thich
+  '/api/thich':     thich,
+  '/api/anh':       anh
 };
 
 export default {

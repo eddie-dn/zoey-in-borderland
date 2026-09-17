@@ -33,6 +33,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V15.03 | 2026-09-17 | 03 | ô ảnh bìa ngay trong trang viết bài; bảng đo tiêu đề · tóm tắt · ảnh lúc đang gõ; thẻ chia sẻ khai đủ khổ ảnh để Messenger và Zalo vẽ được ô xem trước |
+| V15.02 | 2026-09-17 | 02 | mọi khối viết được đều có nút, không còn gì phải gõ tay; cú pháp hiện ngay cạnh từng nút; thêm khối tràn hết bề ngang màn hình |
+| V15.01 | 2026-09-17 | 01 | kéo thả ảnh thẳng vào khung soạn thảo; ảnh tự thu nhỏ và đổi định dạng ngay trên máy; bấm đúp vào ảnh để gõ dòng tả |
 | V15.00 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài Vô thức tách phần demo xuống phụ lục; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
 | V12.09 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
 | V12.08 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
@@ -155,6 +158,57 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V15.03 — 17-Sep-2026
+
+- **Ô ảnh bìa, ngay trong trang viết bài.** `cover` và `coverAlt` đã nằm trong
+  front matter từ lâu, máy chủ đã nhận từ lâu, bộ dựng đã dùng chúng cho thẻ
+  chia sẻ và ảnh đầu bài — nhưng ô viết bài **chưa bao giờ gửi chúng lên**. Tức
+  là mọi bài đăng từ trang quản trị đều không có bìa, và dán link đi thì ra một
+  thẻ trắng. Nay thả ảnh vào ô là xong; bài cũ mở ra cũng sửa bìa được.
+- **Bảng Search & sharing, đo lúc đang gõ.** Chín phép đo — tiêu đề, tóm tắt,
+  đường dẫn, bìa, mô tả bìa, ảnh trong bài thiếu mô tả, tiêu đề mục, độ dài,
+  tag — cộng một khối xem trước cắt đúng chỗ Google cắt. Ba mức: hỏng · nên hơn
+  · ổn. Gộp hai mức đầu làm một thì bài nào cũng đỏ, và màu đỏ hết nghĩa.
+- **Thẻ chia sẻ khai đủ khổ ảnh.** Dán link mà ra một ô chỉ có tên miền thường
+  không phải vì thiếu `og:image` — nó có sẵn và đúng. Bộ quét của mấy ứng dụng
+  nhắn tin không biết trước khổ ảnh thì phải tải nguyên tấm về để đo, và phần
+  lớn bỏ luôn tấm ảnh thay vì chờ. Nay có `og:image:width/height`, cùng bộ thẻ
+  `twitter:*` và `article:*` đầy đủ. Cách bắt Facebook · Zalo quét lại: `docs/SEO.md`.
+
+## V15.02 — 17-Sep-2026
+
+- **Mục "gõ tay — không có nút" biến mất, vì nó đã sai.** Danh sách ấy ra đời
+  trước bảng Blocks; bảng Blocks sau đó nhận hết mười lăm thứ trong đó, nhưng
+  câu đầu đề thì ở lại. Ai mở bảng chỉ dẫn ra cũng được dạy gõ tay đúng những
+  thứ chỉ cần bấm một cái — và kết luận rất hợp lý là ô soạn thảo chẳng khác gì
+  bản cũ.
+- **Cú pháp về đứng cạnh chính cái nút làm ra nó.** Mỗi dòng trong bảng Blocks
+  nay bày luôn thứ nó ghi vào file: `:::note`, `| a | b |`, `{.nho}`. Một chỗ,
+  không hai — chép sang hai chỗ thì sớm muộn lại lệch nhau đúng như lần này.
+- **Thêm khối tràn hết bề ngang, và nút Blocks mang cả chữ.** `:::full` là khối
+  duy nhất bộ dựng hiểu mà bảng chưa có nút — thêm nốt thì không còn gì phải gõ.
+  Nút mở bảng trước đây chỉ có một hình chữ nhật: nó là cửa vào mười sáu thứ,
+  mà không ai rê chuột lên đợi dòng chú thích thì không biết bên trong có gì.
+
+## V15.01 — 17-Sep-2026
+
+- **Kéo tấm ảnh vào khung soạn thảo là xong.** Hoặc `⌘V` sau khi chụp màn hình,
+  hoặc bấm nút ảnh rồi chọn file. Trước bản này, viết bài thì không cần mở máy
+  — nhưng **chèn một tấm ảnh thì cần**: chép file vào đúng thư mục, commit, rồi
+  quay lại gõ tay đường dẫn ấy vào một ô hỏi. Gõ sai một ký tự là bài lên với
+  một ô ảnh vỡ.
+- **Ảnh tự nhẹ đi ngay trên máy.** Một tấm chụp bằng điện thoại nặng 3–6 MB và
+  rộng 4000px; cột chữ rộng 700px, nên phần lớn số byte ấy không bao giờ hiện
+  lên màn hình của ai — chúng chỉ làm bài tải chậm. Thử thật: 2400×1350 PNG
+  xuống còn 1800px WebP, **nhẹ hơn 81%**. Ảnh động `.gif` thì đi thẳng, không
+  qua bước này — qua là mất hoạt hình.
+- **Bấm đúp vào tấm ảnh để gõ dòng tả.** Hỏi ngay lúc thả thì kéo bốn tấm vào là
+  bốn hộp thoại liên tiếp, và phần lớn người ta bấm OK cho xong. Nên không hỏi:
+  đếm số ảnh còn thiếu rồi nói ra ở dòng trạng thái.
+- **Ảnh vừa thả chưa có ở địa chỉ thật** cho tới khi Cloudflare dựng xong,
+  khoảng một phút. Trong khung thì thấy ngay: khung giữ bản xem tại chỗ, còn
+  file `.md` mang đường dẫn thật.
 
 ## V15.00 — 17-Sep-2026
 

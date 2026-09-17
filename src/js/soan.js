@@ -83,6 +83,65 @@
     return n;
   }
 
+  /* Chiều ngang tối đa sau khi thu nhỏ. Ảnh `{.full}` tràn hết bề ngang màn
+     hình, mà màn 1440px trên máy có tỉ lệ điểm ảnh gấp đôi — 1800px là vừa đủ
+     nét ở khổ ấy, và vẫn nhỏ hơn ảnh gốc của mọi máy ảnh.
+
+     Hai hàm dưới nằm ở phạm vi NGOÀI `gan()` và được xuất ra `ZIB.soan`: ô ảnh
+     bìa ở viet-bai.js cần đúng hai hàm này, mà nó không nằm trong khung soạn
+     thảo nào. Chép lại thì có hai bộ luật nén ảnh, và bìa với ảnh trong bài sẽ
+     lệch nhau về chất lượng mà không ai hiểu vì sao. */
+  var RONG_TOI_DA = 1800;
+
+  /* ── THU NHỎ VÀ ĐỔI SANG WEBP ──
+     GIF đi thẳng, không qua canvas: canvas chỉ vẽ được KHUNG ĐẦU của một ảnh
+     động, nên đi qua đây là ảnh động thành ảnh tĩnh mà không có gì báo.
+
+     Mọi loại khác đều thử qua canvas, kể cả `.heic` của iPhone: Safari giải
+     mã được nó, nên trên máy Mac một tấm .heic thả vào ra .webp chạy được ở
+     mọi trình duyệt. Chrome không giải mã được thì `onerror` nổ, ta trả lại
+     file gốc, và máy chủ từ chối kèm danh sách loại nhận được. */
+  function thuNho(f) {
+    return new Promise(function (xong) {
+      if (f.type === 'image/gif') { xong(f); return; }
+      var xem = URL.createObjectURL(f);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(xem);
+        var w = img.naturalWidth, h = img.naturalHeight;
+        if (!w || !h) { xong(f); return; }
+        var ti = Math.min(1, RONG_TOI_DA / w);
+        var c = document.createElement('canvas');
+        c.width  = Math.max(1, Math.round(w * ti));
+        c.height = Math.max(1, Math.round(h * ti));
+        try {
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        } catch (e) { xong(f); return; }
+        /* PNG thường là ảnh chụp màn hình hoặc sơ đồ — chữ nhỏ, nét mảnh, và
+           nén mất mát mạnh làm chữ nhoè. Ảnh chụp thì ngược lại, 0.82 không
+           nhìn ra khác biệt mà nhẹ hơn hẳn. */
+        var net = f.type === 'image/png' ? 0.92 : 0.82;
+        c.toBlob(function (b) {
+          /* Trình duyệt không biết WebP thì `toBlob` lặng lẽ trả PNG, và PNG
+             của một tấm ảnh chụp thường TO HƠN bản gốc. Nhỏ hơn mới lấy. */
+          xong(b && b.size && b.size < f.size ? b : f);
+        }, 'image/webp', net);
+      };
+      img.onerror = function () { URL.revokeObjectURL(xem); xong(f); };
+      img.src = xem;
+    });
+  }
+
+  function sangB64(blob) {
+    return new Promise(function (xong, hong) {
+      var r = new FileReader();
+      r.onload  = function () { xong(String(r.result).replace(/^data:[^,]*,/, '')); };
+      r.onerror = function () { hong(new Error('doc-khong-duoc')); };
+      r.readAsDataURL(blob);
+    });
+  }
+
+
   /* ══════════════ ĐỔI DOM RA MARKDOWN ══════════════
 
      Đi hai tầng: `khoi()` lo những thứ chiếm trọn một dòng (đoạn, tiêu đề,
@@ -220,8 +279,17 @@
       if (the === 'IMG') {
         var ti = c.getAttribute('data-tieu');
         var lopA = c.getAttribute('data-lop');
+        /* ── `data-that` ĐI TRƯỚC `src`, VÀ ĐÓ LÀ CẢ CƠ CHẾ THẢ ẢNH ──
+           Ảnh vừa tải lên chưa có ở địa chỉ công khai của nó — Cloudflare còn
+           đang dựng, khoảng một phút. Nên `src` trỏ vào bản xem TẠI CHỖ trong
+           bộ nhớ trình duyệt (một `blob:` URL), để người viết thấy tấm ảnh
+           ngay; còn đường dẫn THẬT nằm ở `data-that`.
+
+           File .md phải mang đường dẫn thật. Một `blob:` URL sống đúng một
+           phiên trình duyệt: ghi nó vào bài là ghi một đường chết. */
         ra += '![' + (c.getAttribute('alt') || '') + ']('
-            + (c.getAttribute('src') || '') + (ti ? ' "' + ti + '"' : '') + ')'
+            + (c.getAttribute('data-that') || c.getAttribute('src') || '')
+            + (ti ? ' "' + ti + '"' : '') + ')'
             + (lopA || '');
         continue;
       }
@@ -792,7 +860,7 @@
 
       var giu = the === 'A' ? ['href'] : the === 'IMG' ? ['src', 'alt']
               : the === 'SPAN' ? ['class'] : the === 'PRE' ? ['data-ngon'] : [];
-      if (the === 'IMG') giu = ['src', 'alt', 'data-tieu', 'data-lop'];
+      if (the === 'IMG') giu = ['src', 'alt', 'data-tieu', 'data-lop', 'data-that'];
       for (var j = n.attributes.length - 1; j >= 0; j--) {
         var ten = n.attributes[j].name;
         if (giu.indexOf(ten) < 0) n.removeAttribute(ten);
@@ -805,7 +873,12 @@
       }
       if (the === 'IMG') {
         var sc = n.getAttribute('src') || '';
-        if (!/^(https?:\/\/|\/)/i.test(sc)) n.remove();
+        /* `blob:` được đi qua CHỈ KHI có `data-that` đi kèm — tức là một tấm
+           vừa thả vào, đang chờ Cloudflare dựng, và đã biết mình sẽ nằm ở đâu.
+           Không có `data-that` thì đó là một `blob:` từ chỗ khác dán sang: nó
+           chết ngay khi đóng tab, và vào bài thì thành ô ảnh vỡ vĩnh viễn. */
+        var tam = /^blob:/i.test(sc) && n.getAttribute('data-that');
+        if (!tam && !/^(https?:\/\/|\/)/i.test(sc)) n.remove();
       }
     }
     return goc;
@@ -1026,6 +1099,22 @@
     var N = tuyChon.nhan || {};
     function L(k, m) { return N[k] || m; }
 
+    /* ── AI GỬI ẢNH LÊN LÀ VIỆC CỦA TRANG CHỦ QUẢN, KHÔNG PHẢI CỦA Ô NÀY ──
+       Ô soạn thảo không biết bài đang viết tên gì, đăng năm nào, hay khoá chủ
+       trang nằm ở đâu — mà cả ba thứ ấy đều cần để xếp ảnh vào đúng thư mục.
+       Trang gọi `gan()` thì biết đủ, nên nó đưa vào đây một hàm nhận
+       `{ten, loai, duLieu}` và hứa trả về `{duong}`.
+
+       Không có hàm ấy thì kéo thả im lặng không làm gì — đúng như trước bản
+       này — chứ không hỏng. */
+    var taiAnh = typeof tuyChon.taiAnh === 'function' ? tuyChon.taiAnh : null;
+
+    /* Trang chủ quản muốn biết mỗi lúc bài đổi — để tính lại bảng SEO. Gọi từ
+       `capNhat()`, tức là sau MỖI phím gõ: chỗ nghe phải tự hoãn lại, và
+       viet-bai.js làm đúng thế. Ở đây không hoãn, vì ô soạn thảo không biết
+       việc bên kia nặng hay nhẹ. */
+    var khiDoi = typeof tuyChon.khiDoi === 'function' ? tuyChon.khiDoi : null;
+
     var khoiSoan = el('div', 'sz');
 
     /* ── THANH NÚT ── */
@@ -1128,8 +1217,19 @@
        Một nút, một bảng thả xuống: sáu thứ này dùng vài lần một bài, nên chúng
        không đáng sáu chỗ trên thanh — mà một bảng có TÊN cho từng thứ lại nói
        rõ hơn sáu cái icon. */
-    var nutKhoi = nut(svg(['M4 5h16v6H4z', 'M4 15h10']), L('block', 'Blocks'),
-                      function () { moBangKhoi(); });
+    /* ── NÚT NÀY MANG CẢ CHỮ, KHÔNG CHỈ ICON ──
+       Hai mươi sáu cái nút trên thanh đều là hình vẽ, và cái này là cửa vào
+       mười sáu thứ nữa — nó là nút quan trọng nhất trên thanh. Một hình chữ
+       nhật có gạch chân không nói ra được điều đó; ai không rê chuột lên đợi
+       dòng chú thích thì không bao giờ biết bên trong có gì.
+
+       Chữ ẩn đi ở khổ hẹp (xem `.sz-nut-chu` trong list.css): trên điện thoại
+       thanh nút đã phải cuộn ngang rồi. */
+    var nhanKhoi = document.createDocumentFragment();
+    nhanKhoi.appendChild(svg(['M4 5h16v6H4z', 'M4 15h10']));
+    nhanKhoi.appendChild(el('span', 'sz-nut-chu', L('block', 'Blocks')));
+    var nutKhoi = nut(nhanKhoi, L('block', 'Blocks'),
+                      function () { moBangKhoi(); }, 'sz-nut--khoi');
     nutKhoi.setAttribute('aria-expanded', 'false');
     var bangKhoi = veBangKhoi();
     vach();
@@ -1210,35 +1310,50 @@
         { ma: 'warn',    ten: L('bWarn', 'Heads up'),   mo: L('bWarnMo', 'same box, careful tone') },
         { ma: 'stop',    ten: L('bStop', 'Do not'),     mo: L('bStopMo', 'same box, strongest tone') },
         { ma: 'gallery', ten: L('bGallery', 'Gallery'), mo: L('bGalleryMo', 'photos side by side') },
-        { ma: 'wide',    ten: L('bWide', 'Wide block'), mo: L('bWideMo', 'spills past the text column') }
+        { ma: 'wide',    ten: L('bWide', 'Wide block'), mo: L('bWideMo', 'spills past the text column') },
+        /* `:::full` là khối DUY NHẤT bộ dựng hiểu mà bảng này chưa có nút —
+           nó vẫn nằm trong phần "gõ tay" của bảng chỉ dẫn, và đó là lý do
+           phần ấy còn tồn tại. Thêm nốt vào đây thì không còn gì phải gõ. */
+        { ma: 'full',    ten: L('bFull', 'Full-bleed block'), mo: L('bFullMo', 'edge to edge of the screen') }
       ];
       var b = el('div', 'sz-bang sz-bang--khoi');
       b.hidden = true;
 
-      function dong(ten, mo, lam) {
+      /* ── MỖI DÒNG BÀY LUÔN CÚ PHÁP CỦA NÓ ──
+         Trước bản này cú pháp nằm ở BẢNG CHỈ DẪN, dưới cái đầu đề "gõ tay —
+         không có nút". Nó sai từ lúc bảng khối ra đời: mọi thứ trong danh sách
+         ấy đều đã có nút. Ai mở bảng chỉ dẫn ra đọc thì được dạy gõ tay đúng
+         thứ chỉ cần bấm một cái — và kết luận là ô soạn thảo chẳng khác gì.
+
+         Nên cú pháp về đứng ngay cạnh cái nút làm ra nó. Một chỗ, không hai;
+         và bấm một lần là thấy ngay nó ghi ra cái gì trong file. */
+      function dong(ten, mo, cu, lam) {
         var o = el('button', 'sz-khoi-nut');
         o.type = 'button';
-        o.appendChild(el('span', 'sz-khoi-ten', ten));
-        if (mo) o.appendChild(el('span', 'sz-khoi-mo', mo));
+        var trai = el('span', 'sz-khoi-chu');
+        trai.appendChild(el('span', 'sz-khoi-ten', ten));
+        if (mo) trai.appendChild(el('span', 'sz-khoi-mo', mo));
+        o.appendChild(trai);
+        if (cu) o.appendChild(el('code', 'sz-khoi-cu', cu));
         o.addEventListener('mousedown', function (e) { e.preventDefault(); });
         o.addEventListener('click', function () { lam(); dongBang(); });
         b.appendChild(o);
       }
 
       KHOI.forEach(function (k) {
-        dong(k.ten, k.mo, function () {
+        dong(k.ten, k.mo, ':::' + k.ma, function () {
           /* Nhãn của khối ghi chú là thứ hiện ra ở đầu ô trên trang đã dựng —
              để trống thì bộ dựng lấy tên mặc định theo loại. Hỏi ngay lúc chèn
              thì người ta khỏi phải tìm ra chỗ sửa nó sau. */
           var ten = '';
-          if (k.ma !== 'gallery' && k.ma !== 'wide') {
+          if (k.ma !== 'gallery' && k.ma !== 'wide' && k.ma !== 'full') {
             ten = window.prompt(L('bAsk', 'Title for the box — leave empty for the default:'), '') || '';
           }
           chenKhoi(k.ma, ten.trim());
         });
       });
 
-      dong(L('bTable', 'Table'), L('bTableMo', '2 columns — Shift+Enter between rows'), function () {
+      dong(L('bTable', 'Table'), L('bTableMo', '2 columns — Shift+Enter between rows'), '| a | b |', function () {
         khung.focus();
         /* Một ĐOẠN có xuống dòng cứng, không phải một <table>: bộ dựng đọc
            bảng theo DÒNG, và một đoạn có <br> ra Markdown đúng ba dòng liền
@@ -1250,7 +1365,7 @@
         capNhat();
       });
 
-      dong(L('bCode', 'Code block'), L('bCodeMo', 'keeps every space and line break'), function () {
+      dong(L('bCode', 'Code block'), L('bCodeMo', 'keeps every space and line break'), '```js', function () {
         khung.focus();
         var ngon = window.prompt(L('bCodeAsk', 'Language (js, css, python… — can be empty):'), '') || '';
         document.execCommand('insertHTML', false,
@@ -1259,7 +1374,7 @@
         capNhat();
       });
 
-      dong(L('bTask', 'Checklist'), L('bTaskMo', 'a list with tick boxes'), function () {
+      dong(L('bTask', 'Checklist'), L('bTaskMo', 'a list with tick boxes'), '- [ ]', function () {
         khung.focus();
         document.execCommand('insertHTML', false,
           '<ul><li data-viec="0"> </li></ul><p><br></p>');
@@ -1273,7 +1388,7 @@
 
          Dán cả đường dẫn YouTube cũng được: rút lấy mã ở đây, để người viết
          khỏi phải biết "mã video" là đoạn nào trong cái link dài ấy. */
-      dong(L('bYoutube', 'YouTube'), L('bYoutubeMo', 'loads only when someone presses play'), function () {
+      dong(L('bYoutube', 'YouTube'), L('bYoutubeMo', 'loads only when someone presses play'), '@youtube[…]', function () {
         var u = window.prompt(L('bYtAsk', 'YouTube link or video id:'), '') || '';
         u = u.trim();
         if (!u) return;
@@ -1287,7 +1402,7 @@
         capNhat();
       });
 
-      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm you uploaded'), function () {
+      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm you uploaded'), '@video[…]', function () {
         var u = window.prompt(L('bVidAsk', 'Video path (starts with /media/):'), '/media/') || '';
         u = u.trim();
         if (!/^(https?:\/\/|\/)/.test(u)) return;
@@ -1303,7 +1418,7 @@
          `{.wide}` và `{.full}` là thuộc tính của ĐÚNG một tấm ảnh, nên nó
          không thể là một khối chèn vào — nó là một phép đổi trên tấm ảnh con
          trỏ đang đứng cạnh. Bấm vòng: thường → rộng → tràn → thường. */
-      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), function () {
+      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), '{.wide} {.full}', function () {
         var anh = anhGanConTro();
         if (!anh) { window.alert(L('bAnhChua', 'Put the cursor next to an image first.')); return; }
         var VONG = ['', '{.wide}', '{.full}'];
@@ -1320,13 +1435,13 @@
          Bật/tắt trên đoạn con trỏ đang đứng. Giữ ở `data-lop` chứ không gõ
          thẳng vào chữ: gõ vào chữ thì mỗi lần sửa câu cuối phải né ba ký tự,
          và không có cách nào bấm lần nữa để bỏ. */
-      dong(L('bGiua', 'Centre this paragraph'), L('bGiuaMo', 'for a line that stands alone'), function () {
+      dong(L('bGiua', 'Centre this paragraph'), L('bGiuaMo', 'for a line that stands alone'), '{.giua}', function () {
         doiLopDoan('{.giua}');
       });
-      dong(L('bThuong', 'Not a lead-in'), L('bThuongMo', 'stops the first paragraph being larger'), function () {
+      dong(L('bThuong', 'Not a lead-in'), L('bThuongMo', 'stops the first paragraph being larger'), '{.thuong}', function () {
         doiLopDoan('{.thuong}');
       });
-      dong(L('bNho', 'Small text'), L('bNhoMo', 'for a side note or a source line'), function () {
+      dong(L('bNho', 'Small text'), L('bNhoMo', 'for a side note or a source line'), '{.nho}', function () {
         doiLopDoan('{.nho}');
       });
 
@@ -1488,7 +1603,6 @@
         L('h2t', 'Bold ⌘B · Italic ⌘I · Link ⌘K (Ctrl on Windows).'),
         L('h3t', 'Colour: select → press the dot → pick one. Press the same one again to remove.'),
         L('h4t', 'New line inside the same paragraph: Shift + Enter.'),
-        L('h5t', 'Images: press the image button, paste a path like /media/2026/post-name/pic.png'),
         L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
         L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
         L('h9t', 'The — button drops a ✦ ✦ ✦ break between two parts of a post.'),
@@ -1496,27 +1610,38 @@
         L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
       ]);
 
-      /* Mấy khối này KHÔNG có nút, và sẽ không có: mỗi cái là một nút nữa trên
-         một thanh đã chật, để dùng vài lần một bài. Gõ tay thì ba dòng, và
-         dòng mở khối tự nói ra nó là khối gì. */
-      nhom(L('gHelp2', 'Typed by hand — no button'), [
-        [':::note  Tiêu đề', L('gNote', 'boxed aside. Close it with ::: on its own line.')],
-        [':::tip · :::warn · :::stop', L('gCallout', 'same box, three other tones.')],
-        [':::gallery', L('gGallery', 'photos side by side. Put the image lines inside.')],
-        [':::wide · :::full', L('gWide', 'let a block spill past the text column.')],
-        ['{.wide} {.full}', L('gLop', 'at the END of an image line — same, for one image.')],
-        ['{.thuong}', L('gThuong', 'at the end of the FIRST paragraph: stops it becoming the lead-in.')],
-        ['| a | b |', L('gBang', 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|')],
-        ['```js', L('gMa', 'a code block — same paragraph, Shift+Enter between lines, ``` to close.')],
-        ['- [ ] · - [x]', L('gViec', 'a checklist: make a bullet list, then type this at the start of an item.')],
-        ['^2^ · ~2~ · [[Esc]]', L('gNet', 'superscript · subscript · a key — the three buttons do these too.')],
-        ['{.nho} · {.giua}', L('gLopDoan', 'at the end of a paragraph: small text · centred.')]
+      /* ── ẢNH ĐƯỢC MỘT MỤC RIÊNG ──
+         Nó là thứ đổi nhiều nhất ở bản này, và là thứ duy nhất trong cả ô soạn
+         thảo có một quãng CHỜ mà người dùng không đoán trước được: ảnh vào kho
+         mã ngay, nhưng phải đợi Cloudflare dựng xong mới có ở địa chỉ thật.
+         Không nói ra thì lần đầu mở bài đã đăng lên xem sẽ thấy ô ảnh vỡ và
+         tưởng mình làm hỏng. */
+      nhom(L('gHelpAnh', 'Images'), [
+        L('a1', 'Drag a photo onto the box, or press ⌘V after a screenshot, or press the image button.'),
+        L('a2', 'Big photos are shrunk to 1800px and turned into WebP here on your machine first.'),
+        L('a3', 'Double-click an image to describe it — that line is what a blind reader hears and what Google reads.'),
+        L('a4', 'A new image takes about a minute to appear on the live site; in this box you see it straight away.')
+      ]);
+
+      /* ── PHẦN NÀY TỪNG TÊN LÀ "GÕ TAY — KHÔNG CÓ NÚT", VÀ NÓ ĐÃ SAI ──
+         Danh sách ấy ra đời TRƯỚC bảng Blocks. Bảng Blocks nhận hết mười lăm
+         thứ trong đó, nhưng câu đầu đề thì ở lại — nên ai mở bảng chỉ dẫn ra
+         cũng được dạy gõ tay đúng những thứ chỉ cần bấm một cái, và kết luận
+         rất hợp lý là ô soạn thảo không khác gì bản cũ.
+
+         Nay cú pháp đứng ngay trên từng dòng của bảng Blocks (xem `dong()` ở
+         trên), nên chỗ này không chép lại nữa — chép lại là có hai bản, và
+         sớm muộn lại lệch nhau đúng như lần này. Còn đúng một câu: bảng ấy
+         nằm ở đâu. */
+      nhom(L('gHelp2', 'Blocks — one press each'), [
+        L('g1', 'Press ⌗ Blocks: boxes, gallery, table, code, checklist, YouTube, video, paragraph widths.'),
+        L('g2', 'Every line in there shows the exact text it writes into the file — nothing needs typing.'),
+        L('g3', 'A ::: block and a table each live in ONE paragraph: Shift+Enter between rows, not Enter.')
       ]);
 
       b.appendChild(el('p', 'sz-giup-chan',
-        L('gChan', 'A ::: line goes in a paragraph of its own. A table or code block keeps ' +
-                   'its rows inside ONE paragraph — Shift+Enter, not Enter. Images always go ' +
-                   'in with the image button, never typed. Press </> to see what will be sent.')));
+        L('gChan', 'Everything the site can render has a button now. Press </> at any time to ' +
+                   'see the exact Markdown that will be sent to GitHub.')));
       return b;
     }
 
@@ -1552,7 +1677,25 @@
       capNhat();
     }
 
+    /* Ô chọn file nằm ẩn trong khối soạn thảo. `accept` để hộp chọn của máy
+       lọc sẵn, `multiple` để chọn cả loạt một lượt — cùng đường với kéo thả. */
+    var oFile = el('input');
+    oFile.type = 'file';
+    oFile.accept = 'image/*';
+    oFile.multiple = true;
+    oFile.hidden = true;
+    oFile.addEventListener('change', function () {
+      if (oFile.files && oFile.files.length) xepHang(oFile.files);
+      /* Dọn ô: chọn lại ĐÚNG file vừa chọn thì `change` không nổ lần nữa nếu
+         giá trị cũ còn đó — và người ta tưởng nút hỏng. */
+      oFile.value = '';
+    });
+
     function chenAnh() {
+      /* Có đường tải lên thì mở hộp chọn file — không ai phải biết đường dẫn
+         trong kho mã trông như thế nào. Không có thì rơi về ô gõ tay, đúng
+         cách cũ, để ô soạn thảo vẫn dùng được ở chỗ không có khoá. */
+      if (taiAnh) { oFile.click(); return; }
       var u = window.prompt(L('imgAsk', 'Image path (starts with /media/):'), '/media/');
       if (!u) return;
       if (!/^(https?:\/\/|\/)/i.test(u)) return;
@@ -1561,6 +1704,222 @@
       document.execCommand('insertHTML', false,
         '<p><img src="' + u.replace(/"/g, '%22') + '" alt="' + mo.replace(/[<>&"]/g, '') + '"></p>');
       capNhat();
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       THẢ ẢNH VÀO KHUNG
+
+       ── BA ĐƯỜNG VÀO, MỘT ĐƯỜNG ĐI ──
+       Kéo thả · dán (⌘V một ảnh chụp màn hình) · bấm nút ảnh rồi chọn file.
+       Cả ba đổ vào `xepHang()`, nên chỉ có một luồng phải đúng.
+
+       ── VÌ SAO THU NHỎ NGAY TẠI MÁY ──
+       Một tấm ảnh chụp bằng điện thoại nặng 3–6 MB và rộng 4000px. Cột chữ
+       của blog rộng khoảng 700px, nên 3/4 số byte ấy không bao giờ hiện lên
+       màn hình của ai — chúng chỉ làm bài tải chậm, và Google đo đúng chuyện
+       đó khi xếp hạng.
+
+       Thu nhỏ Ở ĐÂY chứ không ở máy chủ vì hàm Workers không có thư viện xử
+       lý ảnh, và vì gửi 6 MB lên rồi mới cắt còn 300 KB là đã trả giá đường
+       truyền rồi. Trình duyệt có sẵn canvas; dùng nó.
+
+       ── VÌ SAO KHÔNG HIỆN ẢNH THEO ĐƯỜNG DẪN MỚI ──
+       Ảnh vừa ghi vào kho mã CHƯA có ở /media/... — Cloudflare còn đang dựng.
+       Trỏ `src` vào đó là một phút đầu nhìn thấy ô ảnh vỡ, đúng lúc đang viết.
+       Nên `src` giữ bản xem tại chỗ, `data-that` giữ đường dẫn thật, và
+       `sangMD` đọc `data-that`.
+
+       ── VÌ SAO XẾP HÀNG, KHÔNG GỬI SONG SONG ──
+       Mỗi tấm là một commit vào cùng một nhánh. Hai commit cùng lúc thì GitHub
+       từ chối cái thứ hai ("nhánh đang ở sha khác"), và tấm ảnh ấy im lặng
+       biến mất. Kéo bốn tấm vào một lần là chuyện thường, nên đây không phải
+       ca hiếm.
+       ══════════════════════════════════════════════════════════════ */
+
+    var hangAnh = [];       /* việc đang chờ — gửi lần lượt, không song song */
+    var dangGui = false;
+    var demAnh  = 0;
+
+    /* Dòng trạng thái: nằm ngay dưới thanh nút, và chỉ hiện khi có chuyện.
+       Không dùng `alert` cho việc đang chạy — một hộp thoại chặn cả trang thì
+       không gõ tiếp được trong lúc ảnh đang lên. */
+    var oBao = el('div', 'sz-bao');
+    oBao.hidden = true;
+    oBao.setAttribute('role', 'status');
+
+    function bao(chu, hong) {
+      if (!chu) { oBao.hidden = true; oBao.textContent = ''; return; }
+      oBao.hidden = false;
+      oBao.textContent = chu;
+      oBao.classList.toggle('sz-bao--hong', !!hong);
+    }
+
+    /* ── ĐẾM ẢNH CHƯA CÓ MÔ TẢ ──
+       `alt` là thứ người khiếm thị nghe thấy thay cho tấm ảnh, và là thứ
+       Google đọc để biết ảnh vẽ gì. Hỏi ngay lúc thả thì kéo bốn tấm vào là
+       bốn hộp thoại liên tiếp — phần lớn người ta bấm OK cho xong, và ta có
+       bốn `alt` rỗng cùng một cảm giác đã được hỏi.
+
+       Nên: không hỏi, mà ĐẾM và nói ra. Bấm đúp vào tấm ảnh là gõ được. */
+    function demThieuMoTa() {
+      var ds = khung.querySelectorAll('img');
+      var n = 0;
+      for (var i = 0; i < ds.length; i++) if (!(ds[i].getAttribute('alt') || '').trim()) n++;
+      return n;
+    }
+
+    function nhacMoTa() {
+      var n = demThieuMoTa();
+      if (!n) { bao(''); return; }
+      bao(L('altMissing', '{n} image(s) still have no description — double-click one to add it.')
+            .replace('{n}', n));
+    }
+
+    /* Đuôi file dựng lại từ LOẠI thật của blob, không lấy từ tên file người ta
+       kéo vào: sau khi qua canvas thì `anh.png` đã là dữ liệu WebP, và giữ
+       đuôi cũ là một file nói dối về chính nó. */
+    function tenTu(f, blob) {
+      var goc = String(f.name || 'anh').replace(/\.[^.]+$/, '');
+      return { ten: goc, loai: blob.type || f.type || 'image/webp' };
+    }
+
+    function xepHang(ds) {
+      if (!taiAnh) {
+        bao(L('upNo', 'Uploading is off — sign in with the owner key first.'), true);
+        return;
+      }
+      for (var i = 0; i < ds.length; i++) {
+        if (/^image\//i.test(ds[i].type)) hangAnh.push(ds[i]);
+      }
+      chayHang();
+    }
+
+    function chayHang() {
+      if (dangGui) return;
+      var f = hangAnh.shift();
+      if (!f) { nhacMoTa(); return; }
+      dangGui = true;
+
+      /* Ô giữ chỗ vào bài NGAY, trước cả lúc bắt đầu gửi: người ta thấy tấm
+         ảnh đã ở đúng chỗ mình thả, và gõ tiếp được trong lúc nó đang lên.
+         Chèn bằng `insertHTML` để cú này nằm trong lịch sử hoàn tác. */
+      var ma  = 'tai-' + (++demAnh);
+      var xem = URL.createObjectURL(f);
+      khung.focus();
+      document.execCommand('insertHTML', false,
+        '<p><img class="sz-anh--tai" data-tai="' + ma + '" src="' + xem + '" alt=""></p>');
+
+      function timAnh() { return khung.querySelector('[data-tai="' + ma + '"]'); }
+
+      var conLai = hangAnh.length;
+      bao(conLai
+        ? L('upMany', 'Uploading image… {n} more in the queue.').replace('{n}', conLai)
+        : L('upOne', 'Uploading image…'));
+
+      thuNho(f)
+        .then(function (blob) {
+          return sangB64(blob).then(function (b64) {
+            var t = tenTu(f, blob);
+            return taiAnh({ ten: t.ten, loai: t.loai, duLieu: b64, co: blob.size });
+          });
+        })
+        .then(function (kq) {
+          var a = timAnh();
+          if (!a) { URL.revokeObjectURL(xem); return; }   /* người ta vừa xoá nó */
+          a.setAttribute('data-that', kq.duong);
+          a.removeAttribute('data-tai');
+          a.classList.remove('sz-anh--tai');
+          capNhat();
+        })
+        .catch(function (e) {
+          var a = timAnh();
+          /* Bỏ hẳn ô giữ chỗ khi hỏng. Để lại thì nó vẫn hiện ra như một tấm
+             ảnh bình thường trong khung, mà `sangMD` sẽ ghi vào bài một đường
+             `blob:` chết — bài lên với một ô ảnh vỡ, và không ai nhớ tấm nào. */
+          if (a) {
+            var oCha = a.parentNode;
+            a.remove();
+            if (oCha && oCha.tagName === 'P' && !oCha.textContent.trim() &&
+                !oCha.querySelector('img')) oCha.remove();
+          }
+          URL.revokeObjectURL(xem);
+          /* `sangB64` nằm ngoài `gan()`, nên nó không với tới bảng nhãn —
+             nó ném ra một dấu hiệu, và chỗ này mới đổi thành câu tiếng người. */
+          var chu = (e && e.message) || '';
+          if (chu === 'doc-khong-duoc') chu = L('upRead', 'Could not read that file.');
+          bao(chu || L('upFail', 'Could not upload that image.'), true);
+          capNhat();
+        })
+        .then(function () {
+          dangGui = false;
+          if (hangAnh.length) chayHang();
+          else if (!oBao.classList.contains('sz-bao--hong')) nhacMoTa();
+        });
+    }
+
+    /* ── KÉO THẢ ──
+       `dragover` phải `preventDefault`, không thì trình duyệt không coi khung
+       này là chỗ thả được và `drop` không bao giờ nổ.
+
+       Thả một tấm ảnh vào một vùng contenteditable, mặc định trình duyệt chèn
+       thẳng nó dưới dạng `data:` URL dài vài trăm nghìn ký tự — nằm lại trong
+       file .md, và bài phình ra tới mức GitHub từ chối. Nên chặn hẳn hành vi
+       mặc định rồi tự lo. */
+    khung.addEventListener('dragover', function (e) {
+      if (!e.dataTransfer) return;
+      var co = Array.prototype.some.call(e.dataTransfer.types || [], function (t) {
+        return t === 'Files';
+      });
+      if (!co) return;
+      e.preventDefault();
+      khung.classList.add('sz-khung--tha');
+    });
+    khung.addEventListener('dragleave', function (e) {
+      if (e.target === khung) khung.classList.remove('sz-khung--tha');
+    });
+    khung.addEventListener('drop', function (e) {
+      var ds = e.dataTransfer && e.dataTransfer.files;
+      if (!ds || !ds.length) return;
+      e.preventDefault();
+      khung.classList.remove('sz-khung--tha');
+      xepHang(ds);
+    });
+
+    /* ── BẤM ĐÚP VÀO ẢNH ĐỂ GÕ MÔ TẢ ──
+       Chỗ duy nhất sửa được `alt` sau khi ảnh đã vào bài. Bấm đúp chứ không
+       bấm một cái: bấm một cái là đặt con trỏ, và người ta bấm vào ảnh suốt
+       trong lúc viết. */
+    khung.addEventListener('dblclick', function (e) {
+      var a = e.target && e.target.nodeName === 'IMG' ? e.target : null;
+      if (!a) return;
+      e.preventDefault();
+      var cu = a.getAttribute('alt') || '';
+      var moi = window.prompt(L('imgAlt', 'Describe the image (for people who cannot see it):'), cu);
+      if (moi === null) return;
+      a.setAttribute('alt', moi.replace(/[<>&"]/g, '').trim());
+      capNhat();
+      nhacMoTa();
+    });
+
+    /* ── ẢNH TRONG BẢN NHÁP MỞ LẠI ──
+       `blob:` chỉ sống trong đúng phiên trình duyệt đã tạo ra nó. Mở lại bản
+       nháp hôm qua thì mọi `src` kiểu ấy đã chết — nhưng `data-that` thì
+       không, và tới lúc ấy Cloudflare đã dựng xong từ lâu, nên đường dẫn thật
+       đã có ảnh thật. Trả `src` về đường dẫn thật là ảnh hiện lại đúng. */
+    function donAnh() {
+      var ds = khung.querySelectorAll('img[data-that]');
+      for (var i = 0; i < ds.length; i++) {
+        var a = ds[i];
+        if (/^blob:/i.test(a.getAttribute('src') || '')) {
+          a.setAttribute('src', a.getAttribute('data-that'));
+          a.classList.remove('sz-anh--tai');
+        }
+      }
+      /* Ô giữ chỗ của một lượt tải CHƯA XONG lúc đóng tab: nó không có
+         `data-that`, nên không có gì cứu được. Bỏ đi, và nói ra. */
+      var treo = khung.querySelectorAll('img[data-tai]');
+      for (var j = 0; j < treo.length; j++) treo[j].remove();
+      if (treo.length) bao(L('upLost', 'An image that was still uploading did not make it.'), true);
     }
 
     /* ══════════ Ô XEM MARKDOWN ══════════ */
@@ -1590,12 +1949,30 @@
       });
       if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
       luuNhap();
+      if (khiDoi) { try { khiDoi(); } catch (e) {} }
     }
 
     /* ══════════ DÁN ══════════ */
     khung.addEventListener('paste', function (e) {
       var dl = e.clipboardData;
       if (!dl) return;
+
+      /* ── ẢNH TRONG CLIPBOARD ──
+         Chụp màn hình rồi ⌘V là đường chèn ảnh nhanh nhất có, và trước bản này
+         nó chèn vào một `data:` URL dài hàng trăm nghìn ký tự nằm thẳng trong
+         file .md.
+
+         Chỉ đi đường này khi clipboard KHÔNG có chữ nào. Chép một đoạn từ Word
+         hay Google Docs thì clipboard mang cả chữ LẪN một file ảnh kèm theo —
+         lấy file là mất nguyên đoạn văn vừa chép. */
+      if (dl.files && dl.files.length && !(dl.getData('text/plain') || '').trim()) {
+        var anhDan = [];
+        for (var k = 0; k < dl.files.length; k++) {
+          if (/^image\//i.test(dl.files[k].type)) anhDan.push(dl.files[k]);
+        }
+        if (anhDan.length) { e.preventDefault(); xepHang(anhDan); return; }
+      }
+
       e.preventDefault();
       var html = dl.getData('text/html');
       if (html) {
@@ -1669,6 +2046,8 @@
 
     /* ══════════ RÁP LẠI ══════════ */
     khoiSoan.appendChild(thanh);
+    khoiSoan.appendChild(oBao);
+    khoiSoan.appendChild(oFile);
     khoiSoan.appendChild(bangKhoi);
     khoiSoan.appendChild(bangMau);
     khoiSoan.appendChild(bangGiup);
@@ -1689,7 +2068,7 @@
       layMD   : function () { return sangMD(khung); },
       rong    : function () { return !khung.textContent.trim(); },
       nhapCu  : doNhap,
-      datHTML : function (h) { khung.innerHTML = h || ''; capNhat(); },
+      datHTML : function (h) { khung.innerHTML = h || ''; donAnh(); capNhat(); },
       xoa     : function () { khung.innerHTML = ''; boNhap(); capNhat(); },
       boNhap  : boNhap,
       tapTrung: function () { khung.focus(); }
@@ -1697,5 +2076,9 @@
   }
 
   window.ZIB = window.ZIB || {};
-  window.ZIB.soan = { gan: gan, sangMD: sangMD, tuMD: tuMD };
+  /* `thuNho` và `sangB64` ra ngoài cùng với ba hàm kia: ô ảnh bìa ở
+     viet-bai.js dùng đúng chúng, để bìa và ảnh trong bài đi qua cùng một luật
+     nén. Xem chú thích ở chỗ khai báo. */
+  window.ZIB.soan = { gan: gan, sangMD: sangMD, tuMD: tuMD,
+                      thuNho: thuNho, sangB64: sangB64 };
 })();

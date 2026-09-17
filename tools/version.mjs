@@ -61,6 +61,28 @@ for (const [re, viSao] of CAM) {
   }
 }
 
+/* ── MỘT DÒNG SỔ CHỞ TỐI ĐA BỐN VIỆC ──
+   Cột "Sửa chính" hiện ra trong ngăn phiên bản ở chân trang — người đọc blog
+   mở được. Một dòng sáu bảy mệnh đề ở đó không ai đọc hết; nó thành một khối
+   chữ để lướt qua, và cả cuốn sổ mất tác dụng.
+
+   Nhiều việc quá thì KHÔNG phải cắt bớt cho vừa — cắt bớt là mất dấu vết của
+   thứ đã làm. Chia làm hai bản vá: V15.01 rồi V15.02. Đuôi chạy tới 09, nên
+   chỗ thì có thừa.
+
+   Đếm theo dấu `;` vì đó là dấu ngăn việc trong mọi dòng của sổ. */
+const soViec = suaChinh.split(';').map((x) => x.trim()).filter(Boolean).length;
+if (soViec > 4) {
+  console.log(mau.do(`\n  ✖ Dòng này chở ${soViec} việc — một dòng sổ tối đa 4.`));
+  console.log(mau.mo('    Cột "Sửa chính" hiện ra ở ngăn phiên bản chân trang; dài quá thì không ai đọc.'));
+  console.log(mau.mo('    Chia ra chạy hai lượt, mỗi lượt một bản vá:'));
+  suaChinh.split(';').map((x) => x.trim()).filter(Boolean).forEach((x, i) => {
+    console.log(mau.mo(`      ${i + 1}. ${x}`));
+  });
+  console.log('');
+  process.exit(1);
+}
+
 const kq = ghiSo(GOC, suaChinh, { lon });
 console.log(`
   ${mau.xanh('✓ Đã ghi sổ')}   ${mau.dam(kq.ten)}  ${mau.mo(temNgay(kq.ngay))}

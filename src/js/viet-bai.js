@@ -20,6 +20,9 @@
 
   var goc = document.documentElement;
   var api = goc.getAttribute('data-bai-api');
+  /* Cửa tải ảnh. Thiếu nó thì kéo thả im lặng không chạy, còn mọi thứ khác
+     vẫn nguyên — nên không `return` ở đây. */
+  var apiAnh = goc.getAttribute('data-anh-api') || '';
   var oSan = document.querySelector('[data-viet-bai-host]');
   if (!api || !oSan) return;
 
@@ -408,6 +411,35 @@
         '<label class="vb-o vb-o--rong"><span>' + tho(L('summary', 'Summary')) + '</span>' +
           '<textarea name="summary" rows="1" maxlength="400"></textarea></label>' +
       '</div>' +
+      /* ── ẢNH BÌA: Ô CÒN THIẾU SUỐT TỪ ĐẦU ──
+         `cover` và `coverAlt` đã nằm trong front matter của bài từ lâu, máy
+         chủ đã nhận chúng từ lâu, và bộ dựng đã dùng chúng cho thẻ chia sẻ,
+         cho ảnh đầu bài, cho JSON-LD. Nhưng ô viết bài thì KHÔNG BAO GIỜ gửi
+         chúng lên — nên một bài đăng từ /z-admin/ không có cách nào có ảnh
+         bìa, và lúc gửi link vào Facebook thì ra một thẻ trắng trơn.
+
+         Đây là chỗ SEO hụt nặng nhất trong cả trang quản trị, và nó hụt lặng
+         lẽ: không có lỗi nào, chỉ là một khoá không bao giờ được điền. */
+      '<div class="vb-hang">' +
+        '<div class="vb-o vb-o--rong"><span>' + tho(L('cover', 'Cover image')) + '</span>' +
+          '<div class="vb-bia" data-bia>' +
+            '<button type="button" class="vb-bia-tha" data-bia-chon>' +
+              '<img class="vb-bia-xem" data-bia-xem alt="" hidden>' +
+              '<span class="vb-bia-chu" data-bia-chu>' +
+                tho(L('coverDrop', 'Drop an image here, or press to choose one')) + '</span>' +
+            '</button>' +
+            '<div class="vb-bia-ben">' +
+              '<input type="text" name="coverAlt" maxlength="200" autocomplete="off" ' +
+                     'placeholder="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '" ' +
+                     'aria-label="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '">' +
+              '<code class="vb-bia-duong" data-bia-duong></code>' +
+              '<button type="button" class="vb-nho" data-bia-bo hidden>' +
+                tho(L('coverOff', 'Remove')) + '</button>' +
+            '</div>' +
+            '<input type="hidden" name="cover">' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
       '<div class="vb-hang">' +
         '<div class="vb-o vb-o--rong"><span>' + tho(L('body', 'Post')) + '</span>' +
           '<div data-soan></div></div>' +
@@ -434,6 +466,28 @@
           tho(L('slugAuto', 'From title')) + '</button>' +
       '</div>' +
       '<p class="vb-duong-bao" data-duong-bao></p>' +
+      /* ── BẢNG SEO: NÓI TRƯỚC, KHÔNG NÓI SAU ──
+         Mọi thứ trong bảng này đều kiểm được sau khi đăng, bằng một công cụ
+         bên ngoài. Nhưng lúc ấy bài đã lên, Google đã đọc, và sửa một tiêu đề
+         đã đánh chỉ mục thì phải chờ nó quay lại đọc lần nữa.
+
+         `<details>` đóng sẵn: người viết bài không phải nhìn một bảng chấm
+         điểm trong lúc đang nghĩ câu. Dòng tóm tắt trên nắp đủ để biết có gì
+         cần mở ra xem hay không. */
+      '<details class="vb-seo" data-seo>' +
+        '<summary class="vb-seo-nap">' +
+          '<span class="vb-seo-ten">' + tho(L('seo', 'Search & sharing')) + '</span>' +
+          '<span class="vb-seo-tom" data-seo-tom></span>' +
+        '</summary>' +
+        /* Xem trước kiểu kết quả Google. Mấy con số ở dưới chỉ là con số cho
+           tới lúc nhìn thấy tiêu đề bị cắt cụt ngay trước mắt. */
+        '<div class="vb-seo-xem" aria-hidden="true">' +
+          '<span class="vb-seo-url" data-seo-url></span>' +
+          '<span class="vb-seo-de" data-seo-de></span>' +
+          '<span class="vb-seo-mo" data-seo-mo></span>' +
+        '</div>' +
+        '<ul class="vb-seo-ds" data-seo-ds></ul>' +
+      '</details>' +
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
@@ -460,6 +514,13 @@
       hop.querySelector('[name=tags]').value = (cu.fm.tags || []).join(', ');
       hop.querySelector('[name=summary]').value = cu.fm.summary || '';
       hop.querySelector('[name=draft]').checked = cu.fm.draft === true;
+      /* Ảnh bìa của bài cũ. Trước bản này hai khoá ấy chỉ được CHỞ QUA — đọc
+         lên rồi gửi trả lại y nguyên, không bày ra — nên một bài đã có bìa thì
+         không sửa được bìa, và một bài chưa có thì mãi mãi chưa có. */
+      var oBia = hop.querySelector('[name=cover]');
+      if (oBia) oBia.value = cu.fm.cover || '';
+      var oBiaMo = hop.querySelector('[name=coverAlt]');
+      if (oBiaMo) oBiaMo.value = cu.fm.coverAlt || '';
       var oMuc = hop.querySelector('[name=muc]');
       var mucCu = cu.duong.split('/').slice(2, -1).join('/');
       if (oMuc) {
@@ -484,7 +545,13 @@
        innerHTML kế tiếp quét sạch nó đi cùng mọi trình nghe sự kiện của nó. */
     var oSoan = hop.querySelector('[data-soan]');
     if (oSoan && window.ZIB && window.ZIB.soan) {
-      soan = window.ZIB.soan.gan(oSoan, { nhan: N });
+      soan = window.ZIB.soan.gan(oSoan, {
+        nhan  : N,
+        /* Khung soạn thảo lo kéo thả và thu nhỏ; chỗ gửi lên nằm ở đây, vì
+           chỉ ở đây mới biết bài đăng năm nào và đường dẫn là gì. */
+        taiAnh: taiAnh,
+        khiDoi: hoanSEO
+      });
       /* Bản nháp lần trước: đóng nhầm tab, mất mạng, bấm nhầm nút — bài gõ dở
          phải còn đó. Chỉ hỏi khi ô đang trống, để "Viết bài nữa" không lôi
          bài vừa đăng quay lại. */
@@ -552,8 +619,25 @@
       });
     }
     hop.querySelector('[data-dang]').addEventListener('click', gui);
+
+    /* Ô bìa gắn SAU khi `cu` đã đổ giá trị vào `[name=cover]`: `gaiBia()` vẽ
+       theo giá trị đang có, nên gắn trước thì bài cũ mở ra hiện ô trống. */
+    gaiBia();
+
+    /* Bảng SEO nghe MỌI ô, kể cả ô chọn chuyên mục và ô ngày: đường dẫn xem
+       trước dựng từ chuyên mục, và bảng phải đổi theo ngay. */
+    ['title', 'summary', 'tags', 'slug', 'coverAlt'].forEach(function (t) {
+      var o = hop.querySelector('[name=' + t + ']');
+      if (o) o.addEventListener('input', hoanSEO);
+    });
+    ['muc', 'date'].forEach(function (t) {
+      var o = hop.querySelector('[name=' + t + ']');
+      if (o) o.addEventListener('change', hoanSEO);
+    });
+
     if (!cu) theoTieuDe();
     xemDuong();
+    veSEO();
   }
 
   /* ── XEM TRƯỚC ĐƯỜNG DẪN, VÀ NÓI RA CHỖ ĐÁNG NGẠI ──
@@ -590,6 +674,323 @@
     bao.className = 'vb-duong-bao' + (nhac.length ? ' vb-duong-bao--nhac' : '');
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     TẢI ẢNH LÊN — hàm này được đưa thẳng vào khung soạn thảo
+
+     Khung soạn thảo lo phần kéo thả, thu nhỏ và chỗ đặt ảnh trong bài. Nó
+     KHÔNG biết bài tên gì và đăng năm nào, mà thư mục ảnh thì cần cả hai. Nên
+     nó hỏi ra ngoài đúng một câu — "gửi giúp mớ byte này" — và chỗ này trả lời.
+
+     Thư mục theo ĐƯỜNG DẪN bài chứ không theo tiêu đề: đường dẫn là thứ không
+     đổi khi sửa tiêu đề, nên ảnh của một bài vẫn nằm cùng một chỗ qua nhiều
+     lượt sửa.
+     ══════════════════════════════════════════════════════════════ */
+  function taiAnh(x) {
+    if (!apiAnh) {
+      return Promise.reject(new Error(L('upOff', 'Image upload is not set up on this site.')));
+    }
+    if (!K || !K.co()) return Promise.reject(new Error(L('badKey', 'Wrong owner ID or key.')));
+
+    var ngay = (hop.querySelector('[name=date]') || {}).value || '';
+    var nam = (String(ngay).match(/^(\d{4})/) || [])[1] || String(new Date().getFullYear());
+    var bai = slugify((hop.querySelector('[name=slug]') || {}).value ||
+                      (hop.querySelector('[name=title]') || {}).value || '');
+    /* Chưa có tiêu đề thì chưa có thư mục để xếp ảnh vào. Nói thẳng ra chứ
+       không tự đặt tên `khong-ten`: một thư mục `khong-ten/` đầy ảnh của năm
+       bài khác nhau là thứ không ai gỡ ra được sau này. */
+    if (!bai) {
+      return Promise.reject(new Error(
+        L('upNeedTitle', 'Give the post a title first — images are filed under its link.')));
+    }
+
+    return fetch(apiAnh, {
+      method: 'POST',
+      headers: K.dau({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ nam: nam, bai: bai, ten: x.ten, loai: x.loai, duLieu: x.duLieu })
+    }).then(function (r) {
+      return r.json()
+        .catch(function () { return null; })
+        .then(function (d) {
+          if (d && d.ok) return d;
+          throw new Error(loiAnh(d, r.status));
+        });
+    });
+  }
+
+  function loiAnh(d, ma) {
+    if (!d) return L('upFail', 'Could not upload that image.') + ' (' + ma + ')';
+    if (d.loi === 'khoa') return L('badKey', 'Wrong owner ID or key.');
+    if (d.loi === 'cauhinh') {
+      return d.chiTiet || (L('noConfig', 'The server is missing') + ' ' + (d.thieu || []).join(', '));
+    }
+    return d.chiTiet || L('upFail', 'Could not upload that image.');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     Ô ẢNH BÌA
+
+     Cùng ba đường vào như ảnh trong bài — kéo thả, chọn file, và cùng một luật
+     thu nhỏ (mượn thẳng `ZIB.soan.thuNho`). Khác một chỗ: bìa chỉ có MỘT, nên
+     thả tấm thứ hai là thay tấm thứ nhất chứ không xếp hàng.
+
+     Ảnh vừa tải lên chưa có ở địa chỉ thật (Cloudflare còn đang dựng), nên ô
+     xem trước giữ bản tại chỗ, còn `[name=cover]` giữ đường dẫn thật — đúng
+     cùng một cách chia việc như `data-that` trong khung soạn thảo.
+     ══════════════════════════════════════════════════════════════ */
+  function gaiBia() {
+    var o = hop.querySelector('[data-bia]');
+    if (!o) return;
+    var nut   = o.querySelector('[data-bia-chon]');
+    var xem   = o.querySelector('[data-bia-xem]');
+    var chu   = o.querySelector('[data-bia-chu]');
+    var duong = o.querySelector('[data-bia-duong]');
+    var boNut = o.querySelector('[data-bia-bo]');
+    var oCover = o.querySelector('[name=cover]');
+    var tam = '';        /* đường xem tại chỗ của tấm vừa thả */
+
+    var oFile = document.createElement('input');
+    oFile.type = 'file';
+    oFile.accept = 'image/*';
+    oFile.hidden = true;
+    o.appendChild(oFile);
+
+    function ve() {
+      var u = oCover.value;
+      xem.hidden = !u;
+      if (u) xem.src = tam || u;
+      chu.hidden = !!u;
+      duong.textContent = u || '';
+      boNut.hidden = !u;
+      veSEO();
+    }
+
+    function nhan(f) {
+      if (!f || !/^image\//i.test(f.type)) return;
+      var S = (window.ZIB || {}).soan;
+      if (!S || !S.thuNho) { noi(L('upFail', 'Could not upload that image.'), 'hong'); return; }
+
+      if (tam) { URL.revokeObjectURL(tam); tam = ''; }
+      tam = URL.createObjectURL(f);
+      xem.src = tam; xem.hidden = false; chu.hidden = true;
+      nut.classList.add('vb-bia-tha--dang');
+      noi(L('coverUp', 'Uploading the cover…'));
+
+      S.thuNho(f)
+        .then(function (blob) {
+          return S.sangB64(blob).then(function (b64) {
+            return taiAnh({
+              /* Tên cố định `bia`: mỗi bài một ảnh bìa, và đặt tên theo việc
+                 thì mở thư mục ảnh ra là biết ngay tấm nào là bìa. Trùng tên
+                 thì máy chủ tự thêm đuôi, không đè lên tấm cũ. */
+              ten: 'bia', loai: blob.type || f.type, duLieu: b64, co: blob.size
+            });
+          });
+        })
+        .then(function (kq) {
+          oCover.value = kq.duong;
+          nut.classList.remove('vb-bia-tha--dang');
+          ve();
+          noi(L('coverOk', 'Cover uploaded. It appears on the live site in about a minute.'));
+        })
+        .catch(function (e) {
+          nut.classList.remove('vb-bia-tha--dang');
+          if (tam) { URL.revokeObjectURL(tam); tam = ''; }
+          ve();
+          var m = (e && e.message) || '';
+          noi(m === 'doc-khong-duoc' ? L('upRead', 'Could not read that file.')
+                                     : (m || L('upFail', 'Could not upload that image.')), 'hong');
+        });
+    }
+
+    nut.addEventListener('click', function () { oFile.click(); });
+    oFile.addEventListener('change', function () {
+      if (oFile.files && oFile.files[0]) nhan(oFile.files[0]);
+      oFile.value = '';
+    });
+    nut.addEventListener('dragover', function (e) {
+      e.preventDefault(); nut.classList.add('vb-bia-tha--tha');
+    });
+    nut.addEventListener('dragleave', function () { nut.classList.remove('vb-bia-tha--tha'); });
+    nut.addEventListener('drop', function (e) {
+      e.preventDefault();
+      nut.classList.remove('vb-bia-tha--tha');
+      var ds = e.dataTransfer && e.dataTransfer.files;
+      if (ds && ds[0]) nhan(ds[0]);
+    });
+    boNut.addEventListener('click', function () {
+      if (tam) { URL.revokeObjectURL(tam); tam = ''; }
+      oCover.value = '';
+      var oAlt = o.querySelector('[name=coverAlt]');
+      if (oAlt) oAlt.value = '';
+      ve();
+    });
+    var oAlt2 = o.querySelector('[name=coverAlt]');
+    if (oAlt2) oAlt2.addEventListener('input', hoanSEO);
+
+    ve();
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     BẢNG SEO
+
+     ── VÌ SAO NÓ Ở ĐÂY CHỨ KHÔNG PHẢI MỘT CÔNG CỤ NGOÀI ──
+     Mọi thứ bảng này đo đều đo được sau khi đăng, bằng bất kỳ công cụ SEO nào.
+     Nhưng lúc ấy thì bài đã lên, Google đã đọc, và sửa một tiêu đề đã đánh chỉ
+     mục là phải đợi nó quay lại. Ở đây thì sửa mất ba giây.
+
+     ── CHÍN PHÉP ĐO, VÀ VÌ SAO ĐÚNG CHÍN CÁI NÀY ──
+     Chỉ giữ thứ (a) người viết sửa được ngay tại ô này, và (b) thật sự đổi thứ
+     hiện ra trên Google hoặc trên thẻ chia sẻ. Những thứ như tốc độ tải, liên
+     kết từ ngoài, hay cấu trúc dữ liệu thì bộ dựng lo rồi, hoặc không nằm
+     trong tay người đang gõ — đưa vào đây chỉ thành một bảng đèn đỏ không bấm
+     được, và người ta thôi nhìn nó.
+
+     ── BA MỨC, KHÔNG PHẢI HAI ──
+     `thieu` là thứ làm hỏng một thứ CÓ THẬT (thẻ chia sẻ trắng trơn, ảnh không
+     ai đọc được). `nhac` là thứ nên hơn chứ không hỏng. Gộp hai mức ấy làm một
+     thì mọi bài đều đỏ, và màu đỏ hết nghĩa.
+     ══════════════════════════════════════════════════════════════ */
+  var henSEO = null;
+  function hoanSEO() {
+    /* Hoãn lại: `veSEO` gọi `soan.layMD()`, tức là đổi cả bài ra Markdown một
+       lượt. Ở bài ba nghìn chữ mà chạy theo từng phím gõ thì ô soạn thảo khựng. */
+    if (henSEO) clearTimeout(henSEO);
+    henSEO = setTimeout(veSEO, 400);
+  }
+
+  function oVal(ten) {
+    var o = hop.querySelector('[name=' + ten + ']');
+    return o ? String(o.value || '') : '';
+  }
+
+  function veSEO() {
+    var oDS = hop.querySelector('[data-seo-ds]');
+    if (!oDS) return;
+
+    var title = oVal('title').trim();
+    var tom   = oVal('summary').trim();
+    var cover = oVal('cover').trim();
+    var biaMo = oVal('coverAlt').trim();
+    var muc   = oVal('muc');
+    var slug  = slugify(oVal('slug') || title);
+    var tags  = oVal('tags').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    var md    = soan ? soan.layMD()
+                     : ((hop.querySelector('[name=noiDung]') || {}).value || '');
+
+    /* Đếm chữ trên phần CHỮ THẬT: bỏ khối mã, bỏ đường dẫn ảnh, bỏ dòng mở/đóng
+       khối. Không bỏ thì một bài ngắn kèm một khối mã dài đếm ra "đủ dài", và
+       con số thành vô nghĩa. */
+    var tran = md
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+      .replace(/^:::.*$/gm, ' ')
+      .replace(/^\s*@(youtube|video)\[[^\]]*\]\([^)]*\)/gm, ' ')
+      .replace(/[#>*_`~|]/g, ' ');
+    var soTu = (tran.match(/\S+/g) || []).length;
+
+    var deMuc = (md.match(/^##\s+\S/gm) || []).length;
+
+    /* Ảnh trong bài thiếu `alt`. Bắt đúng dạng `![](...` và `![ ](...` — hai
+       thứ trông khác nhau trong file mà giống hệt nhau với trình đọc màn hình. */
+    var anhTong = 0, anhTrong = 0, mAnh;
+    var reAnh = /!\[([^\]]*)\]\(/g;
+    while ((mAnh = reAnh.exec(md))) { anhTong++; if (!mAnh[1].trim()) anhTrong++; }
+
+    var ds = [];
+    function them(tt, chu) { ds.push({ tt: tt, chu: chu }); }
+
+    /* 1 · TIÊU ĐỀ — thứ in đậm trong kết quả tìm kiếm. Google cắt quanh 60 ký
+       tự; phần sau đó vẫn được đọc, nhưng người ta không thấy. */
+    if (!title) them('thieu', L('sTitle0', 'No title yet.'));
+    else if (title.length > 60) {
+      them('nhac', L('sTitleLong', 'Title is {n} characters — Google shows about 60.')
+                     .replace('{n}', title.length));
+    } else if (title.length < 15) {
+      them('nhac', L('sTitleShort', 'Title is very short — a few more words give Google something to match.'));
+    } else them('ok', L('sTitleOk', 'Title length is good.'));
+
+    /* 2 · TÓM TẮT — chính là dòng mô tả dưới kết quả tìm kiếm, và là dòng chữ
+       trên thẻ chia sẻ Facebook. Bỏ trống thì bộ dựng cắt tạm mấy dòng đầu
+       bài: chạy được, nhưng mấy dòng đầu hiếm khi là câu mời đọc. */
+    if (!tom) them('nhac', L('sSum0', 'No summary — the site will cut the first lines of the post instead.'));
+    else if (tom.length > 160) {
+      them('nhac', L('sSumLong', 'Summary is {n} characters — search results cut around 160.')
+                     .replace('{n}', tom.length));
+    } else if (tom.length < 70) {
+      them('nhac', L('sSumShort', 'Summary is short — 70 to 160 characters fills the space under the title.'));
+    } else them('ok', L('sSumOk', 'Summary length is good.'));
+
+    /* 3 · ĐƯỜNG DẪN */
+    if (!slug) them('thieu', L('sSlug0', 'No link yet.'));
+    else if (slug.length > 60) {
+      them('nhac', L('slugLong', 'Long links get cut off in search results — under 60 characters reads better.'));
+    } else them('ok', L('sSlugOk', 'Link is short and readable.'));
+
+    /* 4 · ẢNH BÌA — thứ quyết định một cái link dán vào Facebook hay Zalo ra
+       một tấm hình hay ra một ô trắng. Đây là chỗ SEO "xã hội" hụt rõ nhất,
+       nên nó là `thieu` chứ không phải `nhac`. */
+    if (!cover) them('thieu', L('sCover0', 'No cover image — links shared to Facebook or Zalo show a blank card.'));
+    else if (!biaMo) them('thieu', L('sCoverAlt', 'The cover has no description line.'));
+    else them('ok', L('sCoverOk', 'Cover image and its description are set.'));
+
+    /* 5 · ẢNH TRONG BÀI */
+    if (anhTrong) {
+      them('thieu', L('sImgAlt', '{n} of {t} images in the post have no description.')
+                      .replace('{n}', anhTrong).replace('{t}', anhTong));
+    } else if (anhTong) them('ok', L('sImgOk', 'Every image in the post is described.'));
+
+    /* 6 · TIÊU ĐỀ MỤC — cũng là thứ dựng ra mục lục ở cột phải. Bài dài không
+       có mục nào thì vừa khó đọc vừa không có mục lục. */
+    if (soTu > 600 && !deMuc) {
+      them('nhac', L('sH2', 'A post this long with no headings is hard to scan — and it gets no contents list.'));
+    } else if (deMuc) {
+      them('ok', L('sH2Ok', '{n} headings.').replace('{n}', deMuc));
+    }
+
+    /* 7 · ĐỘ DÀI */
+    if (!soTu) them('thieu', L('sBody0', 'The post is empty.'));
+    else if (soTu < 300) {
+      them('nhac', L('sBodyShort', 'About {n} words — short posts rarely rank for anything.')
+                     .replace('{n}', soTu));
+    } else them('ok', L('sBodyOk', 'About {n} words.').replace('{n}', soTu));
+
+    /* 8 · TAG — dựng ra trang tag, tức là thêm đường vào bài. */
+    if (!tags.length) them('nhac', L('sTag0', 'No tags — tags build the pages that lead back to this post.'));
+    else if (tags.length > 8) them('thieu', L('sTagMany', '{n} tags — the limit is 8.').replace('{n}', tags.length));
+    else them('ok', L('sTagOk', '{n} tags.').replace('{n}', tags.length));
+
+    /* 9 · CHUYÊN MỤC */
+    if (!muc) them('nhac', L('sMuc0', 'No category — the post will sit at the top level on its own.'));
+
+    /* ── VẼ ── */
+    oDS.innerHTML = ds.map(function (x) {
+      return '<li class="vb-seo-d vb-seo-d--' + x.tt + '">' + tho(x.chu) + '</li>';
+    }).join('');
+
+    var xau = ds.filter(function (x) { return x.tt === 'thieu'; }).length;
+    var nhac = ds.filter(function (x) { return x.tt === 'nhac'; }).length;
+    var oTom = hop.querySelector('[data-seo-tom]');
+    if (oTom) {
+      oTom.textContent = xau
+        ? L('sBad', '{n} to fix').replace('{n}', xau)
+        : nhac ? L('sWarn', '{n} could be better').replace('{n}', nhac)
+               : L('sGood', 'all good');
+      oTom.className = 'vb-seo-tom vb-seo-tom--' + (xau ? 'thieu' : nhac ? 'nhac' : 'ok');
+    }
+
+    var oUrl = hop.querySelector('[data-seo-url]');
+    var oDe  = hop.querySelector('[data-seo-de]');
+    var oMo  = hop.querySelector('[data-seo-mo]');
+    if (oUrl) {
+      oUrl.textContent = (location.origin || '') + '/posts/' + (muc ? muc + '/' : '') + slug + '/';
+    }
+    if (oDe) oDe.textContent = title || L('sTitle0', 'No title yet.');
+    if (oMo) {
+      oMo.textContent = tom || tran.replace(/\s+/g, ' ').trim().slice(0, 160)
+                            || L('sBody0', 'The post is empty.');
+    }
+  }
+
   function gui() {
     var nut = hop.querySelector('[data-dang]');
     var oTho = hop.querySelector('[name=noiDung]');
@@ -600,6 +1001,8 @@
       date   : hop.querySelector('[name=date]').value,
       tags   : hop.querySelector('[name=tags]').value,
       summary: hop.querySelector('[name=summary]').value,
+      cover   : (hop.querySelector('[name=cover]') || {}).value || '',
+      coverAlt: (hop.querySelector('[name=coverAlt]') || {}).value || '',
       noiDung: soan ? soan.layMD() : (oTho ? oTho.value : ''),
       draft  : hop.querySelector('[name=draft]').checked
     };
@@ -617,8 +1020,9 @@
       b.duong = dangSua.duong;
       b.sha = dangSua.sha;
       b.khoaKhac = dangSua.khoaKhac;
-      b.cover = dangSua.fm.cover;
-      b.coverAlt = dangSua.fm.coverAlt;
+      /* `cover`/`coverAlt` KHÔNG lấy lại từ `dangSua.fm` nữa — hai khoá ấy nay
+         có ô riêng, và giá trị trong ô mới là thứ người ta vừa quyết. Lấy lại
+         bản cũ ở đây là mọi lượt sửa bìa đều lặng lẽ bị huỷ. */
       b.hidden = dangSua.fm.hidden === true;
     }
 

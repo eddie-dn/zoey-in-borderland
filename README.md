@@ -57,7 +57,8 @@ tools/          build · new-post · anh · bia · og · nen · dev · version
 worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/*
 wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1
 docs/logo/      14 chặng của vòng kể + một file chạy trọn vòng + tấm lát cắt
-functions/api/  binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
+functions/api/  anh.js — nhận ảnh thả vào ô soạn thảo, ghi vào public/media/
+                binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
                 ghi-chu.js — đăng ghi chú thẳng lên /notes/, không phải dựng lại
                 xem.js — đếm lượt xem thật
                 thich.js — đếm lượt thích, cùng kiểu với xem.js

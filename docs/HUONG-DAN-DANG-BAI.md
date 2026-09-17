@@ -34,6 +34,14 @@ bài đó trong `public/media/<năm>/<slug>/`.
 
 Mở file vừa tạo.
 
+> **Viết ở `/z-admin/` thì không cần bước nào trong mục này.** Kéo thẳng tấm
+> ảnh vào khung soạn thảo, hoặc chụp màn hình rồi `⌘V`, hoặc bấm nút ảnh. Trình
+> duyệt tự thu nhỏ còn 1800px, đổi sang WebP, xếp vào
+> `public/media/<năm>/<slug-bài>/` và dán sẵn dòng Markdown. Ảnh bìa cũng thả
+> vào ô **Cover image** ngay trên khung gõ.
+>
+> Phần dưới đây là đường của người ngồi gõ file `.md` ở máy.
+
 **Ảnh thì không phải tự đi copy vào đúng thư mục.** Quăng hết vào `_anh/` ở gốc
 dự án — tên gì cũng được, tiếng Việt có dấu cũng được — rồi chạy:
 
@@ -286,8 +294,14 @@ Xếp nhiều ảnh cạnh nhau:
 :::
 ```
 
-**Đừng copy ảnh bằng tay** — dùng `npm run anh <slug-bài>` (xem §1 Bước 2).
-Nó đổi tên, xếp đúng chỗ và in sẵn dòng chèn.
+**Đừng copy ảnh bằng tay.** Hai đường, chọn một:
+
+- **Ở `/z-admin/`** — kéo tấm ảnh vào khung soạn thảo, hoặc `⌘V` sau khi chụp
+  màn hình, hoặc bấm nút ảnh. Bấm đúp vào tấm ảnh đã chèn để gõ dòng tả.
+- **Ở máy** — `npm run anh <slug-bài>` (xem §1 Bước 2): đổi tên, xếp đúng chỗ
+  và in sẵn dòng chèn.
+
+Cả hai đều xếp vào `public/media/<năm>/<slug-bài>/` và đều cảnh báo ảnh nặng.
 
 **Ba điều build tự lo, không phải gõ:**
 
@@ -317,6 +331,16 @@ xoá gọn cả ảnh, không còn ảnh mồ côi nằm lại.
 
 Video tự chứa (`.mp4`, `.webm`) thì chỉ tải phần đầu để vẽ thanh tua, không tải
 cả file lúc mở trang.
+
+### 3.4b · Thẻ chia sẻ khi dán link
+
+Tiêu đề, tóm tắt và **ảnh bìa** là ba thứ hiện ra trong ô xem trước khi dán
+link vào Messenger, Facebook hay Zalo. Bảng **Search & sharing** ở `/z-admin/`
+đo cả ba ngay lúc gõ.
+
+Dán link mà ra một ô trắng thì **thường không phải lỗi của trang** — mấy ứng
+dụng ấy nhớ kết quả quét cũ hàng tuần. Cách bắt quét lại, và chỗ kiểm xem trang
+đang trả về gì: `docs/SEO.md`.
 
 ### 3.5 · Khung nhấn
 

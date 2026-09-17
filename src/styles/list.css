@@ -1846,13 +1846,29 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
    Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì tám ô chip xếp
    ngang là đủ (màu tự nói ra nó là màu gì), còn ở đây "Note" và "Tip" trông
    giống hệt nhau nếu chỉ có tên — câu mô tả mới là thứ phân biệt. */
-.sz-bang--khoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:2px}
+/* Mười sáu dòng. Ở khổ rộng chúng xếp ba cột nên vừa một màn; trên điện thoại
+   thì một cột, và mười sáu dòng đẩy khung gõ xuống tận đâu. Chặn chiều cao rồi
+   cho cuộn trong chính bảng — giống hệt bảng chỉ dẫn ngay bên cạnh. */
+.sz-bang--khoi{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2px;
+  max-height:min(46vh,420px);overflow-y:auto;
+}
 .sz-khoi-nut{
   appearance:none;border:0;background:none;cursor:pointer;text-align:left;
-  display:flex;flex-direction:column;gap:1px;
+  display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);
   padding:7px var(--s3);border-radius:var(--r-sm);
   transition:background var(--dur-fast);
 }
+.sz-khoi-chu{display:flex;flex-direction:column;gap:1px;min-width:0}
+/* ── CÚ PHÁP ĐỨNG CẠNH CÁI NÚT LÀM RA NÓ ──
+   Trước đây nó nằm ở bảng chỉ dẫn, dưới một đầu đề nói rằng mấy thứ này không
+   có nút. Nhạt màu và đứng nép bên phải: nó là thứ để LIẾC khi cần biết dòng
+   này ghi ra cái gì trong file, không phải thứ phải đọc trước khi bấm. */
+.sz-khoi-cu{
+  flex:0 0 auto;font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);opacity:.75;white-space:nowrap;
+}
+.sz-khoi-nut:hover .sz-khoi-cu{opacity:1;color:var(--accent-ink)}
 .sz-khoi-nut:hover{background:var(--surface-solid)}
 .sz-khoi-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .sz-khoi-ten{
@@ -2083,4 +2099,135 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   .vb-dong{grid-template-columns:5.5rem minmax(0,1fr);gap:2px var(--s3)}
   .vb-dong-ten{grid-column:1 / -1;white-space:normal}
   .vb-dong-nut{grid-column:1 / -1;margin-top:2px}
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   THẢ ẢNH VÀO KHUNG SOẠN THẢO
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Dòng trạng thái ngay dưới thanh nút. Ẩn hẳn khi không có chuyện — một dải
+   trống thường trực ở đó đẩy khung gõ xuống và không nói gì. */
+.sz-bao{
+  font-size:var(--fs-2xs);line-height:1.4;
+  padding:6px var(--s4);border-bottom:1px solid var(--line);
+  background:var(--surface-sunken);color:var(--text-faint);
+}
+.sz-bao--hong{color:var(--bad)}
+
+/* Kéo một tấm ảnh qua khung: viền đổi màu, nền hơi sáng lên. Không dùng
+   `outline` mà dùng `box-shadow` chèn vào trong — outline vẽ ra NGOÀI mép và
+   đè lên thanh nút ở trên. */
+.sz-khung--tha{
+  box-shadow:inset 0 0 0 2px var(--accent);
+  background:var(--surface-solid);
+}
+
+/* Ảnh đang lên: nhạt đi và có một nhịp thở. Không dùng vòng xoay riêng — một
+   cái spinner nữa là một phần tử nữa phải chèn vào giữa bài rồi gỡ ra đúng
+   chỗ, mà chính tấm ảnh đã ở sẵn đó để nói. */
+.sz-khung img.sz-anh--tai{opacity:.45;animation:sz-tho 1.1s ease-in-out infinite}
+@keyframes sz-tho{50%{opacity:.75}}
+/* Ai tắt hiệu ứng chuyển động thì chỉ còn độ mờ — nó vẫn nói đủ "chưa xong". */
+@media (prefers-reduced-motion:reduce){
+  .sz-khung img.sz-anh--tai{animation:none}
+}
+
+/* Nút Blocks mang cả chữ. Chữ biến mất dưới 560px: ở đó thanh nút đã phải
+   cuộn ngang, và một nút rộng gấp ba đẩy mọi thứ khác ra khỏi tầm mắt. */
+.sz-nut--khoi{width:auto;gap:5px;padding-inline:8px}
+.sz-nut-chu{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;
+}
+@media (max-width:560px){ .sz-nut-chu{display:none} }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Ô ẢNH BÌA
+   ══════════════════════════════════════════════════════════════════════ */
+.vb-bia{display:flex;gap:var(--s3);align-items:flex-start;flex-wrap:wrap}
+/* Ô thả: 16/9, đúng tỉ lệ thẻ chia sẻ Facebook dựng ra. Thấy ngay lúc chọn là
+   tấm này bị cắt mất phần nào — không phải chờ tới lúc dán link mới biết. */
+.vb-bia-tha{
+  appearance:none;cursor:pointer;flex:0 0 auto;
+  width:min(260px,100%);aspect-ratio:16/9;
+  display:grid;place-items:center;overflow:hidden;
+  padding:var(--s3);border:1px dashed var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface-sunken);color:var(--text-faint);
+  font-size:var(--fs-2xs);line-height:1.35;text-align:center;
+  transition:border-color var(--dur-fast),background var(--dur-fast);
+}
+.vb-bia-tha:hover{border-color:var(--accent);color:var(--accent-ink)}
+.vb-bia-tha:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vb-bia-tha--tha{border-color:var(--accent);border-style:solid;background:var(--surface-solid)}
+.vb-bia-tha--dang{opacity:.55}
+.vb-bia-xem{width:100%;height:100%;object-fit:cover;border-radius:2px;grid-area:1/1}
+.vb-bia-chu{grid-area:1/1}
+.vb-bia-ben{flex:1 1 220px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.vb-bia-duong{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vb-bia-ben .vb-nho{align-self:flex-start}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BẢNG SEO
+
+   Đóng sẵn, và trên nắp chỉ có một cụm chữ nói có gì cần mở ra hay không.
+   Người đang nghĩ câu không cần một bảng chấm điểm nhìn chằm chằm vào mình.
+   ══════════════════════════════════════════════════════════════════════ */
+.vb-seo{
+  margin-top:var(--s2);border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--surface-sunken);
+}
+.vb-seo-nap{
+  cursor:pointer;list-style:none;
+  display:flex;align-items:baseline;gap:var(--s3);
+  padding:8px var(--s4);
+}
+.vb-seo-nap::-webkit-details-marker{display:none}
+.vb-seo-nap:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-sm)}
+.vb-seo-ten{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
+}
+.vb-seo-tom{font-size:var(--fs-2xs);margin-left:auto}
+.vb-seo-tom--ok{color:var(--text-faint)}
+.vb-seo-tom--nhac{color:var(--warn)}
+.vb-seo-tom--thieu{color:var(--bad)}
+
+/* Xem trước kiểu kết quả Google. Cắt đúng chỗ Google cắt — đó là cả tác dụng
+   của khối này: một con số "68 ký tự" không nói được bằng việc nhìn thấy câu
+   của mình cụt mất ba chữ cuối. */
+.vb-seo-xem{
+  display:flex;flex-direction:column;gap:1px;
+  margin:0 var(--s4) var(--s3);padding:var(--s3);
+  border-radius:var(--r-sm);background:var(--surface-solid);
+}
+.vb-seo-url{font-size:var(--fs-3xs);color:var(--text-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vb-seo-de{
+  font-size:var(--fs-sm);color:var(--accent-ink);line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;
+}
+.vb-seo-mo{
+  font-size:var(--fs-2xs);color:var(--text-muted);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.vb-seo-ds{list-style:none;margin:0;padding:0 var(--s4) var(--s3);
+  display:flex;flex-direction:column;gap:3px}
+/* Dấu đầu dòng là một ký tự, không phải một icon: ba mức phải phân biệt được
+   cả khi in ra đen trắng và cả với người không phân biệt được màu. */
+.vb-seo-d{font-size:var(--fs-2xs);line-height:1.45;padding-left:1.15em;position:relative}
+.vb-seo-d::before{position:absolute;left:0;font-weight:700}
+.vb-seo-d--ok{color:var(--text-faint)}
+.vb-seo-d--ok::before{content:"✓";color:var(--ok)}
+.vb-seo-d--nhac{color:var(--text-muted)}
+.vb-seo-d--nhac::before{content:"!";color:var(--warn)}
+.vb-seo-d--thieu{color:var(--text)}
+.vb-seo-d--thieu::before{content:"×";color:var(--bad)}
+
+@media (max-width:480px){
+  .vb-bia-tha{width:100%}
 }

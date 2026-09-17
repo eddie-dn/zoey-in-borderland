@@ -286,6 +286,47 @@ const NHAN = {
   vbPublish   : 'Publish',
   vbCrash     : 'The editor failed to load — open the browser console to see the error.',
   vbDraftAsk  : 'There is an unfinished post saved on this device. Open it?',
+  /* ── Ô ẢNH BÌA ── */
+  vbCover     : 'Cover image',
+  vbCoverDrop : 'Drop an image here, or press to choose one',
+  vbCoverAlt  : 'Describe the cover — one short line',
+  vbCoverOff  : 'Remove',
+  vbCoverUp   : 'Uploading the cover…',
+  vbCoverOk   : 'Cover uploaded. It appears on the live site in about a minute.',
+  vbUpOff     : 'Image upload is not set up on this site.',
+  vbUpNeedTitle: 'Give the post a title first — images are filed under its link.',
+  /* ── BẢNG SEO ──
+     Mỗi câu nói RA HỆ QUẢ, không nói ra luật. "Tiêu đề dài quá 60" là một luật
+     người ta phải tin; "Google chỉ hiện khoảng 60 ký tự" là một chuyện xảy ra
+     với bài của mình. Câu thứ hai sửa được, câu thứ nhất chỉ gây khó chịu. */
+  vbSeo       : 'Search & sharing',
+  vbSBad      : '{n} to fix',
+  vbSWarn     : '{n} could be better',
+  vbSGood     : 'all good',
+  vbSTitle0   : 'No title yet.',
+  vbSTitleLong: 'Title is {n} characters — Google shows about 60.',
+  vbSTitleShort: 'Title is very short — a few more words give Google something to match.',
+  vbSTitleOk  : 'Title length is good.',
+  vbSSum0     : 'No summary — the site will cut the first lines of the post instead.',
+  vbSSumLong  : 'Summary is {n} characters — search results cut around 160.',
+  vbSSumShort : 'Summary is short — 70 to 160 characters fills the space under the title.',
+  vbSSumOk    : 'Summary length is good.',
+  vbSSlug0    : 'No link yet.',
+  vbSSlugOk   : 'Link is short and readable.',
+  vbSCover0   : 'No cover image — links shared to Facebook or Zalo show a blank card.',
+  vbSCoverAlt : 'The cover has no description line.',
+  vbSCoverOk  : 'Cover image and its description are set.',
+  vbSImgAlt   : '{n} of {t} images in the post have no description.',
+  vbSImgOk    : 'Every image in the post is described.',
+  vbSH2       : 'A post this long with no headings is hard to scan — and it gets no contents list.',
+  vbSH2Ok     : '{n} headings.',
+  vbSBody0    : 'The post is empty.',
+  vbSBodyShort: 'About {n} words — short posts rarely rank for anything.',
+  vbSBodyOk   : 'About {n} words.',
+  vbSTag0     : 'No tags — tags build the pages that lead back to this post.',
+  vbSTagMany  : '{n} tags — the limit is 8.',
+  vbSTagOk    : '{n} tags.',
+  vbSMuc0     : 'No category — the post will sit at the top level on its own.',
 
   /* ── BẢNG BÀI ĐÃ ĐĂNG (ngăn Post) ── */
   vbNewPost   : 'New post',
@@ -393,7 +434,7 @@ const NHAN = {
      Mỗi dòng là phần GIẢI THÍCH; mẫu gõ nằm trong src/js/soan.js, vì mẫu ấy là
      cú pháp chứ không phải chữ giao diện — dịch nó sang tiếng khác là hỏng. */
   szGHelp1    : 'The buttons',
-  szGHelp2    : 'Typed by hand — no button',
+  szGHelp2    : 'Blocks — one press each',
   szGNote     : 'boxed aside. Close it with ::: on its own line.',
   szGCallout  : 'same box, three other tones.',
   szGGallery  : 'photos side by side. Put the image lines inside.',
@@ -435,7 +476,27 @@ const NHAN = {
   szBCapAsk   : 'Caption (can be empty):',
   szBAnhChua  : 'Put the cursor next to an image first.',
   szBDoanChua : 'Put the cursor in a paragraph first.',
-  szGChan     : 'A ::: line goes in a paragraph of its own. A table or code block keeps its rows inside ONE paragraph — Shift+Enter, not Enter. Images always go in with the image button, never typed. Press </> to see what will be sent.',
+  szBFull     : 'Full-bleed block', szBFullMo : 'edge to edge of the screen',
+  /* ── NHÃN CỦA VIỆC THẢ ẢNH ──
+     Mấy câu này hiện ra ở dòng trạng thái ngay dưới thanh nút, trong lúc ảnh
+     đang lên. Chúng phải nói được ĐANG Ở ĐÂU trong một việc mất vài giây —
+     một chữ "Đang tải…" đứng im thì không phân biệt được với treo máy. */
+  szAltMissing: '{n} image(s) still have no description — double-click one to add it.',
+  szUpNo      : 'Uploading is off — sign in with the owner key first.',
+  szUpOne     : 'Uploading image…',
+  szUpMany    : 'Uploading image… {n} more in the queue.',
+  szUpFail    : 'Could not upload that image.',
+  szUpRead    : 'Could not read that file.',
+  szUpLost    : 'An image that was still uploading did not make it.',
+  szGHelpAnh  : 'Images',
+  szA1        : 'Drag a photo onto the box, or press ⌘V after a screenshot, or press the image button.',
+  szA2        : 'Big photos are shrunk to 1800px and turned into WebP here on your machine first.',
+  szA3        : 'Double-click an image to describe it — that line is what a blind reader hears and what Google reads.',
+  szA4        : 'A new image takes about a minute to appear on the live site; in this box you see it straight away.',
+  szG1        : 'Press ⌗ Blocks: boxes, gallery, table, code, checklist, YouTube, video, paragraph widths.',
+  szG2        : 'Every line in there shows the exact text it writes into the file — nothing needs typing.',
+  szG3        : 'A ::: block and a table each live in ONE paragraph: Shift+Enter between rows, not Enter.',
+  szGChan     : 'Everything the site can render has a button now. Press </> at any time to see the exact Markdown that will be sent to GitHub.',
   vbNeedBoth  : 'Both a title and some text are needed.',
   vbSending   : 'Sending…',
   vbDone      : 'Pushed to the repository',
@@ -931,7 +992,7 @@ function boChuThich(html) {
 
 function trang({ title, description, canonical, ogTitle, ogImage, ogType, content,
                  scripts = '', headExtra = '', noindex = false, lang = CAU.lang, duong = '/',
-                 epTheme = '', shellAttr = '' }) {
+                 epTheme = '', shellAttr = '', ogAnhMo = '', ogBai = null }) {
   return boChuThich(dienMau(MAU_SHELL, {
     lang,
     /* `data-base` để JS biết gốc trang khi deploy vào thư mục con (GitHub
@@ -1014,6 +1075,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                     bài là việc ngồi hẳn xuống làm, không phải việc tiện tay. */
                  (duong === '/z-admin/' && (CAU.dangBai || {}).bat !== false)
                    ? `data-bai-api="${attr(BASE + ((CAU.dangBai || {}).api || '/api/bai'))}" ` +
+                     /* Cửa tải ảnh đi RIÊNG một địa chỉ, không ghép vào
+                        /api/bai: hai việc khác hẳn nhau về kích thước gói tin
+                        và về thứ phải kiểm, và gộp lại thì mỗi lần sửa một
+                        việc là phải đọc lại cả hai. Xem functions/api/anh.js. */
+                     `data-anh-api="${attr(BASE + ((CAU.dangBai || {}).apiAnh || '/api/anh'))}" ` +
                      `data-bai-nhan="${attr(JSON.stringify({
                         title: NHAN.vbTitle, muc: NHAN.vbMuc, date: NHAN.vbDate,
                         tags: NHAN.vbTags, summary: NHAN.vbSummary, body: NHAN.vbBody,
@@ -1084,7 +1150,34 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bThuong: NHAN.szBThuong, bThuongMo: NHAN.szBThuongMo,
                         bYtAsk: NHAN.szBYtAsk, bYtSai: NHAN.szBYtSai,
                         bVidAsk: NHAN.szBVidAsk, bCapAsk: NHAN.szBCapAsk,
-                        bAnhChua: NHAN.szBAnhChua, bDoanChua: NHAN.szBDoanChua
+                        bAnhChua: NHAN.szBAnhChua, bDoanChua: NHAN.szBDoanChua,
+                        bFull: NHAN.szBFull, bFullMo: NHAN.szBFullMo,
+                        altMissing: NHAN.szAltMissing, upNo: NHAN.szUpNo,
+                        upOne: NHAN.szUpOne, upMany: NHAN.szUpMany,
+                        upFail: NHAN.szUpFail, upRead: NHAN.szUpRead,
+                        upLost: NHAN.szUpLost,
+                        gHelpAnh: NHAN.szGHelpAnh,
+                        a1: NHAN.szA1, a2: NHAN.szA2, a3: NHAN.szA3, a4: NHAN.szA4,
+                        g1: NHAN.szG1, g2: NHAN.szG2, g3: NHAN.szG3,
+                        cover: NHAN.vbCover, coverDrop: NHAN.vbCoverDrop,
+                        coverAlt: NHAN.vbCoverAlt, coverOff: NHAN.vbCoverOff,
+                        coverUp: NHAN.vbCoverUp, coverOk: NHAN.vbCoverOk,
+                        upOff: NHAN.vbUpOff, upNeedTitle: NHAN.vbUpNeedTitle,
+                        seo: NHAN.vbSeo, sBad: NHAN.vbSBad, sWarn: NHAN.vbSWarn,
+                        sGood: NHAN.vbSGood,
+                        sTitle0: NHAN.vbSTitle0, sTitleLong: NHAN.vbSTitleLong,
+                        sTitleShort: NHAN.vbSTitleShort, sTitleOk: NHAN.vbSTitleOk,
+                        sSum0: NHAN.vbSSum0, sSumLong: NHAN.vbSSumLong,
+                        sSumShort: NHAN.vbSSumShort, sSumOk: NHAN.vbSSumOk,
+                        sSlug0: NHAN.vbSSlug0, sSlugOk: NHAN.vbSSlugOk,
+                        sCover0: NHAN.vbSCover0, sCoverAlt: NHAN.vbSCoverAlt,
+                        sCoverOk: NHAN.vbSCoverOk,
+                        sImgAlt: NHAN.vbSImgAlt, sImgOk: NHAN.vbSImgOk,
+                        sH2: NHAN.vbSH2, sH2Ok: NHAN.vbSH2Ok,
+                        sBody0: NHAN.vbSBody0, sBodyShort: NHAN.vbSBodyShort,
+                        sBodyOk: NHAN.vbSBodyOk,
+                        sTag0: NHAN.vbSTag0, sTagMany: NHAN.vbSTagMany,
+                        sTagOk: NHAN.vbSTagOk, sMuc0: NHAN.vbSMuc0
                       }))}"`
                    : '',
                  ((duong === '/notes/' || duong === '/z-admin/') &&
@@ -1142,6 +1235,15 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
     ogType    : ogType || 'website',
     ogImage   : attr(ogImage || `${CAU.url}${BASE}/og.jpg`),
     locale    : CAU.locale,
+    /* Tính TRÊN đường dẫn chưa qua `attr` — hàm này phải mở được file trên đĩa
+       để đo khổ ảnh, mà `attr` đã đổi `&` thành `&amp;` rồi. */
+    ogThem    : ogThemHTML({
+      ogImage    : ogImage || `${CAU.url}${BASE}/og.jpg`,
+      ogAnhMo,
+      ogTitle    : ogTitle || title,
+      description: description || CAU.description,
+      bai        : ogBai
+    }),
     /* Không có bài nào noindex nữa (bản nháp không được dựng ra), nhưng giữ
        nhánh này phòng khi cần chặn một trang riêng lẻ.
 
@@ -2175,6 +2277,89 @@ function nutTrang() {
   };
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   THẺ PHỤ CHO Ô XEM TRƯỚC KHI DÁN LINK
+
+   ── VẤN ĐỀ, VÀ NÓ KHÔNG PHẢI THỨ AI CŨNG ĐOÁN RA ──
+   Dán một đường dẫn bài vào iMessage, Messenger hay Zalo mà ra một ô xám chỉ
+   có mỗi tên miền, thì phản xạ đầu tiên là "chắc thiếu og:image". Không phải:
+   `og:title`, `og:description` và `og:image` đã đủ và đã đúng từ lâu, ảnh trả
+   về 200, đúng 1200×675.
+
+   Chỗ thiếu là thứ khác. Bộ quét của mấy ứng dụng nhắn tin có một hạn giờ rất
+   ngắn, và để vẽ được tấm ảnh nó phải BIẾT TRƯỚC khổ ảnh — không biết thì phải
+   tải nguyên tấm về rồi giải mã để đo. Đó là một lượt gọi mạng thứ hai, và
+   phần lớn bộ quét bỏ luôn tấm ảnh thay vì chờ. Kết quả: một ô chỉ có tên miền.
+
+   `og:image:width` và `og:image:height` cắt hẳn lượt gọi ấy. Hai dòng chữ thay
+   cho một lượt tải 75 KB.
+
+   ── VÀ MỘT CHUYỆN KHÔNG SỬA ĐƯỢC BẰNG MÃ ──
+   Facebook, Messenger và Zalo NHỚ kết quả quét cũ hàng tuần, kể cả kết quả
+   rỗng. Trang từng được dán đi trước khi có mấy thẻ này thì ô xám ấy còn nằm
+   trong bộ nhớ của họ cho tới lúc có ai bắt quét lại. Xem docs/SEO.md.
+   ══════════════════════════════════════════════════════════════════════ */
+const MIME_ANH = {
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+  '.webp': 'image/webp', '.gif': 'image/gif', '.avif': 'image/avif'
+};
+
+function ogThemHTML({ ogImage, ogAnhMo, ogTitle, description, bai }) {
+  const ra = [];
+  const goc = `${CAU.url}${BASE}`;
+
+  /* Chỉ đo được ảnh của CHÍNH trang này. Ảnh ở tên miền khác thì file không
+     nằm đâu trên đĩa lúc dựng, và đoán khổ ảnh là khai sai — còn tệ hơn không
+     khai, vì bộ quét tin lời khai rồi cắt ảnh theo khổ sai. */
+  if (ogImage && ogImage.startsWith(goc)) {
+    const that = path.join(THU_MUC.public, ogImage.slice(goc.length).replace(/^\//, ''));
+    if (fs.existsSync(that)) {
+      const kt = kichThuocAnh(that);
+      if (kt) {
+        ra.push(`<meta property="og:image:width" content="${kt.w}">`);
+        ra.push(`<meta property="og:image:height" content="${kt.h}">`);
+      }
+      const mime = MIME_ANH[path.extname(that).toLowerCase()];
+      if (mime) ra.push(`<meta property="og:image:type" content="${mime}">`);
+    } else {
+      CANH_BAO.push(`ảnh chia sẻ không có trên đĩa: ${ogImage}`);
+    }
+    /* Một số bộ quét cũ chỉ đọc `og:image:secure_url`. Trang đã chạy https
+       hoàn toàn, nên nó luôn trùng `og:image` — nhưng trùng thì rẻ. */
+    if (ogImage.startsWith('https://')) {
+      ra.push(`<meta property="og:image:secure_url" content="${attr(ogImage)}">`);
+    }
+  }
+  if (ogAnhMo) ra.push(`<meta property="og:image:alt" content="${attr(ogAnhMo)}">`);
+
+  /* ── THẺ TWITTER ──
+     `twitter:card` đứng một mình từ trước tới nay. Twitter/X tự lùi về đọc thẻ
+     og khi thiếu, nhưng Threads và vài ứng dụng khác thì KHÔNG lùi — chúng đọc
+     `twitter:*` trước, không thấy thì bỏ qua luôn chứ không đi tìm og. */
+  ra.push(`<meta name="twitter:title" content="${attr(ogTitle)}">`);
+  ra.push(`<meta name="twitter:description" content="${attr(description)}">`);
+  if (ogImage) ra.push(`<meta name="twitter:image" content="${attr(ogImage)}">`);
+  if (ogAnhMo) ra.push(`<meta name="twitter:image:alt" content="${attr(ogAnhMo)}">`);
+
+  /* ── THẺ CỦA MỘT BÀI VIẾT ──
+     Facebook dùng chúng để xếp bài vào dòng thời gian đúng chỗ, và chúng là
+     bản song song của JSON-LD cho bộ quét không đọc JSON-LD. */
+  if (bai) {
+    ra.push(`<meta property="article:published_time" content="${attr(bai.date)}">`);
+    if (bai.updated) {
+      ra.push(`<meta property="article:modified_time" content="${attr(bai.updated)}">`);
+    }
+    ra.push(`<meta property="article:author" content="${attr(CAU.author)}">`);
+    /* `bai.muc` là ĐƯỜNG DẪN chuyên mục dạng mẩu nối nhau, không phải một
+       chuỗi — lấy mẩu cuối, đúng như chỗ dựng chip chuyên mục vẫn lấy. */
+    const mucCuoi = bai.muc && bai.muc.length ? bai.muc[bai.muc.length - 1].ten : '';
+    if (mucCuoi) ra.push(`<meta property="article:section" content="${attr(mucCuoi)}">`);
+    for (const t of bai.tags) ra.push(`<meta property="article:tag" content="${attr(t)}">`);
+  }
+
+  return ra.join('\n');
+}
+
 function anhChiaSe(bai) {
   if (bai.cover) {
     return /^https?:/.test(bai.cover) ? bai.cover : `${CAU.url}${BASE}${bai.cover}`;
@@ -2262,6 +2447,11 @@ function trangBai(bai, congKhai) {
     canonical  : `${CAU.url}${bai.url}`,
     ogType     : 'article',
     ogImage    : anhChiaSe(bai),
+    /* Mô tả ảnh bìa đi kèm ảnh chia sẻ. Bài không có bìa riêng thì ảnh chia sẻ
+       là tấm og chung của trang, và tả nó bằng `coverAlt` của bài là tả sai —
+       nên chỉ gửi khi bài THẬT SỰ có bìa. */
+    ogAnhMo    : bai.cover ? bai.coverAlt : '',
+    ogBai      : bai,
     /* Bản nháp vẫn dựng ra file để tác giả xem thử, nhưng gắn noindex và
        không nằm trong danh sách / RSS / sitemap. */
     noindex    : bai.draft,
