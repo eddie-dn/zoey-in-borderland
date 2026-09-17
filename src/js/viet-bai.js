@@ -345,9 +345,9 @@
         (b.trang !== 'hien'
           ? '<span class="ad-cd ad-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
           : '<span class="ad-cd"></span>') +
-        '<span class="ad-nut-hang">' +
-          '<button type="button" class="ad-nut" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
-          '<button type="button" class="ad-nut" data-an>' +
+        '<span class="ad-lenh-hang">' +
+          '<button type="button" class="ad-lenh" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
+          '<button type="button" class="ad-lenh" data-an>' +
             tho(b.trang === 'an' ? L('unhide', 'Unhide') : L('hide', 'Hide')) + '</button>' +
         '</span>' +
       '</div>';
@@ -376,7 +376,7 @@
              tho(L('shown', 'Loaded {n} of {t}.')
                    .replace('{n}', bangDS.length).replace('{t}', bangDS.tong)) +
              (bangDS.con
-               ? ' <button type="button" class="ad-nut" data-them>' +
+               ? ' <button type="button" class="ad-lenh" data-them>' +
                    tho(L('more', 'Load more')) + '</button>'
                : '') +
            '</p>';
@@ -511,7 +511,7 @@
                      'placeholder="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '" ' +
                      'aria-label="' + tho(L('coverAlt', 'Describe the cover — one short line')) + '">' +
               '<code class="vb-bia-duong" data-bia-duong></code>' +
-              '<button type="button" class="ad-nut" data-bia-bo hidden>' +
+              '<button type="button" class="ad-lenh" data-bia-bo hidden>' +
                 tho(L('coverOff', 'Remove')) + '</button>' +
             '</div>' +
             '<input type="hidden" name="cover">' +
@@ -540,7 +540,7 @@
                  'maxlength="80" aria-label="' + tho(L('slug', 'Link')) + '">' +
           '<code>/</code>' +
         '</span>' +
-        '<button type="button" class="ad-nut" data-slug-lai hidden>' +
+        '<button type="button" class="ad-lenh" data-slug-lai hidden>' +
           tho(L('slugAuto', 'From title')) + '</button>' +
       '</div>' +
       '<p class="vb-duong-bao" data-duong-bao></p>' +
@@ -569,7 +569,7 @@
       '<div class="vb-nut">' +
         '<label class="vb-nhap"><input type="checkbox" name="draft"> ' +
           tho(L('draft', 'Keep as draft — built but not public')) + '</label>' +
-        (cu ? '<button type="button" class="ad-nut" data-ve>' +
+        (cu ? '<button type="button" class="ad-lenh" data-ve>' +
                 tho(L('back', 'Back')) + '</button>' : '') +
         '<button type="button" class="btn" data-dang>' +
           tho(cu ? L('save', 'Save') : L('publish', 'Post')) + '</button>' +
@@ -1184,7 +1184,7 @@
         '<p class="vb-noi">' + tho(d.nhac || L('building',
           'Cloudflare is rebuilding. The post goes live in about a minute.')) + '</p>' +
         '<div class="vb-nut">' +
-          '<button type="button" class="ad-nut" data-ve>' + tho(L('back', 'Back')) + '</button>' +
+          '<button type="button" class="ad-lenh" data-ve>' + tho(L('back', 'Back')) + '</button>' +
           '<button type="button" class="btn" data-nua>' +
             tho(L('another', 'Write another')) + '</button>' +
         '</div>' +

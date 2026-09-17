@@ -154,6 +154,39 @@
       var KHO    = 'zib-quote-kho';
       var SO_XIN = 5;   /* xin mấy câu một lượt — đủ cho vài lần F5, chưa tốn */
 
+      /* ══════════ BA LƯỢT XIN CÂU MỚI MỖI NGÀY ══════════
+
+         Bấm nút "câu khác" gọi thẳng Gemini viết một câu mới. Không chặn gì
+         thì một người bấm liên tục là mỗi cú bấm một lượt gọi — hạn mức của
+         khoá cạn trong vài phút, và cạn rồi thì MỌI người đọc mất lớp này cho
+         tới hết ngày.
+
+         Ba lượt là chỗ vừa: đủ để ai thích thì đổi vài câu, mà một người nghịch
+         nút cũng chỉ tốn ba lượt. Hết ba thì nút KHÔNG tắt — nó đổi việc, lật
+         sang câu kế trong kho, và nhãn đổi theo để người bấm biết.
+
+         Đếm trong máy người đọc, không đếm ở máy chủ: một cái đếm dùng chung
+         thì người vào sau mất lượt vì người vào trước đã bấm, và để đếm theo
+         từng người thì phải nhận dạng người đọc — thứ trang này cố ý không
+         làm. Ai xoá bộ nhớ trình duyệt thì được ba lượt nữa; đó là cái giá
+         chấp nhận được, vì trần thật nằm ở hạn mức của khoá chứ không ở đây. */
+      var KHO_MOI  = 'zib-quote-moi';
+      var TOI_DA_MOI = 3;
+
+      function daXinMoi() {
+        try {
+          var x = JSON.parse(localStorage.getItem(KHO_MOI) || 'null');
+          return (x && x.ngay === moc().ngay) ? (x.so || 0) : 0;
+        } catch (e) { return 0; }
+      }
+      function conMoi() { return Math.max(0, TOI_DA_MOI - daXinMoi()); }
+      function ghiMoi() {
+        try {
+          localStorage.setItem(KHO_MOI,
+            JSON.stringify({ ngay: moc().ngay, so: daXinMoi() + 1 }));
+        } catch (e) {}
+      }
+
       if (hop.dataset.api) xinGemini(hop.dataset.api);
 
       /* ══════════ MỐC GIỜ CHIA KHUNG ══════════
@@ -292,6 +325,20 @@
 
       if (nut) {
         var dangXin = false;
+
+        /* Nhãn nút nói ĐÚNG việc nó sắp làm. Hai chuỗi lấy từ thuộc tính do
+           build in ra, nên chữ vẫn nằm một chỗ trong bảng nhãn. */
+        function veNhan() {
+          var con = hop.dataset.api ? conMoi() : 0;
+          var chu = con > 0
+            ? (nut.getAttribute('data-tip-moi') || 'New one · {n} left today')
+                .replace('{n}', con)
+            : (nut.getAttribute('data-tip-het') || 'Another one');
+          nut.setAttribute('data-tip', chu);
+          nut.setAttribute('aria-label', chu);
+          nut.classList.toggle('q-nut--moi', con > 0);
+        }
+        veNhan();
         nut.addEventListener('click', function () {
           /* ── BẤM NÚT: XIN CÂU MỚI, NHƯNG KHÔNG ĐỂ AI PHẢI CHỜ ──
 
@@ -307,8 +354,13 @@
 
              `dangXin` chặn bấm dồn: bấm năm cái liên tiếp mà bắn năm request
              thì vừa tốn vừa về lộn xộn không biết cái nào tới sau. */
-          if (!hop.dataset.api || dangXin) { lat(); return; }
+          /* Hết lượt trong ngày thì nút vẫn chạy — chỉ là nó lật sang câu kế
+             trong kho thay vì gọi mạng. Tắt hẳn nút thì người ta bấm vào một
+             thứ không phản ứng gì, khó chịu hơn hẳn việc đổi việc. */
+          if (!hop.dataset.api || dangXin || conMoi() <= 0) { lat(); return; }
 
+          ghiMoi();
+          veNhan();
           dangXin = true;
           var xong = false;
           var henLat = setTimeout(function () {

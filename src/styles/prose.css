@@ -884,13 +884,27 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 .bl-ds{list-style:none;padding:0;margin:var(--s6) 0 0;
   display:flex;flex-direction:column}
 .bl-ds:empty{margin:0}
+/* ── MỘT HÀNG CO GIÃN, KHÔNG PHẢI BA TẦNG ──
+   Tên · nội dung · (ngày và Reply dồn phải). Nội dung khai `flex:1 1 55%`:
+   còn đủ chỗ thì nó nằm cùng dòng với tên, không đủ thì tự rớt xuống dòng
+   dưới. Một luật lo cả bình luận bốn chữ lẫn bình luận bốn câu — không phải
+   đo độ dài rồi chọn bố cục. */
 .bl-item{
-  display:flex;flex-direction:column;gap:5px;
-  padding:var(--s4) 0;
+  display:flex;flex-wrap:wrap;align-items:baseline;
+  gap:3px var(--s3);
+  padding:7px 0;
   border-top:1px solid var(--line);
 }
 .bl-ds > .bl-item:first-child{border-top:0;padding-top:0}
-.bl-dau{display:flex;align-items:baseline;gap:var(--s3)}
+.bl-dau{display:flex;align-items:baseline;gap:6px;flex:none}
+/* `flex:1 1 auto` + `min-width:0`: ba ô LUÔN ở chung một dòng co giãn, và
+   phần chữ tự xuống dòng BÊN TRONG ô của nó khi dài. Khai `55%` như bản đầu
+   thì tên + 55% + cụm cuối vượt quá 100%, nên cụm cuối rớt xuống dòng hai —
+   bình luận bốn chữ vẫn mất hai dòng, đúng thứ vừa định bỏ. */
+.bl-nd{flex:1 1 auto;min-width:0}
+/* `margin-left:auto` đẩy cụm này sang hẳn mép phải khi hàng còn chỗ trống;
+   lúc nội dung đã chiếm hết thì nó xuống dòng và bám mép phải của dòng ấy. */
+.bl-cuoi{display:flex;align-items:baseline;gap:var(--s3);flex:none;margin-left:auto}
 /* Tên nhỏ hơn thân chữ một bậc và không in đậm hẳn: nó là NHÃN của đoạn chữ
    dưới nó, không phải một tiêu đề. Đậm bằng cỡ tiêu đề thì mắt đọc tên trước,
    rồi mới tới thứ người ta thật sự muốn đọc. */
@@ -929,19 +943,19 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
    thời gian đẩy nó sang hẳn mép phải, chừa tên và huy hiệu đứng liền nhau bên
    trái. Không có nó thì justify-content dàn đều ba thứ và huy hiệu trôi ra
    giữa dòng, trông như một cái tag lạc chỗ. */
-.bl-dau .bl-luc{margin-left:auto}
+/* Ngày nay nằm trong `.bl-cuoi`, và chính cụm ấy tự đẩy sang phải. */
 /* Bình luận của chủ trang: một vạch dọc bên trái, không tô nền cả khối. Nền
    tô làm khối ấy đọc ra như một ô nhấn (kiểu `:::note`), tức là "đọc cái này
    trước" — mà ý thật chỉ là "người này là chủ nhà". */
 .bl-item--chu{
-  padding-left:var(--s4);
+  padding-left:var(--s3);
   border-left:2px solid var(--accent);
   box-shadow:none;background:none;
 }
 
 /* ── NÚT TRẢ LỜI ── */
 .bl-tra,.bl-them{
-  align-self:flex-start;padding:2px 0;margin-top:0;
+  align-self:baseline;padding:2px 0;margin-top:0;
   background:none;border:none;cursor:pointer;
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;
@@ -1203,3 +1217,11 @@ a.rn-p--toi:hover .rn-p-mui{transform:translateX(2px)}
 /* Khung đang mở: nút bình luận sáng lên để biết cái đang mở là do nó. */
 .bl-mo[aria-expanded="true"]{color:var(--accent-ink);background:var(--accent-wash)}
 .bl-than{margin-top:var(--s6)}
+
+/* Dòng "Posting as Zoey" thay cho hai ô tên và email khi chủ trang đã đăng
+   nhập. Nhạt và nhỏ: nó là một lời xác nhận, không phải một ô phải điền. */
+.bl-vaitro{
+  margin:0;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+}

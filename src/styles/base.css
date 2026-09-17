@@ -77,8 +77,14 @@ body{
   -moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;
   font-variant-ligatures:common-ligatures;
-  overflow-x:hidden;                /* khung an toàn: một phần tử tràn cũng không
-                                       kéo cả trang trượt ngang được */
+  /* ── KHUNG AN TOÀN ĐẶT Ở ĐÂY KHÔNG CHẠY ──
+     Dòng `overflow-x:hidden` từng nằm ở đây, và nó KHÔNG chặn được gì: đo
+     trên trang chủ, trang vẫn trượt ngang đúng 6px. Lý do là luật lan truyền
+     của CSS — `overflow` khai trên <body> được đẩy lên cho khung nhìn khi
+     <html> còn `visible`, và lúc ấy chính <body> thôi xén. Nó trông như một
+     cái khung an toàn suốt nhiều bản mà chưa bao giờ đỡ một cú nào.
+
+     Chỗ đúng là <html>, ngay bên dưới. */
 }
 
 /* Quầng màu nền nằm ở một LỚP CỐ ĐỊNH RIÊNG, không phải background-attachment:fixed.

@@ -100,6 +100,40 @@
     return coKhoa() ? kho().dau(h) : h;
   }
 
+  /* ══════════ CHỦ TRANG ĐÃ ĐĂNG NHẬP THÌ KHÔNG PHẢI TỰ KHAI MÌNH LÀ AI ══════════
+
+     Máy chủ đã nhận ra chủ trang từ lâu — nó đọc cặp khoá trong header rồi
+     đóng dấu `chuTrang` và cho bình luận vào thẳng không qua duyệt. Nhưng cái
+     form thì vẫn hỏi tên và email như hỏi một người lạ, nên chủ nhà phải tự
+     gõ tên mình mỗi lần trả lời một bình luận trên chính blog của mình — và
+     gõ sai một chữ thì huy hiệu AUTHOR đứng cạnh một cái tên khác.
+
+     Nay: có khoá thì hai ô ấy ẩn đi, và tên gửi lên lấy thẳng từ `author`
+     trong site.config.json — cùng cái tên bộ dựng in ra khắp trang.
+
+     Gọi lại mỗi lần khoá đổi (`theoDoi`), vì đăng nhập ở tab này thì tab kia
+     cũng phải đổi theo mà không cần tải lại trang. */
+  var TEN_CHU = khoi.dataset.chuTen || '';
+
+  function veVaiTro() {
+    var hang = form && form.querySelector('.bl-hang');
+    if (!hang) return;
+    var la = coKhoa() && TEN_CHU;
+    hang.hidden = !!la;
+    var dau = khoi.querySelector('.bl-vaitro');
+    if (la) {
+      if (!dau) {
+        dau = document.createElement('p');
+        dau.className = 'bl-vaitro';
+        hang.parentNode.insertBefore(dau, hang);
+      }
+      dau.textContent = L('laChu', 'Posting as {ten}').replace('{ten}', TEN_CHU);
+      dau.hidden = false;
+    } else if (dau) {
+      dau.hidden = true;
+    }
+  }
+
   function noi(t, loai) {
     bao.textContent = t || '';
     bao.className = 'bl-bao' + (loai ? ' bl-bao--' + loai : '');
@@ -397,18 +431,28 @@
       dau.appendChild(hh);
     }
 
-    var luc = document.createElement('time');
-    luc.className = 'bl-luc';
-    luc.textContent = ngay(c.luc);
-    if (c.luc) luc.dateTime = c.luc;
-    dau.appendChild(luc);
+    /* ── BA TẦNG CHỮ CHO MỘT BÌNH LUẬN BA CHỮ ──
+       Bản trước xếp dọc: tên và ngày một hàng, nội dung một hàng, nút Reply
+       một hàng nữa. "love u chị iu~" dài đúng bốn chữ mà chiếm ba dòng và gần
+       trọn bề ngang cột — phần chữ thật chiếm chưa tới một phần ba chiều cao
+       cái khối bao quanh nó.
 
+       Nay cả ba mẩu là ba ô trên MỘT hàng co giãn: tên · nội dung · (ngày và
+       Reply dồn sang phải). Nội dung khai `flex:1 1 55%`, nên bình luận ngắn
+       nằm gọn một dòng, còn bình luận dài thì tự rớt xuống dòng dưới — một
+       luật lo cả hai ca, không cần đo độ dài chữ. */
     var nd = document.createElement('p');
     nd.className = 'bl-nd';
     nd.textContent = c.noiDung;                       /* ← textContent */
 
-    li.appendChild(dau);
-    li.appendChild(nd);
+    var cuoi = document.createElement('span');
+    cuoi.className = 'bl-cuoi';
+
+    var luc = document.createElement('time');
+    luc.className = 'bl-luc';
+    luc.textContent = ngay(c.luc);
+    if (c.luc) luc.dateTime = c.luc;
+    cuoi.appendChild(luc);
 
     /* Nút trả lời — chỉ ở bình luận GỐC, vì cây chỉ có hai tầng. */
     if (!laCon) {
@@ -417,8 +461,12 @@
       nutTra.className = 'bl-tra';
       nutTra.textContent = L('reply');
       nutTra.addEventListener('click', function () { denTraLoi(c, li); });
-      li.appendChild(nutTra);
+      cuoi.appendChild(nutTra);
     }
+
+    li.appendChild(dau);
+    li.appendChild(nd);
+    li.appendChild(cuoi);
 
     if (c.con && c.con.length) li.appendChild(veCon(c.con));
     nutChuTrang(c, li);
@@ -506,8 +554,10 @@
       headers: dauKhoa({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({
         url: TRANG,
-        ten: form.ten.value,
-        email: form.email.value,
+        /* Có khoá thì tên lấy từ cấu hình, không lấy từ ô đang ẩn — ô ấy có
+           thể còn sót chữ của một lượt gõ trước. */
+        ten: (coKhoa() && TEN_CHU) ? TEN_CHU : form.ten.value,
+        email: (coKhoa() && TEN_CHU) ? '' : form.email.value,
         noiDung: nd,
         traLoiCho: traLoiCho,
         hp: form.hp.value,                             /* bẫy bot */
@@ -597,6 +647,11 @@
     li.appendChild(nhom);
   }
 
+
+  veVaiTro();
+  /* Đăng nhập hay đăng xuất ở một tab khác thì form ở tab này phải đổi theo mà
+     không cần tải lại trang — cùng một sự kiện khoa.js phát cho ô viết bài. */
+  (function () { var k = kho(); if (k && k.theoDoi) k.theoDoi(veVaiTro); })();
 
   tai();
 })();

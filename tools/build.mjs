@@ -229,6 +229,15 @@ const NHAN = {
   allPosts    : 'All posts',
   allTopics   : 'All topics',
   archive     : 'Archive',
+  /* ── TRANG 404 ──
+     Không có câu xin lỗi nào ở đây. Người tới đây đang tìm MỘT bài cụ thể —
+     thứ họ cần là ô tìm kiếm, không phải một lời than. Dòng phụ nói thẳng hai
+     lý do thật, vì cả hai đều sửa được từ phía người đọc. */
+  e404De      : 'This page is not here',
+  e404Dan     : 'Either the address has a typo, or the post moved to a new link. Search for it below.',
+  e404Home    : 'Home',
+  /* Chủ trang đã đăng nhập thì không phải tự khai mình là ai nữa. */
+  blLaChu     : 'Posting as {ten}',
   index       : 'Index',
   notes       : 'Notes',
   notesHint   : 'Bits picked up along the way — books, music, thoughts not yet essays',
@@ -375,6 +384,8 @@ const NHAN = {
   mucDesc     : 'One line under the name on All posts',
   mucOrder    : 'Order — smaller comes first',
   mucCount    : '{n} posts',
+  mucFind     : 'Filter by name',
+  mucShown    : '{n} of {t}',
   mucNeed     : 'A folder name and a name to show are both needed.',
   mucBusy     : 'This category still has posts in it.',
   mucLocked   : 'The folder name cannot be changed here — it is part of every link in this category. Move the posts one by one from the Post tab instead.',
@@ -437,7 +448,14 @@ const NHAN = {
      Mỗi dòng là phần GIẢI THÍCH; mẫu gõ nằm trong src/js/soan.js, vì mẫu ấy là
      cú pháp chứ không phải chữ giao diện — dịch nó sang tiếng khác là hỏng. */
   szGHelp1    : 'The buttons',
-  szGHelp2    : 'Blocks — one press each',
+  szGHelp2    : 'Worth knowing',
+  /* Bốn tiêu đề nhóm trong bảng Blocks. Chia theo VIỆC chứ không theo cú
+     pháp: người mở bảng ra đang tìm "chỗ đặt một tấm ảnh", không tìm "một
+     directive dạng :::". */
+  szGNhomNhan : 'Callout boxes',
+  szGNhomAnh  : 'Pictures and video',
+  szGNhomCau  : 'Structure',
+  szGNhomDoan : 'Whole paragraph',
   szGNote     : 'boxed aside. Close it with ::: on its own line.',
   szGCallout  : 'same box, three other tones.',
   szGGallery  : 'photos side by side. Put the image lines inside.',
@@ -453,10 +471,10 @@ const NHAN = {
      Mỗi khối có TÊN và một câu ngắn nói nó làm gì. Câu ấy không phải trang
      trí: "Note" và "Tip" trông giống hệt nhau nếu chỉ có tên. */
   szBlock     : 'Blocks',
-  szBNote     : 'Note',       szBNoteMo   : 'a boxed aside',
-  szBTip      : 'Tip',        szBTipMo    : 'same box, friendlier',
-  szBWarn     : 'Heads up',   szBWarnMo   : 'same box, careful tone',
-  szBStop     : 'Do not',     szBStopMo   : 'same box, strongest tone',
+  szBNote     : 'Note',       szBNoteMo   : 'a side point, out of the main flow',
+  szBTip      : 'Tip',        szBTipMo    : 'a shortcut, something that helps',
+  szBWarn     : 'Heads up',   szBWarnMo   : 'worth knowing before you start',
+  szBStop     : 'Do not',     szBStopMo   : 'something that should not be done',
   szBGallery  : 'Gallery',    szBGalleryMo: 'photos side by side',
   szBWide     : 'Wide block', szBWideMo   : 'spills past the text column',
   szBTable    : 'Table',      szBTableMo  : '2 columns — Shift+Enter between rows',
@@ -496,7 +514,6 @@ const NHAN = {
   szA2        : 'Big photos are shrunk to 1800px and turned into WebP here on your machine first.',
   szA3        : 'Double-click an image to describe it — that line is what a blind reader hears and what Google reads.',
   szA4        : 'A new image takes about a minute to appear on the live site; in this box you see it straight away.',
-  szG1        : 'Press ⌗ Blocks: boxes, gallery, table, code, checklist, YouTube, video, paragraph widths.',
   szG2        : 'Every line in there shows the exact text it writes into the file — nothing needs typing.',
   szG3        : 'A ::: block and a table each live in ONE paragraph: Shift+Enter between rows, not Enter.',
   szGChan     : 'Everything the site can render has a button now. Press </> at any time to see the exact Markdown that will be sent to GitHub.',
@@ -541,6 +558,16 @@ const NHAN = {
   findMe      : 'Find me',
   quoteToday  : 'Quote of the day',
   quoteMore   : 'Another one',
+  /* ── HAI NHÃN CHO MỘT CÁI NÚT ──
+     Bấm nút có thể là hai việc khác hẳn nhau, và người bấm nên biết mình đang
+     làm cái nào: xin Gemini VIẾT một câu mới (tốn một lượt gọi thật, mỗi ngày
+     ba lượt), hay chỉ lật sang câu kế trong kho có sẵn.
+
+     Số lượt còn lại in thẳng vào lời nhắc: "New one · 2 left today". Không có
+     con số ấy thì tới lượt thứ tư nút lặng lẽ đổi việc, và người ta tưởng nó
+     hỏng. */
+  quoteNew    : 'New one',
+  quoteNewLeft: 'New one · {n} left today',
 
   /* ── bình luận: bàn duyệt của chủ trang ──
      Tiếng Việt, khác lệ tiếng Anh của phần khung: chỉ chủ trang đọc mấy dòng
@@ -1115,6 +1142,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         mucFolder: NHAN.mucFolder, mucTitle: NHAN.mucTitle,
                         mucDesc: NHAN.mucDesc, mucOrder: NHAN.mucOrder,
                         mucCount: NHAN.mucCount, mucNeed: NHAN.mucNeed,
+                        mucFind: NHAN.mucFind, mucShown: NHAN.mucShown,
                         mucBusy: NHAN.mucBusy, mucLocked: NHAN.mucLocked,
                         locked: NHAN.khLocked, draftAsk: NHAN.vbDraftAsk,
                         crash: NHAN.vbCrash,
@@ -1170,7 +1198,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         upLost: NHAN.szUpLost,
                         gHelpAnh: NHAN.szGHelpAnh,
                         a1: NHAN.szA1, a2: NHAN.szA2, a3: NHAN.szA3, a4: NHAN.szA4,
-                        g1: NHAN.szG1, g2: NHAN.szG2, g3: NHAN.szG3,
+                        g2: NHAN.szG2, g3: NHAN.szG3,
+                        gNhomNhan: NHAN.szGNhomNhan, gNhomAnh: NHAN.szGNhomAnh,
+                        gNhomCau: NHAN.szGNhomCau, gNhomDoan: NHAN.szGNhomDoan,
                         cover: NHAN.vbCover, coverDrop: NHAN.vbCoverDrop,
                         coverAlt: NHAN.vbCoverAlt, coverOff: NHAN.vbCoverOff,
                         coverUp: NHAN.vbCoverUp, coverOk: NHAN.vbCoverOk,
@@ -2033,7 +2063,7 @@ function binhLuanHTML(bai) {
     /* comments.js KHÔNG dựng khung xin khoá — nó chỉ đọc khoá đã lưu để bình
        luận của chủ trang vào thẳng, có huy hiệu. Bốn nhãn của khung ấy từng
        nằm ở đây và chưa từng được ai đọc. */
-    badKey: NHAN.badKey, sentOwner: NHAN.sentOwner,
+    badKey: NHAN.badKey, sentOwner: NHAN.sentOwner, laChu: NHAN.blLaChu,
     unapproveHint: NHAN.blUnapproveHint, hideHint: NHAN.blHideHint
   }));
 
@@ -2041,7 +2071,8 @@ function binhLuanHTML(bai) {
      (/api/binh-luan), không phải địa chỉ Google Apps Script — xem đầu file
      functions/api/binh-luan.js về lý do bỏ Apps Script. */
   return `<section class="binh-luan" data-binh-luan="${attr(BASE + (c.api || '/api/binh-luan'))}"
-           data-trang="${attr(bai.url)}" data-nhan="${nhanJS}">
+           data-trang="${attr(bai.url)}" data-nhan="${nhanJS}"
+           data-chu-ten="${attr(CAU.author)}">
     ${/* Vạch kẻ có hạt kim cương ở giữa (`.eyebrow`) ĐÃ BỎ khỏi đây: khối "đọc
           tiếp" ngay trên đã có một vạch y hệt, và hai vạch giống nhau cách
           nhau 80px thì cái nào cũng thôi làm dấu mở đầu. */''}
@@ -2576,7 +2607,8 @@ function oQuote(nhan, { nhip = 0 } = {}) {
     <blockquote class="q-chu"></blockquote>
     <p class="q-ai"></p>
     <button class="q-nut ico-btn tip" type="button"
-            aria-label="${NHAN.quoteMore}" data-tip="${NHAN.quoteMore}">
+            aria-label="${NHAN.quoteMore}" data-tip="${NHAN.quoteMore}"
+            data-tip-moi="${attr(NHAN.quoteNewLeft)}" data-tip-het="${attr(NHAN.quoteMore)}">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 4.2V1.4L7.6 5.8 12 10.2V7.4a4.8 4.8 0 1 1-4.8 4.8H4.6A7.4 7.4 0 1 0 12 4.2Z"
               class="fill"/>
@@ -3802,6 +3834,59 @@ function trangSearch() {
   });
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   TRANG 404
+
+   ── VÌ SAO GIỜ MỚI CÓ ──
+   Trước bản này gõ sai một đường dẫn thì Cloudflare trả về một trang TRẮNG
+   HOÀN TOÀN — không tên blog, không thanh menu, không một đường nào quay về.
+   Kiểm trên trang đang chạy: `curl https://…/khong-co-trang-nay/` trả 404 với
+   thân rỗng.
+
+   Chuyện ấy vốn hiếm, nhưng nó vừa thôi hiếm: từ V15.00 chủ trang **sửa được
+   đường dẫn của bài đã đăng** ngay ở /z-admin/. Sửa một cái là mọi link cũ —
+   đã chia sẻ, đã nằm trong lịch sử trình duyệt của người đọc, đã được Google
+   đánh chỉ mục — dẫn tới trang trắng ấy.
+
+   ── TRANG NÀY PHẢI LÀM ĐƯỢC MỘT VIỆC, KHÔNG PHẢI XIN LỖI ──
+   Người tới đây đang tìm một bài cụ thể. Nên nó bày ô tìm kiếm trước, rồi mới
+   tới đường về trang chủ và danh sách bài — không phải một câu "Oops!" với một
+   hình vẽ buồn cười.
+
+   `noindex`: Google không nên đánh chỉ mục trang này, dù nó trả mã 404 thì
+   phần lớn bộ quét đã tự hiểu. Hai lớp cho cùng một ý.
+   ══════════════════════════════════════════════════════════════════════ */
+function trang404() {
+  return trangDanhSach({
+    tieuDe: NHAN.e404De,
+    dan: NHAN.e404Dan,
+    duong: '/404/',
+    noindex: true,
+    canonical: `${CAU.url}${BASE}/`,
+    than: `
+<div class="e404">
+  ${coTrang('/search/') ? `<form class="tk-form e404-tim" action="${BASE}/search/" method="get" role="search">
+    <label class="sr-only" for="e404-q">${escapeHtml(NHAN.search)}</label>
+    <div class="tk-hop">
+      <svg class="tk-kinh" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/>
+      </svg>
+      <input id="e404-q" class="tk-o" type="search" name="q" autocomplete="off" autofocus
+             placeholder="${attr(NHAN.searchPh)}" enterkeyhint="search">
+    </div>
+    <button class="btn btn--chinh" type="submit">${escapeHtml(NHAN.search)}</button>
+  </form>` : ''}
+  <p class="e404-hay">
+    <a href="${BASE}/">${escapeHtml(NHAN.e404Home)}</a>
+    <span aria-hidden="true">·</span>
+    <a href="${BASE}/posts/">${escapeHtml(NHAN.allPosts)}</a>
+    <span aria-hidden="true">·</span>
+    <a href="${BASE}/archive/">${escapeHtml(NHAN.archive)}</a>
+  </p>
+</div>`
+  });
+}
+
 /* ══════════════ FILE PHỤ ══════════════ */
 
 
@@ -4042,6 +4127,11 @@ async function chay() {
     for (const t of dsTrang) {
       ghi(path.join(THU_MUC.dist, ...t.duong.split('/').filter(Boolean), 'index.html'), t.html);
     }
+
+    /* Cloudflare Pages tìm đúng file tên `404.html` ở gốc thư mục xuất bản —
+       không phải `/404/index.html` như mọi trang khác. Ghi thẳng, và KHÔNG đưa
+       vào sitemap (xem danh sách ngay dưới). */
+    ghi(path.join(THU_MUC.dist, '404.html'), trang404());
 
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'),

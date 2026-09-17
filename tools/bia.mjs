@@ -132,6 +132,8 @@ const tron = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
 const kep  = (v) => Math.max(0, Math.min(255, Math.round(v)));
 /* Mềm hoá: 1 ở tâm, 0 ở mép, chuyển bằng smoothstep nên không thấy đường bao.
    Không có nó thì mỗi vầng sáng có một viền tròn sắc lẻm. */
+/* Độ sáng cảm nhận, 0..1 — dùng để chọn màu nét hoa văn theo nền. */
+const do_sang = (c) => (c[0] * .299 + c[1] * .587 + c[2] * .114) / 255;
 const mem  = (d) => { const t = Math.max(0, Math.min(1, 1 - d)); return t * t * (3 - 2 * t); };
 
 /* Hạt giống từ tên bài — FNV-1a. Cùng tên thì luôn cùng số. */
@@ -170,6 +172,38 @@ function ve(tieuDe) {
     vet.push({ p: .15 + r() * .7, day: .012 + r() * .03, lech: (r() - .5) * .5, dam: .1 + r() * .16 });
   }
 
+  /* ── ĐOÁ MANDALA — THỨ LÀM TẤM ẢNH RA TẤM ẢNH ──
+     Trước bản này ảnh bìa chỉ có dải màu và mấy vệt sáng. Đẹp như một tấm vải,
+     nhưng dán lên Facebook thì nó là một hình chữ nhật pastel trống: người
+     lướt qua không có gì để nhận ra đây là blog nào, và ba bài cạnh nhau trông
+     như ba lần cùng một tấm.
+
+     Ba tấm og chung (`npm run og`) đã giải đúng bài đó bằng logo. Ảnh bìa nay
+     mượn cùng hoạ tiết ấy — đoá tám cánh — nên một feed có cả bài có bìa lẫn
+     bài không bìa vẫn đọc ra cùng một nhà.
+
+     KHÔNG chép chuỗi `d` của logo vào đây: đó là đường bezier, mà file này ghi
+     PNG từng điểm ảnh một, không có bộ tô đường nào. Dựng lại bằng TOẠ ĐỘ CỰC:
+     `r = |cos(2θ)|` là một đoá bốn cánh; ba lớp lệch nhau ra hình đan, đúng
+     hình nghỉ của logo. Vẽ VIỀN chứ không tô đặc, cũng như logo.
+
+     Chữ thì không: ảnh này còn nằm ngay dưới tiêu đề ở đầu bài, nên in tiêu đề
+     lên nó là đọc cùng một câu hai lần cách nhau ba centimet.
+
+     ── BỐC SỐ Ở ĐÂY, KHÔNG BỐC SỚM HƠN ──
+     Cả tấm ảnh dựng từ MỘT dòng số tất định. Chen mấy lượt bốc mới vào giữa
+     dòng ấy thì mọi giá trị phía sau xê dịch, và tất cả ảnh bìa đã có đổi màu
+     — một thay đổi không ai yêu cầu, lặng lẽ, trên mọi bài cũ. Bốc sau cùng
+     thì ảnh cũ giữ nguyên nền, chỉ thêm hoa văn. */
+  const mBan = .30 + r() * .09;              /* bán kính đoá, theo cạnh ngắn */
+  /* Kẹp tâm để vòng ngoài cùng (1.34 lần bán kính) không chạm mép: một đoá bị
+     xén nửa đọc ra là lỗi dựng ảnh, không phải ý đồ. */
+  const le  = mBan * 1.34;
+  const mx  = Math.min(1 - le * (H / W), Math.max(le * (H / W), (r() < .5 ? .30 : .70) + (r() - .5) * .1));
+  const my  = Math.min(1 - le, Math.max(le, .5 + (r() - .5) * .22));
+  const mXoay = r() * Math.PI;
+  const mDam  = .40 + r() * .12;             /* đậm nhạt của nét */
+
   const px = Buffer.alloc(H * (1 + W * 3));
   const cos = Math.cos(goc), sin = Math.sin(goc);
 
@@ -198,9 +232,81 @@ function ve(tieuDe) {
         c = tron(c, [255, 255, 255], mem(d / s.day) * s.dam * 1.5);
       }
 
-      /* Tối nhẹ bốn góc — ảnh sáng đều tuyệt đối trông như lỗi in */
+      /* ── ĐOÁ MANDALA ──
+         `rc` là bán kính của đường cong tại góc này; nét nằm ở chỗ khoảng cách
+         tới nó nhỏ hơn bề dày. Chia cho `doDoc` là phép sửa bậc nhất: trong
+         toạ độ cực, |d − rc| KHÔNG phải khoảng cách thật tới đường cong, và
+         không sửa thì nét mảnh hẳn đi ở chỗ đường cong dốc — mỗi cánh hoa ra
+         một bề dày khác nhau.
+
+         BA lớp, đúng như logo lúc nghỉ: một đoá chính đậm, một đoá lệch 45°
+         nhạt hơn (chỗ hai đoá cắt nhau sinh ra cảm giác đan), và một lớp ngoài
+         rộng hơn rất mờ làm nền cho cả hai. */
+      {
+        const dx = (u - mx) * (W / H), dy = v - my;
+        const d  = Math.hypot(dx, dy) / mBan;
+        if (d < 1.45) {
+          /* ── MÀU NÉT PHẢI THEO NỀN, KHÔNG PHẢI MỘT MÀU CỐ ĐỊNH ──
+             Ba trong mười hai cặp màu là bảng Thiên hà — nền đêm. Một nét ngả
+             đen trên nền đêm thì biến mất hẳn: đo trên bài "Vô thức", cả đoá
+             tụt xuống dưới ngưỡng nhìn thấy và tấm ảnh lại thành một hình chữ
+             nhật trống, đúng thứ vừa sửa xong.
+
+             Nên nét ĐỔI CHIỀU theo độ sáng của nền ngay tại điểm ấy: nền sáng
+             thì nét đậm lại, nền tối thì nét sáng lên — cùng cách ba tấm og
+             chung làm (bản Thiên hà dùng nét hồng sáng trên nền đêm). */
+          const sang = do_sang(c);
+          /* Không dùng ngưỡng cứng `sáng > .5`: nền nào nằm ngay quanh ngưỡng
+             thì hai nhánh đều cho nét sát màu nền, và hoa văn mờ như không có.
+             Đo trên bài "Vô thức" (nền ~.52) là đúng ca ấy.
+
+             Nên NHẮM một độ sáng cách nền một khoảng CỐ ĐỊNH, rồi kéo màu nhấn
+             về đúng độ sáng đó. Mọi bảng màu — pastel hay đêm — đều ra cùng một
+             mức tương phản, không bảng nào chìm. */
+          /* Chuyển MỀM qua ngưỡng, không lật. Bản lật cứng để lại một vệt
+             gãy sắc lẻm ngay chỗ một vệt sáng vắt ngang đoá hoa: hai bên vệt,
+             nền chênh nhau vài phần trăm độ sáng, mà màu nét nhảy nguyên 0.6 —
+             ra một mảng chữ nhật đọc như ảnh bị dán chồng. */
+          const ngach = Math.max(0, Math.min(1, (sang - .42) / .16));
+          const dich = Math.max(.06, Math.min(.94,
+            sang + .30 * (1 - 2 * ngach * ngach * (3 - 2 * ngach))));
+          const lb   = do_sang(B);
+          const net  = dich < lb
+            ? tron(B, [0, 0, 0],       1 - dich / Math.max(lb, .02))
+            : tron(B, [255, 255, 255], (dich - lb) / Math.max(1 - lb, .02));
+          const goc0 = Math.atan2(dy, dx) + mXoay;
+          const LOP = [
+            { lech: 0,              ti: 1,    day: .075, dam: 1   },
+            { lech: Math.PI / 4,    ti: 1,    day: .075, dam: .62 },
+            { lech: Math.PI / 8,    ti: 1.18, day: .05,  dam: .3  }
+          ];
+          for (const L of LOP) {
+            const th  = goc0 + L.lech;
+            const rc  = Math.abs(Math.cos(2 * th)) * L.ti;
+            const doc2 = Math.abs(2 * Math.sin(2 * th)) * L.ti / Math.max(d, .14);
+            const kc  = Math.abs(d - rc) / Math.sqrt(1 + doc2 * doc2);
+            c = tron(c, net, mem(kc / L.day) * mDam * L.dam);
+          }
+          /* Hai vòng: một nét liền sát đoá, một nét ĐỨT ở ngoài — cùng ngữ
+             pháp với ba tấm og chung và với chính logo lúc nghỉ. */
+          c = tron(c, net, mem(Math.abs(d - 1.2) / .012) * mDam * .8);
+          const nhip = Math.sin(Math.atan2(dy, dx) * 20 + mXoay * 4);
+          if (nhip > .15) {
+            c = tron(c, net, mem(Math.abs(d - 1.34) / .014) * mDam * .7);
+          }
+        }
+      }
+
+      /* ── TỐI NHẸ BỐN GÓC ──
+         Ảnh sáng đều tuyệt đối trông như lỗi in. Nhưng "nhẹ" là quan trọng:
+         công thức cũ (.5 / .78) kéo góc phải dưới từ một màu oải hương xuống
+         (73, 59, 92) — gần như đen tím. Cả tấm đọc ra xám đục, lạc hẳn khỏi
+         bảng màu pastel của trang, và hoa văn ở giữa chìm mất.
+
+         Đo lại trên cả mười bài: .34 / .36 giữ được cảm giác có chiều sâu mà
+         góc tối nhất vẫn nằm trong họ màu. */
       const goc4 = Math.hypot((u - .5) * 1.25, (v - .5) * 1.25);
-      c = tron(c, tron(c, [120, 96, 150], .5), Math.max(0, goc4 - .42) * .78);
+      c = tron(c, tron(c, [120, 96, 150], .34), Math.max(0, goc4 - .42) * .36);
 
       /* Hạt nhiễu — xem hằng số NHIEU ở đầu file. Mặc định tắt. */
       const nz = NHIEU ? (((x * 12.9898 + y * 78.233) * 43758.5453) % 1 - .5) * NHIEU : 0;

@@ -33,6 +33,12 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V16.02 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
+| V16.01 | 2026-09-17 | 01 | có trang 404 thật thay cho trang trắng; phép kiểm bản nháp từ nay đỏ được; Cloudflare trỏ vào đúng trang ấy |
+| V16.00 | 2026-09-17 | 00 | trang chủ thôi trượt ngang 6px; ô trích dẫn cho ba lượt xin câu mới mỗi ngày; thêm CSP, Permissions-Policy và HSTS; sửa luật cache đang giữ ảnh bìa cũ một năm |
+| V15.09 | 2026-09-17 | 09 | thanh soạn thảo xếp lại chính trước phụ sau và bỏ nút chỉ dẫn; bảng Blocks chia bốn nhóm, bốn khung nhấn có chấm màu riêng; nút dọn nay gỡ được cả liên kết |
+| V15.08 | 2026-09-17 | 08 | thẻ bình luận gọn lại còn một dòng; bàn duyệt căn cột cố định, nhãn đổi cũng không so le; ngăn Category có ô lọc y như ngăn Post |
+| V15.07 | 2026-09-17 | 07 | ảnh bìa mang hoạ tiết mandala của logo; nét hoa văn tự đổi theo nền sáng hay tối; bớt tối bốn góc để giữ đúng bảng màu |
 | V15.06 | 2026-09-17 | 06 | ô trích dẫn xin cả chùm câu, F5 là có câu mới; sửa ba hằng số đọc trước lúc gán làm lớp AI chưa từng chạy; thêm tác giả Việt vào kho nguồn |
 | V15.05 | 2026-09-17 | 05 | thẻ bình luận gọn lại thành hàng có kẻ ngăn; sửa hai tên lớp trùng nhau làm bàn duyệt mọc khung hộp |
 | V15.04 | 2026-09-17 | 04 | ba ngăn quản trị dùng chung một khuôn hàng; bàn duyệt bày theo dòng, hết cọc thẻ có viền; bảng bài lọc được theo chuyên mục |
@@ -161,6 +167,94 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V16.02 — 17-Sep-2026
+
+- **Chủ trang thôi phải tự khai mình là ai.** Máy chủ nhận ra chủ trang từ lâu
+  — nó đọc cặp khoá trong header rồi đóng dấu huy hiệu và cho bình luận vào
+  thẳng không qua duyệt. Nhưng cái form vẫn hỏi tên và email như hỏi người lạ,
+  nên phải tự gõ tên mình mỗi lần trả lời trên chính blog của mình, và gõ sai
+  một chữ thì huy hiệu AUTHOR đứng cạnh một cái tên khác. Nay hai ô ấy ẩn đi,
+  thay bằng một dòng *Posting as Zoey*, và tên lấy thẳng từ `site.config.json`.
+
+## V16.01 — 17-Sep-2026
+
+- **Gõ sai một đường dẫn: trước đây ra một trang TRẮNG HOÀN TOÀN.** Không tên
+  blog, không menu, không một đường nào quay về — kiểm bằng `curl` trên trang
+  đang chạy thì thân phản hồi rỗng. Chuyện ấy vốn hiếm, nhưng nó vừa thôi hiếm
+  từ V15.00: chủ trang **sửa được đường dẫn bài đã đăng**, và mỗi lần sửa là
+  mọi link cũ dẫn tới đó. Nay là một trang thật, và nó bày Ô TÌM KIẾM trước —
+  người tới đây đang tìm một bài cụ thể, không cần một lời xin lỗi.
+- **Một phép kiểm chưa bao giờ đỏ được.** "Bản nháp không lọt vào bản dựng" soi
+  `noindex` trên mấy trang đã dựng — nhưng `npm run kiem` tự dựng lại một bản
+  SẠCH trước khi soi, nên tới lúc nó nhìn thì nháp đã bị dọn. Nay nó đi từ
+  NGUỒN: đọc front matter, lấy bài `draft: true`, rồi soi dist · sitemap · feed.
+  Cắm lỗi thử (cho bộ dựng thôi loại nháp) thì nó đỏ và gọi đúng tên file.
+
+## V16.00 — 17-Sep-2026
+
+- **Trang chủ trượt ngang được 6px, ở mọi khổ màn.** Khối hero tràn lề bằng
+  mẹo `calc(50% - 50vw)`, mà `vw` đo cả thanh cuộn còn `%` chỉ đo phần nội
+  dung. Chữa bằng cách bỏ hẳn mẹo ấy: thẻ `<main>` ở trang chủ vốn đã rộng
+  đúng bề ngang cần thiết. Đo lại chín khổ từ 320 tới 1440 trên mười trang:
+  **90 lượt đo, không trang nào trượt**. (Dòng `overflow-x:hidden` trên
+  `<body>` mang tên "khung an toàn" suốt nhiều bản — nó chưa bao giờ chặn
+  được gì, vì `overflow` khai trên body bị đẩy lên cho khung nhìn.)
+- **Ba lượt xin câu mới mỗi ngày.** Bấm "câu khác" gọi thẳng Gemini; không
+  chặn thì một người bấm liên tục làm cạn hạn mức của khoá, và cạn rồi thì MỌI
+  người đọc mất lớp ấy tới hết ngày. Hết ba lượt thì nút không tắt — nó lật
+  sang câu kế trong kho, và nhãn đổi theo để người bấm biết mình đang làm việc
+  nào. Số lượt còn lại in ngay trong lời nhắc.
+- **Ba header an toàn còn thiếu**: `Content-Security-Policy` (danh sách rút từ
+  chính bản dựng, không đoán), `Permissions-Policy` tắt camera · micro · vị
+  trí, và `Strict-Transport-Security`.
+- **Ảnh bìa bị kẹt trong cache một năm.** Luật `/media/*` khai
+  `immutable, max-age=1 năm` với lý do "tên file không đổi thì nội dung cũng
+  không đổi" — không đúng với `bia.png`, thứ `npm run bia --de` vẽ lại mà giữ
+  nguyên tên. Nay ảnh bìa có luật riêng một ngày.
+
+## V15.09 — 17-Sep-2026
+
+- **Thanh soạn thảo xếp theo TẦN SUẤT, không theo loại kỹ thuật.** Bản trước
+  gom "nét trong dòng" lại một chỗ, nên `Gạch ngang chữ` và `Mã` ngồi ngay
+  cạnh `Đậm` còn `Link` bị đẩy xuống quá nửa thanh. Nay cắt làm hai nửa rõ
+  rệt: chính (hoàn tác · đậm nghiêng link · dàn bài · ảnh và Blocks) rồi phụ.
+- **Bỏ nút chỉ dẫn `i`.** Ô soạn thảo có hai cửa dạy cùng một việc, và chúng
+  đã lệch nhau thật. Phần chỉ dẫn nay nằm ở cuối bảng Blocks, ngay dưới danh
+  sách nó nói về.
+- **Bảng Blocks chia bốn nhóm** — khung nhấn · ảnh và video · cấu trúc · cả
+  đoạn — và bốn khung nhấn có **chấm màu** đúng bằng màu chúng hiện trên
+  trang. Trước đó cả bốn đều tả là "same box, …", đọc hết vẫn không chọn được
+  cái nào; thứ khác nhau thật giữa chúng là màu chứ không phải chữ.
+- **Nút dọn nay gỡ được cả liên kết.** `removeFormat` của trình duyệt không
+  đụng tới thẻ `<a>`, nên đặt nhầm một liên kết rồi thì không có đường nào gỡ
+  ngoài hoàn tác — mà hoàn tác cuốn theo cả mấy thứ vừa gõ sau đó.
+
+## V15.08 — 17-Sep-2026
+
+- **Thẻ bình luận: ba dòng xuống còn một.** "love u chị iu~" dài bốn chữ mà
+  chiếm ba dòng. Nay tên · nội dung · (ngày và Reply) là ba ô trên một hàng co
+  giãn: ngắn thì một dòng, dài thì tự rớt xuống. Đo được: **31px thay vì ~100px**.
+- **Bàn duyệt căn cột cố định.** `Approve` và `Unapprove` dài khác nhau, nên
+  mép cột nút nhảy vài chục pixel giữa hai hàng liền nhau và cả bảng đọc ra là
+  so le. Lưới cột cố định, chữ dồn phải.
+- **Ngăn Category có ô lọc y như ngăn Post.** Trước đó đổi tab một cái là nửa
+  thanh công cụ biến mất. Lọc theo mã, tên hiển thị hoặc câu mô tả.
+
+## V15.07 — 17-Sep-2026
+
+- **Ảnh bìa mang hoạ tiết mandala của logo.** Trước bản này nó là một dải màu
+  pastel với mấy vệt sáng — đẹp như một tấm vải, nhưng dán lên Facebook thì là
+  một hình chữ nhật trống, và ba bài cạnh nhau trông như ba lần cùng một tấm.
+  Hoa văn dựng bằng toạ độ cực (`r = |cos 2θ|`, ba lớp lệch nhau) chứ không
+  chép đường bezier của logo: file này ghi PNG từng điểm ảnh một.
+- **Nét hoa văn tự đổi theo nền.** Ba trong mười hai bảng màu là nền đêm, và
+  một nét ngả đen trên nền đêm thì biến mất hẳn. Nay nét nhắm một độ sáng cách
+  nền một khoảng cố định — mọi bảng màu ra cùng một mức tương phản. (Bản đầu
+  dùng ngưỡng cứng `sáng > .5`, để lại một vệt gãy vuông ngay chỗ một vệt sáng
+  vắt ngang đoá hoa.)
+- **Bốn góc bớt tối.** Công thức cũ kéo góc phải dưới xuống gần đen tím; cả
+  tấm đọc ra xám đục và lạc khỏi bảng màu pastel của trang.
 
 ## V15.06 — 17-Sep-2026
 

@@ -759,30 +759,57 @@ const KIEM = [
   {
     /* Bản nháp thường là thứ riêng tư nhất trên blog cá nhân. `noindex` chỉ
        bảo Google đừng đánh chỉ mục — file vẫn nằm công khai trên máy chủ, ai
-       đoán trúng đường dẫn là đọc được. Nên nó phải KHÔNG có mặt trong dist. */
+       đoán trúng đường dẫn là đọc được. Nên nó phải KHÔNG có mặt trong dist.
+
+       ── PHÉP KIỂM NÀY TỪNG KHÔNG BAO GIỜ ĐỎ ĐƯỢC ──
+       Bản trước soi `noindex` trên mấy trang ĐÃ DỰNG. Nghe hợp lý, nhưng
+       `npm run kiem` tự dựng lại một bản SẠCH trước khi soi — nên tới lúc nó
+       nhìn thì bản nháp đã bị dọn đi rồi, bất kể trước đó ai chạy
+       `npm run build -- --nhap`. Thử: dựng có `--nhap` (bài nháp ra file thật,
+       mang noindex), chạy `kiem`, vẫn xanh.
+
+       Một phép kiểm luôn xanh thì tệ hơn không có: nó chiếm một dòng trong
+       báo cáo và cho cảm giác có người canh.
+
+       Nay đi từ NGUỒN chứ không từ bản dựng: đọc front matter trong
+       `content/posts/`, lấy ra bài nào `draft: true`, rồi soi xem đường dẫn
+       của nó có mặt trong dist / sitemap / feed không. Bộ dựng thôi loại nháp
+       ra là phép kiểm đỏ ngay — đó mới là thứ nó nói rằng nó canh. */
     ten: 'Bản nháp không lọt vào bản dựng, sitemap hay RSS',
     muc: 'loi',
-    chay: ({ trang, dist }) => {
-      /* TRƯỚC ĐÂY LÀ HAI PHÉP KIỂM. Cái thứ hai soi sitemap.xml và feed.xml.
-         Nó không bao giờ chạy được: sitemap và feed dựng ra TỪ CHÍNH danh sách
-         trang trong dist, nên nháp chỉ lọt vào sitemap khi nó đã lọt vào dist —
-         mà lúc đó phép kiểm này đã báo đỏ rồi. Hai dòng xanh cho một việc là tự
-         dối mình. Gộp lại, và khi báo thì nói luôn nháp đang lộ ở những đâu. */
+    chay: ({ goc, dist }) => {
+      const thuBai = path.join(goc, 'content', 'posts');
+      if (!fs.existsSync(thuBai)) return [];
       const doc = (f) => fs.existsSync(path.join(dist, f))
         ? fs.readFileSync(path.join(dist, f), 'utf8') : '';
       const sm = doc('sitemap.xml'), rss = doc('feed.xml');
-      /* `noindex` LÀ DẤU HIỆU, KHÔNG PHẢI ĐỊNH NGHĨA của bản nháp.
-         Bàn làm việc của chủ trang (/z-admin/) cũng mang noindex, nhưng nó
-         là trang CỐ Ý dựng ra và cố ý không cho Google lập chỉ mục — hai việc
-         khác hẳn nhau. Không chừa nó ra thì mỗi lần dựng lại báo một dòng đỏ
-         giả, mà dòng đỏ giả lặp mãi thì sớm muộn người ta thôi đọc dòng đỏ. */
-      const CO_Y = ['/z-admin/'];
-      return trang.filter((t) => t.noindex && !CO_Y.includes(t.url)).map((t) => {
-        const them = [sm.includes(t.url) && 'sitemap.xml',
-                      rss.includes(t.url) && 'feed.xml'].filter(Boolean);
-        return `${t.url} là bản nháp nhưng vẫn có file trong dist/` +
-               (them.length ? ` — lọt cả vào ${them.join(' + ')}` : '') +
-               ` — chạy \`npm run build\` (không kèm --nhap) để dựng bản sạch`;
+
+      const ds = [];
+      (function di(d) {
+        for (const f of fs.readdirSync(d)) {
+          const p2 = path.join(d, f);
+          if (fs.statSync(p2).isDirectory()) { di(p2); continue; }
+          if (!f.endsWith('.md')) continue;
+          const van = fs.readFileSync(p2, 'utf8');
+          /* Chỉ đọc khối front matter ở đầu file: chữ `draft: true` nằm giữa
+             thân bài là nội dung, không phải lời khai. */
+          const m = van.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+          if (!m || !/^draft\s*:\s*true\s*$/m.test(m[1])) continue;
+          /* Đường dẫn bài: thư mục con làm chuyên mục, tên file bỏ phần ngày. */
+          const muc = path.relative(thuBai, path.dirname(p2)).split(path.sep).filter(Boolean);
+          const slug = f.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
+          ds.push({ file: path.relative(goc, p2), url: '/posts/' + [...muc, slug].join('/') + '/' });
+        }
+      })(thuBai);
+
+      return ds.flatMap((b) => {
+        const coFile = fs.existsSync(path.join(dist, ...b.url.split('/').filter(Boolean), 'index.html'));
+        const them = [coFile && 'dist/', sm.includes(b.url) && 'sitemap.xml',
+                      rss.includes(b.url) && 'feed.xml'].filter(Boolean);
+        return them.length
+          ? [`${b.file} khai \`draft: true\` nhưng vẫn lộ ở ${them.join(' + ')} ` +
+             `(${b.url}) — chạy \`npm run build\` không kèm --nhap`]
+          : [];
       });
     }
   },
@@ -969,6 +996,9 @@ const KIEM = [
       const BO = ['vb-dong', 'vb-cd', 'vb-nho', 'vb-bang', 'vb-chan', 'vb-loc',
                   'vb-tim', 'vb-thanh', 'mc-dong-ql', 'ql-mo', 'bl-dong'];
       const ra = [];
+      /* Một tên bị trùng thì cả ba file đều báo — nó là lỗi của CSS, không
+         phải của từng file JS. Gom lại để nói đúng một lần. */
+      const daBao = new Set();
 
       const css = ['list.css', 'prose.css', 'components.css']
         .map((f) => {
@@ -983,6 +1013,28 @@ const KIEM = [
         .replace(/\/\*[\s\S]*?\*\//g, ' ');
       const coLuat = (lop) =>
         new RegExp('\\.' + lop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\w-])').test(css);
+
+      /* Bản CSS đã bỏ mọi khối `@media{...}`, để đếm số lần một tên được khai
+         TRẦN. Cắt bằng cách đếm ngoặc thay vì regex: `@media` chứa nhiều luật
+         lồng nhau, mà regex không đếm được ngoặc. */
+      const cssNgoaiMedia = (() => {
+        let ra2 = '', i = 0;
+        while (i < css.length) {
+          const j = css.indexOf('@media', i);
+          if (j < 0) { ra2 += css.slice(i); break; }
+          ra2 += css.slice(i, j);
+          let k = css.indexOf('{', j), sau = 1;
+          if (k < 0) break;
+          k++;
+          while (k < css.length && sau > 0) {
+            if (css[k] === '{') sau++;
+            else if (css[k] === '}') sau--;
+            k++;
+          }
+          i = k;
+        }
+        return ra2;
+      })();
 
       for (const ten of NGAN) {
         const f = path.join(goc, 'src', 'js', ten);
@@ -1006,6 +1058,27 @@ const KIEM = [
         );
         for (const lop of dung) {
           if (!coLuat(lop)) ra.push(`src/js/${ten} gõ .${lop} nhưng không có luật CSS nào`);
+          /* ── MỘT TÊN, MỘT CHỦ ──
+             "Có luật CSS" chưa đủ: luật ấy có thể là của một thứ KHÁC trùng
+             tên. Chuyện đã xảy ra ngay trong lượt dựng khuôn này — `.ad-nut`
+             vốn là nút tab ở cột trái của /z-admin/, mà khuôn hàng mới cũng
+             lấy đúng cái tên ấy cho nút trên từng dòng. Luật sau đè luật
+             trước, và mấy cái tab bên trái teo lại còn một dúm chữ.
+
+             Nên đếm: một tên chỉ được khai TRẦN (`.x{`) đúng một lần. Bỏ mấy
+             khối `@media` trước khi đếm — khai lại ở đó là chuyện bình thường
+             và cần thiết, đó là cách một luật đổi theo khổ màn hình. */
+          /* Chỉ đếm luật mà bộ chọn là ĐÚNG `.tên` — tức đứng ngay sau đầu
+             file hoặc sau một dấu `}`. Không đếm `.cha .tên{`: đó là một luật
+             ĐI KÈM ngữ cảnh, chuyện bình thường và không phải trùng tên. */
+          const soLan = (cssNgoaiMedia.match(
+            new RegExp('(^|\\})\\s*\\.' + lop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+                       '\\s*\\{', 'g')) || []).length;
+          if (soLan > 1 && !daBao.has(lop)) {
+            daBao.add(lop);
+            ra.push(`.${lop} được khai ${soLan} lần ở hai chỗ khác nhau — ` +
+                    'hai thứ đang dùng chung một tên, luật sau đè luật trước');
+          }
         }
       }
       return ra;

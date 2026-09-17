@@ -96,17 +96,56 @@
       });
   }
 
+  /* Chữ đang lọc ở thanh trên. Giữ ngoài `veBang()` để vẽ lại bảng không mất
+     thứ vừa gõ. */
+  var locChu = '';
+
+  /* Bỏ dấu để gõ "tam ly" cũng tìm ra "Tâm lý" — bản sao của hàm cùng tên bên
+     viet-bai.js. Chép lại chứ không tách ra file chung: ba dòng, mà một file
+     dùng chung nữa là một file nữa phải nạp ở mọi trang có ngăn quản trị. */
+  function khongDau(x) {
+    try {
+      return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/[-_/]+/g, ' ');
+    } catch (e) { return String(x).toLowerCase(); }
+  }
+
   /* ══════════ BẢNG ══════════ */
   function veBang() {
     dangSua = null;
+    var chu = locChu ? khongDau(locChu) : '';
+    /* Soi cả mã, tên hiển thị lẫn câu mô tả: ba thứ ấy đều là "tên" của một
+       chuyên mục tuỳ người đang nhớ cái nào. */
+    var loc = !chu ? ds : ds.filter(function (m) {
+      return khongDau(m.muc).indexOf(chu) >= 0 ||
+             khongDau(m.title || '').indexOf(chu) >= 0 ||
+             khongDau(m.description || '').indexOf(chu) >= 0;
+    });
     hop.innerHTML =
+      /* ── CÙNG MỘT THANH TRÊN VỚI NGĂN POST ──
+         Hai ngăn cạnh nhau làm cùng một loại việc, nên chúng phải mở ra giống
+         nhau: nút chính bên trái, ô lọc ngay cạnh. Trước bản này ngăn này chỉ
+         có mỗi cái nút — đổi tab một cái là nửa thanh công cụ biến mất, và mắt
+         phải đi tìm lại xem ô lọc đâu rồi.
+
+         Lọc TẠI CHỖ trên danh sách đã tải, giống hệt ngăn Post: chuyên mục
+         không bao giờ nhiều tới mức phải hỏi máy chủ. */
       '<div class="ad-thanh">' +
         '<button type="button" class="btn btn--chinh" data-moi>' +
           tho(L('mucNew', 'New category')) + '</button>' +
+        '<label class="ad-tim">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+            '<circle cx="11" cy="11" r="7"/><path d="M16.2 16.2 21 21"/></svg>' +
+          '<input type="search" data-tim autocomplete="off" spellcheck="false" ' +
+                 'value="' + tho(locChu) + '" ' +
+                 'placeholder="' + tho(L('mucFind', 'Filter by name')) + '" ' +
+                 'aria-label="' + tho(L('mucFind', 'Filter by name')) + '">' +
+        '</label>' +
+        '<span class="ad-dem" data-dem></span>' +
       '</div>' +
       '<div class="ad-bang">' +
-        (ds.length
-          ? ds.map(function (m) {
+        (loc.length
+          ? loc.map(function (m) {
               /* Chuyên mục con in kèm tầng cha, vì tên ngắn của nó ("ha-noi")
                  không nói được nó nằm ở đâu. */
               return '<div class="ad-dong ad-dong--hai" data-m="' + tho(m.muc) + '">' +
@@ -116,18 +155,40 @@
                 '</span>' +
                 '<span class="ad-cd">' +
                   tho(L('mucCount', '{n} posts').replace('{n}', m.soBai)) + '</span>' +
-                '<span class="ad-nut-hang">' +
-                  '<button type="button" class="ad-nut" data-sua>' +
+                '<span class="ad-lenh-hang">' +
+                  '<button type="button" class="ad-lenh" data-sua>' +
                     tho(L('edit', 'Edit')) + '</button>' +
-                  '<button type="button" class="ad-nut" data-xoa' +
+                  '<button type="button" class="ad-lenh" data-xoa' +
                     (m.soBai > 0 || !m.sha ? ' disabled' : '') + '>' +
                     tho(L('mucDel', 'Delete')) + '</button>' +
                 '</span>' +
               '</div>';
             }).join('')
-          : '<p class="vb-cho">' + tho(L('empty', 'Nothing here.')) + '</p>') +
+          : '<p class="vb-cho">' +
+              tho(chu ? L('noMatch', 'Nothing matches, in what is loaded so far.')
+                      : L('empty', 'Nothing here.')) + '</p>') +
       '</div>' +
       '<p class="vb-noi"></p>';
+
+    var oDem = hop.querySelector('[data-dem]');
+    if (oDem) {
+      oDem.textContent = L('mucShown', '{n} of {t}')
+        .replace('{n}', loc.length).replace('{t}', ds.length);
+    }
+
+    var oTim = hop.querySelector('[data-tim]');
+    if (oTim) {
+      /* Vẽ lại ngay từng phím: danh sách nằm sẵn trong bộ nhớ, lọc là một phép
+         `filter` trên vài chục dòng. Trả tiêu điểm về ô gõ vì `veBang()` dựng
+         lại CẢ thanh trên, khác `veHang()` bên ngăn Post. */
+      oTim.addEventListener('input', function () {
+        locChu = oTim.value.trim();
+        var vt = oTim.selectionStart;
+        veBang();
+        var moi = hop.querySelector('[data-tim]');
+        if (moi) { moi.focus(); try { moi.setSelectionRange(vt, vt); } catch (e) {} }
+      });
+    }
 
     hop.querySelector('[data-moi]').addEventListener('click', function () { khung(null); });
     [].slice.call(hop.querySelectorAll('.ad-dong--hai')).forEach(function (d) {
@@ -173,7 +234,7 @@
           tho(L('mucLocked', 'The folder name cannot be changed here — it is part of every link in this category. Move the posts one by one from the Post tab instead.')) +
         '</p>') +
       '<div class="vb-nut">' +
-        '<button type="button" class="ad-nut" data-ve>' + tho(L('back', 'Back')) + '</button>' +
+        '<button type="button" class="ad-lenh" data-ve>' + tho(L('back', 'Back')) + '</button>' +
         '<button type="button" class="btn" data-luu>' +
           tho(moi ? L('mucAdd', 'Add') : L('save', 'Save')) + '</button>' +
       '</div>' +

@@ -200,7 +200,23 @@
   box-sizing:border-box;
   display:flex;flex-direction:column;
   overflow:hidden;
-  margin-inline:calc(50% - 50vw);     /* tràn hết bề ngang màn hình */
+  /* ── KHÔNG CÒN MẸO TRÀN LỀ, VÌ KHÔNG CẦN ──
+     Dòng cũ là `margin-inline: calc(50% - 50vw)`. Nó sai ở một chỗ đo được:
+     `vw` tính CẢ thanh cuộn, còn `%` chỉ tính phần nội dung — nên khối này
+     rộng hơn khung nhìn đúng bằng bề ngang thanh cuộn, và trang chủ trượt
+     ngang được 6px ở MỌI khổ màn (đo trên chín khổ từ 320 tới 1440).
+
+     Sáu pixel thì không ai nhìn ra, nhưng một cú vuốt ngang trên trackpad làm
+     cả trang nhúc nhích, và trên Android nó kéo ra một dải nền trống bên phải.
+
+     Chữa bằng cách bỏ hẳn: thẻ `<main>` ở trang chủ vốn đã rộng đúng bề ngang
+     nội dung, không max-width, không lề trong — nên khối này chỉ cần nằm yên
+     trong nó. Mẹo tràn lề là di sản từ hồi `<main>` còn bị bó bề ngang.
+
+     (Đã thử `overflow-x:clip` ở cả <body> lẫn <html> trước khi tìm ra chỗ
+     này. Không cái nào chặn được: `overflow` khai trên body được đẩy lên cho
+     khung nhìn, còn `clip` ở html thì trình duyệt vẫn cho cuộn tới scrollWidth.
+     Xén phần thừa không bằng không sinh ra phần thừa.) */
 }
 
 /* ── KHỐI CHỮ LỚN ──
@@ -1860,6 +1876,24 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   transition:background var(--dur-fast);
 }
 .sz-khoi-chu{display:flex;flex-direction:column;gap:1px;min-width:0}
+.sz-khoi-hang{display:flex;align-items:center;gap:6px}
+/* ── CHẤM MÀU CỦA BỐN KHUNG NHẤN ──
+   Thứ khác nhau THẬT giữa note · tip · warn · stop là MÀU, không phải chữ:
+   bốn câu mô tả cũ đều mở đầu bằng "same box", nên đọc xong bốn dòng vẫn không
+   chọn được cái nào. Chấm lấy đúng biến màu của `.callout--*` bên prose.css. */
+.sz-khoi-cham{
+  flex:none;width:8px;height:8px;border-radius:50%;
+  background:var(--m,var(--line-strong));
+}
+/* Tiêu đề nhóm chiếm TRỌN bề ngang lưới, nên nhóm nào cũng bắt đầu ở một hàng
+   mới dù bảng đang có hai hay ba cột. */
+.sz-khoi-de{
+  grid-column:1 / -1;
+  margin:var(--s3) 0 2px;padding:0 var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--text-faint);
+}
+.sz-khoi-de:first-child{margin-top:0}
 /* ── CÚ PHÁP ĐỨNG CẠNH CÁI NÚT LÀM RA NÓ ──
    Trước đây nó nằm ở bảng chỉ dẫn, dưới một đầu đề nói rằng mấy thứ này không
    có nút. Nhạt màu và đứng nép bên phải: nó là thứ để LIẾC khi cần biết dòng
@@ -2063,6 +2097,12 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
    không ăn theo theme — bỏ đi, ô ngắn thế này xoá bằng phím nhanh hơn. */
 .ad-tim input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 
+/* Con số "8 trên 12" ở thanh trên ngăn Category. Ngăn Post không cần: hàng
+   chip lọc ở đó đã in số vào từng chip. */
+.ad-dem{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);font-variant-numeric:tabular-nums;margin-left:auto;
+}
 .ad-bang{display:flex;flex-direction:column}
 /* Dòng "đã tải 20 trên 63" + nút tải thêm, ngay dưới mục cuối. */
 .ad-chan{
@@ -2115,23 +2155,35 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 .ad-cd--an{color:var(--bad)}
 .ad-cd--cho{color:var(--warn)}
 .ad-cd--roi{color:var(--ok)}
-.ad-nut-hang{display:flex;gap:var(--s3)}
+/* ── MỖI NÚT MỘT CỘT CỐ ĐỊNH ──
+   Để `flex` thì mỗi ô rộng đúng bằng chữ trong nó, mà chữ thì đổi theo trạng
+   thái: `Approve` ở hàng này, `Unapprove` ở hàng kia, `Hide` và `Unhide` cũng
+   vậy. Hệ quả là mép trái của cột nút nhảy vài chục pixel giữa hai hàng liền
+   nhau, và cả bảng đọc ra là so le.
+
+   Lưới với cột rộng CỐ ĐỊNH, chữ dồn phải: mọi hàng thẳng cột, kể cả khi
+   nhãn đổi. 5rem đủ cho `Unapprove` — chuỗi dài nhất trong cả ba ngăn. */
+.ad-lenh-hang{
+  display:grid;grid-auto-flow:column;grid-auto-columns:5rem;
+  justify-items:end;gap:var(--s2);
+}
 /* Nút chữ, không viền: hai nút trên mỗi dòng × mười lăm dòng = ba mươi cái
    viền, và lúc ấy bảng đọc ra là một cái lưới chứ không phải một danh sách. */
-.ad-nut{
+.ad-lenh{
   appearance:none;border:0;background:none;cursor:pointer;padding:0;
+  text-align:right;
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;
   color:var(--text-faint);transition:color var(--dur-fast);
 }
-.ad-nut:hover{color:var(--accent-ink)}
-.ad-nut:disabled{opacity:.45;cursor:default}
-.ad-nut:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.ad-lenh:hover{color:var(--accent-ink)}
+.ad-lenh:disabled{opacity:.45;cursor:default}
+.ad-lenh:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
 /* Nút CHÍNH của hàng — Approve ở bàn duyệt. Vẫn là nút chữ, chỉ đậm màu hơn:
    một viên thuốc tô đầy trên mỗi hàng thì mười lăm hàng ra mười lăm viên thuốc,
    và cái bảng thôi đọc ra là một danh sách. */
-.ad-nut--chinh{color:var(--accent-ink)}
-.ad-nut--chinh:hover{color:var(--text)}
+.ad-lenh--chinh{color:var(--accent-ink)}
+.ad-lenh--chinh:hover{color:var(--text)}
 /* Hàng vừa xử lý xong: mờ và trượt đi trước khi rút khỏi danh sách. Biến mất
    phụt một cái thì mắt không kịp thấy hàng nào vừa đi, và cả danh sách nhảy
    lên một nấc mà không rõ vì sao. */
@@ -2149,17 +2201,17 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
    `margin-left:auto` đẩy nó đi. Lý do ở chỗ khai .vb-nut. Nới khoảng cách hai
    nút rộng hơn `gap` một nhịp: chúng cạnh nhau nhưng KHÁC sức nặng, và một cú
    bấm nhầm ở đây là mất bài đang sửa. */
-.vb-nut .ad-nut{margin-right:var(--s2)}
+.vb-nut .ad-lenh{margin-right:var(--s2)}
 @media (max-width:640px){
   /* Cột phụ và trạng thái lên một dòng, phần chính và nút xuống dòng dưới. */
   .ad-dong{grid-template-columns:5.5rem minmax(0,1fr);gap:2px var(--s3)}
   .ad-chinh{grid-column:1 / -1;white-space:normal}
-  .ad-nut-hang{grid-column:1 / -1;margin-top:2px}
+  .ad-lenh-hang{grid-column:1 / -1;margin-top:2px}
   /* Vùng bấm nới ra bằng lề trong: trên màn 390px hai nút chữ cạnh nhau ra
      chừng 24px mỗi cái, mà ngón tay phủ tới 45px — và cái dễ bấm nhầm lại là
      cái GIẤU HẲN một bình luận. Chỉ ở khổ hẹp; máy có con trỏ thì không cần. */
-  .ad-nut-hang{gap:var(--s5)}
-  .ad-nut{padding:10px 0;margin:-10px 0}
+  .ad-lenh-hang{gap:var(--s5)}
+  .ad-lenh{padding:10px 0;margin:-10px 0}
 }
 
 
@@ -2229,7 +2281,7 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
   font-family:var(--font-mono);font-size:var(--fs-3xs);color:var(--text-faint);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.vb-bia-ben .ad-nut{align-self:flex-start}
+.vb-bia-ben .ad-lenh{align-self:flex-start}
 
 /* ══════════════════════════════════════════════════════════════════════
    BẢNG SEO
@@ -2292,3 +2344,18 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 @media (max-width:480px){
   .vb-bia-tha{width:100%}
 }
+
+/* ── TRANG 404 ──
+   Ô tìm kiếm đứng TRƯỚC, ba đường quay về đứng sau. Người tới đây đang tìm
+   một bài cụ thể — thứ họ cần là chỗ gõ tên bài, không phải một danh sách
+   liên kết để tự đi dò. */
+.e404{display:flex;flex-direction:column;gap:var(--s5);max-width:var(--measure)}
+.e404-tim{display:flex;gap:var(--s3);align-items:stretch;flex-wrap:wrap}
+.e404-tim .tk-hop{flex:1 1 240px;min-width:0}
+.e404-hay{
+  display:flex;flex-wrap:wrap;gap:var(--s3);align-items:baseline;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
+}
+.e404-hay a{color:var(--accent-ink);text-decoration:none}
+.e404-hay a:hover{text-decoration:underline}

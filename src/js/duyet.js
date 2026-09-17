@@ -229,7 +229,7 @@
     if (loc1.length > hienToi) {
       var them = document.createElement('button');
       them.type = 'button';
-      them.className = 'ad-nut bl-duyet-them';
+      them.className = 'ad-lenh bl-duyet-them';
       them.textContent = L('more') + ' (' + (loc1.length - hienToi) + ')';
       them.addEventListener('click', function () {
         hienToi += MOI_LUOT; veHang(dsHienTai);
@@ -256,7 +256,7 @@
 
      Approve thôi là nút tô đầy: mười lăm hàng là mười lăm viên thuốc, và lúc
      ấy bảng đọc ra là một cái lưới nút chứ không phải một danh sách. Nó vẫn
-     nổi hơn Hide, bằng màu (`.ad-nut--chinh`). */
+     nổi hơn Hide, bằng màu (`.ad-lenh--chinh`). */
   function veDong(c) {
     var d = document.createElement('div');
     d.className = 'ad-dong' + (c.duyet ? ' ad-dong--roi' : '');
@@ -281,10 +281,10 @@
     cd.textContent = c.duyet ? L('stateOn', 'Live') : L('stateOff', 'Pending');
 
     var nut = document.createElement('span');
-    nut.className = 'ad-nut-hang';
+    nut.className = 'ad-lenh-hang';
 
     var bDuyet = document.createElement('button');
-    bDuyet.type = 'button'; bDuyet.className = 'ad-nut ad-nut--chinh';
+    bDuyet.type = 'button'; bDuyet.className = 'ad-lenh ad-lenh--chinh';
     bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
     bDuyet.addEventListener('click', function () {
       bDuyet.disabled = true;
@@ -292,7 +292,7 @@
     });
 
     var bAn = document.createElement('button');
-    bAn.type = 'button'; bAn.className = 'ad-nut';
+    bAn.type = 'button'; bAn.className = 'ad-lenh';
     bAn.textContent = L('hide');
     bAn.addEventListener('click', function () {
       bAn.disabled = true;

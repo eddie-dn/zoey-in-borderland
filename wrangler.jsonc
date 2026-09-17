@@ -32,10 +32,12 @@
     // Trang dựng ra ở dạng `/posts/ten-bai/index.html`, nên người đọc gõ
     // `/posts/ten-bai` (không dấu gạch cuối) vẫn phải ra đúng bài.
     "html_handling": "auto-trailing-slash",
-    // Không có `dist/404.html`, nên để `none`: đường không tồn tại trả 404
-    // trần. Khai "404-page" mà không có file ấy thì Cloudflare vẫn trả 404
-    // nhưng thêm một bước tìm file vô ích cho mọi lượt trượt.
-    "not_found_handling": "none"
+    // `dist/404.html` do build sinh ra từ V16.00 — một trang thật, có ô tìm
+    // kiếm và đường quay về, thay cho trang TRẮNG mà "none" vẫn trả.
+    //
+    // Chuyện này thôi hiếm từ V15.00: chủ trang sửa được đường dẫn của bài đã
+    // đăng ngay ở /z-admin/, và mỗi lần sửa là mọi link cũ dẫn tới đây.
+    "not_found_handling": "404-page"
   },
 
   // ── BIẾN THƯỜNG (KHÔNG PHẢI BÍ MẬT) ────────────────────────────────

@@ -12,7 +12,22 @@
 # Đường dẫn khớp theo tiền tố, `*` là ký tự đại diện.
 # ══════════════════════════════════════════════════════════════════════
 
-# Ảnh và media: tên file không đổi thì nội dung cũng không đổi, giữ một năm.
+# ── ẢNH BÌA SINH RA: TÊN CỐ ĐỊNH, NỘI DUNG THÌ KHÔNG ──
+# `npm run bia` ghi ra `bia.png` cho mỗi bài, và chạy lại với `--de` thì NỘI
+# DUNG đổi mà tên thì không. Với `immutable, max-age=1 năm` ở dưới, người đã
+# ghé qua một lần sẽ thấy tấm bìa CŨ trong suốt một năm — kể cả sau khi đã đổi
+# thiết kế và đẩy lên. Đây là chuyện đã xảy ra thật ở bản V15.07: mười tấm bìa
+# được vẽ lại, mà khách quen thì không thấy tấm nào đổi.
+#
+# Một ngày đủ ngắn để một lượt đổi thiết kế tới được người đọc, và vẫn đủ dài
+# để không ai tải lại tấm bìa trong một buổi đọc. `stale-while-revalidate` cho
+# phép dùng bản cũ ngay trong lúc đi lấy bản mới, nên không ai phải chờ.
+#
+# Dòng này phải đứng TRƯỚC `/media/*`: Cloudflare lấy luật khớp ĐẦU TIÊN.
+/media/*/bia.png
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Ảnh còn lại: tên do người đặt và không ai ghi đè, giữ một năm.
 /media/*
   Cache-Control: public, max-age=31536000, immutable
 
@@ -28,3 +43,32 @@
   Referrer-Policy: strict-origin-when-cross-origin
   # Chặn trang bị nhúng vào iframe của người khác để giả mạo.
   X-Frame-Options: SAMEORIGIN
+  # ── QUYỀN THIẾT BỊ: TẮT HẾT ──
+  # Trang này không dùng camera, micro, vị trí hay cảm biến nào. Khai TẮT chứ
+  # không im lặng: im lặng nghĩa là "theo mặc định của trình duyệt", mà mặc
+  # định thì đổi theo từng bản và từng hãng. Một dòng ở đây khoá luôn cả mấy
+  # iframe YouTube nhúng vào — chúng không có cớ gì hỏi micro cả.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  # ── HTTPS, KHÔNG CÓ ĐƯỜNG LÙI ──
+  # Cloudflare đã bật chuyển hướng, nhưng chuyển hướng vẫn có một lượt đi HTTP
+  # đầu tiên — và đó là lượt bị chặn đường được. Khai HSTS thì từ lần thứ hai
+  # trở đi trình duyệt tự đổi sang HTTPS trước khi gửi đi.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  # ── CSP ──
+  # Danh sách này rút từ chính bản dựng, không đoán:
+  #   fonts.googleapis.com / fonts.gstatic.com  hai phông của trang
+  #   www.youtube-nocookie.com                  khung video, chỉ nạp khi bấm play
+  #   img-src https:                            ảnh ngoài — cú pháp Markdown của
+  #     trang nhận đường dẫn http(s), và một bài cũ dán ảnh từ nơi khác thì phải
+  #     còn hiện được. Nới ở ĐÚNG chỗ này là an toàn: một tấm ảnh không chạy
+  #     được mã, khác hẳn một file script.
+  #   data: blob:                               ảnh xem trước lúc thả vào ô soạn
+  #
+  # `'unsafe-inline'` cho script là chỗ yếu, và nó có lý do: đoạn đặt theme nằm
+  # THẲNG trong <head> để trang không loé sáng một nhịp trước khi đổi màu (xem
+  # chú thích trong src/templates/shell.html). Tách ra file ngoài là mất đúng
+  # thứ đoạn ấy sinh ra để tránh. Dù vậy mấy dòng còn lại vẫn chặn được những
+  # đường tấn công thật: `object-src 'none'` (không Flash/applet), `base-uri`
+  # (không đổi gốc đường dẫn tương đối), `form-action` (không gửi form đi chỗ
+  # khác), `frame-ancestors` (không nhúng vào trang lạ).
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self'; frame-src https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
