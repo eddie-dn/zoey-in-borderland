@@ -1801,6 +1801,18 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   letter-spacing:.06em;color:var(--accent-ink);
 }
 .sz-doan--giua{text-align:center}
+.sz-doan--nho{font-size:var(--fs-sm);color:var(--text-faint)}
+/* Ba thẻ mới phải nhìn ra ngay trong khung gõ — nhấn một mẩu chữ mà không thấy
+   gì đổi thì cái nút ấy coi như không có. Chép thông số từ prose.css; khung gõ
+   hẹp hơn cột chữ thật nên không cố giống hệt, chỉ cần giống về CHẤT. */
+.sz-khung :is(sup,sub){font-size:.72em;line-height:0;position:relative}
+.sz-khung sup{top:-.48em}
+.sz-khung sub{bottom:-.22em}
+.sz-khung kbd{
+  padding:1px 6px;border-radius:5px;
+  border:1px solid var(--line-strong);border-bottom-width:2px;
+  background:var(--surface-solid);font-size:.82em;color:var(--text-muted);
+}
 .sz-doan--giua::after,.sz-doan--thuong::after{
   content:attr(data-lop);
   display:block;margin-top:2px;

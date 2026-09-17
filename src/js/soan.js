@@ -108,7 +108,11 @@
        thẻ span. Bộ dựng hiểu được dấu chéo ngược từ bản này — trước đó nó in
        ra nguyên cả dấu chéo, và đó là lý do ô soạn thảo không thể ra đời sớm
        hơn bộ đọc dấu thoát. */
-    return String(s).replace(/([\\`*\[\]{}])/g, '\\$1');
+    /* `~` và `^` vào danh sách từ bản này: chúng vừa thành cú pháp thật
+       (`~dưới~`, `^trên^`), nên một câu gõ có dấu ngã hay dấu mũ mà không
+       thoát thì bị đọc thành chỉ số. Trước đây `~` đã là cú pháp của
+       `~~gạch~~` mà vẫn không thoát — một lỗ đã có sẵn, nay bịt luôn. */
+    return String(s).replace(/([\\`*\[\]{}~^])/g, '\\$1');
   }
 
   /* ── TRẢ LẠI CỤM LỚP Ở CUỐI DÒNG ──
@@ -229,6 +233,11 @@
       if (the === 'EM' || the === 'I')     { ra += boc('*',  trong(c)); continue; }
       if (the === 'DEL' || the === 'S' || the === 'STRIKE') { ra += boc('~~', trong(c)); continue; }
       if (the === 'MARK') { ra += boc('==', trong(c)); continue; }
+      /* Ba thẻ mới. `KBD` bọc bằng ngoặc vuông ĐÔI, nên `boc` nhận hai đầu
+         khác nhau — tham số thứ ba của nó có đúng để làm việc ấy. */
+      if (the === 'SUP') { ra += boc('^', trong(c)); continue; }
+      if (the === 'SUB') { ra += boc('~', trong(c)); continue; }
+      if (the === 'KBD') { ra += boc('[[', trong(c), ']]'); continue; }
 
       ra += trong(c);
     }
@@ -509,7 +518,7 @@
 
     /* Dấu chéo ngược và mã trong dòng đi TRƯỚC mọi thứ khác — hai thứ này phải
        không bị các phép dưới đọc phải. */
-    s = String(s).replace(/\\([\\`*\[\]{}])/g, function (_, c) { return cat(thoatHTML(c)); });
+    s = String(s).replace(/\\([\\`*\[\]{}~^])/g, function (_, c) { return cat(thoatHTML(c)); });
     s = s.replace(/`([^`\n]+)`/g, function (_, m) { return cat('<code>' + thoatHTML(m) + '</code>'); });
 
     s = thoatHTML(s);
@@ -564,6 +573,11 @@
     s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
     s = s.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+    /* Cùng thứ tự với bộ dựng thật: `~~gạch~~` TRƯỚC `~dưới~`, không thì cặp
+       dấu ngã đôi bị đọc thành hai lần chỉ số dưới lồng nhau. */
+    s = s.replace(/(^|[^~])~(?=\S)([^~\s]*?\S)~(?!~)/g, '$1<sub>$2</sub>');
+    s = s.replace(/\^(?=\S)([^^\s]*?\S)\^/g, '<sup>$1</sup>');
+    s = s.replace(/\[\[(?=\S)([^\][]*?\S)\]\]/g, '<kbd>$1</kbd>');
     s = s.replace(/==([^=]+)==/g, '<mark>$1</mark>');
     s = s.replace(/ {2}\n/g, '<br>');
     s = s.replace(/\n/g, ' ');
@@ -1128,6 +1142,29 @@
       capNhat();
     });
 
+    /* Ba nét mới, cùng nhóm với Tô nền vì chúng đều là "nhấn một mẩu chữ".
+       Dùng chung `bocChon` với Mã và Tô nền — nghĩa là chúng cũng đi từng nút
+       chữ một, cũng bấm lại để gỡ, và cũng không cắt đôi đoạn văn. */
+    nut('x²', L('sup', 'Superscript — m²'), function () {
+      bocChon(khung, function () { return document.createElement('sup'); },
+              function (n) { return n.nodeName === 'SUP'; }) ||
+        goBoc(khung, function (n) { return n.nodeName === 'SUP'; });
+      capNhat();
+    }, 'sz-nut--h');
+    nut('x₂', L('sub', 'Subscript — H₂O'), function () {
+      bocChon(khung, function () { return document.createElement('sub'); },
+              function (n) { return n.nodeName === 'SUB'; }) ||
+        goBoc(khung, function (n) { return n.nodeName === 'SUB'; });
+      capNhat();
+    }, 'sz-nut--h');
+    nut(svg(['M3 6h18v12H3z', 'M7 10h.01M11 10h.01M15 10h.01M8 14h8']),
+        L('kbd', 'Key — ⌘K, Esc'), function () {
+      bocChon(khung, function () { return document.createElement('kbd'); },
+              function (n) { return n.nodeName === 'KBD'; }) ||
+        goBoc(khung, function (n) { return n.nodeName === 'KBD'; });
+      capNhat();
+    });
+
     var nutMau = nut(el('span', 'sz-cham'), L('color', 'Text colour'), function () { moBangMau(); });
     nutMau.classList.add('sz-nut--mau');
     var bangMau = veBangMau();
@@ -1289,6 +1326,9 @@
       dong(L('bThuong', 'Not a lead-in'), L('bThuongMo', 'stops the first paragraph being larger'), function () {
         doiLopDoan('{.thuong}');
       });
+      dong(L('bNho', 'Small text'), L('bNhoMo', 'for a side note or a source line'), function () {
+        doiLopDoan('{.nho}');
+      });
 
       return b;
     }
@@ -1320,13 +1360,14 @@
         window.alert(L('bDoanChua', 'Put the cursor in a paragraph first.'));
         return;
       }
+      var LOP_CSS = { '{.giua}': 'sz-doan--giua', '{.thuong}': 'sz-doan--thuong',
+                      '{.nho}': 'sz-doan--nho' };
+      p.classList.remove('sz-doan--giua', 'sz-doan--thuong', 'sz-doan--nho');
       if (p.getAttribute('data-lop') === lop) {
         p.removeAttribute('data-lop');
-        p.classList.remove('sz-doan--giua', 'sz-doan--thuong');
       } else {
         p.setAttribute('data-lop', lop);
-        p.classList.remove('sz-doan--giua', 'sz-doan--thuong');
-        p.classList.add(lop === '{.giua}' ? 'sz-doan--giua' : 'sz-doan--thuong');
+        p.classList.add(LOP_CSS[lop]);
       }
       capNhat();
     }
@@ -1451,6 +1492,7 @@
         L('h6t', 'Pasting from elsewhere: keeps bold/italic/links, drops fonts and sizes.'),
         L('h7t', 'Drafts save to this device on their own; closing the tab is safe.'),
         L('h9t', 'The — button drops a ✦ ✦ ✦ break between two parts of a post.'),
+        L('h10t', 'x² · x₂ · the key button: for m², H₂O and ⌘K.'),
         L('h8t', 'Press </> to see the exact Markdown that will go to GitHub.')
       ]);
 
@@ -1466,7 +1508,9 @@
         ['{.thuong}', L('gThuong', 'at the end of the FIRST paragraph: stops it becoming the lead-in.')],
         ['| a | b |', L('gBang', 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|')],
         ['```js', L('gMa', 'a code block — same paragraph, Shift+Enter between lines, ``` to close.')],
-        ['- [ ] · - [x]', L('gViec', 'a checklist: make a bullet list, then type this at the start of an item.')]
+        ['- [ ] · - [x]', L('gViec', 'a checklist: make a bullet list, then type this at the start of an item.')],
+        ['^2^ · ~2~ · [[Esc]]', L('gNet', 'superscript · subscript · a key — the three buttons do these too.')],
+        ['{.nho} · {.giua}', L('gLopDoan', 'at the end of a paragraph: small text · centred.')]
       ]);
 
       b.appendChild(el('p', 'sz-giup-chan',

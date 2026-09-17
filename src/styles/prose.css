@@ -405,6 +405,36 @@
 .prose abbr[title]{text-decoration:underline dotted;cursor:help}
 .prose small{font-size:var(--fs-sm);color:var(--text-faint)}
 
+/* ── CHỈ SỐ TRÊN / DƯỚI ──
+   `font-size:.72em` chứ không dùng cỡ mặc định của trình duyệt: mặc định là
+   `smaller`, mà `smaller` trong một đoạn đã nhỏ sẵn thì ra chữ dưới 10px —
+   chỉ số của m² thành một hạt bụi.
+
+   `line-height:0` là dòng QUAN TRỌNG nhất ở đây. Không có nó, một chữ nâng lên
+   hay hạ xuống làm CẢ DÒNG cao thêm vài pixel, nên một đoạn có m² bị giãn đúng
+   một dòng so với đoạn bên cạnh — mắt bắt được ngay mà không hiểu vì sao.
+   `position:relative` + `top` thay cho `vertical-align` vì cách này không đụng
+   tới chiều cao dòng. */
+.prose :is(sup,sub){
+  font-size:.72em;line-height:0;position:relative;vertical-align:baseline;
+  font-variant-numeric:tabular-nums;
+}
+.prose sup{top:-.48em}
+/* Chỉ số dưới hạ NÔNG hơn chỉ số trên nâng: dấu tiếng Việt nằm dưới chữ (ạ, ọ,
+   ụ) nên khoảng dưới đường chân chữ vốn đã chật. */
+.prose sub{bottom:-.22em}
+
+/* ── ĐOẠN CHỮ NHỎ ──
+   `{.nho}` ở cuối đoạn. Cùng cách với `{.giua}` và `{.thuong}` — một lớp của
+   CẢ ĐOẠN, không phải một nét giữa dòng. Dùng cho ghi chú bên lề, nguồn dẫn,
+   lời dặn nhỏ: những thứ thuộc về bài nhưng không cùng trọng lượng với bài.
+
+   Mượn đúng bộ thông số của thẻ <small> ngay trên, để hai đường dẫn tới cùng
+   một dáng chữ — chứ không phải hai dáng gần giống nhau. */
+.prose .nho{
+  font-size:var(--fs-sm);line-height:1.6;color:var(--text-faint);
+}
+
 /* ── ĐẦU BÀI ──
    Thứ tự đọc:  đường dẫn → TIÊU ĐỀ → ngày · phút đọc → tóm tắt.
    Ngày và phút đọc bám ngay dưới tiêu đề vì đó là hai thứ người đọc liếc để

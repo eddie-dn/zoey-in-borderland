@@ -953,6 +953,20 @@
   .khung-a .post-foot{grid-column:1;grid-row:3}
   .khung-a .ben      {grid-column:2;grid-row:2}
 
+  /* ── BÀI KHÔNG CÓ CỘT BÊN: MỘT CỘT, CANH GIỮA ──
+     Bài không có tiêu đề mục nào thì `tocHTML` không dựng thẻ <aside> nữa, và
+     lưới phải thôi giữ chỗ cho nó. Để nguyên hai cột thì ô thứ hai rỗng, và cột
+     chữ nép hẳn về trái — trông như trang bị cắt mất một nửa.
+
+     `justify-content:center` chứ không phải `1fr`: cột chữ giữ đúng `--measure`
+     (nới ra thì mỗi dòng thành chín mươi ký tự), còn chỗ dôi chuyển hết ra hai
+     bên thành lề thật. Đây cũng đúng khuôn của khung B — cùng một loại nội
+     dung, cùng một cách bày. */
+  .post-layout.khung-a:not(:has(> .ben)){
+    grid-template-columns:minmax(0, var(--measure));
+    justify-content:center;
+  }
+
   /* `.khung-a--bl` KHÔNG còn đổi bề ngang cột. Lớp này ở lại vì `.ben--bl`
      vẫn cần nó cho hai việc khác: tắt mục lục / "đọc tiếp", và thôi dính khi
      cuộn. Bề ngang thì cố định — xem chú thích ở `.post-layout.khung-a`. */

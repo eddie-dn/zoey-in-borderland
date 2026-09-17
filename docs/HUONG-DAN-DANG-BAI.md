@@ -205,7 +205,28 @@ không nằm trong bảng này thì không dùng được.
 | `[chữ](https://...)` | link — link ra ngoài tự có mũi tên ↗ và tự mở tab mới |
 | Hai dấu cách cuối dòng | xuống dòng mà không sang đoạn mới |
 | `{tím: chữ}` | chữ đổi màu — xem bảng màu ngay dưới |
-| `\*` `\[` `` \` `` `\{` | in ra đúng ký tự ấy, không coi là cú pháp |
+| `m^2^` | chỉ số trên — m² |
+| `H~2~O` | chỉ số dưới — H₂O |
+| `[[⌘K]]` | một phím, vẽ ra như phím bấm thật |
+| `\*` `\[` `` \` `` `\{` `\^` `\~` | in ra đúng ký tự ấy, không coi là cú pháp |
+
+Ba dòng giữa **không cho khoảng trắng bên trong**: `^2^` được, `^hai chữ^` thì
+không. Chỉ số và tên phím vốn là mẩu ngắn dính liền, và nới ra thì một câu có
+hai dấu mũ cách nhau nửa dòng lập tức bị nuốt vào giữa.
+
+`~~gạch ngang~~` và `~dưới~` không đụng nhau — cặp dấu ngã đôi luôn thắng.
+
+### 3.1b · Lớp của cả đoạn
+
+Gõ ở **cuối đoạn**, sau dấu cách:
+
+| Gõ | Ra |
+|---|---|
+| `{.nho}` | cả đoạn thành chữ nhỏ, màu nhạt — cho ghi chú bên lề, dòng nguồn |
+| `{.giua}` | cả đoạn căn giữa, cột hẹp lại — cho một câu đứng riêng |
+| `{.thuong}` | tắt cỡ chữ lớn ở đoạn ĐẦU bài (mặc định đoạn đầu là sapo) |
+
+Ba cái này cũng có nút trong ô soạn thảo ở `/z-admin/` — bảng **Blocks**.
 
 **Tám tên màu**, gõ có dấu hay không dấu đều được (`{tim: …}` = `{tím: …}`):
 

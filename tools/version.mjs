@@ -65,7 +65,7 @@ const kq = ghiSo(GOC, suaChinh, { lon });
 console.log(`
   ${mau.xanh('✓ Đã ghi sổ')}   ${mau.dam(kq.ten)}  ${mau.mo(temNgay(kq.ngay))}
     ${kq.suaChinh}
-  ${mau.mo(kq.tuCuon ? `build mới — bản vá của build ${kq.build - 1} đã chạm 09`
+  ${mau.mo(kq.tuCuon ? `build mới — bản vá của build ${kq.buildTruoc} đã chạm 09`
            : kq.lon ? 'build mới' : `bản vá thứ ${kq.va} của build ${kq.build}`)}
 
   ${mau.mo('Đừng quên viết mấy dòng tóm tắt cho bản này ở phần dưới docs/LICH-SU.md')}

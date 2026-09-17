@@ -21,6 +21,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { docSo } from './lib/lichsu.mjs';
 import { docNguon } from './lib/doc-nguon.mjs';
+import { render as dungMD } from './lib/markdown.mjs';
 import { boDau } from './lib/text.mjs';
 
 const GOC  = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -859,6 +860,80 @@ const KIEM = [
 
        Kiểm luôn cột `#`: theo quy ước nó bằng đúng số bản vá của dòng đó. Lệch
        là có người sửa bảng bằng tay. */
+    /* ── MỖI CÚ PHÁP PHẢI CÓ CẢ BỘ DỰNG LẪN CSS ──
+       Đây là lỗi đã gặp thật, hai chiều:
+
+         · `.prose kbd`, `.prose small`, `.prose abbr` có CSS từ lâu mà KHÔNG
+           có cú pháp nào sinh ra chúng — ba luật trang trí không ai dùng được,
+           nằm im nhiều tháng;
+         · `{.giua}` thì ngược lại: bộ dựng nhận nó và in ra `class="giua"`,
+           nhưng không có luật CSS nào — gõ vào thì đoạn ấy trông y hệt đoạn
+           thường, và không ai biết vì sao.
+
+       Cả hai đều KHÔNG báo lỗi gì: trang vẫn dựng sạch, vẫn mở được. Nên phải
+       có một phép kiểm chạy thật bộ dựng rồi soi lại CSS.
+
+       Chỉ canh những thứ ĐÃ CÓ NÚT trong ô soạn thảo: một cú pháp có nút mà
+       không ra hình là người viết bấm rồi ngồi đoán. Thứ chỉ gõ tay được thì
+       để tài liệu lo. */
+    ten: 'Mỗi nét có nút đều dựng ra thẻ thật và có luật CSS đi kèm',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const ra = [];
+      /* ── BỎ CHÚ THÍCH TRƯỚC KHI SOI ──
+         Lần cắm lỗi thứ hai vẫn xanh, và lý do là chú thích: ngay phía trên
+         luật `.prose .nho` có một dòng giải thích viết `{.nho}` trong đó. Xoá
+         luật đi thì chuỗi `.nho` vẫn còn nguyên trong chú thích, và phép kiểm
+         vẫn tìm thấy.
+
+         Chú thích trong file này dày hơn mã, nên đây không phải ca hiếm — gần
+         như MỌI tên lớp đều được nhắc trong một chú thích nào đó. Không bỏ
+         chú thích thì phép kiểm không bao giờ đỏ được. */
+      const css = fs.readFileSync(path.join(goc, 'src', 'styles', 'prose.css'), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, ' ');
+      const THU = [
+        ['m^2^',        '<sup>',          ':is(sup,sub)'],
+        ['H~2~O',       '<sub>',          ':is(sup,sub)'],
+        ['[[Esc]]',     '<kbd>',          'kbd'],
+        ['x ~~y~~',     '<del>',          null],
+        ['x ==y==',     '<mark>',         null],
+        ['x {.nho}',    'class="nho"',    '.nho'],
+        ['x {.giua}',   'class="giua"',   '.giua'],
+        ['x {tím: y}',  'class="c-tim"',  '.c-tim']
+      ];
+      /* ── TÌM THEO MỐC, KHÔNG TÌM THEO CHUỖI CON ──
+         Bản đầu dùng `css.includes('.prose .nho')`. Cắm lỗi vào thử thì nó
+         KHÔNG bắt: đổi tên lớp thành `.nho-TAT` vẫn còn nguyên chuỗi con
+         `.prose .nho` bên trong, nên phép kiểm vẫn xanh trong khi luật đã mất.
+
+         Nay đòi ký tự ngay sau tên lớp KHÔNG được là chữ, số, gạch dưới hay
+         gạch ngang — tức là tên phải kết thúc đúng ở đó. Cắm lại đúng cái lỗi
+         cũ thì nó đỏ. */
+      const coLuat = (lop) => new RegExp(
+        lop.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\w-])').test(css);
+
+      for (const [md, mongDoi, lop] of THU) {
+        let html = '';
+        try { html = dungMD(md).html; } catch (e) { html = 'LỖI: ' + e.message; }
+        if (!html.includes(mongDoi)) {
+          ra.push(`cú pháp \`${md}\` không còn dựng ra ${mongDoi} — ô soạn thảo có nút cho nó`);
+        }
+        if (lop && !coLuat(lop)) {
+          ra.push(`\`${md}\` dựng ra được nhưng prose.css thiếu luật cho ${lop} — gõ vào không thấy gì đổi`);
+        }
+      }
+      /* `~~gạch~~` và `~dưới~` không được ăn nhau. Hai biểu thức đang có chốt
+         `[^~]` ở đầu và `(?!~)` ở cuối nên chúng độc lập với THỨ TỰ — đảo chỗ
+         vẫn ra đúng, đã thử. Nhưng chốt ấy là thứ dễ bị gỡ mất lúc ai đó "dọn
+         cho gọn", nên câu kiểm này canh KẾT QUẢ chứ không canh thứ tự. */
+      const g = dungMD('~~bỏ~~ và H~2~O').html;
+      if (!g.includes('<del>bỏ</del>') || !g.includes('<sub>2</sub>')) {
+        ra.push('`~~gạch~~` và `~dưới~` đang ăn nhau — kiểm lại hai chốt [^~] và (?!~)');
+      }
+      return ra;
+    }
+  },
+  {
     ten: 'Số phiên bản đúng luật: đuôi 00–09, cột # khớp đuôi, không dùng số kiêng',
     muc: 'loi',
     chay: ({ goc }) => {

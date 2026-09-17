@@ -383,6 +383,7 @@ const NHAN = {
      được thứ hiện lên trên trang là BA DẤU SAO, không phải một đường kẻ ngang.
      Câu chỉ dẫn vì thế phải tả cái NHÌN THẤY, không tả cái thẻ HTML. */
   szH9t       : 'The — button drops a ✦ ✦ ✦ break between two parts of a post.',
+  szH10t      : 'x² · x₂ · the key button: for m², H₂O and ⌘K.',
   /* ── PHẦN HAI CỦA BẢNG CHỈ DẪN: THỨ KHÔNG CÓ NÚT ──
      Mười cú pháp mà bộ dựng hiểu nhưng thanh nút không có chỗ cho. Chúng có
      thật và đang được dùng (xem bài "Vô thức tập thể"), nên chúng phải được
@@ -402,6 +403,8 @@ const NHAN = {
   szGBang     : 'a table — every row in ONE paragraph, Shift+Enter between them. Second row: |---|---:|',
   szGMa       : 'a code block — same paragraph, Shift+Enter between lines, ``` to close.',
   szGViec     : 'a checklist: make a bullet list, then type this at the start of an item.',
+  szGNet      : 'superscript · subscript · a key — the three buttons do these too.',
+  szGLopDoan  : 'at the end of a paragraph: small text · centred.',
   /* ── NHÃN CỦA BẢNG KHỐI ──
      Mỗi khối có TÊN và một câu ngắn nói nó làm gì. Câu ấy không phải trang
      trí: "Note" và "Tip" trông giống hệt nhau nếu chỉ có tên. */
@@ -421,6 +424,10 @@ const NHAN = {
   szBVideo    : 'Video file', szBVideoMo   : 'an .mp4 or .webm you uploaded',
   szBAnhRong  : 'Image width', szBAnhRongMo: 'normal → wide → full-bleed',
   szBGiua     : 'Centre this paragraph', szBGiuaMo : 'for a line that stands alone',
+  szBNho      : 'Small text', szBNhoMo : 'for a side note or a source line',
+  szSup       : 'Superscript — m²',
+  szSub       : 'Subscript — H₂O',
+  szKbd       : 'Key — ⌘K, Esc',
   szBThuong   : 'Not a lead-in', szBThuongMo : 'stops the first paragraph being larger',
   szBYtAsk    : 'YouTube link or video id:',
   szBYtSai    : 'Could not find a video id in that.',
@@ -1046,12 +1053,14 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         h1: NHAN.szH1t, h2t: NHAN.szH2t, h3t: NHAN.szH3t,
                         h4t: NHAN.szH4t, h5t: NHAN.szH5t, h6t: NHAN.szH6t,
                         h7t: NHAN.szH7t, h8t: NHAN.szH8t, h9t: NHAN.szH9t,
+                        h10t: NHAN.szH10t,
                         gHelp1: NHAN.szGHelp1, gHelp2: NHAN.szGHelp2,
                         gNote: NHAN.szGNote, gCallout: NHAN.szGCallout,
                         gGallery: NHAN.szGGallery, gWide: NHAN.szGWide,
                         gLop: NHAN.szGLop, gThuong: NHAN.szGThuong,
                         gBang: NHAN.szGBang, gMa: NHAN.szGMa,
                         gViec: NHAN.szGViec, gChan: NHAN.szGChan,
+                        gNet: NHAN.szGNet, gLopDoan: NHAN.szGLopDoan,
                         block: NHAN.szBlock,
                         bNote: NHAN.szBNote, bNoteMo: NHAN.szBNoteMo,
                         bTip: NHAN.szBTip, bTipMo: NHAN.szBTipMo,
@@ -1070,6 +1079,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bVideo: NHAN.szBVideo, bVideoMo: NHAN.szBVideoMo,
                         bAnhRong: NHAN.szBAnhRong, bAnhRongMo: NHAN.szBAnhRongMo,
                         bGiua: NHAN.szBGiua, bGiuaMo: NHAN.szBGiuaMo,
+                        bNho: NHAN.szBNho, bNhoMo: NHAN.szBNhoMo,
+                        sup: NHAN.szSup, sub: NHAN.szSub, kbd: NHAN.szKbd,
                         bThuong: NHAN.szBThuong, bThuongMo: NHAN.szBThuongMo,
                         bYtAsk: NHAN.szBYtAsk, bYtSai: NHAN.szBYtSai,
                         bVidAsk: NHAN.szBVidAsk, bCapAsk: NHAN.szBCapAsk,
@@ -1685,6 +1696,21 @@ function tocHTML(headings, docTiep) {
      Khổ hẹp không có cột bên (`.ben` thành `display:contents`), nên khối này
      rơi vào dòng chảy — và `order` ở list.css đẩy nó xuống SAU chân bài, tức
      là đúng chỗ cũ. Không có khổ nào mất nó. */
+  /* ── KHÔNG CÓ GÌ ĐỂ CHỞ THÌ KHÔNG DỰNG CỘT ──
+     Chú thích dài phía trên viết hồi cột bên còn chở Ô TRÍCH DẪN, nên lúc ấy
+     nó đúng: cột luôn có ít nhất một thứ, và giữ cột cho mọi bài là giữ một
+     khung duy nhất. Ô trích dẫn đã rời trang bài từ lâu — và cái lý do ấy đi
+     theo nó mà không ai gỡ câu kết luận xuống.
+
+     Hậu quả đo được: bài không có tiêu đề mục nào (Siddhartha, Muốn yêu cũng
+     cần sách) dựng ra một thẻ <aside> RỖNG, mà lưới vẫn giữ nguyên 320px cho
+     nó — cột chữ nằm nép bên trái giữa một khoảng trống vô chủ rộng bằng một
+     phần tư màn hình. Đúng thứ mà cả đoạn chú thích trên vốn dựng ra để tránh.
+
+     Nay rỗng thì trả về chuỗi rỗng, và lưới bỏ luôn cột ấy đi (xem
+     `.post-layout.khung-a:not(:has(> .ben))` ở layout.css). */
+  if (!headings.length && !docTiep) return '';
+
   return `<aside class="ben">
     ${headings.length ? `<details class="toc-box" open>
       <summary>${NHAN.contents}</summary>

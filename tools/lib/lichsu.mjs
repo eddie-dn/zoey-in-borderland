@@ -107,7 +107,12 @@ export function ghiSo(goc, suaChinh, { lon = false, ngay = null } = {}) {
   dong.splice(viTri + 1, 0, dongMoi);
   fs.writeFileSync(f, dong.join('\n'));
 
-  return { ten, ngay: ngayISO, va, build, suaChinh, lon: moBuild, tuCuon };
+  /* `buildTruoc` chứ không để chỗ gọi tự tính `build - 1`: từ lúc có luật bỏ
+     số, hai con số ấy không còn liền nhau — V12.09 nhảy thẳng lên V15.00, và
+     câu báo "bản vá của build 14 đã chạm 09" nói về một build chưa từng tồn
+     tại. Ai biết số thì trả số ấy ra. */
+  return { ten, ngay: ngayISO, va, build, suaChinh, lon: moBuild, tuCuon,
+           buildTruoc: moiNhat ? moiNhat.build : null };
 }
 
 /* "2026-09-14" → "14-Sep-2026" cho tem ở chân trang */

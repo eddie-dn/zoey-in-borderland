@@ -33,6 +33,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V15.00 | 2026-09-17 | 00 | nút cho chỉ số trên·dưới·phím và ba lớp đoạn; bài Vô thức tách phần demo xuống phụ lục; bài không có mục lục thôi chừa cột trống; bàn duyệt có chip lọc |
 | V12.09 | 2026-09-17 | 09 | cụm nút đi theo người đọc ở bài dài; menu ☰ liquid glass; sửa được đường dẫn và chuyên mục của bài đã đăng; ngăn Category; nút cho mọi khối trong ô soạn thảo |
 | V12.08 | 2026-09-17 | 08 | một hàng meta cho cả tim · chia sẻ · bình luận; khung ảnh có cặp lùi/tới; bento và kho lưu gọn lại; điện thoại đưa Search vào menu ☰ |
 | V12.07 | 2026-09-16 | 07 | ô trích dẫn: ba câu mới mỗi ngày theo sáng · chiều · tối; bật lại lớp AI đang tắt lặng |
@@ -154,6 +155,46 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V15.00 — 17-Sep-2026
+
+> Nhảy từ V12.09 lên đây là đúng luật, không phải sót: sổ bỏ qua build
+> 13 · 14 · 23 · 38 · 39 · 40 · 41. Xem phần đầu file.
+
+- **Chỉ số trên, chỉ số dưới, và phím — gõ được và có nút.** `m^2^` ra m²,
+  `H~2~O` ra H₂O, `[[⌘K]]` ra một cái phím vẽ như phím thật. Ba thứ này có CSS
+  nằm sẵn trong trang từ lâu mà **chưa từng có đường nào sinh ra chúng** — tức
+  là ba luật trang trí không ai dùng được, nằm im nhiều tháng.
+- **Ba lớp cho cả đoạn.** `{.nho}` chữ nhỏ màu nhạt cho ghi chú bên lề hoặc
+  dòng nguồn; `{.giua}` căn giữa cho một câu đứng riêng; `{.thuong}` tắt cỡ chữ
+  lớn ở đoạn đầu. `{.giua}` là ca ngược lại của mấy cái trên: bộ dựng nhận nó
+  từ lâu và in ra đúng cái lớp, nhưng **không có luật CSS nào** — gõ vào thì
+  đoạn ấy trông y hệt đoạn thường, và không ai biết vì sao.
+- **Thanh soạn thảo: 12 nút → 26.** Thêm hoàn tác · làm lại (⌘Z chỉ có trên
+  bàn phím, mà phần lớn bài thì gõ trên điện thoại), thụt vào · thụt ra để có
+  danh sách lồng nhau, một nút trả tiêu đề về đoạn thường, và ba nút vừa kể.
+  Bảng **Blocks** lên 15 khối: thêm YouTube, video, bề ngang ảnh, và ba lớp
+  đoạn.
+- **Bài "Vô thức tập thể" cấu trúc lại.** Nó đang là hai thứ giả vờ làm một:
+  một bài viết về Jung, và một bản demo. Câu "đây là bản demo" nằm ở đoạn thứ
+  hai — giết giọng bài ngay từ đầu; rồi giữa mạch lập luận là một đoạn mã
+  JavaScript và nguyên một mục hướng dẫn chèn ảnh. Nay phần demo xuống thành
+  **phụ lục sau vạch cuối bài**, và bài đọc một mạch từ đầu tới cuối.
+- **Bài không có tiêu đề mục thôi chừa một cột trống.** Cột bên của chúng dựng
+  ra rỗng, mà lưới vẫn giữ nguyên 320px — cột chữ nép hẳn về trái giữa một
+  khoảng trống rộng bằng một phần tư màn hình. Nay không có gì để chở thì không
+  dựng cột, và bài canh giữa như khung B.
+- **Bàn duyệt bình luận: có chip lọc.** Đo trên 34 bình luận: 22 dòng cần bấm
+  nằm rải giữa 12 dòng đã xong, phải cuộn 4.700px cho một việc. Nay mặc định
+  chỉ hiện việc chưa làm, và bấm Duyệt thì đổi ngay tại dòng thay vì dựng lại
+  cả bảng — trước đây mỗi cú bấm là trang nhảy về đầu danh sách.
+- **Nút "Hide" trên điện thoại to bằng ngón tay.** Nó đang là 24×18px, nằm sát
+  một nút Approve rộng 106px — và cái dễ bấm nhầm lại là cái giấu hẳn một bình
+  luận.
+- **Thêm một phép kiểm canh đúng cái bẫy trên:** mỗi nét có nút phải vừa dựng
+  ra thẻ thật, vừa có luật CSS đi kèm. Cắm lỗi vào thử hai lần — lần đầu phép
+  kiểm vẫn xanh vì nó so chuỗi con, lần hai vẫn xanh vì tên lớp còn nằm trong
+  một chú thích. Sửa xong mới bắt được cả hai.
 
 ## V12.09 — 17-Sep-2026
 

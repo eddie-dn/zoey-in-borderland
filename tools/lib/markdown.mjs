@@ -82,6 +82,25 @@ function nhanManh(s) {
        kiểu ten_bien_dai bị biến thành ten<em>bien</em>dai. */
     .replace(/(^|[\s(])_(?=\S)([^_]*?\S)_(?=$|[\s).,;:!?])/g, '$1<em>$2</em>')
     .replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>')
+    /* ── CHỈ SỐ DƯỚI, CHỈ SỐ TRÊN, PHÍM ──
+       Ba thứ này có sẵn CSS trong prose.css từ lâu mà chưa có đường nào sinh
+       ra chúng — tức là ba luật trang trí không ai dùng được. Nay có cú pháp.
+
+       THỨ TỰ BẮT BUỘC: `~dưới~` phải chạy SAU `~~gạch~~`. Chạy trước thì cặp
+       dấu ngã đôi bị đọc thành hai lần chỉ số dưới lồng nhau, và `~~bỏ~~` ra
+       một mớ thẻ <sub> chồng lên nhau thay vì một thẻ <del>.
+
+       Cả ba đều CẤM khoảng trắng bên trong. Chỉ số và tên phím vốn là những
+       mẩu ngắn dính liền; cho phép khoảng trắng thì một câu có hai dấu ngã
+       cách nhau nửa dòng lập tức bị nuốt vào giữa. Đây là chỗ Pandoc cũng
+       chọn đúng như vậy, vì cùng một lý do.
+
+       `[[⌘K]]` dùng ngoặc vuông ĐÔI: ngoặc đơn đã là link `[chữ](địa chỉ)`,
+       mà tới lúc hàm này chạy thì mọi link thật đã nằm trong kho ký tự giữ
+       chỗ (xem `inline`), nên không còn gì để đụng. */
+    .replace(/(^|[^~])~(?=\S)([^~\s]*?\S)~(?!~)/g, '$1<sub>$2</sub>')
+    .replace(/\^(?=\S)([^^\s]*?\S)\^/g, '<sup>$1</sup>')
+    .replace(/\[\[(?=\S)([^\][]*?\S)\]\]/g, '<kbd>$1</kbd>')
     .replace(/==(?=\S)([\s\S]*?\S)==/g, '<mark>$1</mark>')
     /* Màu chạy SAU đậm/nghiêng: nhờ vậy `{tím: **chữ**}` ra chữ vừa tím vừa
        đậm. Chạy trước thì phần **…** nằm gọn trong thẻ span và không còn ai
@@ -113,7 +132,7 @@ export function inline(s, ctx = {}) {
 
      Ký tự vào danh sách đều là ký tự CÓ NGHĨA ở đâu đó trong bộ dựng này —
      kể cả `{` `}`, vì cú pháp màu `{tím: …}` đọc chúng. */
-  s = s.replace(/\\([\\`*_{}\[\]()#+\-.!~=>|])/g, (_, c) => cat(escapeHtml(c)));
+  s = s.replace(/\\([\\`*_{}\[\]()#+\-.!~=>|^])/g, (_, c) => cat(escapeHtml(c)));
 
   /* mã trong dòng */
   s = s.replace(/`([^`\n]+)`/g, (_, c) => cat('<code>' + escapeHtml(c) + '</code>'));
@@ -161,6 +180,11 @@ function tran(s) {
        trọng}` mà rơi mất thì đúng cái câu người viết nhấn mạnh lại là câu duy
        nhất ô tìm kiếm không tìm thấy. Chạy TRƯỚC phép xoá `{…}` chung. */
     .replace(RE_MAU, (_, ten, chu) => chu)
+    /* Ba cú pháp mới cũng phải NHẢ CHỮ ra ở bản chữ trần: ô tìm kiếm và phép
+       đếm phút đọc đọc bản này, nên nuốt cả cụm là gõ "m2" không tìm ra "m^2^". */
+    .replace(/(^|[^~])~(?=\S)([^~\s]*?\S)~(?!~)/g, '$1$2')
+    .replace(/\^(?=\S)([^^\s]*?\S)\^/g, '$1')
+    .replace(/\[\[(?=\S)([^\][]*?\S)\]\]/g, '$1')
     .replace(/\{[^}]*\}/g, ' ');
 }
 
