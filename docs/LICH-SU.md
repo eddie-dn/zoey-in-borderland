@@ -168,6 +168,15 @@
   không ngày nào trùng.
 - **Bấm "xem câu khác" thì câu ấy được giữ lại.** Trước bấm ra câu ưng ý, tải
   lại trang một cái là mất. Nay nó ở lại tới hết khung giờ.
+- **Icon trang trở lại trọn hình logo.** Bản trước rút gọn còn hai nét chính,
+  và đoá mandala tám cánh tụt xuống thành một hình bốn cánh trông như cỏ ba lá
+  — nhìn ở tab thì không còn nhận ra là logo nữa. Nay là đúng hình nghỉ: ba
+  vành đồng tâm, tám cánh. Dựng ảnh thật ở năm cỡ để so trước khi đổi.
+- **Icon tab đi theo theme Tĩnh lặng.** Theme đó đổi cả bảng màu sang xanh
+  lạnh, nên một đoá hoa tím nằm trong tab đọc ra như icon của trang khác. Nay
+  Tĩnh lặng có icon xanh riêng, còn Sakura và Galaxy dùng chung bản lavender —
+  dựng thử bản nền tối cho Galaxy thì nó lẫn vào thanh tab chế độ đêm, tệ hơn
+  chính bản không khớp theme, nên không làm ba bản.
 - **Lưới đỡ khi nhà cung cấp AI từ chối nay thật sự bung ra.** Nó chỉ dựng cho
   hai kiểu từ chối, mà kiểu đang gặp trên trang lại là kiểu thứ ba — nên cái
   lưới nằm im đúng lúc cần nhất. Nay đỡ cả ba, và khi vẫn hỏng thì lời báo nêu

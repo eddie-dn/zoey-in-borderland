@@ -43,6 +43,19 @@
      của người dùng là kiểu trang web cãi lại chính người dùng. */
   h.setAttribute('data-theme',t);
   document.querySelector('meta[name=theme-color]').content=MAU[t]||MAU.light;
+  /* ICON CỦA TAB CŨNG THEO THEME, và phải đặt Ở ĐÂY.
+     Thẻ <link rel=icon> bên trên là HTML tĩnh, nên trình duyệt bắt đầu tải
+     favicon.svg ngay khi đọc tới nó. Để việc đổi cho src/js/theme.js làm thì
+     người đọc theme calm thấy icon tím loé một nhịp rồi mới sang xanh.
+
+     Chỉ `calm` có bản riêng — vì sao chỉ nó, xem chú thích ở FAVICON trong
+     tools/build.mjs. Bảng đầy đủ nằm ở src/js/theme.js; ở đây cố ý chỉ một
+     dòng, vì đoạn này phải chạy trước khi có file ngoài nào kịp tải.
+
+     Suy ra tên file từ chính href đang có, không dán lại đường dẫn: trang chạy
+     dưới thư mục con thì {{base}} khác rỗng, mà dán tay là sớm muộn lệch. */
+  if(t==='calm'){var ic=document.querySelector('link[rel=icon]');
+    if(ic)ic.href=ic.href.replace('favicon.svg','favicon-calm.svg');}
 }catch(e){}})();
 </script>
 

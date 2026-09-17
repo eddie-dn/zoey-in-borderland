@@ -3304,26 +3304,70 @@ ${u.map((x) => `  <url>\n    <loc>${x.loc}</loc>\n    <lastmod>${x.mod}</lastmod
 </urlset>`;
 }
 
-/* ── FAVICON: CHÍNH LÀ LOGO, RÚT GỌN CHO CỠ 16px ──
-   Trước bản này nó là một bông hoa vẽ tay không liên quan gì tới logo thật —
-   di sản từ lúc logo chưa có. Nay dùng đúng hai nét của logo ở trạng thái
-   nghỉ (giống docs/logo/01-nghi.svg).
+/* ── FAVICON: ĐÚNG LOGO Ở TRẠNG THÁI NGHỈ ──
+   Xa hơn nữa nó là một bông hoa vẽ tay không liên quan gì tới logo thật — di
+   sản từ lúc logo chưa có. Rồi một bản rút gọn chỉ còn hai nét chính. Nay là
+   trọn hình nghỉ: ba vành đồng tâm, hai cánh mờ, hai cánh chính — cùng thứ
+   `docs/logo/01-nghi.svg` bày ra, tức cái người đọc thấy chín phần mười thời
+   gian.
 
-   BỎ ba vòng nét đứt và hai cánh mờ. Ở 16px — cỡ thật của một favicon trên
-   thanh tab — một nét dày 0,9 đơn vị trong khung 48 là chưa tới một phần ba
-   pixel: nó không mảnh đi, nó thành một vệt bùn xám làm nhoè cả hình. Cùng lý
-   do phải dày nét chính lên 3,4: ở cỡ ấy, thứ duy nhất đọc được là HÌNH DÁNG
-   tám cánh, nên phải cho nó đủ mực.
+   ── VÌ SAO QUAY LẠI BẢN ĐẦY ĐỦ ──
+   Bản rút gọn bỏ ba vành và hai cánh mờ, với lý do ở 16px một nét dày 0,9 đơn
+   vị trong khung 48 chưa tới một phần ba pixel nên thành vệt bùn xám. Lý do ấy
+   đúng về số học nhưng sai về cái mất: bỏ hai cánh mờ là bỏ luôn bốn cánh, và
+   đoá mandala TÁM cánh tụt xuống thành một hình bốn cánh giống cỏ ba lá — nó
+   thôi là logo. Dựng ảnh thật ở 16 · 24 · 32 · 48px rồi so thì bản đầy đủ vẫn
+   đọc ra đúng hình, còn ba vành ở 16px thì mờ đi thành một quầng sáng quanh
+   hoa — mất chi tiết, nhưng không mất danh tính.
 
-   Nền bo góc màu lavender: favicon nằm trên nền trắng của trình duyệt lẫn nền
-   tối của thanh tab, nên nó phải mang nền của chính mình. */
-const FAVICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-<rect width="48" height="48" rx="11" fill="#F4E7FB"/>
-<g fill="none" stroke="#7A52B8" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-<path d="M24 24C32 15 38 17 41 24C38 31 32 33 24 24C16 15 10 17 7 24C10 31 16 33 24 24"/>
-<path d="M24 24C15 32 17 38 24 41C31 38 33 32 24 24C33 16 31 10 24 7C17 10 15 16 24 24"/>
+   ── HAI NÉT LẤY TỪ HẰNG SỐ, KHÔNG CHÉP TAY ──
+   Bản trước dán thẳng chuỗi `d` vào đây, tức logo có hai nguồn: sửa P_NHON*
+   cho phép biến hình thì favicon đứng im và lệch dần, mà lệch IM LẶNG. Nay
+   dùng lại đúng hằng số, và ba vành dùng đúng bán kính của logo thật (xem ba
+   thẻ `lg-vanh` ở trên).
+
+   Nét đứt và độ mờ thì buộc phải ghi thẳng vào thuộc tính: logo trên trang lấy
+   chúng từ CSS, còn file này là một SVG đứng riêng trình duyệt nạp làm icon —
+   ở đó không có stylesheet nào.
+
+   Nền bo góc là thứ DUY NHẤT thêm vào so với 01-nghi. Cần nó: favicon nằm trên
+   cả nền trắng lẫn thanh tab chế độ đêm, và một nét tím trên nền gần đen thì
+   tối mờ gần như không thấy. Nền riêng giữ cho nó đọc được ở cả hai chỗ.
+
+   ── HAI BẢN, KHÔNG PHẢI BA ──
+   Trang có ba theme, nhưng favicon chỉ cần hai bản:
+
+     light · dark  →  favicon.svg        nền lavender, nét tím
+     calm          →  favicon-calm.svg   nền xanh sương, nét xanh đá
+
+   `calm` phải có bản riêng vì nó là theme DUY NHẤT đổi hẳn tông: cả bảng màu
+   chuyển sang xanh lạnh, nên một đoá hoa tím nằm trong tab đọc ra như icon của
+   một trang khác.
+
+   `dark` thì cố ý DÙNG CHUNG bản lavender, dù nó cũng có bảng màu riêng. Dựng
+   thử bản nền tối (#2B1E4C, nét #EFC2E9) rồi so ở 16px: đặt trên thanh tab chế
+   độ đêm (#2b2930) thì nền icon và nền tab gần như cùng một màu, cả hình nhoè
+   thành một vệt. Nền lavender ở đúng chỗ ấy lại nổi rõ. Tức bản "khớp theme"
+   cho dark thua chính bản không khớp — nên không làm.
+
+   Đổi màu thì đổi ở đây, KHÔNG phải ở hai chỗ. Cả hai cặp màu đều là token có
+   thật trong src/styles/tokens.css (raw-lav · accent-ink của light; raw-suong ·
+   accent-ink của calm), không phải màu bốc ra cho vừa mắt. */
+const faviconLa = (nen, net) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+<rect width="48" height="48" rx="11" fill="${nen}"/>
+<g fill="none" stroke="${net}" stroke-linecap="round">
+<circle cx="24" cy="24" r="21.5" stroke-width="0.9" stroke-opacity="0.42" stroke-dasharray="3, 6"/>
+<circle cx="24" cy="24" r="13.5" stroke-width="0.7" stroke-opacity="0.28" stroke-dasharray="2, 5"/>
+<circle cx="24" cy="24" r="6" stroke-width="0.9" stroke-opacity="0.42" stroke-dasharray="1.4, 3.2"/>
+<path d="${P_NHON1}" stroke-width="2" stroke-opacity="0.8" transform="matrix(0.707 0.707 -0.707 0.707 24 -9.941)"/>
+<path d="${P_NHON1}" stroke-width="2" stroke-opacity="0.8" transform="matrix(-0.707 0.707 -0.707 -0.707 57.941 24)"/>
+<path d="${P_NHON1}" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="${P_NHON2}" stroke-width="2.6" stroke-linejoin="round"/>
 </g>
 </svg>`;
+
+const FAVICON      = faviconLa('#F4E7FB', '#7a52b8');   /* light · dark */
+const FAVICON_CALM = faviconLa('#DAE8F5', '#0B5A78');   /* calm */
 
 /* ══════════════ 6. CHẠY ══════════════ */
 
@@ -3419,6 +3463,7 @@ async function chay() {
     }
     ghi(path.join(THU_MUC.dist, 'so-tay.json'), SO_TAY());
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
+    ghi(path.join(THU_MUC.dist, 'favicon-calm.svg'), FAVICON_CALM);
     nuongNguonQuote();
 
     /* Gợi ý chỉ lấy trong danh sách CÔNG KHAI: gợi ý cả bản nháp thì bạn đọc

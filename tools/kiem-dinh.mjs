@@ -398,7 +398,14 @@ const KIEM = [
   {
     ten: 'Có đủ file phụ: robots · sitemap · feed · favicon · chỉ mục tìm kiếm',
     muc: 'loi',
+    /* `favicon-calm.svg` phải có mặt y như bản chính: theme calm dùng riêng nó,
+       và tên file ấy được GHÉP BẰNG CHUỖI trong đoạn script ở <head> (thay
+       "favicon.svg" thành "favicon-calm.svg"), nên không có thẻ <link> nào trỏ
+       tới nó để bộ kiểm link chết bắt được. Build thôi sinh ra nó thì người đọc
+       theme calm nhận 404 và mất icon — im lặng, và chỉ ở một trong ba theme
+       nên rất dễ lọt. */
     chay: ({ dist }) => ['robots.txt', 'sitemap.xml', 'feed.xml', 'favicon.svg',
+                         'favicon-calm.svg',
                          'search-index.json', 'tags.json', 'version.json']
       .filter((f) => !fs.existsSync(path.join(dist, f)))
       .map((f) => `thiếu dist/${f}`)

@@ -31,6 +31,20 @@
      tải. Sửa màu nền của theme nào thì sửa CẢ HAI chỗ. */
   var MAU_THANH = { light:'#FAF6FD', dark:'#120C22', calm:'#E9F1FA' };
 
+  /* ICON CỦA TAB theo theme. Chỉ khai theme nào CÓ bản riêng; tên nào không
+     có ở đây thì về favicon.svg.
+
+     Vì sao chỉ `calm`: nó là theme duy nhất đổi hẳn tông sang xanh lạnh, nên
+     đoá hoa tím nằm trong tab đọc ra như icon của một trang khác. `dark` có
+     bảng màu riêng nhưng cố ý dùng chung bản lavender — bản nền tối đặt trên
+     thanh tab chế độ đêm thì nền icon lẫn vào nền tab, nhoè hơn chính bản
+     không khớp theme. Lý do đầy đủ ở FAVICON trong tools/build.mjs.
+
+     Lượt đặt ĐẦU TIÊN không nằm ở đây mà ở đoạn script trong <head>: thẻ
+     <link rel=icon> là HTML tĩnh nên trình duyệt tải bản mặc định ngay, đợi
+     file này tải xong mới đổi thì loé một nhịp. */
+  var ICON = { calm: 'favicon-calm.svg' };
+
   /* Nhãn lấy từ data-* mà build gắn sẵn, không gõ cứng ở đây — cả bộ chữ
      giao diện nằm ở bảng NHAN trong tools/build.mjs. Nhãn nói theme SẮP
      bấm sang, còn hình trên nút nói theme ĐANG dùng. */
@@ -68,6 +82,17 @@
        giá trị này, không đổi thì nền tối mà thanh trên vẫn hồng nhạt. */
     var m = document.querySelector('meta[name="theme-color"]');
     if(m) m.setAttribute('content', MAU_THANH[t] || MAU_THANH.light);
+    /* Đổi icon tab. Thay ĐÚNG phần tên file trong href đang có, không dựng lại
+       đường dẫn: trang chạy dưới thư mục con thì có tiền tố base, mà dán tay là
+       sớm muộn lệch. Mẫu khớp cả `favicon.svg` lẫn `favicon-calm.svg`, nên bấm
+       xoay vòng qua lại bao nhiêu lượt cũng không chồng thêm hậu tố.
+
+       Lưu ý đã biết: Safari cache favicon rất dai và nhiều lúc bỏ qua lượt đổi
+       href này. Không chữa được từ phía trang, mà hỏng thì cũng chỉ là icon
+       đứng ở bản cũ — nên cứ để vậy, đừng dựng thêm cơ chế cho một cái icon. */
+    var ic = document.querySelector('link[rel="icon"]');
+    if(ic) ic.href = ic.href.replace(/favicon(-[a-z]+)?\.svg/,
+                                     ICON[t] || 'favicon.svg');
     var b = document.querySelector('.theme-btn');
     if(b){
       var n = NHAN[keTiep(t)];
