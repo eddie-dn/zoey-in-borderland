@@ -683,6 +683,9 @@ const NHAN = {
   replyTo     : 'Replying to {n}',
   cancelReply : 'Cancel reply',
   moreReplies : 'Show {n} earlier replies',
+  /* Nhánh đã chạm trần: nút đổi chữ để nói rõ nó sẽ làm gì khác đi. */
+  newThread   : 'Start a new thread',
+  threadFull  : 'This thread is long — your reply starts a new one below.',
   noComments  : 'No notes yet. Yours can be the first.',
   sending     : 'Sending…',
   tooShort    : 'Write a few words first.',
@@ -924,16 +927,31 @@ function docBai(file) {
     an         : fm.hidden === true,
     pinned     : fm.pinned === true,
     lang       : String(fm.lang || CAU.lang),
-    /* Khung trình bày: A (mặc định) · B bìa tràn màn · C lề trái dính.
-       Khai sai chữ thì lặng lẽ về A — bài vẫn đọc được, chỉ không đúng khung
-       mong muốn, nên báo cảnh báo chứ không dừng build. */
+    /* ── BA KHUNG TRÌNH BÀY, GỌI BẰNG TÊN CHỨ KHÔNG BẰNG CHỮ CÁI ──
+         post left   cột chữ bám trái, cột bên chở mục lục — MẶC ĐỊNH
+         post full   ảnh bìa tràn hết bề ngang màn
+         post insta  băng ảnh trên đầu, chuyển bài bằng cặp lùi/tới
+
+       Trước đây ba khung gọi là `A` · `B` · `C`. Ba chữ cái ấy không nói gì
+       cả: muốn biết `B` là gì thì phải mở tài liệu ra tra, mỗi lần viết bài
+       lại tra một lần. Tên thì tự nói, và `khung: post left` đọc được ngay
+       trong front matter mà không cần nhớ gì.
+
+       Vẫn nhận `A` · `B` · `C` để chín bài cũ không phải sửa — nhưng tên mới
+       là tên chính, và tài liệu chỉ dạy tên mới. */
     khung      : (() => {
-      const k = String(fm.khung || 'A').trim().toUpperCase();
-      if (!'ABC'.includes(k) || k.length !== 1) {
-        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận A, B hoặc C. Dùng tạm A.`);
-        return 'a';
+      const BANG = {
+        'post left': 'left',   left: 'left',   a: 'left',
+        'post full': 'full',   full: 'full',   b: 'full',
+        'post insta': 'insta', insta: 'insta', c: 'insta'
+      };
+      const k = String(fm.khung || 'post left').trim().toLowerCase().replace(/\s+/g, ' ');
+      if (!BANG[k]) {
+        canhBaoBai(`\`khung: ${fm.khung}\` không có — chỉ nhận `
+                 + `post left · post full · post insta. Dùng tạm post left.`);
+        return 'left';
       }
-      return k.toLowerCase();
+      return BANG[k];
     })(),
     /* ── ẢNH CHO KHUNG C ──
        Mỗi dòng một tấm: `- <đường dẫn> | <chú thích>`. Chú thích không bắt buộc.
@@ -1492,7 +1510,7 @@ function tiLeBang(ds) {
 
 function bangAnhHTML(bai) {
   const ds = bai.anhBang || [];
-  if (bai.khung !== 'c' || !ds.length) return '';
+  if (bai.khung !== 'insta' || !ds.length) return '';
   const tam = ds.map((x, i) => {
     const src = /^https?:/.test(x.src) ? x.src : BASE + x.src;
     return `<figure class="ba-tam" id="ba-${bai.slug}-${i + 1}">
@@ -1913,7 +1931,7 @@ function tocHTML(headings, docTiep) {
      phần tư màn hình. Đúng thứ mà cả đoạn chú thích trên vốn dựng ra để tránh.
 
      Nay rỗng thì trả về chuỗi rỗng, và lưới bỏ luôn cột ấy đi (xem
-     `.post-layout.khung-a:not(:has(> .ben))` ở layout.css). */
+     `.post-layout.post-left:not(:has(> .ben))` ở layout.css). */
   if (!headings.length && !docTiep) return '';
 
   return `<aside class="ben">
@@ -2019,7 +2037,7 @@ function coverHTML(bai) {
   /* Khung C KHÔNG in ảnh bìa vào thân bài: băng ảnh ĐÃ là phần hình của bài,
      thêm ảnh bìa nữa là hai khối ảnh chồng nhau ngay đầu trang. `cover` vẫn giữ
      nguyên công dụng còn lại của nó — ảnh trên thẻ bài và ảnh khi chia sẻ link. */
-  if (bai.khung === 'c') return '';
+  if (bai.khung === 'insta') return '';
   const ngoai = /^https?:/.test(bai.cover);
   let dim = '', style = '';
   if (!ngoai) {
@@ -2115,6 +2133,7 @@ function binhLuanHTML(bai) {
   const nhanJS = attr(JSON.stringify({
     author: NHAN.author, anon: NHAN.anon, reply: NHAN.reply,
     replyTo: NHAN.replyTo, cancelReply: NHAN.cancelReply,
+    newThread: NHAN.newThread, threadFull: NHAN.threadFull,
     moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
     sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
     failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
@@ -2216,7 +2235,7 @@ function binhLuanHTML(bai) {
    mục — không có mục thì `.ben` rỗng và lưới bỏ luôn cột ấy đi. Hai khung kia
    không có cột bên: B là bìa tràn màn, C là băng ảnh dính bên trái. */
 function coCotBen(bai) {
-  return bai.khung === 'a' && bai.headings.length > 0;
+  return bai.khung === 'left' && bai.headings.length > 0;
 }
 
 /* ── KHUNG BÌNH LUẬN MỞ RA Ở ĐÂU ──
@@ -2523,7 +2542,7 @@ function trangBai(bai, congKhai) {
        Ở chân bài, khối này đứng SAU khung bình luận: bấm mở bình luận là nó bị
        đẩy xuống, chứ không phải nó che mất chỗ vừa mở ra. */
     readNext    : coCotBen(bai) ? ''
-                : bai.khung === 'c' ? docTiepCap(bai, congKhai)
+                : bai.khung === 'insta' ? docTiepCap(bai, congKhai)
                 : readNextHTML(bai, congKhai),
     binhLuan    : binhLuanHTML(bai),
     /* ── MỘT CHỖ ĐỨNG DUY NHẤT, MỌI KHUNG ──
@@ -2567,7 +2586,7 @@ function trangBai(bai, congKhai) {
        KHÁC đặt cạnh bài của mình thì nó tranh chỗ với chính bài ấy. Ô trích
        dẫn ở lại đúng hai chỗ nó thuộc về — màn đầu trang chủ và trang giới
        thiệu, nơi chưa có bài nào để tranh. */
-    scripts    : (bai.khung === 'c'
+    scripts    : (bai.khung === 'insta'
                    ? `<script src="${BASE}/assets/bang-anh.js" defer></script>\n` : '') +
                  `<script src="${BASE}/assets/toc.js" defer></script>\n` +
                  `<script src="${BASE}/assets/media.js" defer></script>` +

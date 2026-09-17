@@ -121,20 +121,38 @@
    Nên: nút nào neo vào mép phải của ô chứa nó thì phải có tên ở đây. Bộ quét
    khổ màn trong quy trình kiểm tra bắt được, nhưng nó bắt SAU khi đã sai. */
 @media (hover:hover) and (max-width:1079px){
-  .nav > :last-child.tip::after,
-  .q-nut.tip::after{left:auto;right:0;translate:0 -4px}
+  .nav > :last-child.tip::after{left:auto;right:0;translate:0 -4px}
   .nav > :last-child.tip:hover::after,
-  .nav > :last-child.tip:focus-visible::after,
-  .q-nut.tip:hover::after,
-  .q-nut.tip:focus-visible::after{translate:0 0}
+  .nav > :last-child.tip:focus-visible::after{translate:0 0}
 }
-/* Ô trích dẫn ở màn rộng cũng vậy: nó nằm trong cột lề hẹp, và nút ở góc dưới
-   phải của ô. Neo giữa thì tooltip thò ra ngoài cột. */
-@media (hover:hover){
-  .hero-quote .q-nut.tip::after{left:auto;right:0;translate:0 -4px}
-  .hero-quote .q-nut.tip:hover::after,
-  .hero-quote .q-nut.tip:focus-visible::after{translate:0 0}
+/* ══════════════════════════════════════════════════════════════════════
+   TOOLTIP CỦA NÚT "XEM CÂU KHÁC" ĐI SANG TRÁI, KHÔNG XUỐNG DƯỚI
+
+   Tooltip mặc định rơi xuống DƯỚI phần tử (`top:calc(100% + 8px)`) — đúng ở
+   hầu hết chỗ, vì phía trên thường là tiêu đề hoặc hàng meta.
+
+   Nhưng nút này nằm ở góc TRÊN PHẢI của ô trích dẫn, và ngay dưới nó là chính
+   câu trích dẫn. Thả tooltip xuống là phủ lên hai ba chữ đầu của câu — đúng
+   thứ người ta đang đọc, và đúng lúc họ vừa đưa chuột tới để đổi câu.
+
+   Sang TRÁI thì nó nằm ngang hàng với nhãn "QUOTE OF THE DAY" — một dòng nhãn
+   ngắn, còn thừa chỗ — nên không che gì cả. Lên TRÊN thì thoát khỏi ô và đè
+   vào thứ nằm trên ô, mà ở /about/ đó lại là chữ.
+
+   `right:calc(100% + 8px)` neo vào mép TRÁI của nút; nhịp hiện ra trượt ngang
+   4px thay vì trượt dọc, cùng một quãng đường. */
+.bo-quote .q-nut.tip::after{
+  top:50%;bottom:auto;left:auto;right:calc(100% + 8px);
+  translate:4px -50%;
+  /* ── PHẢI KHAI BỀ NGANG ──
+     Ô chứa của `::after` là chính cái nút, rộng 26px. Neo `right` ra ngoài
+     34px thì chỗ trống còn LẠI là âm, và trình duyệt co hộp về gần bằng 0 —
+     chỉ còn hai mảng lề trong, ra một mẩu 22px không đọc được chữ nào.
+     `max-content` bảo nó rộng đúng bằng dòng chữ, rồi mới đẩy sang trái. */
+  width:max-content;
 }
+.bo-quote .q-nut.tip:hover::after,
+.bo-quote .q-nut.tip:focus-visible::after{translate:0 -50%}
 
 /* ── CHIP TAG ──
    Một hình dáng duy nhất cho tag ở mọi nơi: đầu bài, thẻ bài, trang /tags/.

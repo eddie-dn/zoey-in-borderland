@@ -156,7 +156,8 @@ git add -A && git commit -m "bài: tên bài" && git push
 
 ### 2.4 · Ba khung trình bày — chọn khung nào
 
-Khai `khung: A`, `B` hoặc `C` trong front matter. Không khai thì dùng A.
+Khai `khung: post left`, `post full` hoặc `post insta` trong front matter.
+Không khai thì dùng `post left`.
 Cả ba tự về một cột ở màn dưới 1080px.
 
 | | Dáng | Hợp với | Ký tự/dòng |
@@ -167,7 +168,7 @@ Cả ba tự về một cột ở màn dưới 1080px.
 
 **A** là mặc định vì hợp với đa số bài. Đổi sang **B** khi bài có ảnh bìa đẹp và
 ít mục — mục lục lúc đó chỉ tổ chiếm chỗ. **C** là khung ngắn: nó không có mục
-lục, và nếu bài dài hơn một màn thì bạn đang cần khung A chứ không phải C.
+lục, và nếu bài dài hơn một màn thì bạn đang cần `post left` chứ không phải C.
 
 :::tip Thử trước khi chốt
 Đổi một chữ trong front matter rồi `npm run dev` là thấy ngay. Không phải sửa
@@ -521,13 +522,13 @@ Nhớ thêm vào `nav` trong `site.config.json` nếu muốn nó lên thanh menu
 ## 6b · KHUNG C — BÀI ẢNH NGẮN
 
 Vài tấm ảnh kỉ niệm, mấy dòng tản mạn. Không phải bài đọc dài — bài đọc dài thì
-dùng khung A như bình thường.
+dùng `post left` như bình thường.
 
 ```yaml
 ---
 title: Thứ bảy, không có gì
 date: 2026-09-15
-khung: C
+khung: post insta
 summary: Một buổi sáng không có việc gì phải làm.
 tags:
   - tản mạn
@@ -542,7 +543,7 @@ Sáng thứ bảy, không hẹn ai, không phải đi đâu.
 
 | Chỗ | Ghi gì |
 |---|---|
-| `khung: C` | bắt buộc, không có dòng này thì ra khung đọc dài |
+| `khung: post insta` | bắt buộc, không có dòng này thì ra khung đọc dài |
 | `anh:` | mỗi dòng một tấm: `- <đường dẫn> \| <chú thích>` |
 | chú thích | không bắt buộc — bỏ luôn cả dấu `\|` nếu không cần |
 | đường dẫn | ảnh trong `public/media/`, **hoặc** địa chỉ `https://` ngoài |
@@ -578,7 +579,7 @@ Sinh ảnh dọc 1080×1350 cho đúng số dòng trong `anh:`, đặt vào
 `public/media/<năm>/<slug>/anh-1.png`, `anh-2.png`… Hạt giống lấy theo **chú
 thích** từng dòng nên mỗi tấm ra một hình khác nhau, và cùng một chú thích thì
 luôn ra cùng một tấm. Thêm `--de` để ghi đè ảnh đã có.
-| `cover:` | vẫn khai như thường — nó là ảnh trên thẻ bài và ảnh khi chia sẻ link, **không** in vào thân bài ở khung C |
+| `cover:` | vẫn khai như thường — nó là ảnh trên thẻ bài và ảnh khi chia sẻ link, **không** in vào thân bài ở `post insta` |
 
 **Hai đến bốn tấm là vừa.** Một tấm thì không cần băng ảnh (đặt thẳng vào thân
 bài); quá năm tấm thì người đọc vuốt mỏi tay mà không biết còn bao nhiêu.

@@ -584,18 +584,28 @@ fonts → tokens → base → glass → layout → components → (quote → lis
 
 ## 8 · BA KHUNG TRÌNH BÀY BÀI
 
-Chọn bằng `khung: A | B | C` trong front matter. Cả ba dùng **chung một HTML**,
-chỉ đổi cách xếp bằng grid — nên đổi khung không phải viết lại template nào.
+Chọn bằng `khung:` trong front matter. Cả ba dùng **chung một HTML**, chỉ đổi
+cách xếp bằng grid — nên đổi khung không phải viết lại template nào.
 
-| | Dáng | Hợp với | Ký tự/dòng |
-|---|---|---|---|
-| **A** | cột đọc + mục lục dính phải | bài phân tích nhiều mục | 71 |
-| **B** | bìa tràn màn, tiêu đề giữa, không cột phụ | bài kể chuyện, nhiều ảnh | 74 |
-| **C** | băng ảnh dính trái, chữ phải, không mục lục | vài tấm ảnh + mấy dòng tản mạn | 66 |
+| Khai là | Lớp CSS | Dáng | Hợp với | Ký tự/dòng |
+|---|---|---|---|---|
+| **`post left`** *(mặc định)* | `.post-left` | cột đọc bám trái + mục lục dính phải | bài phân tích nhiều mục | 71 |
+| **`post full`** | `.post-full` | bìa tràn màn, tiêu đề giữa, không cột phụ | bài kể chuyện, nhiều ảnh | 74 |
+| **`post insta`** | `.post-insta` | băng ảnh dính trái, chữ phải, không mục lục | vài tấm ảnh + mấy dòng tản mạn | 66 |
 
 Dưới 1080px cả ba về **một cột**.
 
-**Khung C khoá chiều cao băng ảnh theo MÀN, không theo tỉ lệ ảnh.** Băng ảnh
+> **Trước đây ba khung gọi là `A` · `B` · `C`.** Ba chữ cái ấy không nói gì:
+> muốn biết `B` là gì thì phải mở tài liệu ra tra, mỗi lần viết bài lại tra một
+> lần. `khung: post left` thì đọc được ngay trong front matter. Tên cũ vẫn nhận
+> để bài cũ không phải sửa, nhưng chỉ dạy tên mới.
+
+> **Hiện toàn bộ bài đang dùng `post left`** — kiểu của bài "Chiếc gương".
+> `post full` chưa có công dụng rõ. `post insta` còn đó và chạy được; nó là nơi
+> cặp lùi/tới `.rn-cap` ra đời, và khối "đọc tiếp" của mọi khung nay mượn lại
+> đúng hình ấy (§8.2).
+
+**`post insta` khoá chiều cao băng ảnh theo MÀN, không theo tỉ lệ ảnh.** Băng ảnh
 dính khi cuộn, nên cả cụm ảnh + chú thích + hàng chấm phải lọt trong một màn
 (`max-height:min(64vh,620px)`). Cao theo tỉ lệ ảnh thì một tấm dọc đẩy hàng chấm
 xuống dưới nếp gấp và người đọc không bao giờ biết là còn ảnh nữa.
@@ -651,7 +661,7 @@ Chúng phải **chép lại đúng công thức** của làn chữ:
 Chép công thức, không áng chừng một con số: áng chừng thì lệch vài px, và mắt
 bắt được ngay vì ba khối nằm chồng dọc nhau.
 
-> **Bẫy đã vấp (khung B).** `--measure` khai ở `.prose` thì chỉ thân bài rộng
+> **Bẫy đã vấp (`post full`).** `--measure` khai ở `.prose` thì chỉ thân bài rộng
 > 60ch; đầu bài và chân bài vẫn đọc 58ch của `:root`. Lệch 12px. Phải khai ở
 > chính `.post-layout.khung-b` để cả bốn khối con cùng thừa kế.
 
@@ -1416,7 +1426,7 @@ trước là 280px rồi nở ra 400px khi bấm: cả trang xô lại một nh�
 
 ### 18.6 · Khung ảnh: cặp lùi / tới thay cho danh sách gợi ý
 
-Khung C chỉ có một băng ảnh và vài dòng chữ. Dán vào cuối nó ba dòng gợi ý —
+`post insta` chỉ có một băng ảnh và vài dòng chữ. Dán vào cuối nó ba dòng gợi ý —
 mỗi dòng một nhãn loại, một tiêu đề nghiêng cỡ lớn và một ngày — là thêm một
 khối chữ nặng bằng cả phần chữ của chính bài.
 
@@ -1438,7 +1448,7 @@ rời hàng meta khi hàng ấy trôi khỏi màn hình:
 
 | Khổ màn | Nó về đâu |
 |---|---|
-| ≥1080px, khung A | **cột phải**, dưới khối "đọc tiếp" — cột dính khi cuộn |
+| ≥1080px, `post left` | **cột phải**, dưới khối "đọc tiếp" — cột dính khi cuộn |
 | còn lại | một cụm **nổi ở góc dưới phải**, nút tròn 42px |
 
 Bốn trường hợp **không** dời: bài ngắn · hàng meta vẫn trong tầm mắt · khung

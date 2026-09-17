@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.5.8 | 2026-09-17 | 08 | tooltip nút xem câu khác sang trái, thôi đè lên câu trích dẫn; giờ bình luận về liền sau tên người viết; nhớ tên và email người đã bình luận; trần 12 trả lời mỗi nhánh rồi mở nhánh mới |
+| V2.5.7 | 2026-09-17 | 07 | ba khung đổi tên thành post left · post full · post insta, mọi bài hiện dùng post left; khối đọc tiếp bày như cặp lùi/tới của post insta ở mọi khổ màn, 116px còn 73px |
 | V2.5.6 | 2026-09-17 | 06 | chữ đậm trong bài về cân nặng thật 600 thay vì nét đậm trình duyệt tự bịa; ghi luật ba họ phông vào Design System; thêm phép kiểm chặn cân nặng không có face đỡ |
 | V2.5.5 | 2026-09-17 | 05 | rà lại tài liệu: §7 FILE NÀO CHỨA GÌ viết lại cho đúng 13 file và 6 gói; sửa script dựng logo động đang hỏng lặng vì gõ cứng tên file assets; hồi sinh một phép kiểm đã chết âm thầm |
 | V2.5.4 | 2026-09-17 | 04 | gom bảy bộ luật báo tin và bốn bộ trạng thái rỗng thành hai cụm dùng chung .bao và .trong; sửa hai lỗi màu lộ ra lúc xếp cạnh nhau; chuyển 74 dòng CSS khung cắt ảnh từ list.css về soan.css |
@@ -206,6 +208,42 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.5.8 — 17-Sep-2026
+
+- **Tooltip nút "xem câu khác" thôi đè lên câu trích dẫn.** Nút nằm góc trên
+  phải của ô, mà tooltip mặc định rơi xuống DƯỚI — tức phủ lên hai ba chữ đầu
+  của chính câu đang đọc, đúng lúc người ta vừa đưa chuột tới. Nay nó sang
+  TRÁI, ngang hàng với dòng nhãn. Lúc sửa mới lộ ra một lỗi nặng hơn: chấm
+  "còn lượt" thêm ở V2.5.1 vẽ bằng `::after`, mà tooltip cũng dựng chữ bằng
+  `::after` — một phần tử chỉ có MỘT `::after`, nên **tooltip trống chữ suốt
+  từ đó**. Chấm chuyển sang `::before`.
+- **Giờ bình luận về liền sau tên người viết.** Trước nó nằm trong cụm dạt
+  phải cùng nút Reply — mà mép phải là chỗ di động: bình luận ngắn thì giờ nằm
+  giữa hàng, bình luận dài thì nó rớt xuống dòng dưới. Mười bình luận là mười
+  cái giờ ở mười chỗ. "Ai nói" và "nói lúc nào" là một cặp, nay đứng liền nhau
+  và thẳng cột qua mọi thẻ.
+- **Nhớ tên người đã bình luận, và trần 12 trả lời mỗi nhánh.** Tên với email
+  lưu ở `localStorage` trên máy người đọc — không gửi thêm gì lên máy chủ, và
+  chỉ điền khi ô đang trống. Nhánh chạm 12 trả lời thì nút Reply đổi thành
+  "Start a new thread" và đưa về khung soạn chính: không khoá ai nói, chỉ cho
+  cuộc trao đổi dài thở ở chỗ khác thay vì nhồi tiếp vào một cột đã hẹp.
+
+## V2.5.7 — 17-Sep-2026
+
+- **Ba khung đổi tên: `post left` · `post full` · `post insta`.** Trước gọi là
+  `A` · `B` · `C` — ba chữ cái không nói gì, muốn biết `B` là gì thì phải mở
+  tài liệu ra tra, mỗi lần viết bài lại tra một lần. Tên cũ vẫn nhận để bài cũ
+  khỏi sửa. Lớp CSS đổi theo: `.khung-a` thành `.post-left`.
+- **Mọi bài hiện dùng `post left`.** Bài "Thứ bảy, không có gì" vốn là khung
+  băng ảnh; ba tấm ảnh của nó không mất mà chuyển vào một dải ảnh trong thân
+  bài — bộ kiểm định bắt ngay ba tấm thành ảnh mồ côi lúc đổi khung.
+- **Khối đọc tiếp bày như cặp lùi/tới, ở mọi khổ màn.** Trước là hai dòng xếp
+  dọc, mỗi dòng có cột nhãn rộng 120px chở đúng một chữ — và chữ ấy LẶP LẠI ở
+  cả hai dòng. Mà `docTiep` luôn đúng bằng 2, còn `post insta` đã có sẵn hình
+  cho đúng tình huống ấy. Nay mượn lại, không dựng khung mới: **116px còn
+  73px**, mũi tên khoá theo VỊ TRÍ chứ không theo nhãn (hai bài cùng "related"
+  thì khoá theo nhãn sẽ cho hai mũi tên cùng chiều).
 
 ## V2.5.6 — 17-Sep-2026
 

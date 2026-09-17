@@ -597,7 +597,18 @@
 /* Khoảng cách giữa ba khối do `gap` của chính cột lo (layout.css) — khối nào
    tự thêm lề trên là khối ấy đứng lệch nhịp so với hai khối kia. */
 .ben .read-next{margin-top:0}
-.ben .rn-dong{grid-template-columns:minmax(0,1fr);gap:2px;padding:var(--s3) 0}
+/* Trong cột bên thì KHÔNG bày thành dải hai đầu: cột chỉ rộng chừng 240px,
+   chia đôi ra còn 110px mỗi bên — không đủ cho một cái tên bài. Ở đây hai gợi
+   ý xếp DỌC, và mũi tên tắt đi vì chúng chỉ có nghĩa khi thật sự có trái phải. */
+.ben .rn-grid{flex-direction:column;gap:0;padding-top:0;border-top:0}
+.ben .rn-dong,
+/* `:last-child` phải nhắc lại ở đây: luật căn phải của dải hai đầu cũng là
+   hai lớp, mà nó đứng SAU trong file nên thắng nếu chỉ viết `.ben .rn-dong`. */
+.ben .rn-dong:last-child{
+  flex:1 1 auto;max-width:100%;gap:2px;padding:var(--s3) 0;text-align:left;
+}
+.ben .rn-dong:first-child .rn-kind::before,
+.ben .rn-dong:last-child  .rn-kind::after{content:""}
 .ben .rn-kind{letter-spacing:.1em;opacity:.72}
 .ben .rn-title{
   font-family:var(--font-body);font-style:normal;font-weight:500;
@@ -607,101 +618,94 @@
 .ben .toc{font-size:var(--fs-sm)}
 .ben a.rn-dong:hover .rn-title{color:var(--accent-ink)}
 
-/* Xếp dọc, ngăn nhau bằng sợi kẻ — không còn lưới thẻ. Lý do ở chỗ dựng
-   `read-next` trong tools/build.mjs. */
-.rn-grid{display:flex;flex-direction:column}
-.rn-dong{
-  display:grid;
-  grid-template-columns:7.5rem minmax(0,1fr) auto;
-  align-items:baseline;gap:var(--s3) var(--s4);
-  padding:var(--s4) 2px;
-  border-top:1px solid var(--line);
-  color:var(--text);text-decoration:none;
-  transition:color var(--dur-fast),padding-left var(--dur-fast);
+/* ══════════════════════════════════════════════════════════════════════
+   ĐỌC TIẾP — MỘT DẢI HAI ĐẦU, KHÔNG PHẢI HAI DÒNG XẾP DỌC
+
+   ── BỎ CÁI GÌ VÀ VÌ SAO ─────────────────────────────────────────────────
+   Bản trước là hai DÒNG xếp dọc, mỗi dòng ba cột: nhãn loại (7,5rem) · tiêu
+   đề · ngày. Ba chỗ hoang phí, thấy rõ khi đo trên một bài thật:
+
+     · cột nhãn rộng 120px mà chở đúng một chữ, và chữ ấy LẶP LẠI ở cả hai
+       dòng — 22% bề ngang để nói cùng một điều hai lần;
+     · hai dòng cộng ba sợi kẻ cao 116px, trong khi nội dung thật chỉ là hai
+       cái tên bài;
+     · ngày tháng ở một khối ĐIỀU HƯỚNG là chữ thừa: người ta bấm vào đó để
+       đi tiếp, không phải để tra xem bài viết hôm nào.
+
+   ── LẤY HÌNH CỦA POST INSTA ─────────────────────────────────────────────
+   `docTiep` luôn đúng bằng 2, và khung post insta đã có sẵn một hình cho
+   đúng tình huống ấy: `.rn-cap` — hai đầu một thanh, mũi tên quay ra ngoài,
+   đọc ra ngay là một trục chứ không phải một danh sách.
+
+   Nên ở đây bày lại y như vậy, KHÔNG dựng thêm khung mới: cùng chừng ấy thẻ,
+   xếp lại. Kết quả 116px → 68px, và cột nhãn lặp lại biến mất.
+
+   ── MŨI TÊN KHOÁ THEO VỊ TRÍ, KHÔNG THEO NHÃN ───────────────────────────
+   Bản đầu cho bài CŨ mũi tên ← và bài MỚI mũi tên →. Nghe hợp lý, nhưng nhãn
+   không phải lúc nào cũng là "older"/"newer": hai bài trùng tag thì cả hai
+   cùng mang nhãn "related", và lúc ấy có bài hiện `related →` còn bài kia
+   `related ←` mà không có gì trên màn giải thích tại sao. Gặp đúng ca này ở
+   bài Siddhartha — cả hai gợi ý đều là bài mới hơn.
+
+   Khoá theo VỊ TRÍ thì không bao giờ sai: ô trái chỉ ra trái, ô phải chỉ ra
+   phải. Mũi tên nói "còn nữa ở phía này", đó là tất cả nó cần nói.
+   ══════════════════════════════════════════════════════════════════════ */
+.rn-grid{
+  display:flex;flex-direction:row;align-items:flex-start;
+  justify-content:space-between;gap:var(--s5);
+  padding-top:var(--s4);border-top:1px solid var(--line);
 }
-.rn-dong:last-child{border-bottom:1px solid var(--line)}
+.rn-dong{
+  display:flex;flex-direction:column;align-items:stretch;gap:3px;
+  flex:0 1 48%;min-width:0;
+  padding:var(--s2) 0;
+  color:var(--text);text-decoration:none;
+  transition:color var(--dur-fast);
+}
 /* Khuôn dòng chung — xem khối "MỘT KHUÔN DÒNG" ở đầu src/styles/list.css. */
 .rn-kind{
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
   transition:color var(--dur-fast);
 }
+.rn-dong:first-child{text-align:left}
+.rn-dong:first-child .rn-kind::before{content:"← "}
+.rn-dong:last-child{text-align:right}
+.rn-dong:last-child .rn-kind::after{content:" →"}
+/* Chỉ có một gợi ý (bài đầu hoặc bài cuối danh sách): bám mép trái và chỉ
+   mang một mũi tên — hai mũi tên cho một lối đi là nói dối. */
+.rn-dong:only-child{flex:0 1 auto;max-width:100%;text-align:left}
+.rn-dong:only-child .rn-kind::after{content:""}
+
+/* Phông THÂN BÀI, không phải phông tiêu đề nghiêng — cùng lý do với `.rn-p-ten`
+   ở cặp lùi/tới: chỗ này là ĐIỀU HƯỚNG, không phải chỗ trưng bày, và một tiêu
+   đề nghiêng cỡ lớn ở chân trang sẽ to hơn chính bài vừa đọc.
+
+   Hai dòng rồi cắt: ở khổ rộng mỗi bên còn chừng 265px, đủ cho gần hết tiêu
+   đề. `line-clamp` cắt ở ranh giới TỪ và thêm dấu ba chấm, còn cắt cứng một
+   dòng thì tên bài dài nào cũng cụt giữa chữ. */
 .rn-title{
-  font-family:var(--font-display);font-style:italic;font-weight:600;
-  font-size:var(--fs-h4);line-height:1.25;
+  font-family:var(--font-body);font-style:normal;font-weight:500;
+  font-size:var(--fs-sm);line-height:1.4;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;
 }
-.rn-meta{
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);
-  font-variant-numeric:tabular-nums;white-space:nowrap;
-}
+/* Ngày KHÔNG hiện ở khối điều hướng — xem lý do ở đầu khối. Thẻ vẫn nằm trong
+   HTML cho máy đọc và cho người chép trang. */
+.rn-meta{display:none}
 /* .prose không bao được chân bài nữa (chân bài là anh em của .prose), nên
    gạch chân link của .prose không chạm tới đây. */
-a.rn-dong:hover{color:var(--accent-ink);padding-left:var(--s2)}
+a.rn-dong:hover{color:var(--accent-ink)}
 a.rn-dong:hover .rn-kind{color:var(--accent-ink)}
-/* ══════════ KHỔ HẸP: ĐỌC TIẾP MƯỢN HÌNH CẶP LÙI/TỚI ══════════
-   Ở khổ rộng đây là hai DÒNG xếp dọc, ngăn nhau bằng sợi kẻ — hợp lý khi còn
-   chỗ cho ba cột.
-
-   Trên điện thoại thì không còn chỗ, và bản trước xử lý bằng cách cho nhãn
-   loại nhảy lên một dòng riêng. Thành ra mỗi gợi ý ăn ba dòng, hai gợi ý là
-   sáu dòng cộng ba sợi kẻ — một khối cao gần bằng màn hình, đặt ngay dưới
-   phần bình luận, chỉ để chở hai cái tên bài.
-
-   Mà `docTiep` luôn đúng bằng 2, và hai bài ấy luôn là một cũ một mới. Đó
-   chính xác là thứ cặp lùi/tới ở khung ảnh đang bày: hai đầu một thanh, mũi
-   tên quay ra ngoài, đọc ra ngay là trục thời gian. Nên ở đây bày lại y như
-   vậy — KHÔNG dựng thêm khung mới, chỉ xếp lại đúng chừng ấy thẻ:
-
-     · `.rn-grid` thành một thanh ngang, hai đầu dạt ra
-     · bài CŨ nằm trái, bài MỚI nằm phải (thứ tự bằng `order`, không đụng HTML)
-     · ngày ẩn đi — ở một cặp điều hướng thì ngày là chữ thừa
-     · tiêu đề về phông thân bài và cắt bằng dấu ba chấm, đúng như `.rn-p-ten`
-   ══════════════════════════════════════════════════════════════════ */
+/* Khổ hẹp: mỗi bên chỉ còn chừng 140px, nên tên bài về MỘT dòng rồi cắt —
+   hai dòng ở bề ngang ấy thành hai mẩu chữ vụn. Khoảng cách giữa hai bên cũng
+   hẹp lại một bậc. */
 @media (max-width:560px){
-  .rn-grid{
-    flex-direction:row;align-items:flex-start;justify-content:space-between;
-    gap:var(--s4);
-    padding-top:var(--s4);border-top:1px solid var(--line);
-  }
-  .rn-dong{
-    display:flex;flex-direction:column;gap:3px;
-    /* `stretch` phải khai lại: luật lưới ở trên đặt `align-items:baseline`, và
-       nó theo sang đây. Trong một cột flex, `baseline` khiến mỗi ô rộng đúng
-       bằng NỘI DUNG nó chở — tên bài dài hơn cột thì tràn ra ngoài và đè lên
-       tên bài bên cạnh, mà `text-overflow` không cứu được vì ô có tràn đâu,
-       nó chỉ đang rộng hơn cha. */
-    align-items:stretch;
-    flex:0 1 48%;min-width:0;
-    padding:var(--s2) 0;border-top:0;
-  }
-  .rn-dong:last-child{border-bottom:0}
-  a.rn-dong:hover{padding-left:0}
-  .rn-meta{display:none}
+  .rn-grid{gap:var(--s4)}
   .rn-title{
-    font-family:var(--font-body);font-style:normal;
-    font-size:var(--fs-xs);font-weight:500;line-height:1.35;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    -webkit-line-clamp:1;
+    font-size:var(--fs-xs);line-height:1.35;
   }
-  /* ── MŨI TÊN KHOÁ THEO VỊ TRÍ, KHÔNG THEO NHÃN ──
-     Bản đầu cho bài CŨ mũi tên ← và bài MỚI mũi tên →. Nghe hợp lý, nhưng
-     nhãn của dòng không phải lúc nào cũng là "older"/"newer": khi hai bài
-     trùng tag thì cả hai đều mang nhãn "related", và lúc ấy có bài hiện
-     "related →" còn bài kia "related ←" mà không có gì trên màn giải thích
-     tại sao. Gặp đúng ca này ở bài Siddhartha: cả hai gợi ý đều là bài mới
-     hơn, nên cả hai cùng quay một chiều.
-
-     Khoá theo VỊ TRÍ thì không bao giờ sai: ô bên trái chỉ ra trái, ô bên
-     phải chỉ ra phải. Mũi tên nói "còn nữa ở phía này", đó là tất cả những
-     gì nó cần nói. */
-  .rn-kind{letter-spacing:.12em}
-  .rn-dong:first-child{text-align:left}
-  .rn-dong:first-child .rn-kind::before{content:"← "}
-  .rn-dong:last-child{text-align:right}
-  .rn-dong:last-child .rn-kind::after{content:" →"}
-  /* Chỉ có một gợi ý: nó bám mép trái và chỉ mang một mũi tên. */
-  .rn-dong:only-child{flex:0 1 auto;max-width:100%;text-align:left}
-  .rn-dong:only-child .rn-kind::after{content:""}
 }
 
 /* ══════════ CẶP LÙI / TỚI — KHUNG ẢNH ══════════
@@ -847,6 +851,14 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    đọc thường không bao giờ gặp. Mờ sẵn, rõ khi rê vào cả thẻ: đây là việc dọn
    dẹp thỉnh thoảng mới làm, không phải thứ mắt phải vấp mỗi lần đọc.
    Máy cảm ứng không có trạng thái "rê vào" nên để mờ sẵn ở mức đọc được. */
+/* Nhánh chạm trần: nút đổi việc, nên phải đổi cả dáng. Nét gạch chân nói
+   "đây không phải nút Reply như mọi khi" mà không cần thêm một dòng chữ nào —
+   dòng chữ đầy đủ nằm ở `title` và ở dòng báo tin sau khi bấm. */
+.bl-tra--moi{
+  text-decoration:underline;text-underline-offset:3px;
+  text-decoration-style:dotted;
+}
+
 .bl-quyen{
   display:flex;gap:var(--s3);
   opacity:0;transition:opacity var(--dur-fast);
@@ -974,7 +986,10 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   border-top:1px solid var(--line);
 }
 .bl-ds > .bl-item:first-child{border-top:0;padding-top:0}
-.bl-dau{display:flex;align-items:baseline;gap:6px;flex:none}
+/* `flex-wrap:wrap` cho cụm đầu: ở cột hẹp (cột bên, điện thoại) thì tên dài
+   cộng huy hiệu cộng giờ có thể vượt bề ngang — lúc ấy giờ tự xuống dòng dưới
+   tên chứ không đẩy cả hàng giãn ra. */
+.bl-dau{display:flex;align-items:baseline;gap:6px;flex:none;flex-wrap:wrap}
 /* `flex:1 1 auto` + `min-width:0`: ba ô LUÔN ở chung một dòng co giãn, và
    phần chữ tự xuống dòng BÊN TRONG ô của nó khi dài. Khai `55%` như bản đầu
    thì tên + 55% + cụm cuối vượt quá 100%, nên cụm cuối rớt xuống dòng hai —
@@ -1020,7 +1035,8 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    thời gian đẩy nó sang hẳn mép phải, chừa tên và huy hiệu đứng liền nhau bên
    trái. Không có nó thì justify-content dàn đều ba thứ và huy hiệu trôi ra
    giữa dòng, trông như một cái tag lạc chỗ. */
-/* Ngày nay nằm trong `.bl-cuoi`, và chính cụm ấy tự đẩy sang phải. */
+/* Giờ nay nằm trong `.bl-dau`, liền sau tên — xem lý do ở `denTraLoi`… thật ra
+   ở chỗ dựng `.bl-dau` trong comments.js. */
 /* Bình luận của chủ trang: một vạch dọc bên trái, không tô nền cả khối. Nền
    tô làm khối ấy đọc ra như một ô nhấn (kiểu `:::note`), tức là "đọc cái này
    trước" — mà ý thật chỉ là "người này là chủ nhà". */

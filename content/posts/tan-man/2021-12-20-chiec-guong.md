@@ -8,7 +8,7 @@ tags:
   - chánh niệm
 cover: /media/2021/chiec-guong/bia.png
 coverAlt: Hai mặt phản chiếu nhau, mờ dần về phía giữa
-khung: A
+khung: post left
 ---
 
 Sau một chặng dài chạy mệt nghỉ, Covid là thời điểm mà mình có nhiều khoảng

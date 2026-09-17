@@ -105,7 +105,7 @@ Thứ tự ấy là thứ tự của câu hỏi trong đầu người đọc: đ
 trước cả hai câu kia, và một lời mời viết bình luận lúc người ta còn chưa đọc
 xong là lời mời sai lúc.
 
-Khung nào **không có cột bên thật** (khung B, C) thì cụm ở lại cuối bài — nhưng
+Khung nào **không có cột bên thật** (`post full`, `post insta`) thì cụm ở lại cuối bài — nhưng
 vẫn đứng sau khối "đọc tiếp", nên thứ tự đọc y hệt.
 
 **Ba con số — lượt xem · lượt thích · bình luận — ở hàng meta ĐẦU bài**, không
@@ -114,7 +114,7 @@ một lần thì không có hai bản để trôi lệch nhau.
 
 ### Khổ rộng: khung viết chiếm luôn cột phải
 
-Bấm bình luận ở màn ≥1080px (và chỉ ở khung A — khung duy nhất có cột bên
+Bấm bình luận ở màn ≥1080px (và chỉ ở `post left` — khung duy nhất có cột bên
 thật) thì khung viết **dời hẳn** sang cột phải, mục lục và "đọc tiếp" nhường
 chỗ, cột nới 280 → 400px. Vừa đọc bài vừa viết được.
 

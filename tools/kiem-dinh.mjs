@@ -1568,7 +1568,7 @@ const KIEM = [
       /* Khung C (bài ảnh ngắn) CỐ Ý không có mục lục: bài chỉ vài đoạn, và cột
          bên phải đã dành cho chữ chứ không bỏ trống. Lý do của phép kiểm này là
          cột trống, mà khung C thì không có cột trống nào. */
-      .filter((t) => !/class="post-layout[^"]*khung-c/.test(t.html))
+      .filter((t) => !/class="post-layout[^"]*post-insta/.test(t.html))
       .filter((t) => !/<nav class="toc"|id="muc-luc"|class="[^"]*toc/.test(t.html))
       /* Ngưỡng dài: 6000 ký tự HTML của cả trang, khoảng hơn nghìn chữ thân
          bài. Dưới ngưỡng ấy thì cuộn một hơi là hết, mục lục không giúp gì. */

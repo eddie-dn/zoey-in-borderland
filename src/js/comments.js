@@ -218,7 +218,7 @@
        'cho'  khung mở TẠI CHỖ, ngay dưới hàng tag — khung ảnh, khung B
 
      Trước đây file này tự suy ra đường đi bằng cách hỏi DOM xem lưới có mang
-     `khung-a` không. Suy ra được, nhưng nó là bản sao thứ hai của một luật đã
+     `post-left` không. Suy ra được, nhưng nó là bản sao thứ hai của một luật đã
      có ở tools/build.mjs (`binhLuanODau`) — và hai bản sao thì sớm muộn lệch
      nhau. Nay build nói thẳng, ở đây chỉ việc đọc.
 
@@ -291,7 +291,7 @@
         moc.parentNode.insertBefore(than, moc);
         moc.remove(); moc = null;
         if (ben) ben.classList.remove('ben--bl');
-        luoi.classList.remove('khung-a--bl');
+        luoi.classList.remove('post-left--bl');
         than.classList.remove('bl-than--taicho');
       }
       if (cho === 'goc') return;
@@ -302,7 +302,7 @@
         than.parentNode.insertBefore(moc, than);
         ben.appendChild(than);
         ben.classList.add('ben--bl');
-        luoi.classList.add('khung-a--bl');
+        luoi.classList.add('post-left--bl');
         return;
       }
 
@@ -504,6 +504,22 @@
       dau.appendChild(hh);
     }
 
+    /* ── GIỜ ĐI LIỀN SAU TÊN, KHÔNG DẠT SANG MÉP PHẢI ──
+       Trước đây giờ nằm trong `.bl-cuoi` — cụm dạt phải cùng nút Reply. Ở một
+       hàng co giãn thì mép phải là chỗ DI ĐỘNG: bình luận ngắn thì giờ nằm
+       giữa hàng, bình luận dài thì nó rớt xuống dòng dưới. Đọc một cọc mười
+       bình luận thì mười cái giờ ở mười chỗ khác nhau, không cái nào thẳng
+       hàng với cái nào.
+
+       "Ai nói" và "nói lúc nào" là một cặp — chúng thuộc về nhau hơn là thuộc
+       về nút Reply. Đặt liền nhau thì chúng thành MỘT khối, và khối ấy luôn
+       bắt đầu ở mép trái, tức luôn thẳng cột qua mọi bình luận. */
+    var luc = document.createElement('time');
+    luc.className = 'bl-luc';
+    luc.textContent = ngay(c.luc);
+    if (c.luc) luc.dateTime = c.luc;
+    dau.appendChild(luc);
+
     /* ── BA TẦNG CHỮ CHO MỘT BÌNH LUẬN BA CHỮ ──
        Bản trước xếp dọc: tên và ngày một hàng, nội dung một hàng, nút Reply
        một hàng nữa. "love u chị iu~" dài đúng bốn chữ mà chiếm ba dòng và gần
@@ -521,19 +537,34 @@
     var cuoi = document.createElement('span');
     cuoi.className = 'bl-cuoi';
 
-    var luc = document.createElement('time');
-    luc.className = 'bl-luc';
-    luc.textContent = ngay(c.luc);
-    if (c.luc) luc.dateTime = c.luc;
-    cuoi.appendChild(luc);
+    /* ── NÚT TRẢ LỜI, VÀ TRẦN CỦA MỘT NHÁNH ──
+       Nút chỉ ở bình luận GỐC, vì cây chỉ có hai tầng.
 
-    /* Nút trả lời — chỉ ở bình luận GỐC, vì cây chỉ có hai tầng. */
+       Nhưng hai tầng không có nghĩa là ngắn: một nhánh vẫn nhận được vô hạn
+       trả lời, và hai người cãi nhau ba mươi lượt thì nhánh ấy dài hơn cả
+       phần bình luận còn lại cộng lại. Mọi bình luận khác bị đẩy xuống dưới
+       một cuộc trao đổi mà người mới vào không có phần.
+
+       Chạm trần thì KHÔNG khoá nút — khoá là chặn người ta nói. Nút đổi việc:
+       nó đưa về khung soạn chính, và bình luận gửi đi thành một nhánh MỚI ở
+       ngang hàng. Cùng chừng ấy chữ, nhưng cuộc trao đổi dài được thở ở một
+       chỗ khác thay vì nhồi tiếp vào một cột đã hẹp.
+
+       Trần 12: dưới đó là một cuộc trò chuyện bình thường; trên đó thì hàng
+       chấm gấp lại (`GAP_TU`) đã phải giấu đi quá nửa, tức là người đọc không
+       còn thấy được mạch nữa. */
+    var TRAN_NHANH = 12;
     if (!laCon) {
+      var day = !!(c.con && c.con.length >= TRAN_NHANH);
       var nutTra = document.createElement('button');
       nutTra.type = 'button';
-      nutTra.className = 'bl-tra';
-      nutTra.textContent = L('reply');
-      nutTra.addEventListener('click', function () { denTraLoi(c, li); });
+      nutTra.className = 'bl-tra' + (day ? ' bl-tra--moi' : '');
+      nutTra.textContent = day ? L('newThread') : L('reply');
+      if (day) nutTra.title = L('threadFull');
+      nutTra.addEventListener('click', function () {
+        if (day) { veNha(); noi(L('threadFull'), 'cho'); moKhungSoan(); return; }
+        denTraLoi(c, li);
+      });
       cuoi.appendChild(nutTra);
     }
 
@@ -615,6 +646,20 @@
     nhaCuaForm.appendChild(form);
   }
 
+  /* Đưa mắt và con trỏ tới khung soạn chính. Dùng khi nhánh đã chạm trần: nút
+     "Start a new thread" phải đưa người ta TỚI chỗ gõ, không thì bấm xong màn
+     hình không đổi gì và đọc ra là nút hỏng.
+
+     Chờ hết cú cuộn mới focus — focus sớm thì trình duyệt tự nhảy tới ô, đè
+     lên cuộn mượt và cả hai cùng giật. */
+  function moKhungSoan() {
+    form.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    setTimeout(function () {
+      var o = form.noiDung;
+      if (o) { try { o.focus({ preventScroll: true }); } catch (e) { o.focus(); } }
+    }, 420);
+  }
+
   /* ══════════ 4. GỬI ══════════ */
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -646,7 +691,10 @@
       .then(function (r) { return r.json(); })
       .then(function (kq) {
         if (!kq.ok) { noi(kq.loi || L('failed'), 'hong'); return; }
+        /* `form.reset()` xoá cả tên và email — nhưng chúng là thứ người ta vừa
+           gõ và sẽ gõ lại y hệt ở lần sau. Nhớ lại ngay sau khi reset. */
         form.reset();
+        nhoTen();
         veNha();
         /* Bình luận của chủ trang lên thẳng, nên báo khác: nói "chờ duyệt" với
            người vừa tự duyệt mình là một câu vô nghĩa. */
@@ -661,6 +709,47 @@
         nut.textContent = chuCu;
       });
   });
+
+  /* ══════════ NHỚ TÊN NGƯỜI ĐÃ BÌNH LUẬN ══════════
+
+     Người ghé lại lần thứ hai phải gõ lại đúng cái tên và đúng cái email họ
+     vừa gõ tuần trước. Không có lý do nào cho việc ấy: máy của họ nhớ được.
+
+     ── Ở MÁY NGƯỜI ĐỌC, KHÔNG Ở MÁY CHỦ ──
+     `localStorage` chứ không phải cookie và cũng không gửi thêm gì lên máy
+     chủ. Máy chủ đã có tên và email trong chính bình luận rồi; lưu thêm một
+     bản nữa để "nhận ra người quen" là dựng một hồ sơ người dùng mà không ai
+     xin phép. Ở đây không có hồ sơ nào: chỉ có hai ô trên máy của chính họ,
+     xoá lịch sử trình duyệt là mất.
+
+     ── KHÔNG ĐÈ LÊN THỨ ĐANG GÕ DỞ ──
+     Chỉ điền khi ô đang TRỐNG. Người đang gõ một cái tên khác cho lần này —
+     hoặc trình duyệt vừa tự điền — thì đừng chen vào.
+
+     ── CHỦ TRANG KHÔNG DÙNG ĐƯỜNG NÀY ──
+     Đã đăng nhập thì hai ô ấy ẩn đi và tên lấy từ site.config.json
+     (`veVaiTro`), nên không có gì để nhớ và cũng không nên nhớ. */
+  var KHOA_TEN = 'zoey:bl-ten';
+
+  function nhoTen() {
+    if (coKhoa() && TEN_CHU) return;
+    try {
+      var t = (form.ten && form.ten.value || '').trim();
+      var e = (form.email && form.email.value || '').trim();
+      if (!t && !e) return;
+      localStorage.setItem(KHOA_TEN, JSON.stringify({ ten: t, email: e }));
+    } catch (x) { /* chế độ riêng tư, kho đầy — không sao, chỉ là mất tiện ích */ }
+  }
+
+  (function dienLaiTen() {
+    if (coKhoa() && TEN_CHU) return;
+    try {
+      var d = JSON.parse(localStorage.getItem(KHOA_TEN) || 'null');
+      if (!d) return;
+      if (form.ten && !form.ten.value && d.ten) form.ten.value = d.ten;
+      if (form.email && !form.email.value && d.email) form.email.value = d.email;
+    } catch (x) { /* như trên */ }
+  })();
 
   /* Đếm ký tự còn lại — chỉ hiện khi đã gõ quá nửa hạn mức, để nó không
      ngồi đó đếm ngược ngay từ chữ đầu tiên như đang thúc người ta. */

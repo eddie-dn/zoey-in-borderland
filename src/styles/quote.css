@@ -96,10 +96,19 @@
 
    Một chấm nhỏ ở góc nút, không phải con số: con số đòi chỗ và đòi đọc,
    còn chấm chỉ nói "bấm được cái nữa" — phần đếm đã nằm trong tooltip. */
-.q-nut--moi::after{
+/* ── CHẤM NÀY PHẢI Ở `::before`, KHÔNG ĐƯỢC Ở `::after` ──
+   Nút này mang lớp `.tip`, và tooltip dựng chữ bằng `.tip::after{content:attr(data-tip)}`.
+   Một phần tử chỉ có MỘT `::after`. Bản đầu vẽ chấm ở `::after` nên nó ghi đè
+   `content` thành rỗng — chấm không ra chấm (nó ăn luôn lề trong và nền kính
+   của tooltip, thành một viên thuốc 22px), mà tooltip thì mất sạch chữ.
+
+   Hỏng lặng hoàn toàn: không lỗi CSS, không lỗi JS, `data-tip` vẫn đúng chuỗi.
+   Chỉ khi rê chuột vào và thấy một mẩu trống mới biết. */
+.q-nut--moi::before{
   content:"";position:absolute;top:2px;right:2px;
   width:5px;height:5px;border-radius:50%;
   background:var(--accent);
+  pointer-events:none;
 }
 .q-nut--moi{opacity:.75}
 @media (hover:none){.q-nut--moi{opacity:.8}}

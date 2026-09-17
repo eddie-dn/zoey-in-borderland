@@ -916,7 +916,7 @@
 
      Đổi con số này thì đổi luôn ở chú thích đầu khối ĐÓNG MỞ trong
      src/js/comments.js — đó là chỗ duy nhất còn nhắc tới nó. */
-  .post-layout.khung-a{
+  .post-layout.post-left{
     grid-template-columns:minmax(0,1fr) 320px;
     column-gap:var(--s8);
     padding-inline:var(--gutter);
@@ -939,19 +939,19 @@
      Cột chữ nới từ 59ch lên 66ch cho hợp bề ngang mới. Khoảng 82 ký tự một
      dòng — dài hơn 60–75 mà sách vở khuyên; đánh đổi có ý thức, cùng lý do đã
      ghi ở luật lưới phía trên. */
-  .post-layout.khung-a{--measure:66ch}
-  .khung-a .post-head,
-  .khung-a .post-foot{width:min(var(--measure),100%);margin-inline:0}
-  .khung-a .prose{
+  .post-layout.post-left{--measure:66ch}
+  .post-left .post-head,
+  .post-left .post-foot{width:min(var(--measure),100%);margin-inline:0}
+  .post-left .prose{
     grid-template-columns:
       [full-start wide-start text-start] min(var(--measure),100%) [text-end]
       minmax(0,1fr) [wide-end full-end];
   }
 
-  .khung-a .post-head{grid-column:1;grid-row:1}
-  .khung-a .prose    {grid-column:1;grid-row:2}
-  .khung-a .post-foot{grid-column:1;grid-row:3}
-  .khung-a .ben      {grid-column:2;grid-row:2}
+  .post-left .post-head{grid-column:1;grid-row:1}
+  .post-left .prose    {grid-column:1;grid-row:2}
+  .post-left .post-foot{grid-column:1;grid-row:3}
+  .post-left .ben      {grid-column:2;grid-row:2}
 
   /* ── BÀI KHÔNG CÓ CỘT BÊN: MỘT CỘT, CANH GIỮA ──
      Bài không có tiêu đề mục nào thì `tocHTML` không dựng thẻ <aside> nữa, và
@@ -962,14 +962,14 @@
      (nới ra thì mỗi dòng thành chín mươi ký tự), còn chỗ dôi chuyển hết ra hai
      bên thành lề thật. Đây cũng đúng khuôn của khung B — cùng một loại nội
      dung, cùng một cách bày. */
-  .post-layout.khung-a:not(:has(> .ben)){
+  .post-layout.post-left:not(:has(> .ben)){
     grid-template-columns:minmax(0, var(--measure));
     justify-content:center;
   }
 
-  /* `.khung-a--bl` KHÔNG còn đổi bề ngang cột. Lớp này ở lại vì `.ben--bl`
+  /* `.post-left--bl` KHÔNG còn đổi bề ngang cột. Lớp này ở lại vì `.ben--bl`
      vẫn cần nó cho hai việc khác: tắt mục lục / "đọc tiếp", và thôi dính khi
-     cuộn. Bề ngang thì cố định — xem chú thích ở `.post-layout.khung-a`. */
+     cuộn. Bề ngang thì cố định — xem chú thích ở `.post-layout.post-left`. */
 }
 
 /* ── NHỊP DỌC CO LẠI Ở KHỔ ĐIỆN THOẠI ──
@@ -1202,7 +1202,7 @@
 
    Ở đây từng có một BẢN SAO của luật ấy — cùng chọn lọc, cùng giá trị, chỉ
    khác chỗ đứng. Nó im lặng suốt vì hai bản giống hệt nhau, cho tới lúc thêm
-   `.khung-a--bl` (nới cột phải khi mở khung bình luận): luật mới nằm ngay dưới
+   `.post-left--bl` (nới cột phải khi mở khung bình luận): luật mới nằm ngay dưới
    bản đầu, còn bản sao thì nằm mãi dưới đây và bằng điểm chọn lọc — nên bản
    sao thắng, và cột phải không chịu nới ra. Không có lỗi nào nổ, chỉ là một
    tính năng không xảy ra.
@@ -1219,7 +1219,7 @@
    chỉ thân bài rộng 60ch, còn đầu bài và chân bài — vốn là anh em của .prose,
    không phải con — vẫn đọc 58ch của :root. Lệch 12px, và mắt bắt được ngay vì
    ba khối nằm chồng dọc nhau. */
-.post-layout.khung-b{
+.post-layout.post-full{
   /* Cùng cách tính với --measure ở tokens.css: 56ch ≈ 72 ký tự. Rộng hơn
      khung A một nhịp vì ở đây cột chữ đứng MỘT MÌNH giữa trang, không có cột
      bên nào kéo mắt sang ngang. */
@@ -1228,28 +1228,28 @@
   max-width:none;
   padding-inline:0;
 }
-/* `.prose > .post-cover` chứ không phải `.khung-b .post-cover`: ảnh bìa mang
+/* `.prose > .post-cover` chứ không phải `.post-full .post-cover`: ảnh bìa mang
    sẵn class .wide, mà prose.css nạp SAU layout.css nên luật `.prose > .wide`
    của nó (cùng độ ưu tiên 0-2-0, đứng sau) thắng. Thêm một bậc là đủ. */
-.khung-b .prose > .post-cover{
+.post-full .prose > .post-cover{
   order:-1;
   grid-column:full;
   margin:calc(var(--s8) * -1) 0 var(--s9);
 }
-.khung-b .prose > .post-cover img{border-radius:0;max-height:62vh;object-fit:cover}
-.khung-b .post-head{text-align:center}
-.khung-b .post-head h1{margin-inline:auto}
-.khung-b .post-head .crumbs,
-.khung-b .post-head .meta-row,
-.khung-b .post-head .tag-row{justify-content:center}
-.khung-b .post-head .summary{margin-inline:auto}
-.khung-b .toc-box{max-width:var(--measure);margin-inline:auto}
+.post-full .prose > .post-cover img{border-radius:0;max-height:62vh;object-fit:cover}
+.post-full .post-head{text-align:center}
+.post-full .post-head h1{margin-inline:auto}
+.post-full .post-head .crumbs,
+.post-full .post-head .meta-row,
+.post-full .post-head .tag-row{justify-content:center}
+.post-full .post-head .summary{margin-inline:auto}
+.post-full .toc-box{max-width:var(--measure);margin-inline:auto}
 @media (min-width:1080px){
-  .khung-b .toc-box{position:static;max-height:none;
+  .post-full .toc-box{position:static;max-height:none;
     margin:0 auto var(--s7);border-radius:var(--r-md);padding:var(--s3) var(--s4)}
-  .khung-b .toc-box summary{display:block}
-  .khung-b .toc-box .toc-title{display:none}
-  .khung-b .toc ol{border-left:1px solid var(--line)}
+  .post-full .toc-box summary{display:block}
+  .post-full .toc-box .toc-title{display:none}
+  .post-full .toc ol{border-left:1px solid var(--line)}
 }
 
 /* ══════════════ KHUNG C — BÀI ẢNH NGẮN ══════════════
@@ -1263,11 +1263,11 @@
 
    Khổ hẹp thì xếp dọc, ảnh trước chữ sau — thứ tự đúng với cách người ta lướt
    một bài ảnh trên điện thoại. */
-.post-layout.khung-c{
+.post-layout.post-insta{
   max-width:var(--measure-ui);
   padding-inline:var(--gutter);
 }
-.khung-c .bang-anh{order:-1;margin-bottom:var(--s7)}
+.post-insta .bang-anh{order:-1;margin-bottom:var(--s7)}
 /* ── MỘT LỀ, KHÔNG PHẢI HAI ──
    Lưới `.prose` tự chừa một lề rộng `--gutter` ở hai bên cột chữ (xem đầu
    prose.css) — đúng ở khung A, nơi `.post-layout` không có lề nào. Nhưng khung
@@ -1283,31 +1283,31 @@
 
    `.wide`/`.full` trong khung này mất phần thò ra, và đó là đúng: ở một cột
    rộng 338px thì "thò ra 19px" không đọc ra là chủ ý, chỉ đọc ra là lệch. */
-.khung-c .prose{
+.post-insta .prose{
   grid-template-columns:
     [full-start wide-start text-start] minmax(0,1fr) [text-end wide-end full-end];
 }
-.khung-c :is(.post-head,.post-foot){width:100%}
+.post-insta :is(.post-head,.post-foot){width:100%}
 
 @media (min-width:900px){
-  .post-layout.khung-c{
+  .post-layout.post-insta{
     grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
     column-gap:var(--s9);
     align-items:start;
   }
   /* Đặt chỗ TƯỜNG MINH cho cả bốn khối. Để lưới tự xếp thì nó lấp theo hàng và
      chân bài nhảy sang cột ảnh — đúng lỗi đã vấp ở khung A. */
-  .khung-c .bang-anh {grid-column:1;grid-row:1 / span 3;position:sticky;top:calc(var(--header-h) + var(--s6));margin-bottom:0}
-  .khung-c .post-head{grid-column:2;grid-row:1}
-  .khung-c .prose    {grid-column:2;grid-row:2}
-  .khung-c .post-foot{grid-column:2;grid-row:3}
+  .post-insta .bang-anh {grid-column:1;grid-row:1 / span 3;position:sticky;top:calc(var(--header-h) + var(--s6));margin-bottom:0}
+  .post-insta .post-head{grid-column:2;grid-row:1}
+  .post-insta .prose    {grid-column:2;grid-row:2}
+  .post-insta .post-foot{grid-column:2;grid-row:3}
   /* Ba khối chữ ở cột phải thôi tự khoá bề ngang: cột đã hẹp sẵn rồi, khoá thêm
      lần nữa là chữ co vào giữa một cột vốn đã vừa. */
-  /* Hai luật của khổ hẹp (`.khung-c .prose` và `:is(.post-head,.post-foot)`)
+  /* Hai luật của khổ hẹp (`.post-insta .prose` và `:is(.post-head,.post-foot)`)
      đã đúng cho cả khổ này — cột phải vốn đã hẹp, khoá thêm lần nữa là chữ co
      vào giữa một cột vừa vặn. Không lặp lại ở đây. */
 }
 
 /* Không có mục lục ở khung C: bài ngắn thì mục lục là thừa, và cột phải đã dành
    cho chữ rồi. */
-.khung-c .toc{display:none}
+.post-insta .toc{display:none}
