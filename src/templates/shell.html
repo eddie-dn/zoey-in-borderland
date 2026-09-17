@@ -60,10 +60,17 @@
 }catch(e){}})();
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<!-- ── PHÔNG TỰ HOST TỪ V16.05 ──
+     Trước đó chỗ này là hai thẻ preconnect cộng một thẻ <link> tới
+     fonts.googleapis.com. Đo được: 27 file phông, 421 KB, từ hai tên miền của
+     Google — và file CSS của họ nằm CHẮN NGANG, phải tải xong nó trình duyệt
+     mới biết đường dẫn của từng file phông.
+
+     Nay phông nằm trong `/assets/fonts/`, khai ở `src/styles/fonts.css` và đi
+     chung bundle CSS. Không còn tên miền thứ ba, không còn vòng đi-về ấy, và
+     không người đọc nào để lại một lượt ghé ở máy chủ Google.
+
+     Tải lại phông: `npm run phong`. -->
 <link rel="stylesheet" href="{{base}}/assets/style.css">
 {{headExtra}}
 </head>

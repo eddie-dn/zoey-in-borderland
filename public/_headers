@@ -65,7 +65,8 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   # ── CSP ──
   # Danh sách này rút từ chính bản dựng, không đoán:
-  #   fonts.googleapis.com / fonts.gstatic.com  hai phông của trang
+  #   (phông nay tự host — hai tên miền của Google đã rời khỏi danh sách này
+  #    từ V16.05, xem chú thích trong src/templates/shell.html)
   #   www.youtube-nocookie.com                  khung video, chỉ nạp khi bấm play
   #   img-src https:                            ảnh ngoài — cú pháp Markdown của
   #     trang nhận đường dẫn http(s), và một bài cũ dán ảnh từ nơi khác thì phải
@@ -80,4 +81,4 @@
   # đường tấn công thật: `object-src 'none'` (không Flash/applet), `base-uri`
   # (không đổi gốc đường dẫn tương đối), `form-action` (không gửi form đi chỗ
   # khác), `frame-ancestors` (không nhúng vào trang lạ).
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self'; frame-src https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; media-src 'self'; frame-src https://www.youtube-nocookie.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'

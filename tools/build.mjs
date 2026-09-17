@@ -580,6 +580,16 @@ const NHAN = {
      chip là BỘ LỌC ("cho tôi xem những cái đang chờ"), còn hai nhãn này nói
      hàng NÀY đang ở trạng thái nào. Dùng chung một chữ thì lúc lọc "Approved"
      mà mọi hàng cũng ghi "Approved", đọc ra như bảng bị kẹt. */
+  /* ── NHÃN CỦA VIỆC LÀM HÀNG LOẠT ──
+     Câu hỏi xác nhận in RA SỐ: "duyệt 12 bình luận?" khác hẳn "duyệt hết?", và
+     con số ấy là thứ duy nhất chặn được một cú bấm nhầm khi vừa tick nhầm cả
+     trang. `Hide` thì nói thêm là không lùi được. */
+  blPick      : 'Select',
+  blPicked    : '{n} selected',
+  blPickNone  : 'Clear',
+  blAskApprove: 'Approve {n} comments?',
+  blAskUnappr : 'Unapprove {n} comments?',
+  blAskHide   : 'Hide {n} comments? This cannot be undone.',
   blStateOff  : 'Pending',
   blStateOn   : 'Live',
   blFPending  : 'Pending',
@@ -1083,7 +1093,10 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         anon: NHAN.anon,
                         fPending: NHAN.blFPending, fDone: NHAN.blFDone,
                         fAll: NHAN.blFAll, more: NHAN.vbMore,
-                        stateOff: NHAN.blStateOff, stateOn: NHAN.blStateOn
+                        stateOff: NHAN.blStateOff, stateOn: NHAN.blStateOn,
+                        pick: NHAN.blPick, picked: NHAN.blPicked,
+                        pickNone: NHAN.blPickNone, askApprove: NHAN.blAskApprove,
+                        askUnapprove: NHAN.blAskUnappr, askHide: NHAN.blAskHide
                       }))}"`
                    : '',
                  /* ── NHÃN CỦA KHUNG ĐĂNG NHẬP ──
@@ -2910,7 +2923,10 @@ function gopCSS() {
      Danh sách này phải phủ HẾT src/styles/ — bộ kiểm định có một phép so lại
      (xem tools/kiem-dinh.mjs). Bản trước thiếu glass.css ở đây, và vì CSS
      thiếu thì không báo lỗi gì cả, cả bộ liquid glass im lặng không chạy. */
-  const thuTu = ['tokens.css', 'base.css', 'glass.css', 'layout.css',
+  /* `fonts.css` đứng ĐẦU: @font-face phải được khai trước luật nào dùng tới
+     phông ấy, không thì trình duyệt vẽ một nhịp bằng phông hệ thống rồi mới
+     đổi. File này do `npm run phong` sinh ra, đừng sửa tay. */
+  const thuTu = ['fonts.css', 'tokens.css', 'base.css', 'glass.css', 'layout.css',
                  'components.css', 'list.css', 'prose.css', 'about.css'];
 
   const gop = thuTu.map((f) => {
@@ -3956,6 +3972,56 @@ function trang404() {
 /* ══════════════ FILE PHỤ ══════════════ */
 
 
+/* ══════════════════════════════════════════════════════════════════════
+   llms.txt — BẢN ĐỒ TRANG CHO MÁY ĐỌC
+
+   ── NÓ KHÁC sitemap.xml Ở CHỖ NÀO ──
+   `sitemap.xml` nói CÓ NHỮNG ĐƯỜNG DẪN NÀO. `llms.txt` nói TRANG NÀY LÀ GÌ:
+   một đoạn giới thiệu, rồi danh sách bài kèm một câu tóm tắt cho từng bài,
+   viết bằng Markdown để đọc thẳng được.
+
+   ── VÌ SAO ĐÁNG CÓ ──
+   Mấy trợ lý viết bằng AI nay là một đường người ta tìm tới blog, và khi
+   chúng tóm tắt một trang thì thứ chúng đọc được quyết định chúng nói gì.
+   Bỏ mặc thì chúng tự cắt từ HTML — kèm cả thanh menu, chân trang, và mấy
+   dòng giao diện. Có file này thì chúng đọc đúng thứ chủ trang muốn nói.
+
+   Đây là một quy ước đang hình thành (llmstxt.org), chưa phải chuẩn. Cái giá
+   để thử là một file vài KB sinh ra lúc dựng — nếu quy ước ấy không đi tới
+   đâu thì cũng chẳng mất gì.
+
+   ── KHÔNG ĐƯA GÌ MỚI RA NGOÀI ──
+   Mọi dòng trong đây đều đã công khai ở chỗ khác: tiêu đề, tóm tắt, đường
+   dẫn. Bài nháp và bài hẹn ngày không có mặt, vì `congKhai` đã lọc rồi.
+   ══════════════════════════════════════════════════════════════════════ */
+function llmsTxt(bai, trangTinh) {
+  const goc = `${CAU.url}${BASE}`;
+  const dong = (t, u, mo) => `- [${t}](${goc}${u})${mo ? ': ' + mo : ''}`;
+  return [
+    `# ${CAU.title}`,
+    '',
+    `> ${CAU.description}`,
+    '',
+    `Blog cá nhân của ${CAU.author}. Ngôn ngữ chính: ${CAU.lang}.`,
+    '',
+    '## Bài viết',
+    '',
+    ...bai.map((b) => dong(b.title, b.url, tomTat(b.summary, 140))),
+    '',
+    '## Trang khác',
+    '',
+    ...trangTinh.map((t) => dong(t.title || t.url, t.url, '')),
+    dong(NHAN.archive, '/archive/', ''),
+    dong(NHAN.allPosts, '/posts/', ''),
+    '',
+    '## Nguồn cấp',
+    '',
+    `- [RSS](${goc}/feed.xml)`,
+    `- [Sitemap](${goc}/sitemap.xml)`,
+    ''
+  ].join('\n');
+}
+
 function rss(bai) {
   const muc = bai.slice(0, SL.rss).map((b) => `    <item>
       <title>${escapeHtml(b.title)}</title>
@@ -4113,7 +4179,33 @@ async function chay() {
 
   bai.sort((a, b) => (b.pinned - a.pinned) || b.date.localeCompare(a.date) ||
                      a.title.localeCompare(b.title, 'vi'));
-  const congKhai = bai.filter((b) => !b.draft);
+  /* ══════════════════════════════════════════════════════════════
+     BÀI HẸN NGÀY
+
+     ── CHUYỆN TRƯỚC BẢN NÀY ──
+     Khai `date: 2027-06-01` thì bài lên sóng NGAY hôm nay, và vào luôn RSS với
+     sitemap mang cái ngày ở tương lai. Không có gì báo. Người viết trước một
+     loạt bài cho cả tháng thì cả loạt hiện ra cùng lúc — đúng ngược với ý.
+
+     ── NAY ──
+     Bài có ngày LỚN HƠN hôm nay được đối xử như bản nháp: không dựng ra file,
+     không vào danh sách, feed hay sitemap. Tới ngày ấy thì nó tự lên.
+
+     ── MỘT ĐIỀU PHẢI BIẾT, VÀ NÓ KHÔNG NẰM TRONG MÃ ──
+     Trang này là trang TĨNH: nó chỉ đổi khi Cloudflare dựng lại, mà Cloudflare
+     chỉ dựng lại khi có commit mới. Nên một bài hẹn ngày mai sẽ KHÔNG tự hiện
+     ra vào ngày mai nếu hôm đó không ai đẩy gì lên.
+
+     Cách nối nốt quãng ấy — một Deploy Hook cộng một lịch chạy hằng ngày —
+     nằm ở docs/DUA-LEN-MANG.md. Không làm cũng không sao: bài sẽ hiện ra ở
+     lượt đẩy kế tiếp, chỉ là muộn hơn ngày đã hẹn.
+
+     So theo GIỜ UTC, cùng mốc với `ngayISO`: so theo giờ máy dựng thì cùng một
+     commit dựng ở hai múi giờ ra hai kết quả khác nhau. */
+  const homNay = new Date().toISOString().slice(0, 10);
+  for (const b of bai) b.henNgay = !b.draft && b.date > homNay;
+
+  const congKhai = bai.filter((b) => !b.draft && !b.henNgay);
 
   if (LOI.length) {
     console.log(mau.do(`  ✖ ${LOI.length} lỗi — KHÔNG dựng trang:\n`));
@@ -4200,6 +4292,7 @@ async function chay() {
     ghi(path.join(THU_MUC.dist, '404.html'), trang404());
 
     ghi(path.join(THU_MUC.dist, 'feed.xml'), rss(congKhai));
+    ghi(path.join(THU_MUC.dist, 'llms.txt'), llmsTxt(congKhai, trangTinhDS));
     ghi(path.join(THU_MUC.dist, 'sitemap.xml'),
         /* Bàn làm việc của chủ trang KHÔNG vào sitemap: sitemap là lời mời
            Google ghé xem, mà trang ấy chẳng có gì cho người đọc. Nó cũng mang
@@ -4252,15 +4345,27 @@ async function chay() {
     console.log(mau.tim('  └─ ') + mau.mo('nhớ viết tóm tắt cho bản này ở docs/LICH-SU.md\n'));
   }
 
-  const nhap = bai.length - congKhai.length;
+  const dsHen = bai.filter((b) => b.henNgay);
+  const nhap = bai.filter((b) => b.draft).length;
   if (nhap && !CHI_KIEM) {
     console.log(mau.mo(CO_NHAP
       ? `    ${nhap} bản nháp CÓ dựng ra file (đang ở chế độ xem thử)`
       : `    ${nhap} bản nháp KHÔNG dựng ra file — thêm --nhap nếu muốn xem thử`));
   }
+  /* Bài hẹn ngày in ra KÈM NGÀY, không gộp vào một con số như bản nháp: người
+     dựng cần biết bài nào tới lượt lúc nào, và biết ngay ở đây thì khỏi phải
+     đi mở từng file ra xem. */
+  if (dsHen.length && !CHI_KIEM) {
+    console.log(mau.mo(`    ${dsHen.length} bài hẹn ngày — chưa dựng ra file:`));
+    for (const b of dsHen.slice(0, 5)) {
+      console.log(mau.mo(`      ${b.date}  ${b.title}`));
+    }
+    if (dsHen.length > 5) console.log(mau.mo(`      …và ${dsHen.length - 5} bài nữa`));
+  }
 
   console.log(mau.xanh(`  ✓ ${congKhai.length} bài công khai` +
     (nhap ? ` · ${nhap} bản nháp` : '') +
+    (dsHen.length ? ` · ${dsHen.length} hẹn ngày` : '') +
     /* In ra số bài ẩn: một bài biến mất khỏi trang mà dòng kết quả không nhắc
        gì thì lần sau mở lên chỉ thấy "thiếu một bài" và không biết hỏi ai. */
     (baiAn.length ? ` · ${baiAn.length} bài đã ẩn` : '') +

@@ -33,6 +33,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V16.07 | 2026-09-17 | 07 | bàn duyệt tick chọn nhiều rồi làm một lượt; hàng ở cả ba ngăn quản trị gọn lại từ 62px còn 42px |
+| V16.06 | 2026-09-17 | 06 | sửa ba lỗi nút danh sách làm mất dòng và mất chữ; thụt vào và thụt ra chỉ chạy trong danh sách; ảnh thả vào rơi đúng chỗ thả |
+| V16.05 | 2026-09-17 | 05 | phông tự host, trang không còn gọi tài nguyên nào ngoài tên miền; bấm ảnh trong bài để xem to; bài khai ngày tương lai nay đợi tới ngày mới lên; sinh llms.txt |
 | V16.04 | 2026-09-17 | 04 | bỏ 86 luật CSS không tên lớp nào tồn tại; ảnh bìa nhẹ đi 28%; npm run bia thôi sinh ảnh mồ côi; ghi rõ trần lượt gọi GitHub của trang quản trị |
 | V16.03 | 2026-09-17 | 03 | tên file assets mang vân tay nội dung; cache assets một năm thay cho 14 vòng hỏi lại mỗi lượt xem trang; phép kiểm cache đảo chiều theo |
 | V16.02 | 2026-09-17 | 02 | chủ trang đã đăng nhập thì thôi phải gõ tên và email khi bình luận |
@@ -169,6 +172,52 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V16.07 — 17-Sep-2026
+
+- **Bàn duyệt: tick nhiều dòng rồi làm một lượt.** Mở bàn duyệt ra thường có
+  mươi cái spam giống hệt nhau và vài cái thật — bấm Approve từng dòng là mươi
+  cú bấm cho một quyết định. Thanh làm-hàng-loạt dính ở đầu bảng, hiện ra khi
+  có ít nhất một dòng được tick, và câu hỏi xác nhận in RA SỐ ("duyệt 12 bình
+  luận?") — con số ấy là thứ duy nhất chặn được một cú tick nhầm cả trang.
+- **Gửi từng cái, không gửi một gói.** Máy chủ nhận mỗi lượt một bình luận;
+  dựng thêm cửa nhận cả mảng thì phải viết cả đường xử lý lỗi một-phần, mà
+  "ba cái xong, hai cái hỏng" là trạng thái khó báo và khó sửa.
+- **Hàng ở cả ba ngăn gọn lại: 62px → 42px.** Một màn 900px nay chứa 21 hàng
+  thay vì 9. Đây là bảng để ĐIỂM DANH, mật độ quan trọng hơn dáng vẻ.
+
+## V16.06 — 17-Sep-2026
+
+- **Ba lỗi nút danh sách, cả ba đều mất chữ mà không báo.** Trình duyệt trả về
+  HTML sai ở ba hình dạng khác nhau, và mỗi hình mất một thứ khi đổi ra
+  Markdown: `<p><ul>…</ul></p>` nuốt cả danh sách (nút trông như hỏng);
+  `<li>một<li>hai</li></li>` dính hai mục thành một dòng;
+  `<ul><li>…</li><ul>…</ul></ul>` **mất hẳn mục con khỏi bài**.
+- **Vì sao chúng sống lâu:** cả ba chỉ hiện ra khi SỬA BÀI ĐÃ ĐĂNG. Gõ mới thì
+  chữ nằm trần trong khung, lệnh của trình duyệt dựng đúng — ai thử nút trên
+  một khung trống đều thấy nó chạy.
+- **Thụt vào / thụt ra chỉ chạy trong danh sách.** `indent` gọi trên một đoạn
+  thường biến nó thành khối TRÍCH DẪN, trong khi cạnh đó đã có nút Trích dẫn
+  thật. Hai nút ra cùng một thứ, một trong hai do nhầm.
+- **Ảnh thả vào rơi đúng chỗ thả.** Trước đó nó chèn ở vị trí CON TRỎ, mà con
+  trỏ đang ở đâu là chuyện của lần gõ trước — thả ảnh xuống cuối bài thì nó
+  nhảy lên nối vào một dòng danh sách ở trên.
+
+## V16.05 — 17-Sep-2026
+
+- **Phông tự host.** Đo được: 27 file, 421 KB, từ hai tên miền của Google — và
+  file CSS của họ nằm CHẮN NGANG, phải tải xong nó trình duyệt mới biết đường
+  dẫn của từng file phông. Nay 33 file nằm trong kho, cache vĩnh viễn, và một
+  trang bài **không còn gọi tài nguyên nào ngoài tên miền**. Bỏ luôn hai tên
+  miền của Google khỏi CSP. Tải lại: `npm run phong`.
+- **Bấm ảnh trong bài để xem to.** Ảnh nằm gọn trong cột chữ 700px; trên điện
+  thoại còn 350px. Người đọc làm đúng cái phản xạ mọi ứng dụng ảnh dạy họ —
+  chạm vào tấm ảnh — và trước bản này chạm vào không có gì xảy ra.
+- **Bài khai ngày tương lai nay đợi tới ngày.** Trước đó `date: 2027-06-01` lên
+  sóng NGAY, và vào luôn RSS với sitemap mang cái ngày ở tương lai. Viết trước
+  một loạt bài cho cả tháng thì cả loạt hiện ra cùng lúc.
+- **`llms.txt`** — bản đồ trang cho máy đọc: giới thiệu, rồi danh sách bài kèm
+  một câu tóm tắt cho từng bài.
 
 ## V16.04 — 17-Sep-2026
 

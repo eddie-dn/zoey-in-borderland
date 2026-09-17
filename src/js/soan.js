@@ -1199,9 +1199,9 @@
     nut(svg('M10 7H6a2 2 0 0 0-2 2v3h4l-2 5M20 7h-4a2 2 0 0 0-2 2v3h4l-2 5'),
         L('quote', 'Quote'), function () { lenh('formatBlock', 'blockquote'); });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M4.5 6h.01M4.5 12h.01M4.5 18h.01']),
-        L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); });
+        L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); donDanhSach(); });
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
-        L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); });
+        L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); donDanhSach(); });
     vach();
 
     /* ── CHÍNH 4: hai cửa chèn ──
@@ -1278,10 +1278,32 @@
        cách ở đầu dòng không ra danh sách con, contenteditable coi đó là chữ.
        `¶` trả một tiêu đề hay trích dẫn về đoạn thường: trước đây lỡ biến cả
        đoạn thành H2 thì không có đường lùi nào ngoài hoàn tác. */
+    /* ── THỤT VÀO / THỤT RA CHỈ CHẠY TRONG DANH SÁCH ──
+       `indent` của trình duyệt, gọi trên một đoạn thường, biến đoạn ấy thành
+       một khối TRÍCH DẪN. Nút này ghi là "làm danh sách con", mà bấm nhầm
+       ngoài danh sách thì được một khối trích dẫn — trong khi cạnh đó đã có
+       một nút Trích dẫn thật. Hai nút ra cùng một thứ, một trong hai là do
+       nhầm, là thứ khó lần ra nhất khi người dùng kể lại.
+
+       Nên: ngoài danh sách thì không làm gì. Không báo lỗi, không hộp thoại —
+       một nút không phản ứng ở chỗ nó vô nghĩa thì tự nói ra điều đó. */
+    function trongDanhSach() {
+      var s2 = window.getSelection();
+      if (!s2 || !s2.rangeCount) return false;
+      var n = s2.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      return !!(o && o.closest && o.closest('li') && khung.contains(o));
+    }
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M3 9l3 3-3 3']),
-        L('indent', 'Indent — makes a sub-list'), function () { lenh('indent'); });
+        L('indent', 'Indent — makes a sub-list'), function () {
+      if (!trongDanhSach()) return;
+      lenh('indent'); donDanhSach();
+    });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M6 9l-3 3 3 3']),
-        L('outdent', 'Outdent'), function () { lenh('outdent'); });
+        L('outdent', 'Outdent'), function () {
+      if (!trongDanhSach()) return;
+      lenh('outdent'); donDanhSach();
+    });
     nut('¶', L('para', 'Back to a normal paragraph'), function () {
       lenh('formatBlock', 'p');
     }, 'sz-nut--h');
@@ -1927,6 +1949,78 @@
         });
     }
 
+    /* ══════════ DANH SÁCH LỌT VÀO TRONG MỘT ĐOẠN ══════════
+
+       ── LỖI ĐÃ GẶP THẬT ──
+       Mở một bài ĐÃ ĐĂNG ra sửa, bôi đen một đoạn, bấm nút danh sách: không có
+       gì xảy ra. Bấm lại vẫn không. Nút trông như hỏng.
+
+       Nó không hỏng — nó dựng ra `<p><ul><li>…</li></ul></p>`. Một `<ul>` nằm
+       TRONG một `<p>` là HTML sai, và `sangMD` đi qua từng con của khung: nó
+       gặp một `<p>`, lấy phần chữ của `<p>` ấy, rồi đi tiếp — cái `<ul>` bị
+       nuốt gọn. Markdown ra y như cũ.
+
+       ── VÌ SAO CHỈ HỎNG Ở BÀI ĐANG SỬA ──
+       Gõ mới thì chữ nằm trần trong khung, chưa có `<p>` nào bọc, nên lệnh của
+       trình duyệt dựng `<ul>` ở ngay tầng ngoài — đúng. Còn bài mở ra sửa thì
+       `tuMD()` đã bọc mỗi đoạn vào một `<p>`, và lúc ấy lệnh nhét danh sách
+       vào BÊN TRONG cái `<p>` đang có thay vì thay thế nó.
+
+       Đó là lý do lỗi này sống lâu: ai thử nút trên một khung trống đều thấy
+       nó chạy.
+
+       ── CHỮA ──
+       Nhấc danh sách ra khỏi `<p>`. `<p>` không còn gì khác thì bỏ luôn nó;
+       còn chữ thì để chữ ở lại và đặt danh sách ngay sau. Giữ nguyên các nút
+       DOM (không dựng lại) để vùng chọn và con trỏ không nhảy đi đâu. */
+    function donDanhSach() {
+      /* ── CA MỘT: `<ul>` NẰM TRONG `<p>` ── (nút danh sách, xem trên) */
+      var ds = khung.querySelectorAll('p > ul, p > ol');
+      for (var i = 0; i < ds.length; i++) {
+        var ul = ds[i], p = ul.parentNode;
+        if (!p || p.tagName !== 'P') continue;
+        p.parentNode.insertBefore(ul, p.nextSibling);
+        if (!p.textContent.trim() && !p.querySelector('img, ul, ol')) p.remove();
+      }
+
+      /* ── CA HAI: `<li>` NẰM TRONG `<li>` ──
+         Bấm "thụt ra" trên một mục con: trình duyệt trả về
+         `<li>một<li>con</li></li>` — một `<li>` lồng thẳng trong `<li>` khác,
+         không qua `<ul>`. Đó là HTML sai, và `sangMD` gom phần chữ của mục
+         ngoài lại thành một chuỗi: hai mục dính liền thành `- mộtcon`.
+
+         Chữ không mất, nhưng dòng thì mất — và mất im lặng, chỉ thấy khi mở
+         file .md ra đọc. Nhấc mục trong ra đứng ngay sau mục ngoài. */
+      var conLi = khung.querySelectorAll('li > li');
+      for (var j = 0; j < conLi.length; j++) {
+        var trong = conLi[j], ngoai = trong.parentNode;
+        ngoai.parentNode.insertBefore(trong, ngoai.nextSibling);
+      }
+
+      /* ── CA BA: `<ul>` LÀM CON TRỰC TIẾP CỦA `<ul>` ──
+         Bấm "thụt vào" trên mục thứ hai của một danh sách: trình duyệt trả về
+         `<ul><li>một</li><ul><li>hai</li></ul></ul>`. Danh sách con phải nằm
+         TRONG mục cha (`<li>một<ul>…</ul></li>`), không phải nằm cạnh nó.
+
+         Hậu quả nặng hơn hai ca trên: `sangMD` duyệt các con của `<ul>` để tìm
+         `<li>`, nên cái `<ul>` lạc chỗ bị bỏ qua hoàn toàn — mục "hai" BIẾN
+         MẤT khỏi bài, không còn dấu vết nào. Đây là mất chữ, không phải mất
+         định dạng.
+
+         Nhét nó vào cuối `<li>` đứng ngay trước; không có `<li>` nào trước thì
+         dựng một cái rỗng để nó có chỗ bám. */
+      var conDs = khung.querySelectorAll('ul > ul, ul > ol, ol > ul, ol > ol');
+      for (var k = 0; k < conDs.length; k++) {
+        var ds2 = conDs[k], cha = ds2.previousElementSibling;
+        if (!cha || cha.tagName !== 'LI') {
+          cha = document.createElement('li');
+          ds2.parentNode.insertBefore(cha, ds2);
+        }
+        cha.appendChild(ds2);
+      }
+      capNhat();
+    }
+
     /* ── KÉO THẢ ──
        `dragover` phải `preventDefault`, không thì trình duyệt không coi khung
        này là chỗ thả được và `drop` không bao giờ nổ.
@@ -1952,8 +2046,39 @@
       if (!ds || !ds.length) return;
       e.preventDefault();
       khung.classList.remove('sz-khung--tha');
+      datConTroTai(e.clientX, e.clientY);
       xepHang(ds);
     });
+
+    /* ── ẢNH PHẢI VÀO ĐÚNG CHỖ THẢ ──
+       Ô giữ chỗ được chèn ở VỊ TRÍ CON TRỎ. Nhưng kéo một tấm ảnh từ Finder
+       vào thì con trỏ đang ở đâu là chuyện của lần gõ trước — có thể là đầu
+       bài, có thể là giữa một mục danh sách. Đo thật: thả ảnh xuống cuối bài
+       mà nó nhảy lên nối vào một dòng danh sách ở trên.
+
+       Nên trước khi chèn, dời con trỏ tới đúng điểm con chuột nhả ra. Hai tên
+       hàm cho cùng một việc: Firefox dùng `caretPositionFromPoint`, còn
+       WebKit/Blink dùng `caretRangeFromPoint`. Không có cái nào (trình duyệt
+       quá cũ) thì rơi về nếp cũ — chèn ở con trỏ, vẫn chạy. */
+    function datConTroTai(x, y) {
+      var r = null;
+      try {
+        if (document.caretRangeFromPoint) {
+          r = document.caretRangeFromPoint(x, y);
+        } else if (document.caretPositionFromPoint) {
+          var vt = document.caretPositionFromPoint(x, y);
+          if (vt) {
+            r = document.createRange();
+            r.setStart(vt.offsetNode, vt.offset);
+            r.collapse(true);
+          }
+        }
+      } catch (e2) {}
+      if (!r || !khung.contains(r.startContainer)) return;
+      var s2 = window.getSelection();
+      s2.removeAllRanges();
+      s2.addRange(r);
+    }
 
     /* ── BẤM ĐÚP VÀO ẢNH ĐỂ GÕ MÔ TẢ ──
        Chỗ duy nhất sửa được `alt` sau khi ảnh đã vào bài. Bấm đúp chứ không

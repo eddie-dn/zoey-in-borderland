@@ -2044,13 +2044,47 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s3);
   padding-top:var(--s4);
 }
+/* ── NHỊP DỌC: GỌN LẠI MỘT BẬC ──
+   Lề trong cũ là `--s3` trên dưới cộng `--s2` giữa hai tầng chữ. Ở một bảng để
+   ĐIỂM DANH thì đó là quá rộng: một màn 900px chỉ chứa được chín hàng, trong
+   khi việc ở đây là quét qua hai ba chục dòng rồi mới quyết.
+
+   Siết còn 7px và bỏ khoảng cách giữa hai tầng: một màn nay chứa mười ba hàng,
+   mà hai hàng cạnh nhau vẫn còn đủ khoảng thở để mắt không dính chúng vào
+   nhau — đường kẻ ngăn lo phần ấy. */
 .ad-dong{
   display:grid;
   grid-template-columns:5.5rem minmax(0,1fr) auto auto;
-  align-items:baseline;gap:var(--s2) var(--s4);
-  padding:var(--s3) 0;
+  align-items:baseline;gap:0 var(--s4);
+  padding:5px 0;
   border-top:1px solid var(--line);
 }
+/* Bàn duyệt có thêm một cột ô tick ở ngoài cùng bên trái. */
+.ad-dong--chon{grid-template-columns:1.1rem 5.5rem minmax(0,1fr) auto auto}
+.ad-tick{display:flex;align-items:center;cursor:pointer;
+  /* Vùng bấm nới ra quanh ô 14px mà không đẩy hàng cao lên: lề âm bù lại. */
+  padding:9px 6px;margin:-9px -6px}
+.ad-tick input{accent-color:var(--accent);cursor:pointer;margin:0}
+.ad-dong--dang-chon{background:var(--accent-wash)}
+
+/* ── THANH LÀM HÀNG LOẠT ──
+   Dính ở đầu bảng khi cuộn: tick một dòng ở cuối danh sách rồi phải cuộn ngược
+   lên đầu để bấm Approve thì cả cơ chế này không tiết kiệm được gì. */
+.ad-chon-thanh{
+  position:sticky;top:calc(var(--header-h) + 2px);z-index:2;
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);
+  padding:8px var(--s3);margin-bottom:2px;
+  border-radius:var(--r-sm);
+  background:var(--accent-wash);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.ad-chon-dem{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+  margin-right:auto;
+}
+.ad-chon-thanh .ad-lenh{text-align:left}
+.ad-chon-bo{color:var(--text-faint)}
 .ad-dong:last-of-type{border-bottom:1px solid var(--line)}
 .ad-phu{
   font-family:var(--font-mono);font-size:var(--fs-3xs);
@@ -2058,7 +2092,7 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
   overflow:hidden;text-overflow:ellipsis;
 }
 .ad-chinh{
-  font-size:var(--fs-sm);color:var(--text);
+  font-size:var(--fs-xs);line-height:1.4;color:var(--text);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 /* ── DÒNG THỨ HAI TRONG CỘT CHÍNH ──
@@ -2070,8 +2104,8 @@ a.muc-them:hover,a.muc-them:focus-visible{color:var(--accent-ink);outline:none}
    Cắt ở một dòng: bảng này để ĐIỂM DANH chứ không để đọc. Muốn đọc trọn thì
    bấm vào mục ấy. */
 .ad-mo{
-  display:block;margin-top:2px;
-  font-style:normal;font-size:var(--fs-2xs);line-height:1.4;color:var(--text-faint);
+  display:block;margin-top:0;
+  font-style:normal;font-size:var(--fs-3xs);line-height:1.35;color:var(--text-faint);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 a.ad-mo{font-family:var(--font-mono);font-size:var(--fs-3xs);text-decoration:none}

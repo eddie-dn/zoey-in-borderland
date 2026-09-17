@@ -17,7 +17,8 @@
     "bia": "node tools/bia.mjs",
     "nen": "node tools/nen.mjs",
     "nhap": "node tools/nhap.mjs",
-    "og": "node tools/og.mjs"
+    "og": "node tools/og.mjs",
+    "phong": "node tools/phong.mjs"
   },
   "engines": {
     "node": ">=18"

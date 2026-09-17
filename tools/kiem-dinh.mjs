@@ -819,7 +819,7 @@ const KIEM = [
        `content/posts/`, lấy ra bài nào `draft: true`, rồi soi xem đường dẫn
        của nó có mặt trong dist / sitemap / feed không. Bộ dựng thôi loại nháp
        ra là phép kiểm đỏ ngay — đó mới là thứ nó nói rằng nó canh. */
-    ten: 'Bản nháp không lọt vào bản dựng, sitemap hay RSS',
+    ten: 'Bài nháp và bài hẹn ngày không lọt vào bản dựng, sitemap hay RSS',
     muc: 'loi',
     chay: ({ goc, dist }) => {
       const thuBai = path.join(goc, 'content', 'posts');
@@ -838,11 +838,20 @@ const KIEM = [
           /* Chỉ đọc khối front matter ở đầu file: chữ `draft: true` nằm giữa
              thân bài là nội dung, không phải lời khai. */
           const m = van.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-          if (!m || !/^draft\s*:\s*true\s*$/m.test(m[1])) continue;
+          if (!m) continue;
+          /* Hai lý do một bài chưa được phép lên sóng, và cả hai hỏng theo
+             cùng một kiểu nếu bộ dựng quên: file nằm công khai trên máy chủ,
+             ai đoán trúng đường dẫn là đọc được. */
+          const laNhap = /^draft\s*:\s*true\s*$/m.test(m[1]);
+          const mNgay = m[1].match(/^date\s*:\s*['"]?(\d{4}-\d{2}-\d{2})/m);
+          const laHen = !!(mNgay && mNgay[1] > new Date().toISOString().slice(0, 10));
+          if (!laNhap && !laHen) continue;
+          const viSao = laNhap ? '`draft: true`' : `hẹn ngày ${mNgay[1]}`;
           /* Đường dẫn bài: thư mục con làm chuyên mục, tên file bỏ phần ngày. */
           const muc = path.relative(thuBai, path.dirname(p2)).split(path.sep).filter(Boolean);
           const slug = f.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
-          ds.push({ file: path.relative(goc, p2), url: '/posts/' + [...muc, slug].join('/') + '/' });
+          ds.push({ file: path.relative(goc, p2), viSao,
+                     url: '/posts/' + [...muc, slug].join('/') + '/' });
         }
       })(thuBai);
 
@@ -851,7 +860,7 @@ const KIEM = [
         const them = [coFile && 'dist/', sm.includes(b.url) && 'sitemap.xml',
                       rss.includes(b.url) && 'feed.xml'].filter(Boolean);
         return them.length
-          ? [`${b.file} khai \`draft: true\` nhưng vẫn lộ ở ${them.join(' + ')} ` +
+          ? [`${b.file} (${b.viSao}) vẫn lộ ở ${them.join(' + ')} ` +
              `(${b.url}) — chạy \`npm run build\` không kèm --nhap`]
           : [];
       });
@@ -1008,6 +1017,53 @@ const KIEM = [
       const g = dungMD('~~bỏ~~ và H~2~O').html;
       if (!g.includes('<del>bỏ</del>') || !g.includes('<sub>2</sub>')) {
         ra.push('`~~gạch~~` và `~dưới~` đang ăn nhau — kiểm lại hai chốt [^~] và (?!~)');
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── LỆNH DANH SÁCH PHẢI ĐƯỢC DỌN NGAY SAU ──
+       Bốn lệnh `insertUnorderedList` · `insertOrderedList` · `indent` ·
+       `outdent` của trình duyệt đều có thể trả về HTML SAI, và mỗi kiểu sai
+       mất một thứ khác nhau khi đổi ra Markdown:
+
+         <p><ul>…</ul></p>        cả danh sách bị nuốt — nút trông như hỏng
+         <li>một<li>hai</li></li> hai mục dính thành một dòng
+         <ul><li>…</li><ul>…</ul></ul>   MẤT HẲN mục con khỏi bài
+
+       Cả ba đã gặp thật, và cả ba đều im lặng: chữ chỉ biến mất lúc lưu ra
+       file .md. `donDanhSach()` sửa cả ba, nhưng nó chỉ chạy nếu có người gọi.
+
+       Phép kiểm này canh đúng chuyện đó: bốn lệnh ấy không được đứng một mình.
+       Thêm một nút mới gọi `indent` mà quên dọn thì đỏ ngay. */
+    ten: 'Lệnh danh sách trong ô soạn thảo luôn được dọn ngay sau',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'js', 'soan.js');
+      if (!fs.existsSync(f)) return [];
+      const ma = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
+      const LENH = ['insertUnorderedList', 'insertOrderedList', 'indent', 'outdent'];
+      const ra = [];
+      /* Tìm bằng chuỗi thẳng, KHÔNG bằng regex: mẫu cần tìm có sẵn dấu ngoặc
+         và dấu nháy, mà mỗi lớp thoát là một dịp thoát hụt — bản đầu viết
+         bằng regex và nó không khớp được dòng nào, tức là một phép kiểm luôn
+         xanh vì lý do sai. */
+      for (const l of LENH) {
+        const mau = `lenh('${l}')`;
+        let i2 = ma.indexOf(mau), thay = 0;
+        while (i2 >= 0) {
+          thay++;
+          const sau = ma.slice(i2 + mau.length, i2 + mau.length + 80);
+          if (!sau.includes('donDanhSach')) {
+            ra.push(`src/js/soan.js: \`${mau}\` không gọi donDanhSach() ngay sau — ` +
+                    'trình duyệt có thể trả về danh sách lồng sai và chữ mất lúc lưu');
+          }
+          i2 = ma.indexOf(mau, i2 + 1);
+        }
+        if (!thay) {
+          ra.push(`src/js/soan.js: không còn chỗ nào gọi \`${mau}\` — ` +
+                  'phép kiểm này đã lạc hậu, sửa lại danh sách LENH');
+        }
       }
       return ra;
     }

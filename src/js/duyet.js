@@ -208,6 +208,15 @@
     });
     hop.appendChild(hangChip);
 
+    /* ── THANH LÀM HÀNG LOẠT ──
+       Ẩn cho tới khi có ít nhất một dòng được tick. Bày sẵn một thanh trống
+       thì nó chiếm một hàng ở đầu bảng suốt ngày để chờ một việc mỗi tuần làm
+       vài lần — và người mới nhìn vào không biết nó dùng để làm gì. */
+    var thanhChon = document.createElement('div');
+    thanhChon.className = 'ad-chon-thanh';
+    thanhChon.hidden = true;
+    hop.appendChild(thanhChon);
+
     var loc1 = ds.filter(function (c) {
       return !loc || (loc === 'cho' ? !c.duyet : !!c.duyet);
     });
@@ -221,7 +230,74 @@
       return;
     }
 
-    loc1.slice(0, hienToi).forEach(function (c) { hop.appendChild(veDong(c)); });
+    var dsDong = loc1.slice(0, hienToi).map(function (c) {
+      var d = veDong(c);
+      hop.appendChild(d);
+      return d;
+    });
+
+    function dangChon() {
+      return dsDong.filter(function (d) { return d.oTick && d.oTick.checked; });
+    }
+
+    /* ── LÀM HÀNG LOẠT: GỬI TỪNG CÁI, KHÔNG GỬI MỘT GÓI ──
+       Máy chủ nhận mỗi lượt một bình luận (`PATCH` với một `ma`). Dựng thêm
+       một cửa nhận cả mảng thì phải viết thêm cả đường xử lý lỗi một-phần —
+       "ba cái xong, hai cái hỏng" là trạng thái khó báo và khó sửa.
+
+       Gửi tuần tự từng cái: chậm hơn vài trăm mili giây, nhưng hỏng ở cái nào
+       thì biết đúng cái ấy, và những cái đã xong vẫn xong. */
+    function lamHangLoat(than, nhan) {
+      var ds2 = dangChon();
+      if (!ds2.length) return;
+      if (!window.confirm(nhan.replace('{n}', ds2.length))) return;
+      thanhChon.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+      var i = 0;
+      (function ke() {
+        if (i >= ds2.length) { xin(true); return; }
+        var d = ds2[i++];
+        d.classList.add('ad-dong--xong');
+        doi(Object.assign({ ma: d.duLieu.ma }, than), ke);
+      })();
+    }
+
+    function veThanhChon() {
+      var n = dangChon().length;
+      thanhChon.hidden = !n;
+      if (!n) return;
+      thanhChon.innerHTML = '';
+      var dem = document.createElement('span');
+      dem.className = 'ad-chon-dem';
+      dem.textContent = L('picked', '{n} selected').replace('{n}', n);
+      thanhChon.appendChild(dem);
+
+      [[L('approve'), { duyet: 1 }, L('askApprove', 'Approve {n} comments?')],
+       [L('unapprove'), { duyet: 0 }, L('askUnapprove', 'Unapprove {n} comments?')],
+       [L('hide'), { an: 1 }, L('askHide', 'Hide {n} comments? This cannot be undone.')]
+      ].forEach(function (x) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ad-lenh' + (x[1].duyet === 1 ? ' ad-lenh--chinh' : '');
+        b.textContent = x[0];
+        b.addEventListener('click', function () { lamHangLoat(x[1], x[2]); });
+        thanhChon.appendChild(b);
+      });
+
+      var bo = document.createElement('button');
+      bo.type = 'button';
+      bo.className = 'ad-lenh ad-chon-bo';
+      bo.textContent = L('pickNone', 'Clear');
+      bo.addEventListener('click', function () {
+        dsDong.forEach(function (d) {
+          if (d.oTick) { d.oTick.checked = false; d.classList.remove('ad-dong--dang-chon'); }
+        });
+        veThanhChon();
+      });
+      thanhChon.appendChild(bo);
+    }
+    /* `veDong` gọi tới nó mỗi lần một ô tick đổi — gán vào chỗ dùng chung để
+       hàm kia với được. */
+    veThanhChonHienTai = veThanhChon;
 
     /* Trần 25 dòng một lượt: mỗi dòng chở tên, đường dẫn, nguyên nội dung và
        hai cái nút, nên hai trăm dòng là hai trăm lần dựng DOM cho một màn hình
@@ -257,9 +333,35 @@
      Approve thôi là nút tô đầy: mười lăm hàng là mười lăm viên thuốc, và lúc
      ấy bảng đọc ra là một cái lưới nút chứ không phải một danh sách. Nó vẫn
      nổi hơn Hide, bằng màu (`.ad-lenh--chinh`). */
+  /* `veDong` dựng từng hàng, còn thanh làm-hàng-loạt sống trong `veHang`.
+     Một biến dùng chung là cầu nối giữa hai chỗ ấy: đơn giản hơn việc chuyền
+     một hàm qua bốn tầng gọi, và ở một file một trang thì rõ hơn. */
+  var veThanhChonHienTai = function () {};
+  function veThanhChon() { veThanhChonHienTai(); }
+
   function veDong(c) {
     var d = document.createElement('div');
-    d.className = 'ad-dong' + (c.duyet ? ' ad-dong--roi' : '');
+    d.className = 'ad-dong ad-dong--chon' + (c.duyet ? ' ad-dong--roi' : '');
+
+    /* ── Ô TICK ──
+       Duyệt bình luận là việc LÀM HÀNG LOẠT: mở bàn duyệt ra thường có mươi
+       cái spam giống hệt nhau và vài cái thật. Bấm Approve từng dòng một là
+       mươi cú bấm cho một quyết định duy nhất.
+
+       `<label>` bọc ngoài để vùng bấm rộng hơn cái ô 14px — trên điện thoại
+       một ô vuông 14px là thứ bấm ba lần trúng một. */
+    var oTick = document.createElement('label');
+    oTick.className = 'ad-tick';
+    var tick = document.createElement('input');
+    tick.type = 'checkbox';
+    tick.setAttribute('aria-label', L('pick', 'Select') + ' — ' + (c.ten || L('anon')));
+    tick.addEventListener('change', function () {
+      d.classList.toggle('ad-dong--dang-chon', tick.checked);
+      veThanhChon();
+    });
+    oTick.appendChild(tick);
+    d.oTick = tick;
+    d.duLieu = c;
 
     var ai = document.createElement('span');
     ai.className = 'ad-phu';
@@ -304,6 +406,7 @@
     });
 
     nut.appendChild(bDuyet); nut.appendChild(bAn);
+    d.appendChild(oTick);
     d.appendChild(ai); d.appendChild(giua); d.appendChild(cd); d.appendChild(nut);
     return d;
   }
