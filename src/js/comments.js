@@ -144,9 +144,14 @@
     if (!gap) { if (dau) dau.hidden = true; return; }
 
     if (!dau) {
-      dau = document.createElement('p');
+      /* `<span>` chứ không `<p>`: nó vào nằm trong một `<label>`, mà nhãn chỉ
+         nhận nội dung dạng câu chữ — một `<p>` ở đó là HTML sai, và trình
+         duyệt sẽ tự đóng thẻ nhãn lại trước nó. */
+      dau = document.createElement('span');
       dau.className = 'bao bl-vaitro';
-      hang.parentNode.insertBefore(dau, hang);
+      var oNhan = khoi.querySelector('.bl-nhan');
+      if (oNhan) oNhan.appendChild(dau);
+      else hang.parentNode.insertBefore(dau, hang);
     }
     dau.textContent = L('laChu', 'Posting as {ten}')
                         .replace('{ten}', laChu ? TEN_CHU : tenNho);
@@ -161,7 +166,11 @@
       doi.type = 'button';
       doi.className = 'bl-doi-ten';
       doi.textContent = L('changeName', 'change');
-      doi.addEventListener('click', function () {
+      doi.addEventListener('click', function (e) {
+        /* Nút này nằm TRONG một `<label>`. Không chặn thì cú bấm chạy tiếp lên
+           nhãn, nhãn đưa con trỏ vào ô gõ nội dung — đúng cái ô người ta vừa
+           bảo "khoan đã, tôi muốn đổi tên trước". */
+        e.preventDefault(); e.stopPropagation();
         moHang = true;
         veVaiTro();
         if (form.ten) form.ten.focus();
@@ -290,46 +299,51 @@
     var duocDoi = !!(ben && luoi && nutMo.getAttribute('data-o') === 'ben');
     var moc = null;
 
-    /* ── KHỐI VĂN ĐANG Ở ĐẦU TẦM MẮT ──
-       Dùng để biết người đọc đang đứng ở đâu trong bài. Lấy khối ĐẦU TIÊN mà
-       mép dưới của nó còn nằm dưới đầu vùng nhìn — tức khối đang đọc dở, chứ
-       không phải khối vừa trôi qua. Cộng 80px để trừ thanh đầu trang dính. */
-    function khoiDangDoc() {
-      var pr = document.querySelector('.prose');
-      if (!pr) return null;
-      var con = pr.children;
-      for (var i = 0; i < con.length; i++) {
-        if (con[i] === than) continue;
-        if (con[i].getBoundingClientRect().bottom > 80) return con[i];
-      }
-      return con[con.length - 1] || null;
-    }
-
     /* ── BA CHỖ KHUNG BÌNH LUẬN CÓ THỂ ĐỨNG ──
-         'goc'    dưới hàng tag, chỗ nó được dựng ra
-         'ben'    cột phải, khổ ≥1080px có cột thật
-         'taicho' CHÈN THẲNG VÀO BÀI, ngay dưới đoạn đang đọc — chỉ ở khổ hẹp
+         'goc'  dưới hàng tag, chỗ nó được dựng ra
+         'ben'  cột phải, khổ ≥1080px có cột thật
+         'tam'  MỘT TẤM NỔI LÊN TRÊN BÀI, bám mép dưới màn — chỉ ở khổ hẹp
 
-       `taicho` sinh ra vì một chuyện cụ thể: ở khổ hẹp không có cột nào để
-       mượn, nên khung ở lại chân bài, và bấm nút giữa một bài ba nghìn chữ là
-       bị ném xuống tận đáy trang. Muốn quay lại chỗ đang đọc thì phải tự dò
-       ngược lên — không ai làm thế, họ đóng tab.
+       Chỗ thứ ba sinh ra vì: ở khổ hẹp không có cột nào để mượn, nên khung ở
+       lại chân bài, và bấm nút giữa một bài ba nghìn chữ là bị ném xuống tận
+       đáy trang. Muốn quay lại chỗ đang đọc thì phải tự dò ngược lên — không
+       ai làm thế, họ đóng tab.
 
-       Chèn tại chỗ thì ô gõ hiện ra ngay dưới đoạn vừa đọc, gõ xong đóng lại
-       là bài liền mạch như cũ. Vẫn là DỜI chứ không chép, nên chữ đang gõ dở
-       và chip "đang trả lời ai" đều đi theo.
+       ── VÌ SAO KHÔNG CÒN CHÈN THẲNG VÀO BÀI ──
+       Bản trước nhét khung vào GIỮA hai đoạn văn, ngay dưới đoạn đang đọc.
+       Nó giải quyết đúng chuyện bị ném xuống đáy, nhưng đẻ ra một chuyện khác
+       khó chịu hơn: bài đang đọc bị cắt đôi bởi một cái hộp xám cao gần bằng
+       màn hình, chữ trên chữ dưới rời hẳn nhau, và mở ra đóng vào là cả bài
+       nhảy lên nhảy xuống vì dòng chảy văn bản đổi chiều cao hai lần.
+
+       Một TẤM NỔI thì bài phía sau không suy suyển một pixel nào. Nó trượt
+       lên từ mép dưới, có màn mờ phía sau, bấm ra ngoài hoặc Esc là đóng —
+       đúng cách mọi ứng dụng điện thoại mở một ô gõ.
+
+       Vẫn là DỜI chứ không chép, nên chữ đang gõ dở và chip "đang trả lời ai"
+       đều đi theo. Dời hẳn ra `<body>`: `position:fixed` bên trong một tổ
+       tiên có `transform` thì neo theo tổ tiên ấy chứ không theo màn hình —
+       một cái bẫy chỉ lộ ra khi ai đó thêm hiệu ứng vào khung bài.
 
        Một `moc` duy nhất cho cả ba chỗ: mỗi lúc khung chỉ ở một nơi, nên hai
        cái mốc là sớm muộn có một cái trỏ vào chỗ không còn tồn tại. */
+    var man = null;
+
+    function boTam() {
+      than.classList.remove('bl-than--tam');
+      if (man) { man.remove(); man = null; }
+      document.documentElement.classList.remove('bl-khoa');
+    }
+
     function datCho(cho) {
-      if (cho !== 'goc' && !luoi) return;
-      /* Về gốc trước đã — đi thẳng từ 'ben' sang 'taicho' thì `moc` cũ mất. */
+      if (cho === 'ben' && !luoi) return;
+      /* Về gốc trước đã — đi thẳng từ 'ben' sang 'tam' thì `moc` cũ mất. */
       if (moc) {
         moc.parentNode.insertBefore(than, moc);
         moc.remove(); moc = null;
         if (ben) ben.classList.remove('ben--bl');
-        luoi.classList.remove('post-left--bl');
-        than.classList.remove('bl-than--taicho');
+        if (luoi) luoi.classList.remove('post-left--bl');
+        boTam();
       }
       if (cho === 'goc') return;
 
@@ -343,16 +357,24 @@
         return;
       }
 
-      var neo = khoiDangDoc();
-      if (!neo || !neo.parentNode) return;
       moc = document.createComment('bl-than');
       than.parentNode.insertBefore(moc, than);
-      neo.parentNode.insertBefore(than, neo.nextSibling);
-      than.classList.add('bl-than--taicho');
+      /* Màn mờ vào TRƯỚC tấm: hai anh em cùng một cha, nên thứ tự trong cây
+         quyết định cái nào nằm trên — khỏi phải đếm z-index. */
+      man = document.createElement('div');
+      man.className = 'bl-man';
+      man.addEventListener('click', function () { nutMo.click(); });
+      document.body.appendChild(man);
+      document.body.appendChild(than);
+      than.classList.add('bl-than--tam');
+      /* Khoá cuộn của trang phía sau. Không khoá thì vuốt trong tấm tới đầu
+         hoặc cuối là cú vuốt ấy truyền ra bài đằng sau, và bài trôi đi trong
+         lúc đang gõ. `overscroll-behavior` trong CSS lo phần trong tấm. */
+      document.documentElement.classList.add('bl-khoa');
     }
 
     /* Giữ tên cũ cho mọi chỗ đang gọi: `true` là sang cột bên, `false` là về
-       gốc. Chỗ mở khung gọi thẳng `datCho` để chọn được cả 'taicho'. */
+       gốc. Chỗ mở khung gọi thẳng `datCho` để chọn được cả 'tam'. */
     function doiCho(vaoBen) { datCho(vaoBen ? 'ben' : 'goc'); }
 
     /* Nút "Back" trong khung bấm hộ chính nút đã mở khung: một đường đóng duy
@@ -378,7 +400,7 @@
          vừa giấu khỏi trình đọc màn hình, và bấm Tab không lọt vào được. */
       than.hidden = dangMo;
       if (dangMo) datCho('goc');
-      else datCho(rong.matches ? 'ben' : 'taicho');
+      else datCho(rong.matches ? 'ben' : 'tam');
       /* ── ĐƯA MẮT TỚI CHỖ VỪA MỞ ──
          Nút nằm ở đầu bài, còn khung — trừ lúc vừa dời sang cột bên — mở ra ở
          DƯỚI hàng tag, cách chỗ vừa bấm cả nghìn pixel. Bấm xong mà màn hình
@@ -399,19 +421,21 @@
          nhích vừa đủ thay vì kéo cả trang lên đầu. `start` cho khung mở tại
          chỗ dưới hàng tag: ở đó nó thật sự ở xa, và phải đưa hẳn lên. */
       if (!dangMo) {
-        /* Chèn tại chỗ thì khung đã nằm ngay dưới mắt — `nearest` chỉ nhích
-           vừa đủ cho ô gõ lọt vào màn, không kéo trang đi đâu cả. Đó là cả
-           mục đích của việc chèn tại chỗ. */
-        var oGan = (duocDoi && rong.matches) || !rong.matches;
-        than.scrollIntoView({ block: oGan ? 'nearest' : 'start',
-                              behavior: 'smooth' });
+        /* Tấm nổi thì KHÔNG cuộn gì hết: nó đã nằm sẵn ở mép dưới màn hình,
+           và một cú cuộn lúc này chỉ làm bài phía sau trôi đi vô cớ. */
+        var tamNoi = !rong.matches && !!moc;
+        var oGan = duocDoi && rong.matches;
+        if (!tamNoi) {
+          than.scrollIntoView({ block: oGan ? 'nearest' : 'start',
+                                behavior: 'smooth' });
+        }
         /* Con trỏ vào thẳng ô viết: mở khung bình luận là để viết, và nếu đã
            cuộn tới nơi rồi thì bắt gõ thêm một cú bấm nữa là thừa. Chờ hết cú
            cuộn mới focus — focus sớm thì trình duyệt tự nhảy, đè lên cuộn mượt. */
         setTimeout(function () {
           var o = than.querySelector('textarea');
           if (o) { try { o.focus({ preventScroll: true }); } catch (e) { o.focus(); } }
-        }, 420);
+        }, tamNoi ? 260 : 420);
       }
       /* Đóng lại thì đưa mắt VỀ chỗ cái nút — không thì người đọc đóng khung ở
          cuối bài xong còn đứng nguyên dưới đó, nhìn một khoảng trống vừa co
@@ -425,9 +449,18 @@
     /* Xoay máy hay kéo rộng cửa sổ lúc khung đang mở: đích đến đổi theo khổ
        màn. Không nghe thì khung chèn giữa bài ở khổ hẹp vẫn nằm chèn giữa bài
        sau khi máy đã rộng ra tới hai cột. */
+    /* Esc: lối ra của bàn phím, và của cả người đang cầm điện thoại có bàn
+       phím ngoài. Chỉ bắt khi tấm đang nổi — ở hai chỗ kia khung là một phần
+       của trang, Esc ở đó không có nghĩa gì. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape' || !man) return;
+      e.preventDefault();
+      nutMo.click();
+    });
+
     var theoNgang = function () {
       if (than.hidden) return;
-      datCho(rong.matches ? 'ben' : 'taicho');
+      datCho(rong.matches ? 'ben' : 'tam');
     };
     (rong.addEventListener ? rong.addEventListener('change', theoNgang)
                            : rong.addListener(theoNgang));

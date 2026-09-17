@@ -318,8 +318,18 @@
      (đúng ý, nó là một thanh nổi), mà RUỘT thanh thì thẳng cột với hàng. */
   padding:8px var(--s3);margin:0 calc(var(--s3) * -1) 2px;
   border-radius:var(--r-sm);
-  background:var(--accent-wash);
-  box-shadow:inset 0 0 0 1px var(--line);
+  /* ── NỀN PHẢI ĐỤC, KHÔNG ĐƯỢC TRONG ──
+     `--accent-wash` là một lớp rửa alpha .14. Thanh này DÍNH khi cuộn, nên
+     mọi hàng bình luận trôi qua dưới nó đều hiện xuyên lên: chữ của hàng
+     chồng lên chữ "2 SELECTED", nút Approve của hàng chồng lên nút Approve
+     của thanh. Nhìn ra đúng như "chữ với nút chèn vào bảng" — và không ai
+     ngờ tới vì đứng yên thì thanh trông hoàn toàn bình thường.
+
+     Nền đục = một lớp mặt phẳng, rồi mới rửa màu nhấn lên trên nó. Giữ
+     nguyên sắc cũ, chỉ khác là nay nó chặn được thứ đi qua phía sau. */
+  background-color:var(--surface-solid);
+  background-image:linear-gradient(var(--accent-wash),var(--accent-wash));
+  box-shadow:inset 0 0 0 1px var(--line),var(--glass-drop);
 }
 .ad-chon-dem{
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
@@ -437,6 +447,24 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
   .ad-dong{grid-template-columns:5.5rem minmax(0,1fr);gap:2px var(--s3)}
   .ad-chinh{grid-column:1 / -1;white-space:normal}
   .ad-lenh-hang{grid-column:1 / -1;margin-top:2px}
+  /* ── HÀNG CÓ Ô TÍCH PHẢI KHAI LẠI LƯỚI CỦA NÓ ──
+     `.ad-dong--chon` và `.ad-dong` cùng một mức cụ thể, mà luật khổ hẹp ở
+     trên đứng SAU trong file — nên nó thắng, và cột ô tích biến mất khỏi
+     bảng. Ô tích rơi vào cột 5,5rem dành cho ngày giờ, đẩy ngày giờ sang cột
+     chữ, và cột trạng thái rộng 5,4rem thì tự tìm một hàng mới cho mình.
+     Vị trí đặt THẲNG cho cả bốn ô, không để lưới tự xếp: tự xếp thì ô trạng
+     thái chui xuống dưới khối chữ vì con trỏ lưới đã đi qua hàng ấy rồi. */
+  .ad-dong--chon{grid-template-columns:1.1rem 5.5rem minmax(0,1fr)}
+  .ad-dong--chon > .ad-phu{grid-area:1 / 2}
+  .ad-dong--chon > .ad-cd{grid-area:1 / 3}
+  .ad-dong--chon > .ad-chinh{grid-area:2 / 1 / auto / -1}
+  .ad-dong--chon > .ad-lenh-hang{grid-area:3 / 1 / auto / -1}
+  /* Bốn nút rộng 5rem cộng lại là 20rem — quá bề ngang một cái điện thoại,
+     nên chúng xuống hàng lung tung giữa dòng đếm. Cho dòng đếm đứng riêng
+     một hàng, bốn nút dàn hàng dưới theo chữ của chúng. */
+  .ad-chon-thanh{gap:var(--s2) var(--s5)}
+  .ad-chon-dem{flex:1 0 100%;margin-right:0}
+  .ad-chon-thanh .ad-lenh{width:auto;text-align:left}
   /* Vùng bấm nới ra bằng lề trong: trên màn 390px hai nút chữ cạnh nhau ra
      chừng 24px mỗi cái, mà ngón tay phủ tới 45px — và cái dễ bấm nhầm lại là
      cái GIẤU HẲN một bình luận. Chỉ ở khổ hẹp; máy có con trỏ thì không cần. */

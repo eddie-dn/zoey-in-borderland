@@ -58,6 +58,10 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.0 | 2026-09-17 | 00 | phép kiểm mới: bắt một lớp CSS bị khai hai lần cùng một thuộc tính trong một file |
+| V2.7.9 | 2026-09-17 | 09 | nền động bốn theme hiện rõ hơn; nền 霜降 vẽ lại trăng và cho bầu trời đổi màu trọn một vòng ngày đêm |
+| V2.7.8 | 2026-09-17 | 08 | điện thoại: khung bình luận giữa bài nay là tấm nổi, bài phía sau đứng yên; khu trả lời gộp hai nhãn về một hàng; trang bài có dấu trang nhỏ cho ảnh chụp màn hình |
+| V2.7.7 | 2026-09-17 | 07 | bàn duyệt: thanh chọn hàng loạt thôi để bảng xuyên qua, hàng có ô tích thẳng cột lại ở khổ hẹp; điện thoại nới lề hai bên; cụm ba nút nổi hiện lại ngay khi ngừng cuộn |
 | V2.7.6 | 2026-09-17 | 06 | màn đầu bỏ dòng Profile; chú thích nút đổi câu sang bên phải, thôi đè lên ô trích dẫn; dãy núi 霜降 trở lại đường thoải |
 | V2.7.5 | 2026-09-17 | 05 | nền 霜降 chốt một bản: mặt trời lặn sau núi gần mặt nước, sương dâng, trăng lên và sao lấp lánh; bỏ hai bản demo và đường ?nen= |
 | V2.7.4 | 2026-09-17 | 04 | màu chữ trong bài lên mười hai màu, mỗi màu có bản cho cả bốn theme; phép kiểm cùng bộ biến so cả 霜降 |
@@ -226,6 +230,69 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.0 — 17-Sep-2026
+
+- **Phép kiểm mới: một lớp CSS khai hai lần trong cùng một file.** `.bl-vaitro`
+  được khai ở hai chỗ cách nhau bốn trăm dòng của `prose.css`; bản sau lặng lẽ
+  đè bản trước, nên sửa ở bản đầu là sửa vào chỗ không ai đọc — và nó vừa ăn
+  mất một lượt sửa thật. Phép kiểm chỉ báo khi hai khối cùng đặt MỘT thuộc
+  tính (khai lại để thêm thuộc tính khác là chuyện bình thường), và bỏ qua mọi
+  thứ trong `@media` vì ở đó đè là cố ý. Cắm lỗi thử cả hai chiều: một cặp
+  trùng `position` thì đỏ, cùng cặp ấy đặt trong `@media` thì im.
+
+## V2.7.9 — 17-Sep-2026
+
+- **Nền động bốn theme thôi chìm.** Cánh hoa Sakura và dòng nước Tĩnh lặng vẽ
+  bằng những alpha rất dè dặt, cộng thêm lớp `opacity:.9` phủ ngoài — kết quả
+  là trên một màn hình sáng thường thì gần như không thấy gì. Một cái nền
+  không ai thấy thì nó không phải một cái nền. Nay lớp ngoài mở hết và alpha
+  bên trong nhích lên một nấc; trang giới thiệu lên .30.
+- **Nền 霜降 chạy trọn một vòng ngày đêm.** Mặt trời mọc sau dãy núi bên trái,
+  đi một cung lên đỉnh rồi lặn bên phải; bầu trời đổi màu theo — ửng hồng lúc
+  bình minh, giấy trắng giữa trưa, một dải ấm lúc hoàng hôn, mực lạnh về đêm.
+  Trăng lên khi trời tối, mây trôi hiu hiu suốt cả vòng, mặt nước nâng lên một
+  nấc để hứng bóng. Một vòng chừng một trăm giây, rồi lặp.
+- **Mặt trăng vẽ lại bằng phép XOÁ.** Bản trước là một đĩa trắng có viền mực
+  và một quầng cũng bằng mực — tức là một quầng TỐI quanh mặt trăng, trên giấy
+  trắng đọc ra đúng như một cái đĩa dán lên. Trên giấy, sáng chỉ có một nghĩa:
+  bớt mực đi. Nay đĩa và quầng là một dải xoá tám chặng, không một nét viền.
+## V2.7.8 — 17-Sep-2026
+
+- **Điện thoại: khung bình luận giữa bài nay NỔI LÊN, không chèn vào bài.**
+  Bản trước nhét khung vào giữa hai đoạn văn, ngay dưới đoạn đang đọc. Nó giải
+  quyết đúng chuyện bị ném xuống chân trang, nhưng cắt bài làm đôi bằng một cái
+  hộp cao gần bằng màn hình, và mỗi lần mở đóng là cả bài nhảy lên nhảy xuống.
+  Nay là một tấm trượt lên từ mép dưới, có màn mờ phía sau; bấm ra ngoài hoặc
+  Esc là đóng, và bài phía sau không suy suyển một pixel.
+- **Khu trả lời gộp hai nhãn về một hàng.** "POSTING AS ZOEY" và "YOUR NOTE"
+  từng là hai dòng chữ hoa giãn ly xếp chồng — đọc lướt xuống thì ra một cặp
+  tiêu đề giống hệt nhau. Nay chúng đứng hai đầu cùng một hàng và nói bằng hai
+  giọng khác nhau: trái là nhãn, phải là một câu báo tin thường. Ô gõ hạ từ
+  104px xuống 88px.
+- **Trang bài có dấu trang cho ảnh chụp màn hình.** Một dòng rất nhỏ, rất nhạt
+  ở góc dưới trái: địa chỉ trang và tên bài. Trình duyệt không xen được vào
+  lúc máy chụp màn hình, nên cách duy nhất để mọi tấm ảnh mang theo nguồn là
+  một dòng luôn nằm trong khung hình. Không bấm được, và biến mất khi in.
+
+## V2.7.7 — 17-Sep-2026
+
+- **Bàn duyệt: thanh chọn hàng loạt thôi để bảng xuyên qua.** Thanh "2
+  SELECTED · APPROVE · …" dính ở đầu bảng khi cuộn, mà nền nó chỉ đục 14% —
+  nên mọi hàng bình luận trôi qua phía dưới đều hiện xuyên lên, chữ chồng chữ,
+  nút chồng nút. Đứng yên thì thanh trông hoàn toàn bình thường, nên không ai
+  ngờ tới. Nay nền đục hẳn.
+- **Và hàng có ô tích thẳng cột lại ở khổ hẹp.** Luật lưới cho màn nhỏ đứng
+  sau trong file nên nó đè mất cột ô tích: ô tích rơi vào cột ngày giờ, ngày
+  giờ bị đẩy sang cột chữ, cột trạng thái tự tìm một hàng mới cho mình. Nay
+  bốn ô được đặt chỗ thẳng, không để lưới tự xếp.
+- **Điện thoại nới lề hai bên.** 19px trên một cái iPhone 375px là chữ gần
+  chạm mép kính. Nay 23px ở 375px, 27px ở 430px; từ 516px trở lên vẫn 32px
+  như cũ.
+- **Cụm ba nút nổi hiện lại ngay khi ngừng cuộn.** Nó chỉ đổi trạng thái lúc
+  HƯỚNG cuộn đảo chiều — mà một cú vuốt mạnh trên điện thoại sinh ra quán tính
+  chạy tiếp rồi tắt dần, hướng không bao giờ đảo. Cụm trượt ra khỏi mép phải
+  và nằm luôn ngoài đó. Nay hết cuộn 420ms là nó về.
 
 ## V2.7.6 — 17-Sep-2026
 

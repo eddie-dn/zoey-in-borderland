@@ -216,7 +216,13 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --s1:4px;   --s2:8px;   --s3:12px;  --s4:16px;  --s5:20px;
   --s6:24px;  --s7:32px;  --s8:40px;  --s9:56px;  --s10:72px;
   --s11:96px; --s12:128px;
-  --gutter:clamp(18px,5vw,32px);      /* lề ngang tối thiểu, mọi màn hình */
+  /* ── LỀ NGANG, MỌI MÀN HÌNH ──
+     Mốc dưới 18px và hệ số 5vw cho ra 19px trên một cái iPhone 375px: chữ
+     gần chạm mép kính, và cả cột đọc ra là bị ép. Mắt cần một quãng trống ở
+     mép để biết đâu là hết dòng — thiếu nó thì dòng nào cũng như tràn ra
+     ngoài. 20px + 6,2vw cho ra 23px ở 375px, 24px ở 390px, 27px ở 430px, và
+     vẫn dừng ở 32px từ khổ 516px trở lên như cũ. */
+  --gutter:clamp(20px,6.2vw,32px);    /* lề ngang tối thiểu, mọi màn hình */
 
   /* ── 5b. LIQUID GLASS ──
      Một tấm kính thật không phải chỉ là "nền mờ". Nó có bốn tầng, và thiếu

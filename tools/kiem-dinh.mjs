@@ -2485,6 +2485,82 @@ const KIEM = [
       }
       return ra;
     }
+  },
+  {
+    /* ── MỘT LỚP KHAI HAI LẦN TRONG CÙNG MỘT FILE ──
+       CSS cho phép, nên không có lỗi nào báo — và đó chính là chỗ nguy. Khai
+       `.bl-vaitro` ở dòng 1049 rồi khai lại ở dòng 1474 thì bản sau đè bản
+       trước ở mọi thuộc tính trùng tên; ai mở file ra sửa, tìm thấy bản đầu,
+       sửa xong và không thấy gì đổi trên màn hình. Đã xảy ra thật.
+
+       Chỉ báo khi hai khối cùng ĐẶT MỘT THUỘC TÍNH: khai lại một lớp để thêm
+       thuộc tính khác là chuyện bình thường và có ích (gom theo chủ đề), còn
+       đặt `text-transform` hai lần hai giá trị thì đúng một trong hai là vô
+       nghĩa. So ở ngoài `@media` thôi — trong media query là cố ý đè. */
+    ten: 'Không lớp CSS nào bị khai hai lần cùng một thuộc tính trong một file',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const thuMuc = path.join(goc, 'src', 'styles');
+      if (!fs.existsSync(thuMuc)) return [];
+      const ra = [];
+      for (const ten of fs.readdirSync(thuMuc).filter((x) => x.endsWith('.css'))) {
+        const s = fs.readFileSync(path.join(thuMuc, ten), 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, ' ');
+        /* Quét tay thay vì regex: phải đếm được độ sâu ngoặc để bỏ qua mọi
+           thứ nằm trong @media, @supports, @keyframes. */
+        const khoi = [];
+        let sau = 0, dauChon = 0, dong = 1, dongChon = 1;
+        for (let i = 0; i < s.length; i++) {
+          const c = s[i];
+          if (c === '\n') dong++;
+          if (c === '{') {
+            if (sau === 0) {
+              const chon = s.slice(dauChon, i).trim().replace(/\s+/g, ' ');
+              dongChon = dong;
+              sau = 1;
+              /* @media/@supports/@keyframes: nhảy qua cả khối. */
+              if (chon.startsWith('@')) {
+                let n = 1;
+                while (++i < s.length && n) {
+                  if (s[i] === '\n') dong++;
+                  else if (s[i] === '{') n++;
+                  else if (s[i] === '}') n--;
+                }
+                sau = 0; dauChon = i + 1;
+                continue;
+              }
+              let than = '', n = 1;
+              while (++i < s.length && n) {
+                if (s[i] === '\n') dong++;
+                if (s[i] === '{') n++;
+                else if (s[i] === '}') { n--; if (!n) break; }
+                than += s[i];
+              }
+              khoi.push({ chon, dong: dongChon, than });
+              sau = 0; dauChon = i + 1;
+            }
+          } else if (c === '}' && sau === 0) {
+            dauChon = i + 1;
+          }
+        }
+        const thay = new Map();
+        for (const k of khoi) {
+          const tt = new Set([...k.than.matchAll(/(^|;)\s*([a-z-]+)\s*:/gi)]
+            .map((m) => m[2].toLowerCase()));
+          if (!thay.has(k.chon)) { thay.set(k.chon, { dong: k.dong, tt }); continue; }
+          const cu = thay.get(k.chon);
+          const trung = [...tt].filter((x) => cu.tt.has(x));
+          if (trung.length) {
+            ra.push(`${ten} — \x60${k.chon}\x60 khai lại ở dòng ${k.dong} ` +
+                    `(đã khai ở dòng ${cu.dong}), cùng đặt: ${trung.slice(0, 4).join(', ')}` +
+                    (trung.length > 4 ? '…' : '') + ' — bản sau đè bản trước');
+          }
+          trung.forEach(() => {});
+          for (const x of tt) cu.tt.add(x);
+        }
+      }
+      return ra;
+    }
   }
 ];
 

@@ -506,9 +506,18 @@
   .hero-anh{right:-6%;height:38%;max-width:66%;opacity:.42}
 }
 
+/* ── ĐỘ HIỆN CỦA NỀN ĐỘNG ──
+   `.9` từ đời đầu, và cộng với mấy alpha rất dè dặt bên trong mỗi hiệu ứng
+   thì kết quả là nền chìm hẳn: trên một màn hình sáng thường, cánh hoa Sakura
+   và dòng nước Tĩnh lặng gần như không thấy. Một cái nền không ai thấy thì
+   nó không phải một cái nền, nó là mấy trăm dòng mã chạy không.
+
+   Lên `1` ở đây, và các alpha bên trong nen.js cũng nhích lên một nấc. Chữ
+   vẫn đọc được: mọi khối chữ nhỏ đều nằm trong thẻ kính có nền riêng, chỉ có
+   khối tên blog cỡ lớn là nằm thẳng trên nền — mà ở cỡ ấy thì tương phản dư. */
 .nen-canvas{
   position:absolute;inset:0;width:100%;height:100%;
-  pointer-events:none;z-index:0;opacity:.9;
+  pointer-events:none;z-index:0;opacity:1;
 }
 /* ── KHI NỀN BÁM VÀO CẢ TRANG (trang chủ) ──
    `.shell` là ông của mọi thứ: thanh đầu, nội dung, chân trang. Cho canvas
@@ -548,7 +557,7 @@
    nghĩa là đã mất một nhịp đọc. Ở .22 thì phải NHÌN VÀO khoảng trống mới
    thấy, tức là nó chỉ hiện ra đúng lúc người ta rời mắt khỏi chữ. Đó là chỗ
    một cái nền nên đứng. */
-.nen-boc > .nen-canvas{opacity:.22}
+.nen-boc > .nen-canvas{opacity:.3}
 
 /* ── LƯỚI BA CỘT ──
    Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi

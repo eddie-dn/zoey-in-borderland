@@ -150,18 +150,37 @@
     }).observe(chan);
   }
 
+  /* ── GIẤU KHI ĐANG CUỘN XUỐNG, HIỆN LẠI KHI DỪNG TAY ──
+     Bản trước chỉ đổi trạng thái lúc HƯỚNG cuộn đảo chiều: giấu khi xuống,
+     hiện khi lên. Trên điện thoại thì đó là một cái bẫy — một cú vuốt mạnh
+     sinh ra quán tính chạy tiếp cả nghìn pixel rồi tắt dần, và hướng KHÔNG
+     BAO GIỜ đảo. Cụm ba nút trượt ra khỏi mép phải và nằm luôn ngoài đó cho
+     tới khi người đọc chủ động vuốt ngược lên. Đúng cái "lướt hơi nhanh tí
+     là mất ba cục bên tay phải".
+
+     Nay có thêm một đường về thứ hai: hết cuộn thì hiện lại. 420ms là quãng
+     đủ dài để không chớp tắt giữa những cú vuốt nối nhau, mà vẫn đủ ngắn để
+     người vừa dừng mắt lại đã thấy cụm nút ở đó. */
   var truocY = window.scrollY;
-  var cuonXuong = false;
-  window.addEventListener('scroll', function () {
-    var y = window.scrollY;
-    if (Math.abs(y - truocY) < 8) return;
-    var xuong = y > truocY;
-    truocY = y;
-    if (xuong === cuonXuong) return;
-    cuonXuong = xuong;
+  var dangLui = false;
+  var henHien = 0;
+
+  function lui(co) {
+    if (co === dangLui) return;
+    dangLui = co;
     /* Chỉ giấu, KHÔNG dời chỗ: dời đi dời lại theo mỗi cú vuốt là mỗi cú vuốt
        một lượt tính lại bố cục, và nút vừa bấm hụt thì nó đã ở chỗ khác. */
-    oNoi.classList.toggle('cum-noi--lui', xuong);
+    oNoi.classList.toggle('cum-noi--lui', co);
+  }
+
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY;
+    if (Math.abs(y - truocY) >= 8) {
+      lui(y > truocY);
+      truocY = y;
+    }
+    clearTimeout(henHien);
+    henHien = setTimeout(function () { lui(false); }, 420);
   }, { passive: true });
 
   /* Vượt ngưỡng lúc đang dời — xoay điện thoại, kéo rộng cửa sổ — thì đích

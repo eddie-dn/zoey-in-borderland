@@ -920,12 +920,52 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 
    Lấn ra hai bên bằng lề trong âm để tấm nền chạm mép cột chữ — một khối nền
    hẹp hơn cột chữ nhìn như bị thụt vào nhầm. */
-.bl-than--taicho{
-  margin:var(--s5) 0;padding:var(--s5) var(--s4);
-  margin-inline:calc(var(--s4) * -1);
-  border-radius:var(--r-md);
-  background:var(--surface-sunken);
-  box-shadow:inset 0 0 0 1px var(--line);
+/* ══════════ TẤM BÌNH LUẬN NỔI — KHỔ HẸP ══════════
+   Bản trước chèn khung thẳng vào giữa hai đoạn văn. Bài bị cắt đôi bởi một
+   cái hộp cao gần bằng màn hình, và mỗi lần mở/đóng là cả bài nhảy lên nhảy
+   xuống vì dòng chảy đổi chiều cao. Một tấm NỔI thì bài phía sau đứng yên
+   tuyệt đối.
+
+   Bám mép DƯỚI, không phải giữa màn: bàn phím điện thoại bung lên từ dưới,
+   và một tấm bám đáy bị đẩy lên nguyên khối — ô gõ luôn nằm ngay trên bàn
+   phím. Tấm căn giữa thì bị bàn phím ăn mất nửa dưới. */
+.bl-than--tam{
+  position:fixed;z-index:70;left:0;right:0;bottom:0;
+  margin:0;
+  padding:var(--s3) var(--gutter) calc(var(--s5) + env(safe-area-inset-bottom,0px));
+  max-height:min(86vh,760px);
+  overflow-y:auto;
+  /* Vuốt hết tấm thì dừng ở đó, không truyền cú vuốt ra bài đằng sau. */
+  overscroll-behavior:contain;
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  background:var(--surface-solid);
+  box-shadow:0 -1px 0 var(--line),0 -18px 50px rgba(0,0,0,.18);
+  animation:bl-tam-len .3s var(--ease-glass) both;
+}
+/* Vạch nắm ở đỉnh tấm — dấu hiệu quen thuộc của "đây là một tấm kéo lên từ
+   dưới, và nó đóng được". Không kéo được thật (kéo được thì phải viết cả một
+   bộ xử lý cử chỉ), nhưng nó nói đúng rằng tấm này là tạm. */
+.bl-than--tam::before{
+  content:"";display:block;width:38px;height:4px;
+  margin:0 auto var(--s4);border-radius:var(--r-pill);
+  background:var(--line-strong);opacity:.6;
+}
+@keyframes bl-tam-len{
+  from{transform:translateY(14px);opacity:0}
+  to{transform:none;opacity:1}
+}
+.bl-man{
+  position:fixed;inset:0;z-index:69;
+  background:rgba(12,10,20,.38);
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+  animation:bl-man-hien .3s var(--ease-glass) both;
+}
+@keyframes bl-man-hien{from{opacity:0}to{opacity:1}}
+/* Khoá cuộn của trang phía sau trong lúc tấm mở. Trên `<html>` chứ không trên
+   `<body>`: một số trình duyệt di động chỉ nghe ở gốc. */
+.bl-khoa,.bl-khoa body{overflow:hidden}
+@media (prefers-reduced-motion:reduce){
+  .bl-than--tam,.bl-man{animation:none}
 }
 
 /* ══════════ NÚT MỞ KHU BÌNH LUẬN ══════════
@@ -986,7 +1026,12 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 
    `flex:1 0 100%` bắt nó chiếm trọn một dòng của hàng — tức là bung ra hết
    bề ngang thẻ, đúng như một ô để gõ cần. */
-.bl-item > .bl-form{flex:1 0 100%;margin-top:var(--s4)}
+/* Và lùi vào như một nhánh trả lời: nó đang đứng DƯỚI một bình luận, nên nó
+   phải đọc ra là thuộc về bình luận ấy. */
+.bl-item > .bl-form{
+  flex:1 0 100%;margin-top:var(--s4);
+  padding-left:var(--s5);border-left:2px solid var(--line);
+}
 /* Hai ô tên + email nằm cạnh nhau ở màn rộng, tự xuống hàng ở màn hẹp —
    auto-fit lo việc đó, không cần media query. */
 .bl-hang{
@@ -997,7 +1042,26 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    Nó là một dòng BÁO TIN, nên dùng cụm `.bao` (components.css) — chỉ thêm nét
    nhấn cho cái tên, vì đó là thứ người ta cần liếc để biết mình đang gửi dưới
    danh nghĩa nào. */
-.bl-vaitro{color:var(--text-muted)}
+/* ── HÀNG NHÃN CỦA Ô GÕ: HAI ĐẦU, HAI GIỌNG ──
+   Trái là NHÃN (chữ hoa, giãn ly, như mọi nhãn khác của trang). Phải là một
+   câu BÁO TIN thường. Hai giọng khác nhau là thứ làm chúng thôi đọc ra như
+   hai tiêu đề chồng nhau — cùng một cỡ chữ hoa đặt cạnh nhau thì mắt đọc ra
+   hai đề mục, chứ không ra "đề mục + chú thích". */
+.bl-nhan{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:var(--s3);flex-wrap:wrap;
+}
+/* ── MỘT LUẬT DUY NHẤT CHO LỚP NÀY ──
+   File này từng khai `.bl-vaitro` ở HAI CHỖ, cách nhau bốn trăm dòng: một
+   bản ở khu biểu mẫu và một bản ở khu nút bình luận. Không có lỗi nào báo —
+   CSS cho phép — nhưng bản sau lặng lẽ đè bản trước, nên sửa ở bản trước là
+   sửa vào chỗ không ai đọc. Đúng cái bẫy ấy vừa ăn mất một lượt sửa. */
+.bl-vaitro{
+  margin:0;min-height:0;
+  color:var(--text-muted);
+  font-family:var(--font-body);font-size:var(--fs-2xs);font-weight:400;
+  letter-spacing:0;text-transform:none;
+}
 .bl-doi-ten{
   appearance:none;border:0;background:none;padding:0;cursor:pointer;
   font:inherit;color:var(--accent-ink);
@@ -1022,7 +1086,11 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   font-family:inherit;
   transition:box-shadow var(--dur-fast);
 }
-.bl-o textarea{resize:vertical;min-height:104px}
+/* 104px xuống 88px. Khung này nằm trong một tấm nổi trên điện thoại và
+   trong một cột hẹp ở khổ rộng; một ô gõ cao hơn ba dòng chỉ làm cả khối
+   nặng hơn mấy thẻ bình luận ngay trên nó, trong khi lời nhắn người ta gõ
+   hiếm khi dài tới thế — và ô vẫn kéo cao được. */
+.bl-o textarea{resize:vertical;min-height:88px}
 .bl-o :is(input,textarea)::placeholder{color:var(--text-faint);opacity:.75}
 .bl-o :is(input,textarea):focus{
   outline:none;
@@ -1186,9 +1254,6 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   color:var(--accent-ink);background:var(--surface-solid);outline:none;
 }
 
-/* Form đem xuống dưới một bình luận thì lùi vào cho khớp nhánh trả lời. */
-.bl-item > .bl-form{margin-top:var(--s4);padding-left:var(--s5);
-  border-left:2px solid var(--line)}
 
 /* Ở CHỖ ĐỨNG GỐC (ngay dưới danh sách) thì form cần một quãng thở. Không có
    dòng này thì ô NAME dính sát vào tấm kính của bình luận cuối, nhìn như nó
@@ -1412,13 +1477,33 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-mo[aria-expanded="true"]{color:var(--accent-ink);background:var(--accent-wash)}
 .bl-than{margin-top:var(--s6)}
 
-/* Dòng "Posting as Zoey" thay cho hai ô tên và email khi chủ trang đã đăng
-   nhập. Nhạt và nhỏ: nó là một lời xác nhận, không phải một ô phải điền. */
-.bl-vaitro{
-  margin:0;
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
+/* ══════════ DẤU TRANG — CHO ẢNH CHỤP MÀN HÌNH ══════════
+   Nhạt tới mức đọc bài thì không vướng mắt, mà chụp màn hình rồi phóng lên
+   thì đọc được. Hai phần: địa chỉ trang (đậm hơn một nhịp) và tên bài (nhạt
+   hơn, cắt cụt khi dài). Không bấm được, không lọt vào trình đọc màn hình —
+   nó không phải nội dung, nó là một cái triện góc tranh. */
+.dau-trang{
+  position:fixed;z-index:40;
+  left:calc(var(--gutter) + env(safe-area-inset-left,0px));
+  bottom:calc(var(--s3) + env(safe-area-inset-bottom,0px));
+  margin:0;max-width:min(58vw,420px);
+  display:flex;align-items:baseline;gap:6px;
+  font-family:var(--font-label);font-size:9px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-faint);opacity:.5;
+  pointer-events:none;user-select:none;
+  white-space:nowrap;overflow:hidden;
 }
+.dau-trang-nha{flex:none}
+.dau-trang-bai{
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  font-weight:400;letter-spacing:.1em;opacity:.7;
+}
+.dau-trang-bai::before{content:"· "}
+/* Khổ rất hẹp thì chỉ còn địa chỉ: tên bài ở đó bị cắt còn dăm chữ, mà một
+   cái tên cụt nửa chừng thì không nói được gì hơn là không có. */
+@media (max-width:420px){ .dau-trang-bai{display:none} }
+@media print{ .dau-trang{display:none} }
 
 /* ══════════ BẤM ẢNH ĐỂ XEM TO ══════════
    Con trỏ kính lúp là tín hiệu DUY NHẤT nói ra tấm ảnh này bấm được — không

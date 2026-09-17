@@ -2181,9 +2181,14 @@ function binhLuanHTML(bai) {
         </label>
       </div>
 
+      ${/* Nhãn ô gõ là một HÀNG hai đầu: bên trái "YOUR NOTE", bên phải dòng
+            "Posting as …" do comments.js cắm vào. Trước đây hai thứ ấy là hai
+            đoạn xếp chồng, và cả hai đều là nhãn chữ hoa giãn ly — đọc lướt
+            xuống thì chúng ra một cặp tiêu đề giống hệt nhau, chả nói thêm
+            được gì mà chiếm mất hai dòng của một khung vốn đã cao. */''}
       <label class="bl-o">
-        <span>${NHAN.yourNote}</span>
-        <textarea name="noiDung" rows="4" maxlength="2000" required
+        <span class="bl-nhan"><span class="bl-nhan-de">${NHAN.yourNote}</span></span>
+        <textarea name="noiDung" rows="3" maxlength="2000" required
                   placeholder="${attr(NHAN.notePh)}"></textarea>
       </label>
 
@@ -2506,6 +2511,11 @@ function trangBai(bai, congKhai) {
       ` data-nhac="${attr((CAU.baoVeChu || {}).loiNhac || 'Đọc bản đầy đủ tại')}"` +
       ` data-tieude="${attr(bai.title)}"`,
     crumbs      : crumbsHTML(bai),
+    /* Địa chỉ không có `https://` cho gọn — trong một tấm ảnh chụp thì phần
+       giao thức chẳng nói thêm gì, mà nó chiếm mất một phần ba dòng. */
+    dauTrang    : `<p class="dau-trang" aria-hidden="true">` +
+      `<span class="dau-trang-nha">${escapeHtml(String(CAU.url || '').replace(/^https?:\/\//, '').replace(/\/$/, ''))}</span>` +
+      `<span class="dau-trang-bai">${escapeHtml(bai.title)}</span></p>`,
     /* noiChu() dán từ công cụ vào từ sau nó, để text-wrap:balance không bẻ
        tiêu đề đúng giữa một cụm từ. Chỉ dùng ở h1 — xem tools/lib/text.mjs. */
     title       : noiChu(escapeHtml(bai.title)),
