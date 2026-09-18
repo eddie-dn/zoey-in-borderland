@@ -292,8 +292,7 @@ const NHAN = {
   gcPostFail  : 'Could not send. Check the key or your connection.',
   gcDel       : 'Delete note',
   gcDelFail   : 'Could not delete.',
-  blUnapproveHint: 'Back to the queue, not deleted',
-  blHideHint  : 'Hide from the page entirely',
+  blSentWait  : 'Waiting for review — only you can see it. {n} edits left this session.',
   /* ── trang quản lý /z-admin/ ──
      Ba việc, ba ngăn, chỉ một ngăn hiện mỗi lúc. Nhãn để NGẮN vì chúng nằm
      trong một cột hẹp bên trái và phải đọc được bằng một cái liếc. */
@@ -1129,7 +1128,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                  ((CAU.binhLuan || {}).bat !== false && duong === '/z-admin/')
                    ? `data-duyet-api="${attr(BASE + ((CAU.binhLuan || {}).api || '/api/binh-luan'))}" ` +
                      `data-duyet-nhan="${attr(JSON.stringify({
-                        queue: NHAN.queue, queueEmpty: NHAN.queueEmpty,
+                        queueEmpty: NHAN.queueEmpty,
                         loading: NHAN.loading, approve: NHAN.approve,
                         unapprove: NHAN.unapprove, hide: NHAN.hide,
                         /* Bốn nhãn của khung xin khoá (keyId, keySecret,
@@ -2139,13 +2138,19 @@ function binhLuanHTML(bai) {
     sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
     failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
     charsLeft: NHAN.charsLeft,
-    queue: NHAN.queue, queueEmpty: NHAN.queueEmpty, loading: NHAN.loading,
-    approve: NHAN.approve, unapprove: NHAN.unapprove, hide: NHAN.hide,
-    /* comments.js KHÔNG dựng khung xin khoá — nó chỉ đọc khoá đã lưu để bình
-       luận của chủ trang vào thẳng, có huy hiệu. Bốn nhãn của khung ấy từng
-       nằm ở đây và chưa từng được ai đọc. */
-    badKey: NHAN.badKey, sentOwner: NHAN.sentOwner, laChu: NHAN.blLaChu,
-    unapproveHint: NHAN.blUnapproveHint, hideHint: NHAN.blHideHint
+    /* ── CHỈ NHỮNG NHÃN comments.js THẬT SỰ ĐỌC ──
+       Ở đây từng có mười nhãn của bàn duyệt: `queue`, `queueEmpty`, `loading`,
+       `approve`, `unapprove`, `hide`, `badKey`, cùng hai dòng chú thích
+       `unapproveHint` / `hideHint`. Không nhãn nào trong số ấy được đọc nữa —
+       hai nút duyệt trên trang công khai đã gỡ (lý do ở mục 5 trong
+       src/js/comments.js), còn bàn duyệt thì có bộ nhãn riêng của nó ở trên.
+
+       Chúng đi theo được vì `JSON.stringify` âm thầm bỏ mọi khoá mang giá trị
+       `undefined`: `queue` đã rời khỏi bảng `NHAN` từ V2.9.2 mà dòng trỏ tới
+       nó vẫn còn, và không có gì báo. Một bộ nhãn dư thì mỗi trang bài phải
+       chở thêm mấy trăm byte để không ai dùng. */
+    sentOwner: NHAN.sentOwner, laChu: NHAN.blLaChu,
+    sentWait: NHAN.blSentWait, stateOff: NHAN.blStateOff
   }));
 
   /* `c.api` chứ không còn `c.url`. Địa chỉ nay là một đường dẫn NỘI BỘ

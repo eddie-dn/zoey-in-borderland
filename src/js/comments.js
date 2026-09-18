@@ -565,6 +565,9 @@
        ở /z-admin/, và cùng nếp với mọi danh sách khác trên trang. */
     li.className = 'bl-item' + (laCon ? ' bl-item--con' : '');
     if (c.chu) li.className += ' bl-item--chu';
+    /* Mã in ra DOM để `chenChoDuyet` tìm được nhánh cần cắm trả lời vào. Chỉ
+       là mã công khai của một bình luận đã hiện — không phải mã sửa. */
+    if (c.ma) li.setAttribute('data-ma', c.ma);
 
     var dau = document.createElement('div');
     dau.className = 'bl-dau';
@@ -684,13 +687,6 @@
     li.appendChild(dau);
     li.appendChild(nd);
     li.appendChild(cuoi);
-
-    /* Nút của chủ trang gắn vào `.bl-cuoi` — cụm ngày + Reply ở mép phải hàng
-       đầu — chứ KHÔNG treo ở cuối thẻ. Treo ở cuối thì chúng rơi xuống dưới cả
-       nhánh trả lời, nằm lẫn vào hàng nút của chính mấy trả lời ấy: trên màn
-       hình đọc ra thành "Unapprove Hide Unapprove Hide" trên một dòng, không
-       biết cặp nào của ai. */
-    nutChuTrang(c, li, cuoi);
 
     if (c.con && c.con.length) li.appendChild(veCon(c.con, goc));
     return li;
@@ -872,13 +868,41 @@
         if (kq.ma) catMaSua(kq.ma, maSuaMoi);
         /* `form.reset()` xoá cả tên và email — nhưng chúng là thứ người ta vừa
            gõ và sẽ gõ lại y hệt ở lần sau. Nhớ lại ngay sau khi reset. */
+        var tenDaGui = (coKhoa() && TEN_CHU) ? TEN_CHU : form.ten.value;
+        var choCha = traLoiCho;
         form.reset();
         nhoTen();
         veNha();
         /* Bình luận của chủ trang lên thẳng, nên báo khác: nói "chờ duyệt" với
            người vừa tự duyệt mình là một câu vô nghĩa. */
-        noi(kq.duyet ? L('sentOwner') : L('sent'), 'ok');
-        if (kq.duyet) tai();
+        if (kq.duyet) { noi(L('sentOwner'), 'ok'); tai(); return; }
+        /* ── CHO NGƯỜI GỬI THẤY LỜI MÌNH, VÀ SỬA ĐƯỢC ──
+           Trước bản này: gửi xong hiện một dòng "đang chờ duyệt" rồi hết. Lời
+           vừa gõ không hiện ra ở đâu cả, vì danh sách công khai chỉ chở những
+           bình luận ĐÃ duyệt.
+
+           Cơ chế sửa thì đã có đủ từ trước — mã sửa cất trong `localStorage`,
+           máy chủ cho ba lượt, nút `Edit · n` dựng sẵn trong `veMot`. Chỉ có
+           điều không ai dùng được: muốn bấm Edit thì phải THẤY bình luận, mà
+           nó không hiện. Một cơ chế hoàn chỉnh không có cửa vào.
+
+           Nay cắm thẳng một hàng vào cuối danh sách, dựng từ chính những gì
+           vừa gửi lên cộng cái mã máy chủ trả về. Cùng một `veMot` với mọi
+           hàng khác, nên nút Edit, ô sửa tại chỗ và bộ đếm lượt chạy y hệt.
+
+           ── CHỈ TRONG PHIÊN NÀY ──
+           Tải lại trang là nó biến mất, cho tới khi admin duyệt. Đó là chuyện
+           đúng chứ không phải chuyện thiếu: máy chủ không trả về bình luận
+           chưa duyệt, và bày ra một thứ chỉ mình mình thấy suốt nhiều phiên
+           thì người gửi tưởng lời mình đã lên trang. Dòng báo nói thẳng ra
+           điều ấy, kèm số lượt sửa còn lại. */
+        var conSua = typeof kq.conSua === 'number' ? kq.conSua : 3;
+        noi(L('sentWait', 'Waiting for review — only you can see it. {n} edits left this session.')
+              .replace('{n}', conSua), 'ok');
+        chenChoDuyet({
+          ma: kq.ma, ten: tenDaGui, noiDung: nd,
+          luc: new Date().toISOString(), cha: choCha, soSua: 0, chu: false
+        });
       })
       .catch(function () {
         noi(L('netErr'), 'hong');
@@ -888,6 +912,36 @@
         nut.textContent = chuCu;
       });
   });
+
+  /* ══════════ HÀNG "CHỜ DUYỆT" CẮM TẠI CHỖ ══════════
+
+     Dựng bằng đúng `veMot` của mọi hàng khác — không có khuôn thứ hai. Cái
+     riêng chỉ là một lớp `.bl-item--cho` và một huy hiệu `.badge--warn`:
+     cùng hình, cùng sắc với `PENDING` ở ngăn Comment của /z-admin/ và với
+     `DRAFT` ở bảng bài. Một trạng thái thì một hình, ở cả ba chỗ — xem
+     docs/DESIGN-SYSTEM.md §20.1.
+
+     Trả lời thì cắm vào đúng nhánh của nó nếu nhánh ấy đang hiện; không thì
+     xuống cuối danh sách, vì một lời không biết đặt đâu nằm ở cuối vẫn đúng
+     hơn là không hiện. */
+  function chenChoDuyet(c) {
+    if (!dsEl) return;
+    var li = veMot(c, false, null);
+    li.classList.add('bl-item--cho');
+
+    var hh = document.createElement('span');
+    hh.className = 'badge badge--warn bl-cho-hh';
+    hh.textContent = L('stateOff', 'Pending');
+    var dau = li.querySelector('.bl-dau');
+    if (dau) dau.appendChild(hh);
+
+    var oCha = c.cha && dsEl.querySelector('[data-ma="' + c.cha + '"] .bl-ds--con');
+    (oCha || dsEl).appendChild(li);
+
+    /* Cuộn tới nó chứ không để người gửi tự đi tìm: khung soạn có thể ở cột
+       bên hoặc ở giữa bài, và hàng vừa cắm thì ở cuối danh sách. */
+    try { li.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+  }
 
   /* ══════════ NHỚ TÊN NGƯỜI ĐÃ BÌNH LUẬN ══════════
 
@@ -985,59 +1039,34 @@
     });
   }
 
-  /* ══════════ 5. NÚT CỦA CHỦ TRANG, NGAY TRÊN TỪNG BÌNH LUẬN ══════════
+  /* ══════════ 5. DUYỆT THÌ VÀO /z-admin/, KHÔNG DUYỆT Ở ĐÂY ══════════
 
-     Bàn duyệt (xem src/js/duyet.js) là chỗ xử lý HÀNG LOẠT: mở ra, lướt hàng
-     chờ, duyệt hoặc ẩn. Nhưng có một việc nó làm không tiện — đang ĐỌC một
-     bình luận trong ngữ cảnh bài viết rồi mới thấy nó cần gỡ. Lúc ấy phải nhớ
-     tên người gõ, mở bàn duyệt, dò lại trong danh sách. Đọc ở đây, bấm ở kia.
+     Ở đây từng có hai nút nhỏ trên mỗi bình luận — `Unapprove` và `Hide` —
+     chỉ hiện khi máy có khoá chủ trang. Ý là "đang đọc trong ngữ cảnh bài
+     viết mà thấy cần gỡ thì gỡ ngay, không phải mở bàn duyệt rồi dò lại".
 
-     Nên mỗi bình luận đã hiện trên trang mang thêm hai nút nhỏ — nhưng CHỈ khi
-     máy này có khoá. Người đọc thường không bao giờ thấy chúng.
+     Bỏ hẳn. Ba lẽ, nặng dần:
 
-     Mờ sẵn, rõ khi rê vào cả thẻ: đây là việc dọn dẹp thỉnh thoảng mới làm,
-     không phải thứ mắt phải vấp mỗi lần đọc một bình luận. */
-  function nutChuTrang(c, li, vao) {
-    if (!coKhoa()) return;
+     · **Một việc, một chỗ.** Duyệt bình luận nay ở đúng một nơi: ngăn Comment
+       của /z-admin/, nơi có bộ lọc, có ô tick tất cả, có thanh làm hàng loạt
+       và có lịch sử trạng thái. Hai cửa cho cùng một việc thì cửa nhỏ luôn là
+       cửa thiếu — nút ở đây không có xác nhận, không có hoàn tác, không nói
+       được "còn mấy cái đang chờ".
 
-    var nhom = document.createElement('div');
-    nhom.className = 'bl-quyen';
+     · **Một cú bấm không hoàn tác được, đặt cạnh chỗ đọc.** `Hide` là vĩnh
+       viễn. Nó từng nằm mờ ở mép phải một hàng bình luận, rõ lên khi rê chuột
+       vào hàng — tức đúng lúc mắt đang đọc thì một nút xoá vĩnh viễn sáng lên
+       dưới con trỏ. Trên màn hẹp, cụm ấy đo ra chừng 24px trong khi ngón tay
+       phủ 45px.
 
-    function lam(than, xong) {
-      fetch(API, {
-        method: 'PATCH',
-        headers: dauKhoa({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify(than)
-      }).then(function (r) { return r.json(); })
-        .then(function (kq) { if (kq.ok) xong(); })
-        .catch(function () {});
-    }
+     · **Khung bình luận nay chỉ còn hai tầng** (tên+nút / nội dung), và mép
+       phải tầng một là chỗ của `Reply` với `Edit` — thứ mọi người đọc đều
+       dùng. Chen thêm hai nút chỉ chủ trang thấy vào đúng chỗ ấy thì hàng nút
+       đổi hình theo việc ai đang xem.
 
-    var bRut = document.createElement('button');
-    bRut.type = 'button';
-    bRut.className = 'bl-quyen-nut';
-    bRut.textContent = L('unapprove');
-    bRut.title = L('unapproveHint');
-    bRut.addEventListener('click', function () {
-      bRut.disabled = true;
-      lam({ ma: c.ma, duyet: 0 }, function () { li.remove(); tai(); });
-    });
-
-    var bAn = document.createElement('button');
-    bAn.type = 'button';
-    bAn.className = 'bl-quyen-nut bl-quyen-nut--an';
-    bAn.textContent = L('hide');
-    bAn.title = L('hideHint');
-    bAn.addEventListener('click', function () {
-      bAn.disabled = true;
-      lam({ ma: c.ma, an: 1 }, function () { li.remove(); tai(); });
-    });
-
-    nhom.appendChild(bRut);
-    nhom.appendChild(bAn);
-    (vao || li).appendChild(nhom);
-  }
-
+     Cái mất đi là một quãng đường đi tắt của riêng chủ trang. Đổi lại: mọi
+     người xem cùng một khung bình luận, và không cú bấm nào ở trang công khai
+     làm mất dữ liệu.
 
   veVaiTro();
   /* Đăng nhập hay đăng xuất ở một tab khác thì form ở tab này phải đổi theo mà

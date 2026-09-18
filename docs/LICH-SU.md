@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.4 | 2026-09-18 | 04 | khu bình luận hai tầng, gửi xong thấy và sửa được; duyệt về hết trong admin; trang danh sách thấy đủ chân trang |
 | V2.9.3 | 2026-09-18 | 03 | nền About hết méo: nền động về .shell, khung vẽ 霜降 có trần; trăng xuống dưới đỉnh núi đo được; sao lấp lánh theo cụm |
 | V2.9.2 | 2026-09-18 | 02 | một design system cho chip · huy hiệu · con số; tick tất cả ở bàn duyệt; bỏ ô chọn mục dư ở ngăn Post |
 | V2.9.1 | 2026-09-18 | 01 | bờ nước tan mềm · trăng lên cao · cỡ đĩa ở khổ dọc |
@@ -243,6 +244,24 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.4 — 18-Sep-2026
+
+- **Khu bình luận còn hai tầng.** Tên · giờ · (Reply · Edit dạt phải) ở tầng
+  một, nội dung chiếm cả bề ngang ở tầng dưới. Trước đây cả ba nằm chung một
+  hàng, nên chỗ đứng của Reply phụ thuộc độ dài chữ bên trái nó: mười bình
+  luận ra mười chỗ khác nhau. Nay Reply thẳng cột ở mọi hàng, và nội dung
+  được cả bề ngang. Nút Send cũng thôi đổ bóng — bóng ấy tràn qua mép khung
+  trên màn hẹp.
+- **Gửi xong là thấy lời mình.** Trước đây bấm Send chỉ hiện một dòng "đang
+  chờ duyệt", còn bình luận thì không hiện ở đâu — nên ba lượt sửa vốn đã có
+  sẵn chẳng ai dùng được, vì muốn bấm Edit thì phải thấy nó. Nay nó hiện ngay
+  với một huy hiệu PENDING, sửa được ba lần trong phiên ấy. Đổi lại, hai nút
+  duyệt ở trang công khai gỡ đi: duyệt về hết một chỗ trong /z-admin/.
+- **Trang danh sách thấy đủ chân trang.** Giữa mục cuối và chân trang từng có
+  152px trống, nên /posts/ phải kéo thêm 63px và /archive/ 91px mới đọc được
+  dòng bản quyền — trong khi /notes/ và mấy trang tag thì vừa khít. Còn 40px,
+  và cả năm trang danh sách nay gói trong một màn.
 
 ## V2.9.3 — 18-Sep-2026
 

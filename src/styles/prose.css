@@ -902,28 +902,27 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   text-decoration-style:dotted;
 }
 
-.bl-quyen{
-  display:flex;gap:var(--s3);
-  opacity:0;transition:opacity var(--dur-fast);
+/* ── HÀNG VỪA GỬI, ĐANG CHỜ DUYỆT ──
+   Chỉ người gửi thấy, và chỉ trong phiên này (lý do ở `chenChoDuyet` trong
+   src/js/comments.js). Nên nó phải nói ra hai điều cùng lúc: "lời của bạn ĐÃ
+   tới" và "nó CHƯA lên trang".
+
+   Một vạch dọc bên trái cùng lối với bình luận của chủ trang, chỉ khác sắc —
+   `--warn` thay cho `--accent`. Không tô nền cả khối: nền tô đọc ra là một ô
+   nhấn, tức "đọc cái này trước", mà ý thật là "cái này còn chờ".
+
+   Huy hiệu là `.badge--warn`, đúng viên thuốc của `PENDING` ở ngăn Comment
+   và của `DRAFT` ở bảng bài trong /z-admin/. Một trạng thái, một hình, ở cả
+   ba chỗ — xem docs/DESIGN-SYSTEM.md §20.1. Ở đây nó đứng cạnh một cái tên
+   cỡ 14px nên hạ một bậc, cùng cách `.ad-cd > .badge` hạ trong bảng. */
+.bl-item--cho{
+  padding-left:var(--s3);
+  border-left:2px solid var(--warn);
 }
-/* Dấu `>` chứ không phải dấu cách: nút của MỘT thẻ, không phải của mọi thẻ
-   lồng bên trong nó. */
-.bl-item:hover > .bl-cuoi > .bl-quyen,.bl-quyen:focus-within{opacity:1}
-/* ── RÊ VÀO MỘT TRẢ LỜI THÌ CHỈ NÚT CỦA TRẢ LỜI ẤY HIỆN ──
-   Thẻ con nằm TRONG thẻ gốc, nên rê vào con là gốc cũng đang được rê. Không
-   chặn thì hai cặp nút cùng sáng, và người bấm không biết mình sắp gỡ bình
-   luận nào. Máy không hiểu `:has()` thì luật này rơi, về đúng nếp cũ — mất
-   một tinh chỉnh chứ không mất nút. */
-.bl-item:has(.bl-item:hover) > .bl-cuoi > .bl-quyen{opacity:0}
-@media (hover:none){.bl-quyen{opacity:.65}}
-.bl-quyen-nut{
-  font:inherit;font-size:var(--fs-2xs);cursor:pointer;
-  background:none;border:none;padding:0;color:var(--text-faint);
-  text-decoration:underline;text-underline-offset:3px;
+.bl-cho-hh{
+  flex:none;
+  font-size:var(--fs-3xs);letter-spacing:.1em;padding:1px 7px 2px;
 }
-.bl-quyen-nut:hover{color:var(--accent-ink)}
-.bl-quyen-nut--an:hover{color:var(--bad)}
-.bl-quyen-nut:disabled{opacity:.4;cursor:default}
 
 /* ── KHUNG BÌNH LUẬN CHÈN GIỮA BÀI (khổ hẹp) ──
    Nó đang đứng giữa hai đoạn văn, nên phải đọc ra NGAY là "cái này không
@@ -1010,7 +1009,7 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 
 /* ── Ô SỬA TẠI CHỖ ──
    Chiếm trọn một dòng của hàng flex, cùng lý do với `.bl-item > .bl-form`. */
-.bl-osua{
+.bl-osua{order:4;
   flex:1 0 100%;min-width:0;
   display:flex;flex-direction:column;gap:var(--s3);
   margin-top:var(--s3);
@@ -1041,7 +1040,7 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* Và lùi vào như một nhánh trả lời: nó đang đứng DƯỚI một bình luận, nên nó
    phải đọc ra là thuộc về bình luận ấy. */
 .bl-item > .bl-form{
-  flex:1 0 100%;margin-top:var(--s4);
+  flex:1 0 100%;order:5;margin-top:var(--s4);
   padding-left:var(--s5);border-left:2px solid var(--line);
 }
 /* Hai ô tên + email nằm cạnh nhau ở màn rộng, tự xuống hàng ở màn hẹp —
@@ -1062,6 +1061,26 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-nhan{
   display:flex;align-items:baseline;justify-content:space-between;
   gap:var(--s3);flex-wrap:wrap;
+}
+/* ── NÚT SEND THÔI ĐỔ BÓNG ──
+   `.btn` mang ba lớp: viền trong, bóng đổ (`--glass-drop`) và quầng sáng
+   (`--glow`). Đúng cho một nút đứng trên màn hero — ở đó nó là vật nổi trên
+   nền, và bóng nói ra điều ấy.
+
+   Trong khung bình luận thì nó đứng trong một cái khung đã có nền riêng, sát
+   một cái nút viền mảnh (`Back`), ngay dưới mấy ô gõ cũng chỉ có viền. Bóng
+   cộng quầng ở đó làm nó nổi hẳn ra khỏi bộ, và trên màn hẹp thì cái bóng
+   tràn qua mép khung — đúng chỗ người dùng gọi là "dễ lỗi".
+
+   Giữ viền trong, bỏ hai lớp kia. Vẫn là nút đặc, vẫn nổi nhất khung, mà
+   không còn đổ bóng ra ngoài. Lúc rê vào thì nhấc nhẹ bằng chính viền ấy đậm
+   lên, không nhấc bằng bóng. */
+.bl-chan > .btn[type="submit"]{
+  box-shadow:inset 0 0 0 1px var(--glass-spec);
+}
+.bl-chan > .btn[type="submit"]:hover,
+.bl-chan > .btn[type="submit"]:focus-visible{
+  box-shadow:inset 0 0 0 1px var(--glass-spec), inset 0 0 0 2px var(--glass-ring);
 }
 /* ── MỘT LUẬT DUY NHẤT CHO LỚP NÀY ──
    File này từng khai `.bl-vaitro` ở HAI CHỖ, cách nhau bốn trăm dòng: một
@@ -1145,11 +1164,30 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-ds{list-style:none;padding:0;margin:var(--s6) 0 0;
   display:flex;flex-direction:column}
 .bl-ds:empty{margin:0}
-/* ── MỘT HÀNG CO GIÃN, KHÔNG PHẢI BA TẦNG ──
-   Tên · nội dung · (ngày và Reply dồn phải). Nội dung khai `flex:1 1 55%`:
-   còn đủ chỗ thì nó nằm cùng dòng với tên, không đủ thì tự rớt xuống dòng
-   dưới. Một luật lo cả bình luận bốn chữ lẫn bình luận bốn câu — không phải
-   đo độ dài rồi chọn bố cục. */
+/* ── HAI TẦNG, VÀ MÉP PHẢI KHÔNG ĐƯỢC DI ĐỘNG ──
+   Đời trước: tên · nội dung · (ngày và Reply dồn phải) — cả ba trên MỘT hàng
+   co giãn, nội dung tự rớt xuống dòng khi dài. Gọn với bình luận bốn chữ, mà
+   sai với một cọc mười bình luận: chỗ đứng của Reply phụ thuộc vào ĐỘ DÀI
+   của chữ ngay bên trái nó. Bình luận ngắn thì Reply nằm giữa hàng, bình luận
+   dài thì nó rơi xuống dòng ba. Mười bình luận ra mười chỗ khác nhau, không
+   cái nào thẳng cột với cái nào — mà Reply là thứ mắt phải tìm lại mỗi lần.
+
+   Nay chốt hai tầng:
+
+       tầng 1   tên · huy hiệu · giờ ····················· REPLY  EDIT
+       tầng 2   nội dung, chiếm cả bề ngang
+
+   Tầng 1 luôn ngắn (tên + giờ), nên `margin-left:auto` của cụm nút luôn có
+   chỗ để đẩy: Reply thẳng cột ở mọi hàng, bất kể bình luận dài ngắn. Và nội
+   dung được cả bề ngang thay vì một nửa — khu bình luận rộng rãi ra đúng
+   bằng phần nó không còn phải nhường cho hai cái nút.
+
+   ── THỨ TỰ BẰNG `order`, KHÔNG BẰNG CÁCH ĐỔI DOM ──
+   Trong DOM thì nội dung vẫn đứng TRƯỚC cụm nút. `order` chỉ đổi chỗ khi vẽ,
+   không đổi cây a11y — nên trình đọc màn hình vẫn đọc "ai nói · nói gì" rồi
+   mới tới "trả lời được không". Đổi thứ tự trong DOM cho nhanh thì được đúng
+   hình ấy, mà người dùng trình đọc nghe ra "Linh, 3 giờ trước, Reply, Edit,
+   bài này hay quá" — nút trước cả thứ nó tác động lên. */
 .bl-item{
   display:flex;flex-wrap:wrap;align-items:baseline;
   gap:3px var(--s3);
@@ -1160,15 +1198,21 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* `flex-wrap:wrap` cho cụm đầu: ở cột hẹp (cột bên, điện thoại) thì tên dài
    cộng huy hiệu cộng giờ có thể vượt bề ngang — lúc ấy giờ tự xuống dòng dưới
    tên chứ không đẩy cả hàng giãn ra. */
-.bl-dau{display:flex;align-items:baseline;gap:6px;flex:none;flex-wrap:wrap}
-/* `flex:1 1 auto` + `min-width:0`: ba ô LUÔN ở chung một dòng co giãn, và
-   phần chữ tự xuống dòng BÊN TRONG ô của nó khi dài. Khai `55%` như bản đầu
-   thì tên + 55% + cụm cuối vượt quá 100%, nên cụm cuối rớt xuống dòng hai —
-   bình luận bốn chữ vẫn mất hai dòng, đúng thứ vừa định bỏ. */
-.bl-nd{flex:1 1 auto;min-width:0}
-/* `margin-left:auto` đẩy cụm này sang hẳn mép phải khi hàng còn chỗ trống;
-   lúc nội dung đã chiếm hết thì nó xuống dòng và bám mép phải của dòng ấy. */
-.bl-cuoi{display:flex;align-items:baseline;gap:var(--s3);flex:none;margin-left:auto}
+.bl-dau{display:flex;align-items:baseline;gap:6px;flex:none;flex-wrap:wrap;order:1}
+/* `flex:1 0 100%` — nội dung chiếm hẳn một tầng riêng. Đây là chỗ đổi so với
+   bản trước (`1 1 auto`, chung hàng với tên và nút). */
+.bl-nd{flex:1 0 100%;min-width:0;order:3}
+/* `margin-left:auto` đẩy cụm nút sang hẳn mép phải của TẦNG 1. Vì tầng ấy chỉ
+   chở tên và giờ nên luôn còn chỗ trống, tức cụm nút luôn tới được mép phải —
+   khác bản trước, nơi nội dung có thể chiếm hết hàng và đẩy nó xuống dòng. */
+.bl-cuoi{display:flex;align-items:baseline;gap:var(--s3);flex:none;margin-left:auto;order:2}
+/* Ba khối còn lại của một bình luận đều chiếm cả bề ngang và nằm SAU nội
+   dung: ô sửa tại chỗ, khung trả lời được dời tới, và nhánh trả lời. Khai
+   `order` tường minh cho cả ba — để mặc thì `order:0` đưa chúng lên trước cả
+   tầng tên.
+   Khai `order` ở chính chỗ khai gốc của từng cái (`.bl-osua`, `.bl-nhanh`,
+   `.bl-item > .bl-form`) — một tên chỉ được khai trần đúng một lần, `npm run
+   kiem` có phép canh chuyện ấy. */
 /* Tên nhỏ hơn thân chữ một bậc và không in đậm hẳn: nó là NHÃN của đoạn chữ
    dưới nó, không phải một tiêu đề. Đậm bằng cỡ tiêu đề thì mắt đọc tên trước,
    rồi mới tới thứ người ta thật sự muốn đọc. */
@@ -1233,6 +1277,7 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    cái này thuộc về bình luận phía trên, còn lề trơn thì ở màn hẹp nhìn như
    một bình luận gốc bị lệch. */
 .bl-nhanh{
+  flex:1 0 100%;order:6;
   margin-top:var(--s4);padding-left:var(--s5);
   border-left:2px solid var(--line);
 }

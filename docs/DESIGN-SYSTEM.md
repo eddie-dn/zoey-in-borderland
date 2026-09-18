@@ -1575,6 +1575,39 @@ luôn cao hơn một màn, mà cắt mất chữ tệ hơn nhiều so với vi�
 
 ## 17 · TRANG DANH SÁCH: SỐ TRANG VÀ GIÃN CÁCH
 
+### 17.0 · Năm trang, một khuôn
+
+Năm trang dùng chung khuôn `.ds-trang` — dựng ở một chỗ duy nhất
+(`tools/build.mjs`, hàm dựng trang danh sách), nên đầu trang, giãn cách và
+chân trang của chúng không thể trôi xa nhau:
+
+| Trang | Mỗi mục là | Thân | Lọc |
+|---|---|---|---|
+| `/posts/` | một **chuyên mục**, chở 3 bài mới nhất của nó | `.muc-luoi` → `.muc-khoi` | chip trạng thái ở `.chip-hang` |
+| `/archive/` | một **bài**, gom theo năm | `.phan-trang` → `.kho-nam` → `.kho-ds` | — (cả kho, có số trang) |
+| `/notes/` | một **mẩu ghi chú** | `.gc-ds` | chip loại ở `.chip-hang .gc-loc` |
+| `/tags/` | một **tag** | `.may-tag` | — |
+| `/tags/<t>/` | một **bài** mang tag ấy | `.ds-luoi` | — |
+
+Khuôn chung:
+
+```
+main
+  .container.ds-trang            lề trên 56px · lề dưới 40px (xem §17.3)
+    .ds-dau                      đầu trang, lề dưới 24px
+      .eyebrow                     vạch + viên kim cương
+      h1                           tên trang
+      .ds-dan                      một dòng dẫn, có con số ("9 bài · 3 năm")
+      .chip-hang                   hàng chip lọc, nếu trang ấy có
+    <thân>                       một trong năm khối ở bảng trên
+.site-foot                       chân trang — KHÔNG cộng thêm lề ở đây
+```
+
+**Con số của cả danh sách nằm ở `.ds-dan`, không nằm trong chip.** Chip "Tất
+cả" vì thế không mang số (§17.2c) — hai lần cùng một con số cách nhau vài chục
+pixel thì cái nào cũng thành thừa. Trong /z-admin/ thì ngược lại: ở đó không
+có dòng dẫn, nên con số về chip và về `.ad-chan` (§20.1).
+
 ### 17.1 · Số trang cắt ở trình duyệt, không cắt lúc dựng
 
 Cách quen thuộc là dựng sẵn `/posts/`, `/posts/2/`, `/posts/3/`… Không làm thế,
@@ -1731,6 +1764,51 @@ nên trang mất thứ bậc — cái gì cũng là tiêu đề thì không cái
 40px dưới đầu đề là khoảng của một trang **bài**, nơi tiêu đề phải tách hẳn khỏi
 thân bài. Ở danh sách thì tiêu đề và danh sách là **một khối việc** — 24px là
 đủ, còn 40px đẩy bài đầu tiên xuống dưới nếp gấp trên laptop 13".
+
+#### Danh sách ngắn thì phải thấy ĐỦ chân trang
+
+Một trang **bài** dài thì phải kéo, và kéo là đúng: nội dung dài thật. Một
+trang **danh sách** ngắn thì không có lý do gì bắt kéo thêm một nhịp chỉ để
+gặp dòng bản quyền.
+
+Đo ở khổ 1180×900, tính từ mục cuối xuống mép trên chân trang:
+
+```
+.ds-trang   padding-bottom   96px   (--s11)
+.site-foot  margin-top       56px   (--s9)
+──────────────────────────────────
+                            152px   KHÔNG chở gì
+```
+
+Và hệ quả đo được, ở đúng khổ ấy:
+
+| Trang | phải kéo thêm | chân trang |
+|---|---|---|
+| `/posts/` | 63px | thấy đúng mép trên |
+| `/archive/` | 91px | không thấy |
+| `/notes/` · `/tags/` · `/tags/<t>/` | 0 | thấy đủ |
+
+Ba trang vừa khít và hai trang thiếu vài chục pixel, trong khi giữa danh sách
+với chân trang có 152px trống — con số ấy chính là chỗ thiếu.
+
+Hai luật, và phải có cả hai:
+
+1. `.ds-trang{padding-block:var(--s9) var(--s8)}` — lề dưới 96px → **40px**.
+2. `main:has(> .ds-trang) + .site-foot{margin-top:0}` — chân trang thôi cộng
+   khoảng của nó ở trang danh sách, vì `.ds-trang` đã có lề dưới riêng. (Trang
+   chủ đã có đúng luật này từ trước, qua `.shell[data-nen] .site-foot`, chỉ là
+   vì một lý do khác: ở đó chân trang phải dính liền mép dưới màn hero.)
+
+Tổng còn 40px. Từ mục cuối xuống **chữ** trong chân trang vẫn là 40 + 1 + 40 =
+81px, dư sức thở. Đo lại: cả năm trang danh sách đều gói trong một màn 900px và
+chân trang hiện đủ.
+
+Máy không hiểu `:has()` thì luật 2 rơi và khoảng cũ trở lại — mất một nhịp
+gọn, không mất gì khác.
+
+> **Đây là một luật có ĐIỀU KIỆN.** Nó không hứa "mọi trang danh sách luôn vừa
+> một màn": thêm bài vào là `/posts/` sẽ dài ra, và lúc ấy kéo là đúng. Luật
+> chỉ nói: **đừng để một trang phải kéo vì khoảng trống.**
 
 ### 17.4 · Trang chủ giữ tối đa 6 bài
 
@@ -2279,6 +2357,77 @@ nhầm lại là cái **giấu hẳn** một bình luận.
 Bình luận của chủ trang: một **vạch dọc bên trái**, không tô nền cả khối. Nền
 tô làm khối ấy đọc ra như một ô nhấn (`:::note`) — tức là "đọc cái này trước",
 trong khi ý thật chỉ là "người này là chủ nhà".
+
+#### Hai tầng, và mép phải không được di động
+
+```
+tầng 1   tên · huy hiệu · giờ ····················· REPLY  EDIT
+tầng 2   nội dung, chiếm cả bề ngang
+```
+
+Đời trước cả ba mẩu nằm trên **một** hàng co giãn, nội dung tự rớt xuống dòng
+khi dài. Gọn với một bình luận bốn chữ, mà sai với một cọc mười bình luận: chỗ
+đứng của `Reply` phụ thuộc vào **độ dài của chữ ngay bên trái nó**. Bình luận
+ngắn thì `Reply` nằm giữa hàng; bình luận dài thì nó rơi xuống dòng ba. Mười
+bình luận ra mười chỗ khác nhau — mà `Reply` là thứ mắt phải tìm lại mỗi lần.
+
+Tầng 1 luôn ngắn (tên + giờ), nên `margin-left:auto` của cụm nút luôn có chỗ để
+đẩy: `Reply` thẳng cột ở mọi hàng. Và nội dung được cả bề ngang thay vì một
+nửa — khu bình luận rộng rãi ra đúng bằng phần nó không còn phải nhường cho hai
+cái nút.
+
+**Thứ tự bằng `order`, không bằng cách đổi DOM.** Trong DOM nội dung vẫn đứng
+trước cụm nút; `order` chỉ đổi chỗ khi vẽ, không đổi cây a11y. Đổi thứ tự trong
+DOM cho nhanh thì được đúng hình ấy, mà người dùng trình đọc nghe ra "Linh, 3
+giờ trước, Reply, Edit, bài này hay quá" — nút trước cả thứ nó tác động lên.
+
+#### Duyệt thì vào /z-admin/, không duyệt ở trang công khai
+
+Mỗi bình luận từng mang thêm hai nút `Unapprove` · `Hide`, chỉ hiện khi máy có
+khoá chủ trang. Bỏ hẳn. Ba lẽ, nặng dần:
+
+- **Một việc, một chỗ.** Duyệt nay ở đúng ngăn Comment của /z-admin/, nơi có bộ
+  lọc, ô tick tất cả, thanh làm hàng loạt. Cửa nhỏ luôn là cửa thiếu: nút ở
+  trang công khai không có xác nhận, không hoàn tác, không nói được còn mấy cái
+  đang chờ.
+- **Một cú bấm không hoàn tác được, đặt cạnh chỗ đọc.** `Hide` là vĩnh viễn, mà
+  nó nằm mờ ở mép phải và rõ lên khi rê vào hàng — đúng lúc mắt đang đọc thì
+  một nút xoá vĩnh viễn sáng lên dưới con trỏ. Trên màn hẹp cụm ấy đo ra chừng
+  24px trong khi ngón tay phủ 45px.
+- **Mép phải tầng 1 là chỗ của `Reply` và `Edit`** — thứ mọi người đọc đều
+  dùng. Chen hai nút chỉ chủ trang thấy vào đó thì hàng nút đổi hình theo việc
+  ai đang xem.
+
+#### Gửi xong phải THẤY lời mình, và sửa được
+
+Trước bản này: gửi xong hiện một dòng "đang chờ duyệt" rồi hết. Lời vừa gõ
+không hiện ra ở đâu, vì danh sách công khai chỉ chở bình luận **đã** duyệt.
+
+Cơ chế sửa thì đã đủ từ trước — mã sửa cất trong `localStorage`, máy chủ cho ba
+lượt (`PUT /api/binh-luan`), nút `Edit · n` dựng sẵn. Chỉ có điều không ai dùng
+được: muốn bấm `Edit` thì phải **thấy** bình luận, mà nó không hiện. Một cơ chế
+hoàn chỉnh không có cửa vào.
+
+Nay cắm thẳng một hàng vào cuối danh sách, dựng từ chính những gì vừa gửi cộng
+cái mã máy chủ trả về — cùng một `veMot` với mọi hàng khác, nên nút `Edit`, ô
+sửa tại chỗ và bộ đếm lượt chạy y hệt. Hàng ấy mang `.bl-item--cho`: một vạch
+dọc `--warn` bên trái, và huy hiệu `.badge--warn` đúng viên thuốc `PENDING` của
+ngăn Comment (§20.1).
+
+**Chỉ trong phiên này.** Tải lại trang là nó biến mất, cho tới khi admin duyệt.
+Đó là chuyện đúng chứ không phải chuyện thiếu: máy chủ không trả về bình luận
+chưa duyệt, và bày ra một thứ chỉ mình mình thấy suốt nhiều phiên thì người gửi
+tưởng lời mình đã lên trang. Dòng báo nói thẳng điều ấy, kèm số lượt sửa còn
+lại.
+
+#### Nút `Send` thôi đổ bóng
+
+`.btn` mang ba lớp: viền trong, bóng đổ (`--glass-drop`) và quầng sáng
+(`--glow`) — đúng cho một nút đứng trên màn hero, nơi nó là vật nổi trên nền.
+Trong khung bình luận thì nó đứng trong một khung đã có nền riêng, sát một nút
+viền mảnh (`Back`), ngay dưới mấy ô gõ cũng chỉ có viền: bóng cộng quầng làm nó
+nổi hẳn ra khỏi bộ, và trên màn hẹp cái bóng tràn qua mép khung. Giữ viền
+trong, bỏ hai lớp kia; lúc rê vào thì nhấc bằng chính viền ấy đậm lên.
 
 ### 20.1 · Chip · huy hiệu · con số — BA HÌNH, và cách chọn
 

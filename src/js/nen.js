@@ -791,6 +791,36 @@
     var cumSao = [];
 
     /* ══════════════════════════════════════════════════════════════════════
+       ĐƯỜNG SỐNG CAO NHẤT — ĐỂ ĐẶT MẶT TRĂNG
+
+       Mọi dãy núi vẽ SAU thiên thể, nên dãy nào cũng che được nó. Muốn hạ
+       trăng xuống thấp mà không bị che thì phải biết đỉnh núi ở ĐÚNG chỗ
+       trăng đứng cao bao nhiêu — và con số ấy đổi theo bề ngang khung, vì
+       tần số sóng nhân với `W0/1400`.
+
+       Đo bằng cách ghi lại: `veNui` đang dựng sẵn một đường sống lấy mẫu mỗi
+       3px, nên chỉ cần giữ giá trị NHỎ NHẤT (cao nhất trên màn) tại từng mẫu,
+       cộng dồn qua cả năm sáu dãy. Xong là có nguyên đường bao của núi.
+
+       Đây là việc mà chú thích trong bản trước hẹn "để một lượt khác": bản ấy
+       đã thử SUY đỉnh núi ra bằng công thức và sai — phép đo cho cùng một giá
+       trị ở mọi bề ngang, dấu hiệu rõ ràng của một công thức sai. Ghi lại thì
+       không có gì để sai: đó đúng là đường mà `canvas` vừa tô.
+       ══════════════════════════════════════════════════════════════════════ */
+    var dinhQ = [];
+
+    /* Đỉnh cao nhất trong một dải ngang, tính theo phần của bề ngang. */
+    function dinhDai(u0, u1) {
+      var n = dinhQ.length;
+      if (!n) return H0 * 0.30;
+      var i0 = Math.max(0, Math.floor(u0 * (n - 1)));
+      var i1 = Math.min(n - 1, Math.ceil(u1 * (n - 1)));
+      var m0 = Infinity, i;
+      for (i = i0; i <= i1; i++) if (dinhQ[i] < m0) m0 = dinhQ[i];
+      return m0 === Infinity ? H0 * 0.30 : m0;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
        KHUNG VẼ CAO NHẤT MỘT MÀN HÌNH
 
        Ba hiệu ứng kia — hoa rơi, thiên hà, thác — KHÔNG có bố cục theo chiều
@@ -1068,6 +1098,12 @@
           h += Math.sin(u * o.song[k][0] * kW + o.song[k][2]) * o.song[k][1];
         }
         d.push([x, y0 - h * cao * bao(u, o.bao, o.san)]);
+      }
+
+      /* Góp đường sống của dãy này vào đường bao chung (xem `dinhQ`). Mọi dãy
+         lấy mẫu cùng một bước 3px nên các chỉ số khớp nhau. */
+      for (k = 0; k < d.length; k++) {
+        if (dinhQ[k] === undefined || d[k][1] < dinhQ[k]) dinhQ[k] = d[k][1];
       }
 
       function thanNui() {
@@ -1385,6 +1421,7 @@
        ══════════════════════════════════════════════════════════════════════ */
     function veTamNen() {
       W0 = W; H0 = caoKhung();
+      dinhQ = [];
       xa = document.createElement('canvas');
       xa.width = Math.max(1, Math.round(W0));
       xa.height = Math.max(1, Math.round(H0));
@@ -1769,7 +1806,12 @@
            mươi giây. Chậm tới mức không ai bắt được lúc nó đang đi, mà nhìn
            lại thì nó đã ở chỗ khác. */
         var tienTrang = muot(p, 0.40, 0.92);
-        var mx = W * (0.655 + 0.017 * tienTrang);
+        /* ── LỆCH SANG TRÁI MỘT QUÃNG ──
+           0,655 → 0,600 W. Mặt trời vẫn ở 0,655; trăng lệch ra thì cú chuyển
+           cảnh vẫn trùng chỗ lúc giao nhau (trăng vừa hiện thì `tienTrang`
+           còn bằng 0 nên nó ở 0,600 — hơi lệch, đủ để không thành một cái đèn
+           bật tắt tại chỗ, chưa đủ để đọc ra hai vật khác nhau). */
+        var mx = W * (0.585 + 0.015 * tienTrang);
         /* ── ĐIỂM BẮT ĐẦU THẤP HƠN, VÀ DÂNG ÍT HƠN ──
            Từng là 0,215 → 0,095. Hai chỗ sai với một con số ấy:
 
@@ -1804,13 +1846,44 @@
            thấy được. Nửa đầu đêm không có mặt trăng, và không ai gọi tên được
            chuyện ấy vì cuối đêm thì nó có.
 
-           Nay 0,150 → 0,122: thấy được từ khắc đầu, dâng đúng một quãng nhỏ
-           (0,028 khung — chừng 23px ở khổ điện thoại), và mép trên đĩa lúc
-           cao nhất còn cách nóc khung 80px, tức không kịch vào thanh đầu
-           trang nữa. Muốn trăng xuống thấp hơn nữa thì phải hạ dãy núi xa —
-           mà bố cục ấy đã chốt, nên không đụng tới. */
-        var my = HK * (0.150 - 0.028 * tienTrang + 0.008 * Math.sin(p * Math.PI * 2));
-        var mr = m * 0.026;
+           ── VÀ CHỖ ĐỨNG PHẢI ĐO TỪ NÚI, KHÔNG KHAI BẰNG HẰNG SỐ ──
+           `0,150` cố định vẫn còn quá cao, vì nó là con số của TRƯỜNG HỢP XẤU
+           NHẤT: đỉnh núi cao nhất trên mọi bề ngang là 0,1815 H, nên một hằng
+           số muốn an toàn ở mọi khổ thì phải nằm trên nó. Mà cái đỉnh ấy đi
+           lang thang theo bề ngang — ở khổ 1180px thì núi dưới chỗ trăng đứng
+           chỉ cao 0,33 H, tức còn dư 0,15 khung trời KHÔNG dùng tới. Trăng vì
+           thế treo lơ lửng giữa trời trên gần như mọi máy tính để bàn.
+
+           Nay hỏi thẳng đường bao đã ghi (`dinhDai`) xem núi dưới trăng cao
+           bao nhiêu, rồi đặt đĩa ngay trên nó, cách một quãng thở bằng 0,030
+           khung. Kết quả: khổ rộng thì trăng xuống rất thấp, sát ngọn núi và
+           gần mặt nước; khổ hẹp thì nó tự dừng ở chỗ cao hơn — vì ở đó núi
+           cao thật. Không khổ nào bị che, và không khổ nào bỏ trống trời.
+
+           Hai cái chặn hai đầu: không thấp hơn 0,42 khung (dưới nữa là vào
+           vùng chữ lớn và vùng mây), không cao hơn 0,105 khung (trên nữa là
+           kịch thanh đầu trang).
+
+           Dâng nhẹ 0,030 khung suốt đêm, như cũ. */
+        var mr = m * 0.032;
+        /* ── QUÃNG THỞ 0,016, VÀ VÌ SAO KHÔNG ĐƯỢC BẰNG 0 ──
+           Đĩa ngồi sát ngọn núi chừng 15px ở khổ 955. Hạ thêm nữa là đĩa
+           CHẠM vào núi, và chỗ ấy thì không hạ được: ban đêm núi sáng 237
+           trên thang 255 còn trời 197 — núi SÁNG HƠN trời. Một đĩa trắng
+           chồng lên một mảng núi trắng thì nó tan vào đó, mất hẳn. Trăng vì
+           thế phải ở hẳn trong khoảng trời sẫm, tức ở trên đường sống.
+
+           Muốn trăng thấp hơn nữa thì phải hạ dãy núi xa — mà bố cục núi đã
+           chốt từ đợt chọn D + E, nên đó là một quyết định riêng. */
+        /* Dải hỏi phải bằng ĐÚNG bề ngang đĩa (`mx ± mr`, cộng quãng trôi
+           ngang), không rộng hơn. Đã thử hỏi 0,53 → 0,64: dải ấy chồm sang
+           chỗ núi cao hơn ở bên trái, nên đĩa bị đẩy lên 0,18 H trong khi núi
+           NGAY DƯỚI nó chỉ cao 0,28 H — mất đứt 90px trời không dùng tới.
+           Hỏi đúng chỗ đĩa đứng thì nó xuống tới 0,215 H. */
+        var dinhTr = dinhDai(0.55, 0.63);
+        var myThap = Math.max(HK * 0.105,
+                     Math.min(HK * 0.420, dinhTr - mr - HK * 0.016));
+        var my = myThap - HK * 0.022 * tienTrang + HK * 0.008 * Math.sin(p * Math.PI * 2);
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
         /* Tắt hẳn trong quãng 0,46–0,58 để nhường chỗ cho trăng — không dùng
            `dem` nữa, vì `dem` lên muộn hơn và hai thiên thể sẽ chồng nhau. */
@@ -2048,11 +2121,57 @@
           ctx.fillRect(0, 0, W, H);
         }
 
+        /* ── 7c · MẶT NƯỚC BAN ĐÊM PHẢI CÓ MỰC ĐỂ MÀ LẤY ĐI ──
+           Vệt trăng dưới nước vẽ bằng phép `destination-out`, tức LẤY MỰC ĐI
+           — đúng phép, cùng phép với mặt trăng và với mây. Nhưng đo ra thì
+           ban đêm mặt nước sáng 249 trên thang 255 còn trời ở chân trời 241:
+           mặt nước TRẮNG HƠN trời. Lấy mực đi ở một chỗ không có mực thì
+           không có gì xảy ra — và đó đúng là lý do "ko thấy ánh trăng trong
+           nước luôn".
+
+           Vì sao nó trắng: lớp rửa đêm ở bước 1 phủ từ 0 tới H, kể cả dải
+           nước. Nhưng ngay sau đó tấm núi+nước được vẽ chồng lên, mà `veNuoc`
+           tô GIẤY đặc (alpha .93) — nên nó xoá sạch lớp rửa đêm ở đúng dải
+           nước. Bước 7b chỉ trả lại 0,028, gần như không có.
+
+           Nên phải rửa lại mặt nước SAU tấm núi. Và đó cũng là chuyện đúng:
+           mặt hồ phản chiếu mảng trời thấp nhất, nên nó phải sẫm xấp xỉ chân
+           trời, không được trắng hơn. Đo lại sau khi rửa: nước 238, chân trời
+           241 — nước hơi sẫm hơn một nấc, đúng dáng.
+
+           Nhạt ở mép nước, đậm dần xuống đáy: chỗ gần bờ phản chiếu trời ngay
+           trên nó (còn ít lớp khí), chỗ xa phản chiếu cả bầu trời. Và nhờ có
+           mực rồi, vệt trăng lấy đi được tới tận giấy trắng — chênh lệch đo ra
+           mười mấy nấc, tức nhìn ra được là một cột sáng. */
+        if (dem > 0.002) {
+          var yNuoc = HK * MEP_NUOC;
+          var gN = ctx.createLinearGradient(0, yNuoc, 0, H);
+          gN.addColorStop(0,    'rgba(' + mau(46, 52, 68) + ',' + (0.010 * dem).toFixed(3) + ')');
+          gN.addColorStop(0.30, 'rgba(' + mau(44, 50, 66) + ',' + (0.040 * dem).toFixed(3) + ')');
+          gN.addColorStop(1,    'rgba(' + mau(42, 48, 64) + ',' + (0.052 * dem).toFixed(3) + ')');
+          ctx.fillStyle = gN;
+          ctx.fillRect(0, yNuoc, W, H - yNuoc);
+        }
+
         /* ── 8 · VỆT SÁNG TRÊN NƯỚC ── */
         var choiTroi = hienS * (1 - muot(sy + sr, HK * 0.60, HK * 0.70));
         veVet(ctx, sx, sr * 1.5, mTroi, 0.13 * choiTroi, t, false);
+        /* ── VỆT TRĂNG TÔ GIẤY, KHÔNG LẤY MỰC ĐI ──
+           `destination-out` chỉ lấy đi được đúng lượng mực đang có ở đó. Sau
+           lượt rửa nước ở bước 7c thì mặt nước có chừng 9–12 nấc mực, nên dù
+           xoá sạch cũng chỉ sáng thêm bấy nhiêu — và `veVet` còn nhạt dần
+           xuống đáy, nên nửa dưới cột đo ra chênh lệch BẰNG 0. Cột sáng vì
+           thế chỉ hiện ra một mẩu ngắn sát bờ xa.
+
+           Tô GIẤY thì không phụ thuộc vào lượng mực có sẵn: nó kéo chỗ ấy về
+           phía màu giấy, muốn sáng bao nhiêu cũng được. Đây đúng là cách chỗ
+           sáng được vẽ trong tranh thuỷ mặc — chừa giấy ra, mà ở một lớp
+           canvas trong suốt thì "chừa" phải làm bằng cách tô lại màu giấy.
+
+           Mặt trời ở trên đã tô màu (`mTroi`, ấm) từ trước theo đúng lối này;
+           chỉ mặt trăng là còn dùng phép xoá, và đó là chỗ sai. */
         var choiTrang = sangTrang * (1 - muot(my + mr, HK * 0.58, HK * 0.70));
-        veVet(ctx, mx, mr * 1.7, '0,0,0', 0.85 * choiTrang, t, true);
+        veVet(ctx, mx, mr * 1.7, giayRGB(), 0.92 * choiTrang, t, false);
 
         /* ── 9 · VỆT SƯƠNG MỎNG, VẼ THẬT ──
            Phần trên chỉ XOÁ, nên ở khoảng giấy trống — chỗ không có mực núi —

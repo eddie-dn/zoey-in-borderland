@@ -22,7 +22,43 @@
    tools/build.mjs.
    ══════════════════════════════════════════════════════════════════════ */
 
-.ds-trang{padding-block:var(--s9) var(--s11)}
+/* ══════════ KHOẢNG DƯỚI CÙNG: 152px CHO MỘT CHỖ TRỐNG ══════════
+   Đo ở khổ 1180×900, tính từ mục cuối danh sách xuống mép trên chân trang:
+
+       .ds-trang  padding-bottom  96px   (--s11)
+       .site-foot margin-top      56px   (--s9)
+       ─────────────────────────────────
+                                 152px  KHÔNG chở gì
+
+   Hệ quả đọc được bằng mắt. Chân trang bắt đầu ở 868px trên /posts/ và 896px
+   trên /archive/ — tức người mở hai trang ấy thấy đúng mép trên chân trang
+   rồi hết, phải kéo thêm 63px và 91px mới đọc được nó. Trong khi /tags/,
+   /tags/<t>/ và /notes/ thì vừa khít: chân trang hiện đủ, không phải kéo.
+
+   Ba trang vừa và hai trang thiếu vài chục pixel, mà giữa danh sách với chân
+   trang thì có 152px trống — con số ấy chính là chỗ thiếu.
+
+   Một trang BÀI dài thì phải kéo, và kéo là đúng: nội dung dài thật. Một
+   trang DANH SÁCH ngắn thì không có lý do gì bắt kéo thêm một nhịp chỉ để
+   gặp dòng bản quyền.
+
+   Nay 40px, và chân trang thôi cộng khoảng của nó ở trang danh sách (luật
+   ngay dưới) — tổng còn 40px. Từ mục cuối xuống CHỮ trong chân trang vẫn là
+   40 + 1 + 40 = 81px, dư sức thở. Đo lại: /posts/ 867px, /archive/ 879px,
+   cả hai vừa trong một màn 900px. */
+.ds-trang{padding-block:var(--s9) var(--s8)}
+/* ── CHÂN TRANG THÔI CỘNG THÊM KHOẢNG Ở TRANG DANH SÁCH ──
+   `.site-foot{margin-top:var(--s9)}` là khoảng thở CHUNG, đúng cho trang bài:
+   ở đó khối cuối cùng là chữ hoặc khung bình luận, không có lề dưới riêng.
+   Trang danh sách thì `.ds-trang` đã có lề dưới của chính nó, nên hai khoảng
+   cộng lại thành một dải trống gấp đôi.
+
+   Trang chủ đã có đúng luật này từ trước (`.shell[data-nen] .site-foot`), chỉ
+   là vì một lý do khác — ở đó chân trang phải dính liền mép dưới màn hero.
+
+   Máy không hiểu `:has()` thì luật này rơi và khoảng cũ trở lại: mất một
+   nhịp gọn, không mất gì khác. */
+main:has(> .ds-trang) + .site-foot{margin-top:0}
 
 /* Đầu trang danh sách: s8 (40px) là khoảng của một trang BÀI, nơi tiêu đề
    phải tách hẳn khỏi thân bài. Trang danh sách thì tiêu đề và danh sách là
