@@ -1672,26 +1672,12 @@
 
       dong(L('img', 'Image'), L('imgMo', 'upload a file, or paste a /media/ path'), '![…](…)', chenAnh);
 
-      /* ── BỀ NGANG CỦA MỘT TẤM ẢNH ──
-         `{.wide}` và `{.full}` là thuộc tính của ĐÚNG một tấm ảnh, nên nó
-         không thể là một khối chèn vào — nó là một phép đổi trên tấm ảnh con
-         trỏ đang đứng cạnh. Bấm vòng: thường → rộng → tràn → thường. */
-      dong(L('bAnhRong', 'Image width'), L('bAnhRongMo', 'normal → wide → full-bleed'), '{.wide} {.full}', function () {
-        var anh = anhGanConTro();
-        if (!anh) { window.alert(L('bAnhChua', 'Put the cursor next to an image first.')); return; }
-        var VONG = ['', '{.wide}', '{.full}'];
-        var nay = anh.getAttribute('data-lop') || '';
-        var ke = VONG[(VONG.indexOf(nay) + 1) % VONG.length];
-        if (ke) anh.setAttribute('data-lop', ke); else anh.removeAttribute('data-lop');
-        anh.classList.remove('sz-anh--goc', 'sz-anh--rat-hep',
-                             'sz-anh--hep', 'sz-anh--wide', 'sz-anh--full');
-        if (ke === '{.goc}') anh.classList.add('sz-anh--goc');
-        if (ke === '{.rat-hep}') anh.classList.add('sz-anh--rat-hep');
-        if (ke === '{.hep}') anh.classList.add('sz-anh--hep');
-        if (ke === '{.wide}') anh.classList.add('sz-anh--wide');
-        if (ke === '{.full}') anh.classList.add('sz-anh--full');
-        capNhat();
-      });
+      /* ── KHÔNG CÓ DÒNG "BỀ NGANG ẢNH" Ở ĐÂY NỮA ──
+         Từng có một dòng bấm-vòng `thường → rộng → tràn`. Nó đi vì hai lẽ:
+         nó là cửa THỨ HAI vào cùng một việc mà thanh nổi hiện dưới tấm ảnh đã
+         làm tốt hơn (năm nấc, thấy ngay nấc đang dùng, không phải bấm vòng để
+         dò); và hai cửa ấy đã bắt đầu lệch nhau — dòng này vẫn phát ra
+         `{.wide}` sau khi nấc *Rộng* đã bỏ khỏi thanh. Một việc, một cửa. */
 
       /* ── VIDEO ──
          Hai dạng, và bộ dựng phân biệt chúng bằng chính chữ đầu dòng:
@@ -2103,22 +2089,6 @@
     }
 
 
-    /* Tấm ảnh gần con trỏ nhất: trong chính đoạn đang đứng, hoặc — nếu đoạn ấy
-       không có ảnh nào — tấm cuối cùng phía trên nó. */
-    function anhGanConTro() {
-      var s = window.getSelection();
-      if (!s || !s.rangeCount) return null;
-      var n = s.getRangeAt(0).startContainer;
-      var o = n.nodeType === 1 ? n : n.parentNode;
-      if (!o || !khung.contains(o)) return null;
-      var khoiO = o.closest ? o.closest('p, figure, li, div') : null;
-      if (khoiO) {
-        var trong = khoiO.querySelector('img');
-        if (trong) return trong;
-      }
-      var moi = khung.querySelectorAll('img');
-      return moi.length ? moi[moi.length - 1] : null;
-    }
 
     function doiLopDoan(lop) {
       var s = window.getSelection();
@@ -3105,6 +3075,19 @@
       var treo = khung.querySelectorAll('img[data-tai]');
       for (var j = 0; j < treo.length; j++) treo[j].remove();
       if (treo.length) bao(L('upLost', 'An image that was still uploading did not make it.'), true);
+
+      /* ── DỰNG LẠI LỚP XEM TRƯỚC TỪ `data-lop` ──
+         Các lớp `sz-anh--*` chỉ để NHÌN trong khung gõ; thứ đi vào file là
+         `data-lop`. Trước bản này chúng chỉ được gắn lúc BẤM nút, nên mở một
+         bài cũ ra thì mọi tấm ảnh hiện rộng bằng cột chữ dù trong file ghi
+         `{.hep}` — người viết tưởng khổ đã mất và bấm đặt lại, ghi đè lên
+         đúng thứ mình đã chọn lần trước. `datHTML` gọi hàm này sau mỗi lần
+         nạp, nên đây là chỗ đúng để đồng bộ. */
+      var moi = khung.querySelectorAll('img');
+      for (var k = 0; k < moi.length; k++) {
+        var lop = locLopAnh(moi[k]);
+        datLopAnh(moi[k], lop.kho, lop.can);
+      }
     }
 
     /* ══════════ Ô XEM MARKDOWN ══════════ */
@@ -3288,6 +3271,60 @@
       ['',           L('anhThuong', 'Normal'), L('anhThuongMo', 'the width of the text column')],
       ['{.full}',    L('anhTran', 'Full'),     L('anhTranMo', 'edge to edge of the screen')]
     ];
+    /* ── CĂN DÒNG CHO ẢNH ──
+       Chỉ có nghĩa với ảnh HẸP HƠN cột chữ: một tấm bằng đúng cột chữ hay tràn
+       cả trang thì không còn chỗ trống nào để dạt về bên nào. Nên ba nút này
+       tắt đi ở nấc *Thường* và *Tràn* — bày ra một cái nút bấm không đổi gì
+       còn tệ hơn là không có nút.
+
+       Dùng LẠI tên lớp của đoạn văn (`.trai` · `.phai`), không đặt tên mới:
+       cùng một ý thì cùng một tên, và bộ dựng đã đọc được chúng sẵn.
+
+       Nhưng KHÔNG bao giờ ghi `{.giua}` lên ảnh, dù đó là nút giữa. `.prose
+       .giua` là bộ chọn HẬU DUỆ và nó kèm `max-width:46ch` — đúng cho một đoạn
+       chữ căn giữa, mà rơi lên `<figure>` thì bóp tấm ảnh lại còn 46 ký tự bề
+       ngang. Giữa vốn đã là mặc định của mọi nấc hẹp, nên nút Giữa nghĩa là
+       *bỏ lớp căn đi*, không phải *thêm một lớp*. Cùng một cái bẫy với `{.nho}`
+       ở mục 22.5 — bảng tên lớp phải tra trước khi đặt thêm. */
+    var CAN_ANH = [
+      ['trai', L('canTrai', 'Left'),   L('canTraiMo', 'hugs the left edge of the text column')],
+      ['',     L('canGiua', 'Centre'), L('canGiuaMo', 'centred — the default')],
+      ['phai', L('canPhai', 'Right'),  L('canPhaiMo', 'hugs the right edge of the text column')]
+    ];
+    /* Nấc nào còn chỗ trống hai bên để mà dạt. */
+    var KHO_CAN_DUOC = { '{.goc}': 1, '{.rat-hep}': 1, '{.hep}': 1 };
+
+    var LOP_XEM = ['sz-anh--goc', 'sz-anh--rat-hep', 'sz-anh--hep',
+                   'sz-anh--wide', 'sz-anh--full', 'sz-anh--trai', 'sz-anh--phai'];
+
+    /* MỘT cụm `{…}` chở CẢ khổ lẫn căn dòng — `{.hep .phai}`. Bộ dựng tách
+       cụm ấy ra thành nhiều lớp từ lâu (`tachLop` trong markdown.mjs), nên
+       không phải thêm cú pháp nào; chỉ cần ở đây đọc ra và ghi lại cho đúng.
+       Một thuộc tính `data-lop` duy nhất còn có nghĩa là `sangMD`, `trong()`
+       và `rua()` không phải biết gì về việc có thêm căn dòng. */
+    function locLopAnh(a) {
+      var m = (a.getAttribute('data-lop') || '').match(/\{([^}]*)\}/);
+      var cac = m ? m[1].trim().split(/\s+/) : [];
+      var ra = { kho: '', can: '' };
+      for (var i = 0; i < cac.length; i++) {
+        if (cac[i] === '.trai' || cac[i] === '.phai') ra.can = cac[i].slice(1);
+        else if (cac[i]) ra.kho = '{' + cac[i] + '}';
+      }
+      return ra;
+    }
+
+    function datLopAnh(a, kho, can) {
+      if (!KHO_CAN_DUOC[kho]) can = '';
+      var cac = [];
+      if (kho) cac.push(kho.slice(1, -1));
+      if (can) cac.push('.' + can);
+      if (cac.length) a.setAttribute('data-lop', '{' + cac.join(' ') + '}');
+      else a.removeAttribute('data-lop');
+      a.classList.remove.apply(a.classList, LOP_XEM);
+      if (kho) a.classList.add('sz-anh--' + kho.slice(2, -1));
+      if (can) a.classList.add('sz-anh--' + can);
+    }
+
     var thanhAnh = el('div', 'sz-anh-thanh');
     thanhAnh.hidden = true;
     var nutKho = KHO_ANH.map(function (x) {
@@ -3297,17 +3334,30 @@
       b.addEventListener('mousedown', function (e) { e.preventDefault(); });
       b.addEventListener('click', function () {
         if (!anhDangChon) return;
-        if (x[0]) anhDangChon.setAttribute('data-lop', x[0]);
-        else anhDangChon.removeAttribute('data-lop');
-        anhDangChon.classList.remove('sz-anh--goc', 'sz-anh--rat-hep',
-                                     'sz-anh--hep', 'sz-anh--wide', 'sz-anh--full');
-        if (x[0] === '{.goc}') anhDangChon.classList.add('sz-anh--goc');
-        if (x[0] === '{.rat-hep}') anhDangChon.classList.add('sz-anh--rat-hep');
-        if (x[0] === '{.hep}') anhDangChon.classList.add('sz-anh--hep');
-        if (x[0] === '{.wide}') anhDangChon.classList.add('sz-anh--wide');
-        if (x[0] === '{.full}') anhDangChon.classList.add('sz-anh--full');
+        /* Giữ NGUYÊN căn dòng khi đổi khổ — trừ khi khổ mới không căn được. */
+        datLopAnh(anhDangChon, x[0], locLopAnh(anhDangChon).can);
         capNhat();
         /* Đổi khổ là đổi cả chiều cao tấm ảnh, nên thanh phải đi theo. */
+        datThanhAnh(anhDangChon);
+      });
+      thanhAnh.appendChild(b);
+      return b;
+    });
+
+    thanhAnh.appendChild(el('span', 'sz-anh-vach'));
+
+    var nutCan = CAN_ANH.map(function (x) {
+      var b = el('button', 'sz-anh-nut sz-anh-nut--can');
+      b.type = 'button';
+      b.title = x[1] + ' — ' + x[2];
+      b.appendChild(svg(x[0] === 'trai' ? ['M4 6h16', 'M4 12h10', 'M4 18h14']
+                      : x[0] === 'phai' ? ['M4 6h16', 'M10 12h10', 'M6 18h14']
+                      :                   ['M4 6h16', 'M7 12h10', 'M5 18h14']));
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      b.addEventListener('click', function () {
+        if (!anhDangChon) return;
+        datLopAnh(anhDangChon, locLopAnh(anhDangChon).kho, x[0]);
+        capNhat();
         datThanhAnh(anhDangChon);
       });
       thanhAnh.appendChild(b);
@@ -3319,9 +3369,14 @@
     function datThanhAnh(a) {
       anhDangChon = a;
       if (!a) { thanhAnh.hidden = true; return; }
-      var nay = a.getAttribute('data-lop') || '';
+      var nay = locLopAnh(a);
       for (var i = 0; i < nutKho.length; i++) {
-        nutKho[i].classList.toggle('sz-anh-nut--bat', KHO_ANH[i][0] === nay);
+        nutKho[i].classList.toggle('sz-anh-nut--bat', KHO_ANH[i][0] === nay.kho);
+      }
+      var canDuoc = !!KHO_CAN_DUOC[nay.kho];
+      for (var j = 0; j < nutCan.length; j++) {
+        nutCan[j].classList.toggle('sz-anh-nut--bat', canDuoc && CAN_ANH[j][0] === nay.can);
+        nutCan[j].disabled = !canDuoc;
       }
       /* Ảnh vừa chèn có thể chưa xong bố cục ở nhịp này — lúc ấy chiều cao
          bằng 0 và thanh rơi lên đỉnh tấm ảnh. Đợi nó tải xong rồi đặt lại. */
@@ -3333,7 +3388,14 @@
       var rA = a.getBoundingClientRect();
       var rK = khoiSoan.getBoundingClientRect();
       thanhAnh.hidden = false;
-      thanhAnh.style.left = Math.round(rA.left - rK.left + rA.width / 2) + 'px';
+      /* Kẹp vào trong khung. Thanh neo theo TÂM tấm ảnh (`translateX(-50%)`),
+         nên một tấm căn phải đẩy nó thò ra ngoài mép — và vì nó nằm trong một
+         khối `position:relative` có bề ngang hữu hạn, phần thò ra bị kẹp lại
+         và flex bóp các con cho vừa. */
+      var nuaThanh = thanhAnh.getBoundingClientRect().width / 2;
+      var x = rA.left - rK.left + rA.width / 2;
+      x = Math.max(nuaThanh, Math.min(x, rK.width - nuaThanh));
+      thanhAnh.style.left = Math.round(x) + 'px';
       thanhAnh.style.top  = Math.round(rA.bottom - rK.top - 6) + 'px';
     }
 

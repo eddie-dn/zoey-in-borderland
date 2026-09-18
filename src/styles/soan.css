@@ -157,6 +157,9 @@
 .sz-khung img.sz-anh--goc{width:auto;max-width:100%;margin-inline:auto;display:block}
 .sz-khung img.sz-anh--rat-hep{width:31%;margin-inline:auto;display:block}
 .sz-khung img.sz-anh--hep{width:62%;margin-inline:auto;display:block}
+/* Căn dòng: đứng SAU ba dòng trên để ghi đè `margin-inline:auto` của chúng. */
+.sz-khung img.sz-anh--trai{margin-inline:0 auto}
+.sz-khung img.sz-anh--phai{margin-inline:auto 0}
 .sz-khung p:has(> img.sz-anh--goc)::after{content:"cỡ gốc — không phóng to"}
 .sz-khung p:has(> img.sz-anh--rat-hep)::after{content:"nhỏ — một phần ba cột chữ"}
 .sz-khung p:has(> img.sz-anh--hep)::after{content:"hẹp — hai phần ba cột chữ"}
@@ -218,8 +221,15 @@
   background:var(--surface-solid);
   box-shadow:inset 0 0 0 1px var(--line),var(--glass-drop);
 }
+/* ── `flex:none` LÀ BẮT BUỘC, KHÔNG PHẢI CHO ĐẸP ──
+   Thanh này neo theo TÂM tấm ảnh, nên với một tấm căn phải nó nằm sát mép
+   khung và bề rộng vừa-đủ-nội-dung của nó bị kẹp lại. Lúc ấy flex bóp các con
+   — mà nút chữ thì không bóp được dưới cỡ chữ của nó, còn `<svg>` và vạch ngăn
+   KHÔNG có bề ngang nội tại nên chúng tụt thẳng về 0. Đo được: svg còn
+   0,33px, vạch còn 0,02px — ba cái nút căn dòng biến mất sạch mà không có lỗi
+   nào. `datThanhAnh` còn kẹp thêm toạ độ để thanh không tràn khỏi khung. */
 .sz-anh-nut{
-  appearance:none;border:0;background:none;cursor:pointer;
+  appearance:none;border:0;background:none;cursor:pointer;flex:none;
   padding:5px var(--s3);border-radius:var(--r-pill);
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
@@ -227,6 +237,20 @@
 }
 .sz-anh-nut:hover{color:var(--accent-ink);background:var(--surface-sunken)}
 .sz-anh-nut--bat{color:var(--accent-ink);background:var(--accent-wash)}
+/* Ba nút căn dòng là ICON, không phải chữ — thanh đã có năm chữ khổ rồi, thêm
+   ba chữ nữa là nó rộng hơn cả tấm ảnh nó đang chú giải. */
+.sz-anh-nut--can{padding:5px 6px;display:grid;place-items:center}
+.sz-anh-nut--can svg{
+  width:15px;height:15px;display:block;
+  fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;
+}
+/* Tắt ở nấc Thường và Tràn: ảnh rộng bằng cột chữ thì không còn chỗ mà dạt. */
+.sz-anh-nut--can:disabled{opacity:.3;cursor:default}
+.sz-anh-nut--can:disabled:hover{color:var(--text-muted);background:none}
+.sz-anh-vach{
+  flex:none;width:1px;margin-inline:3px;align-self:stretch;
+  background:var(--line);
+}
 
 /* ══════════ BẢNG TRONG Ô SOẠN ══════════
    Một `<table>` thật, gõ thẳng vào ô. Vẽ gần giống bảng trên trang đã dựng —

@@ -484,10 +484,17 @@ const NHAN = {
   szBWide     : 'Wide block', szBWideMo   : 'spills past the text column',
   szBTable    : 'Table',      szBTableMo  : 'up to 5 × 20 — Shift+Enter between rows',
   /* Căn dòng — ba nút riêng. "Đều hai bên" là mặc định của bài nên không có
-     nút; ba cái này gắn {.trai} · {.giua} · {.phai}, bấm lại là gỡ. */
+     nút; ba cái này gắn {.trai} · {.giua} · {.phai}, bấm lại là gỡ.
+
+     Ba dòng `…Mo` chỉ dùng cho thanh nổi dưới TẤM ẢNH, nơi ba cái nút là icon
+     chứ không phải chữ — icon thì phải có lời giải thích khi rê vào. Trên
+     thanh nút chính thì chính tên nút đã là lời giải thích. */
   szCanTrai   : 'Left',
   szCanGiua   : 'Centre',
   szCanPhai   : 'Right',
+  szCanTraiMo : 'hugs the left edge of the text column',
+  szCanGiuaMo : 'centred — the default',
+  szCanPhaiMo : 'hugs the right edge of the text column',
   /* Khung đặt cỡ bảng — hỏi bằng hai cặp nút cộng trừ và một bảng xem trước,
      không còn bắt gõ một chuỗi kiểu "3x4" vào hộp thoại của trình duyệt. */
   szBTableAsk : 'How big?',
@@ -543,7 +550,6 @@ const NHAN = {
   szBCodeAsk  : 'Language (js, css, python… — can be empty):',
   szBYoutube  : 'YouTube',   szBYoutubeMo : 'loads only when someone presses play',
   szBVideo    : 'Video file', szBVideoMo   : 'an .mp4 or .webm you uploaded',
-  szBAnhRong  : 'Image width', szBAnhRongMo: 'normal → wide → full-bleed',
   szBNho      : 'Small text', szBNhoMo : 'for a side note or a source line',
   szSup       : 'Superscript — m²',
   szSub       : 'Subscript — H₂O',
@@ -553,7 +559,6 @@ const NHAN = {
   szBYtSai    : 'Could not find a video id in that.',
   szBVidAsk   : 'Video path (starts with /media/):',
   szBCapAsk   : 'Caption (can be empty):',
-  szBAnhChua  : 'Put the cursor next to an image first.',
   szBFull     : 'Full-bleed block', szBFullMo : 'edge to edge of the screen',
   /* ── NHÃN CỦA VIỆC THẢ ẢNH ──
      Mấy câu này hiện ra ở dòng trạng thái ngay dưới thanh nút, trong lúc ảnh
@@ -701,6 +706,9 @@ const NHAN = {
   replyTo     : 'Replying to {n}',
   cancelReply : 'Cancel reply',
   moreReplies : 'Show {n} earlier replies',
+  /* Lời gấp lại phải nói đúng con số ấy, không phải "Hide replies" chung
+     chung: hai hàng dưới nút vẫn ở lại, nên "ẩn trả lời" là nói sai. */
+  fewerReplies: 'Hide {n} earlier replies',
   /* Sửa lời của chính mình — tối đa ba lượt. Con số in ngay trong nhãn nút. */
   changeName  : 'change',
   edit        : 'Edit',
@@ -1293,6 +1301,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         canTrai: NHAN.szCanTrai,
                         canGiua: NHAN.szCanGiua,
                         canPhai: NHAN.szCanPhai,
+                        canTraiMo: NHAN.szCanTraiMo,
+                        canGiuaMo: NHAN.szCanGiuaMo,
+                        canPhaiMo: NHAN.szCanPhaiMo,
                         bCode: NHAN.szBCode,
                         bTask: NHAN.szBTask,
                         bDeCho: NHAN.szBDeCho,
@@ -1303,13 +1314,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         para: NHAN.szPara,
                         bYoutube: NHAN.szBYoutube, bYoutubeMo: NHAN.szBYoutubeMo,
                         bVideo: NHAN.szBVideo, bVideoMo: NHAN.szBVideoMo,
-                        bAnhRong: NHAN.szBAnhRong, bAnhRongMo: NHAN.szBAnhRongMo,
                         bNho: NHAN.szBNho,
                         sup: NHAN.szSup, sub: NHAN.szSub, kbd: NHAN.szKbd,
                         bThuong: NHAN.szBThuong,
                         bYtAsk: NHAN.szBYtAsk, bYtSai: NHAN.szBYtSai,
                         bVidAsk: NHAN.szBVidAsk, bCapAsk: NHAN.szBCapAsk,
-                        bAnhChua: NHAN.szBAnhChua,
                         bFull: NHAN.szBFull, bFullMo: NHAN.szBFullMo,
                         altMissing: NHAN.szAltMissing, upNo: NHAN.szUpNo,
                         upOne: NHAN.szUpOne, upMany: NHAN.szUpMany,
@@ -2186,7 +2195,8 @@ function binhLuanHTML(bai) {
     saveEdit: NHAN.saveEdit, editOk: NHAN.editOk, editWait: NHAN.editWait,
     editFail: NHAN.editFail,
     newThread: NHAN.newThread, threadFull: NHAN.threadFull,
-    moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
+    moreReplies: NHAN.moreReplies, fewerReplies: NHAN.fewerReplies,
+    noComments: NHAN.noComments,
     sending: NHAN.sending, tooShort: NHAN.tooShort,
     failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
     charsLeft: NHAN.charsLeft,
@@ -2624,11 +2634,6 @@ function trangBai(bai, congKhai) {
       ` data-nhac="${attr((CAU.baoVeChu || {}).loiNhac || 'Đọc bản đầy đủ tại')}"` +
       ` data-tieude="${attr(bai.title)}"`,
     crumbs      : crumbsHTML(bai),
-    /* Địa chỉ không có `https://` cho gọn — trong một tấm ảnh chụp thì phần
-       giao thức chẳng nói thêm gì, mà nó chiếm mất một phần ba dòng. */
-    dauTrang    : `<p class="dau-trang" aria-hidden="true">` +
-      `<span class="dau-trang-nha">${escapeHtml(String(CAU.url || '').replace(/^https?:\/\//, '').replace(/\/$/, ''))}</span>` +
-      `<span class="dau-trang-bai">${escapeHtml(bai.title)}</span></p>`,
     /* noiChu() dán từ công cụ vào từ sau nó, để text-wrap:balance không bẻ
        tiêu đề đúng giữa một cụm từ. Chỉ dùng ở h1 — xem tools/lib/text.mjs. */
     title       : noiChu(escapeHtml(bai.title)),

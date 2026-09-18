@@ -1326,6 +1326,29 @@ sáng =  0,999 0,852   0,499   0,181   0
 Dừng ở `0,72` chứ không đi hết `1,0`: qua đó phần sáng mỏng tới mức trên khung
 955px chưa tới hai pixel — đọc ra một vệt xước, không ra mặt trăng.
 
+**Và đường phân giới NGHIÊNG, nghiêng dần.** Một lưỡi liềm dựng đứng là thứ chỉ
+có trong hình vẽ: ngoài đời phần sáng luôn quay về phía mặt trời, mà mặt trời
+thì ở dưới chân trời và đi tiếp suốt đêm — nên lưỡi liềm **lăn** chậm quanh đĩa
+từ lúc trăng lên tới lúc trăng lặn. Đó cũng là lý do một tấm ảnh chụp trăng lúc
+chập tối và một tấm lúc gần sáng không bao giờ giống nhau về dáng.
+
+Góc nghiêng chạy theo cùng cái đồng hồ đã lo đường đi chéo 15° và kỳ trăng, nên
+ba chuyển động cùng kể một chuyện. Biên độ **0,62 rad ≈ 35°** cả đêm: rộng hơn
+thì ở đoạn giữa đĩa lật quá nhanh và mắt bắt ra là hình đang XOAY chứ không
+phải trăng đang đi; hẹp hơn thì suốt đêm nhìn như một góc nghiêng đặt cứng.
+
+Hai hàm nhận góc theo **hai hệ khác nhau**, và đó là chỗ dễ sai: `arc()` đo góc
+theo trục x của khung vẽ nên phải cộng góc nghiêng vào cả hai đầu, còn
+`ellipse()` đo theo trục x của chính nó — tức sau khi đã xoay — nên hai đầu giữ
+nguyên `±90°`. Cộng vào cả hai chỗ là hai nửa lệch nhau đúng bằng góc ấy và
+`fill()` ra một hình méo. Đo lại sau khi nghiêng: tỉ lệ sáng vẫn đúng dãy
+`0,852 · 0,499 · 0,181`, và hướng phần sáng xoay đúng `17,2°` với `n = 0,3 rad`
+— xoay thì bảo toàn diện tích, nên con số không được phép đổi.
+
+Vệt mực cho chiều sâu cũng phải lệch **dọc theo trục vừa nghiêng**; để nguyên
+trục ngang thì ở góc lớn nó trượt ra khỏi phần tối và đọc ra là một cái bóng
+dán lệch.
+
 **Và một vệt mực rất mỏng cho có chiều.** Đĩa vẽ bằng phép xoá nên nó ra một
 mảng giấy trắng PHẲNG. Đổ lại một bệt bầu dục alpha `0,055`, lệch về phía tối
 theo `cos θ`: đủ để rìa thôi sắc lẻm và đĩa có một chiều, chưa đủ để thành một
@@ -2507,13 +2530,23 @@ không thay được cái kia:
 
 | | ngưỡng | lo chuyện gì |
 |---|---|---|
-| gấp trả lời | từ cái thứ **5** | một nhánh nuốt cả khu bình luận |
+| gấp trả lời | giữ **2** cái mới nhất | một nhánh nuốt cả khu bình luận |
 | phân trang | **10** bình luận gốc | khu dài hơn cả bài |
 | chặn chiều cao | **50svh** | ô gõ bị đẩy khỏi tầm với |
 
-**Gấp từ cái thứ năm, không phải thứ ba.** Bốn trả lời là một mạch trò chuyện
-bình thường; gấp nó lại là bắt người đọc bấm để xem thứ lẽ ra nên thấy luôn. Từ
-cái thứ năm thì nhánh đã dài hơn phần bình luận còn lại.
+**Ngưỡng gấp đã đi ba nhịp: 3 → 5 → 2.** Dừng ở 2 vì chỗ này không phải một hộp
+thư, nó là cái đuôi dưới một bình luận gốc: hai lời đáp mới nhất đủ nói "ở đây
+có trao đổi, và nó đang nói về gì", mọi thứ cũ hơn là chuyện của người muốn đọc
+kỹ — và người ấy bấm một cái.
+
+**Gấp cái CŨ, không gấp cái mới.** Đọc một mạch trò chuyện thì cái vừa nói là
+cái cần thấy trước. Nên nút nằm TRÊN danh sách, và bung ra là chèn ngược lên
+đầu để thứ tự thời gian vẫn đúng.
+
+**Và nó phải gấp lại được.** Bản trước bung xong thì xoá luôn cái nút: mở nhầm
+một nhánh mười lăm lời đáp là không có đường lùi, phải tải lại cả trang. Nay
+nút ở lại và đổi lời (`Show n` ↔ `Hide n`), các hàng đã bung giữ trong một mảng
+riêng để lúc gấp thì gỡ đúng chúng, không đụng vào hai hàng vẫn luôn hiện.
 
 **Phân trang chỉ đếm bình luận GỐC.** Trả lời đi theo gốc của nó, không tách
 sang trang khác được — không thì một mạch trò chuyện bị cắt làm đôi giữa hai
@@ -2532,6 +2565,16 @@ khổ **nhỏ nhất** — chỗ chắc chắn luôn thấy được. Đo ở 37
 
 Nhánh trả lời KHÔNG tự cuộn thêm một tầng nữa (`.bl-ds--con{overflow:visible}`)
 — hai thanh cuộn lồng nhau là thứ không ai gỡ được bằng ngón tay.
+
+**Dải `‹ ›` dính đáy phải đục BẰNG MÀU CHỖ NÓ NGỒI.** Nó có chữ trôi qua phía
+dưới nên nền không thể trong suốt; nhưng bản trước ghi cứng `--surface-solid`
+(màu mặt thẻ, tức trắng) và ra một vệt trắng giữa nền tím nhạt, đổi theme thì
+vẫn trắng. Đo ngược từ `.bl-ds` lên thì `.bl-than`, `.binh-luan`, `.post-foot`,
+`.post-layout`, `main`, `.shell` đều trong suốt — thứ thật sự sơn màu ở trang
+bài là `<body>`, tức `--bg`. Mà tấm trượt ở điện thoại (`.bl-than--tam`) thì
+LẠI là một mặt thẻ thật. Không có một token nào đúng cả hai chỗ, nên màu ấy
+thành một biến đặt ở chính khung chứa (`--bl-nen`) và dải chỉ việc đọc: biến
+tuỳ chỉnh di truyền, nên nó luôn khớp với thứ đang sơn phía sau, ở mọi theme.
 
 #### Gửi xong phải THẤY lời mình, và sửa được
 
@@ -2850,6 +2893,30 @@ nút, khổ đang dùng sáng lên. Cùng nếp với ô soạn thư (Gmail: *Sm
 | Thường | *(không có)* | bằng cột chữ | như nhau |
 | Tràn | `{.full}` | tràn hết bề ngang màn hình | như nhau |
 
+**Và ảnh hẹp hơn cột chữ thì CĂN DÒNG được.** Ba nút icon ở nửa sau thanh nổi:
+trái · giữa · phải, ghi ra `{.hep .trai}` — cùng tên lớp với căn dòng của đoạn
+văn, vì cùng một ý thì cùng một tên, và bộ dựng đã đọc được chúng sẵn.
+
+Ba nút ấy **tắt** ở nấc *Thường* và *Tràn*: một tấm rộng bằng đúng cột chữ hay
+tràn cả trang thì không còn chỗ trống nào để dạt về bên nào, và bày ra một cái
+nút bấm không đổi gì còn tệ hơn là không có nút. Đổi khổ thì giữ nguyên căn
+dòng — trừ khi khổ mới không căn được, lúc ấy lớp căn bị gỡ luôn chứ không nằm
+lại chờ trong file.
+
+**KHÔNG bao giờ ghi `{.giua}` lên một tấm ảnh**, dù đó là cái nút ở giữa.
+`.prose .giua` là bộ chọn HẬU DUỆ và nó kèm `max-width:46ch` — đúng cho một
+đoạn chữ căn giữa, mà rơi lên `<figure>` thì bóp tấm ảnh lại còn 46 ký tự bề
+ngang. Giữa vốn đã là mặc định của mọi nấc hẹp, nên nút Giữa nghĩa là *bỏ lớp
+căn đi*, không phải *thêm một lớp*. Cùng một cái bẫy với `{.nho}` bên dưới:
+bảng tên lớp phải tra TRƯỚC khi đặt thêm tên mới.
+
+Chữ không chạy vòng quanh ảnh. `float` làm được, nhưng nó vỡ ở khổ hẹp (một
+tấm 31% float trái trên màn 375px để lại một cột chữ rộng hai chữ cái) và
+Markdown không chở nổi thứ để đọc lại cho đúng. Medium, Substack, Ghost đều chỉ
+căn, không cho chữ chạy quanh. Ở khổ hẹp thì `.hep` nới lên 86% nên nó gần như
+không dạt được nữa (đo ở 375px: lệch 46px) — đó là hệ quả thật của việc nới,
+không phải lỗi; muốn thấy rõ thì dùng nấc *Nhỏ*, đo được 158px.
+
 **Nấc *Rộng* (`{.wide}`) đã bỏ khỏi thanh.** Nó nghĩa là "rộng hơn cột chữ một
 chút", mà một chút ấy không đủ để thấy khác và lại đủ để phá nhịp cột — ảnh
 nào đáng phá nhịp thì đáng tràn hẳn. Lớp `.wide` vẫn còn trong `prose.css` cho
@@ -2857,6 +2924,18 @@ những bài cũ đã gõ tay; chỉ là không có nút nào sinh ra nó nữa.
 
 Mỗi nút kèm một dòng giải thích trong `title`: "Hẹp" hay "Rộng" không tự nói ra
 nó rộng hơn **cái gì**.
+
+**Một việc, một cửa.** Ngăn Media từng có thêm một dòng bấm-vòng "bề ngang
+ảnh" (`thường → rộng → tràn`). Nó đi vì nó là cửa THỨ HAI vào cùng một việc mà
+thanh nổi làm tốt hơn — năm nấc, thấy ngay nấc đang dùng, không phải bấm vòng
+để dò — và vì hai cửa ấy đã bắt đầu lệch nhau: dòng kia vẫn phát ra `{.wide}`
+sau khi nấc *Rộng* đã bỏ khỏi thanh.
+
+**Lớp `sz-anh--*` chỉ để NHÌN trong khung gõ; thứ đi vào file là `data-lop`.**
+Trước bản này chúng chỉ được gắn lúc BẤM nút, nên mở một bài cũ ra thì mọi tấm
+ảnh hiện rộng bằng cột chữ dù trong file ghi `{.hep}` — người viết tưởng khổ đã
+mất và bấm đặt lại, ghi đè lên đúng thứ mình đã chọn lần trước. Nay `donAnh()`
+dựng lại lớp xem trước từ `data-lop` sau mỗi lần nạp.
 
 **`{.goc}` là nấc quan trọng nhất mà bản trước thiếu.** Mặc định
 `.prose figure img{width:100%}` kéo mọi tấm ảnh rộng bằng cột chữ — đúng cho

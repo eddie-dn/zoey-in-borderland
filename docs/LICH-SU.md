@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
+| V3.0.4 | 2026-09-18 | 04 | bỏ dấu trang chìm ở trang bài; dải sang trang ăn màu nền; gấp trả lời giữ 2 cái và gấp lại được |
+| V3.0.3 | 2026-09-18 | 03 | ô soạn: căn dòng cho ảnh; ảnh giữ khổ khi mở lại bài; bỏ cửa thứ hai đổi bề ngang ảnh |
 | V3.0.2 | 2026-09-18 | 02 | ô soạn: thụt vào được ở mục đầu danh sách; con trỏ không nhảy khi đổi khối; gõ tắt Markdown |
 | V3.0.1 | 2026-09-18 | 01 | ô soạn: dải ảnh mở bảng chọn ảnh; ngăn Media lên ngay dưới thanh nút; thêm khổ nhỏ, bỏ khổ rộng |
 | V3.0.0 | 2026-09-18 | 00 | bình luận: ẩn bớt reply · ngăn cao tối đa nửa trang · hơn 10 thì có trang; trăng chạy trọn một kỳ |
@@ -252,6 +255,50 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.5 — 18-Sep-2026
+
+- **Trăng khuyết nghiêng dần.** Lưỡi liềm dựng đứng là thứ chỉ có trong hình
+  vẽ. Ngoài đời phần sáng luôn quay về phía mặt trời, mà mặt trời thì ở dưới
+  chân trời và đi tiếp suốt đêm — nên lưỡi liềm lăn chậm quanh đĩa từ lúc trăng
+  lên tới lúc trăng lặn. Đó cũng là lý do một tấm ảnh chụp trăng lúc chập tối
+  và một tấm lúc gần sáng không bao giờ giống nhau về dáng.
+- **Nghiêng theo cùng cái đồng hồ** đã lo đường đi chéo 15° và kỳ trăng, nên ba
+  chuyển động cùng kể một chuyện. Biên độ 35° cả đêm: rộng hơn thì đĩa lật quá
+  nhanh và mắt bắt ra là hình đang xoay, hẹp hơn thì như một góc đặt cứng.
+- **Đo lại sau khi nghiêng** để chắc không vỡ thứ đã đúng: tỉ lệ sáng vẫn
+  `0,852 · 0,499 · 0,181` đúng như trước, hướng phần sáng xoay đúng 17,2° với
+  0,3 rad. Xoay thì bảo toàn diện tích, nên con số không được phép đổi.
+
+## V3.0.4 — 18-Sep-2026
+
+- **Bỏ dấu trang chìm ở trang bài.** Dòng `z-in-borderland.com · <tên bài>` bám
+  cố định góc dưới trái đã đi, ở cả máy tính lẫn điện thoại. Nó sinh ra để ảnh
+  chụp màn hình nào cũng mang theo nguồn, nhưng cái giá là một dòng chữ nằm đè
+  lên bài suốt lúc đọc, ở mọi khổ màn, để phòng một việc thỉnh thoảng mới xảy
+  ra. Nguồn bài vẫn còn ở chân trang và trong thẻ chia sẻ.
+- **Dải `‹ ›` ở khu bình luận thôi trắng bệch.** Nó ghi cứng màu mặt thẻ, mà
+  khu bình luận ở trang bài không nằm trên thẻ nào — thứ sơn màu phía sau là
+  nền trang. Nay màu ấy là một biến đặt ở chính khung chứa, nên nó khớp ở cả
+  trang bài lẫn tấm trượt điện thoại, và ở cả năm theme.
+- **Gấp trả lời còn giữ 2 cái mới nhất, và gấp lại được.** Bản trước bung xong
+  thì xoá luôn cái nút: mở nhầm một nhánh mười lăm lời đáp là không có đường
+  lùi, phải tải lại cả trang.
+
+## V3.0.3 — 18-Sep-2026
+
+- **Ảnh căn dòng được.** Ba nút trái · giữa · phải trên thanh nổi dưới tấm ảnh,
+  ghi ra `{.hep .phai}`. Chỉ bật cho ảnh HẸP HƠN cột chữ — một tấm rộng bằng
+  đúng cột chữ hay tràn cả trang thì không còn chỗ trống nào để dạt về bên nào,
+  nên ở hai nấc ấy ba nút tắt hẳn thay vì bấm không đổi gì. Đổi khổ thì giữ
+  nguyên căn dòng.
+- **Mở bài cũ ra, ảnh còn đúng khổ đã chọn.** Lớp xem trước trong khung gõ
+  trước đây chỉ gắn lúc BẤM nút, nên một bài ghi `{.hep}` mở lại hiện rộng bằng
+  cột chữ — người viết tưởng khổ đã mất và bấm đặt lại, ghi đè lên đúng thứ
+  mình chọn lần trước.
+- **Một việc, một cửa.** Ngăn Media bỏ dòng bấm-vòng "bề ngang ảnh": nó là cửa
+  thứ hai vào cùng một việc, và đã bắt đầu lệch — vẫn phát ra `{.wide}` sau khi
+  nấc *Rộng* bỏ khỏi thanh.
 
 ## V3.0.2 — 18-Sep-2026
 

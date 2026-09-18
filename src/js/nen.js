@@ -1374,8 +1374,8 @@
        chặng, ba chặng ngoài đã dưới một phần nghìn. */
     /* `ky` — pha của kỳ trăng, 0 là tròn và 1 là tối hẳn. Mặt trời luôn
        truyền 0: nó không có pha, và một mặt trời khuyết thì đó là nhật thực. */
-    function veDia(c, x, y, r, m, moQuang, moDia, xoa, ky) {
-      ky = ky || 0;
+    function veDia(c, x, y, r, m, moQuang, moDia, xoa, ky, nghieng) {
+      ky = ky || 0; nghieng = nghieng || 0;
       if (moQuang <= 0.004 && moDia <= 0.004) return;
       c.save();
       if (xoa) c.globalCompositeOperation = 'destination-out';
@@ -1400,7 +1400,7 @@
         gd.addColorStop(1,    'rgba(' + m + ',0)');
         c.fillStyle = gd;
         c.beginPath();
-        if (ky > 0.001) duongKy(c, x, y, r, ky); else c.arc(x, y, r, 0, Math.PI * 2);
+        if (ky > 0.001) duongKy(c, x, y, r, ky, nghieng); else c.arc(x, y, r, 0, Math.PI * 2);
         c.fill();
       }
       c.restore();
@@ -1428,9 +1428,10 @@
        Vẽ ngược chiều kim cho nửa đường tròn rồi xuôi chiều cho nửa bầu dục
        (hoặc ngược lại khi đã qua bán khuyết): hai nửa phải nối đầu–đuôi, không
        thì `fill()` ra một hình số tám. */
-    function duongKy(c, x, y, r, ky) {
+    function duongKy(c, x, y, r, ky, nghieng) {
       var th = ky * Math.PI;
       var a = r * Math.cos(th);
+      var n = nghieng || 0;
       /* Nửa đường tròn bên TRÁI — phía còn sáng. Đi NGƯỢC chiều kim từ −90°
          tới 90° thì nó vòng qua 180°, tức nửa trái; đi xuôi chiều là vòng qua
          0° và ra nửa PHẢI, lúc ấy hình đổ ra là phần BÓNG chứ không phải phần
@@ -1440,10 +1441,16 @@
          tích đĩa. Cách này ra 0,999 · 0,852 · 0,499 · 0,181 · 0 cho
          ky = 0 · 0,25 · 0,5 · 0,72 · 1 — đúng một kỳ trăng đi từ tròn xuống
          tối. Cách kia ra đúng dãy số ấy nhưng lộn đầu. */
-      c.arc(x, y, r, -Math.PI / 2, Math.PI / 2, true);
+      c.arc(x, y, r, -Math.PI / 2 + n, Math.PI / 2 + n, true);
       /* Nửa đường phân giới. `a < 0` thì nó cong ngược, và cờ chiều quay đảo
-         theo để hai nửa vẫn nối liền. */
-      c.ellipse(x, y, Math.abs(a), r, 0, Math.PI / 2, -Math.PI / 2, a > 0);
+         theo để hai nửa vẫn nối liền.
+
+         ── HAI HÀM NHẬN GÓC THEO HAI HỆ KHÁC NHAU ──
+         `arc` đo góc theo trục x của KHUNG VẼ, nên trục phải cộng `n` vào cả
+         hai đầu. `ellipse` thì đo theo trục x của CHÍNH nó, tức là sau khi đã
+         xoay `n` — nên hai đầu ở đây giữ nguyên ±90°. Cộng `n` vào cả hai chỗ
+         là hai nửa lệch nhau đúng `n` và `fill()` ra một hình méo. */
+      c.ellipse(x, y, Math.abs(a), r, n, Math.PI / 2, -Math.PI / 2, a > 0);
       c.closePath();
     }
 
@@ -2035,8 +2042,24 @@
            là "đêm đang trôi". */
         var sangTrang = dem * muot(p, 0.42, 0.52);
         var kyTrang = 0.72 * tienTrang;
+
+        /* ── ĐƯỜNG PHÂN GIỚI PHẢI NGHIÊNG, VÀ PHẢI NGHIÊNG DẦN ──
+           Một lưỡi liềm dựng đứng là thứ chỉ có trong hình vẽ. Ngoài đời phần
+           sáng luôn quay về phía mặt trời, mà mặt trời thì ở dưới chân trời và
+           đi tiếp suốt đêm — nên lưỡi liềm LĂN chậm quanh đĩa từ lúc trăng lên
+           tới lúc trăng lặn. Đó cũng là lý do một tấm ảnh chụp trăng lúc chập
+           tối và một tấm lúc gần sáng không bao giờ giống nhau về dáng.
+
+           Ở đây: nghiêng theo cùng cái đồng hồ đã lo đường đi chéo và kỳ
+           trăng, nên ba chuyển động cùng kể một chuyện. Đầu đêm nghiêng mạnh
+           (sừng chếch lên), giữa đêm gần dựng, cuối đêm ngả về bên kia.
+
+           Biên độ 0,62 rad ≈ 35°: rộng hơn nữa thì ở đoạn giữa đĩa lật quá
+           nhanh và mắt bắt ra là hình đang XOAY chứ không phải trăng đang đi;
+           hẹp hơn thì suốt đêm nhìn như một góc nghiêng đặt cứng. */
+        var nghiengTrang = (0.38 - tienTrang) * 0.62;
         veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang,
-              true, kyTrang);
+              true, kyTrang, nghiengTrang);
 
         /* ── CHIỀU SÂU: MỘT VỆT MỰC RẤT MỎNG DỌC ĐƯỜNG PHÂN GIỚI ──
            Đĩa vẽ bằng phép xoá nên nó ra một mảng giấy trắng PHẲNG — đúng, mà
@@ -2048,8 +2071,13 @@
            đĩa có một chiều. Alpha 0,055 ở tâm: cao hơn là thấy ra một cái bóng
            dán lên, thấp hơn là không khác gì. */
         if (sangTrang > 0.02) {
+          /* Vệt mực nằm lệch về phía TỐI, nên nó phải lệch dọc theo đúng cái
+             trục vừa nghiêng — để nguyên trục ngang thì ở góc nghiêng lớn nó
+             trượt ra khỏi phần tối và đọc ra là một cái bóng dán lệch. */
           var lech = mr * 0.42 * Math.cos(kyTrang * Math.PI);
-          loang(ctx, mx + lech, my + mr * 0.10, mr * 0.92, mr * 0.88,
+          loang(ctx, mx + lech * Math.cos(nghiengTrang),
+                     my + lech * Math.sin(nghiengTrang) + mr * 0.10,
+                mr * 0.92, mr * 0.88,
                 mau(58, 64, 82), 0.055 * sangTrang, false);
         }
 

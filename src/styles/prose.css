@@ -69,6 +69,27 @@
   /* Ở khổ hẹp, 62% của một cột đã hẹp là một tấm ảnh bé tí không nhìn ra gì. */
   .prose figure.hep img,.prose figure.hep video{width:86%}
 }
+
+/* ── CĂN DÒNG CHO ẢNH: chỉ có nghĩa với ảnh HẸP HƠN cột chữ ──
+   Một tấm bằng đúng cột chữ hay tràn cả trang thì không còn chỗ trống nào để
+   dạt về bên nào, nên ba nấc ấy không nhận `.trai`/`.phai` — thanh ảnh trong ô
+   soạn cũng tắt luôn ba cái nút, không để ai bấm một cái nút không đổi gì.
+
+   Chữ KHÔNG chạy vòng quanh ảnh. `float` làm được điều đó, nhưng nó vỡ ở khổ
+   hẹp (một tấm 31% float trái trên màn 375px để lại một cột chữ rộng hai chữ
+   cái), và Markdown không chở nổi thứ để mà đọc lại cho đúng. Medium, Substack
+   và Ghost đều chỉ căn, không cho chữ chạy quanh — ảnh trong một bài đọc là
+   một nhịp nghỉ, không phải một hình minh hoạ cắm giữa đoạn.
+
+   `margin-inline` chứ không `margin-left/right`: viết một lần, chạy đúng cả ở
+   chiều đọc phải-sang-trái. */
+.prose figure:is(.goc,.rat-hep,.hep).trai :is(img,video){margin-inline:0 auto}
+.prose figure:is(.goc,.rat-hep,.hep).phai :is(img,video){margin-inline:auto 0}
+/* Chú thích đi theo tấm ảnh — `.prose .trai` bên dưới đã đặt `text-align`,
+   nhưng nó là bộ chọn hậu duệ nên `figcaption` của khổ hẹp (vốn căn giữa)
+   thắng nó. Ghi lại ở đây cho đúng thứ tự. */
+.prose figure:is(.goc,.rat-hep,.hep).trai figcaption{text-align:left}
+.prose figure:is(.goc,.rat-hep,.hep).phai figcaption{text-align:right}
 .prose > .wide{grid-column:wide}
 .prose > .full{grid-column:full}
 
@@ -216,6 +237,10 @@
   text-align:center;text-wrap:balance;
   max-width:46ch;margin-inline:auto;
 }
+/* ĐỪNG ghi `{.giua}` lên một tấm ảnh. Bộ chọn trên là HẬU DUỆ, nên nó rơi
+   thẳng lên `<figure class="hep giua">` và `max-width:46ch` bóp tấm ảnh lại
+   còn 46 ký tự bề ngang. Ảnh hẹp vốn đã căn giữa sẵn, nên "giữa" với ảnh
+   nghĩa là KHÔNG có lớp căn nào — xem `datLopAnh()` trong soan.js. */
 
 /* ── CĂN TRÁI VÀ CĂN PHẢI ──
    Mặc định của `.prose p` là căn ĐỀU hai bên, nên "căn trái" ở đây là một
@@ -1007,6 +1032,9 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    và một tấm bám đáy bị đẩy lên nguyên khối — ô gõ luôn nằm ngay trên bàn
    phím. Tấm căn giữa thì bị bàn phím ăn mất nửa dưới. */
 .bl-than--tam{
+  /* Tấm trượt LÀ một mặt thẻ, nên dải sang trang dính đáy phải đục bằng
+     `--surface-solid` chứ không phải nền trang. Xem `.bl-trang`. */
+  --bl-nen:var(--surface-solid);
   position:fixed;z-index:70;left:0;right:0;bottom:0;
   margin:0;
   padding:var(--s3) var(--gutter) calc(var(--s5) + env(safe-area-inset-bottom,0px));
@@ -1632,34 +1660,6 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-mo[aria-expanded="true"]{color:var(--accent-ink);background:var(--accent-wash)}
 .bl-than{margin-top:var(--s6)}
 
-/* ══════════ DẤU TRANG — CHO ẢNH CHỤP MÀN HÌNH ══════════
-   Nhạt tới mức đọc bài thì không vướng mắt, mà chụp màn hình rồi phóng lên
-   thì đọc được. Hai phần: địa chỉ trang (đậm hơn một nhịp) và tên bài (nhạt
-   hơn, cắt cụt khi dài). Không bấm được, không lọt vào trình đọc màn hình —
-   nó không phải nội dung, nó là một cái triện góc tranh. */
-.dau-trang{
-  position:fixed;z-index:40;
-  left:calc(var(--gutter) + env(safe-area-inset-left,0px));
-  bottom:calc(var(--s3) + env(safe-area-inset-bottom,0px));
-  margin:0;max-width:min(58vw,420px);
-  display:flex;align-items:baseline;gap:6px;
-  font-family:var(--font-label);font-size:9px;font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;
-  color:var(--text-faint);opacity:.5;
-  pointer-events:none;user-select:none;
-  white-space:nowrap;overflow:hidden;
-}
-.dau-trang-nha{flex:none}
-.dau-trang-bai{
-  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
-  font-weight:400;letter-spacing:.1em;opacity:.7;
-}
-.dau-trang-bai::before{content:"· "}
-/* Khổ rất hẹp thì chỉ còn địa chỉ: tên bài ở đó bị cắt còn dăm chữ, mà một
-   cái tên cụt nửa chừng thì không nói được gì hơn là không có. */
-@media (max-width:420px){ .dau-trang-bai{display:none} }
-@media print{ .dau-trang{display:none} }
-
 /* ══════════ BẤM ẢNH ĐỂ XEM TO ══════════
    Con trỏ kính lúp là tín hiệu DUY NHẤT nói ra tấm ảnh này bấm được — không
    thêm icon, không viền, không lớp phủ khi rê chuột. Ảnh là nội dung, và mọi
@@ -1738,10 +1738,24 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   display:flex;align-items:center;justify-content:center;gap:var(--s4);
   padding:var(--s4) 0 var(--s2);
   position:sticky;bottom:0;
-  /* Dính đáy ô cuộn: cuộn tới đâu cũng thấy nút sang trang. Nền đục vì có
-     chữ trôi qua phía dưới nó — lý do đầy đủ ở `.ad-chon-thanh` trong
-     admin.css. */
-  background:var(--surface-solid);
+  /* Dính đáy ô cuộn: cuộn tới đâu cũng thấy nút sang trang. Nền phải ĐỤC vì
+     có chữ trôi qua phía dưới nó — lý do đầy đủ ở `.ad-chon-thanh` trong
+     admin.css.
+
+     ── VÀ NÓ PHẢI ĐỤC BẰNG MÀU CỦA CHỖ NÓ ĐANG NGỒI ──
+     Bản trước ghi cứng `--surface-solid`, tức màu MẶT THẺ. Nhưng khu bình
+     luận ở trang bài không nằm trên một cái thẻ nào: đo từ `.bl-ds` ngược lên
+     thì `.bl-than`, `.binh-luan`, `.post-foot`, `.post-layout`, `main`,
+     `.shell` đều trong suốt — thứ thật sự sơn màu là `<body>`, tức `--bg`.
+     Nên dải này hiện ra một vệt TRẮNG giữa nền tím nhạt, và đổi theme thì nó
+     vẫn trắng.
+
+     Chỗ ngồi lại có HAI: trang bài ngồi trên `--bg`, còn tấm trượt ở điện
+     thoại (`.bl-than--tam`) thật sự là một mặt thẻ `--surface-solid`. Nên
+     không có MỘT token nào đúng cả hai. Đặt tên màu ấy vào một biến ở chính
+     cái khung chứa, rồi dải này chỉ việc đọc — biến tuỳ chỉnh thì di truyền,
+     nên nó luôn khớp với thứ đang sơn phía sau, ở mọi theme. */
+  background:var(--bl-nen,var(--bg));
 }
 .bl-trang-nut{
   appearance:none;border:0;background:none;cursor:pointer;

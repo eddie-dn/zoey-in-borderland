@@ -753,7 +753,7 @@
   }
 
   /* Nhánh trả lời. Quá 2 cái thì gấp lại — một bình luận có 15 trả lời mà bung
-     hết thì đẩy mọi bình luận khác xuống tận đáy trang. */
+     hết thì đẩy mọi bình luận khác xuống tận đáy trang. Gấp lại được. */
   function veCon(con, goc) {
     var hopNhanh = document.createElement('div');
     hopNhanh.className = 'bl-nhanh';
@@ -761,15 +761,22 @@
     var ul = document.createElement('ul');
     ul.className = 'bl-ds bl-ds--con';
 
-    /* ── GẤP TỪ CÁI THỨ NĂM ──
-       Trước bản này gấp từ cái thứ BA: một nhánh bốn trả lời đã phải bấm "xem
-       thêm" mới đọc hết. Bốn trả lời là một mạch trò chuyện bình thường — gấp
-       nó lại là bắt người đọc bấm để xem một thứ lẽ ra nên thấy luôn.
+    /* ── LUÔN HIỆN HAI CÁI GẦN NHẤT, GẤP PHẦN CŨ HƠN ──
+       Ngưỡng này đã đi ba nhịp: 3 → 5 → 2. Lý do dừng ở 2 là chỗ này không
+       phải một hộp thư, nó là một cái đuôi dưới bình luận gốc. Hai lời đáp
+       gần nhất đủ nói "ở đây có trao đổi, và nó đang nói về gì"; mọi thứ cũ
+       hơn là chuyện của người muốn đọc kỹ, và người ấy bấm một cái.
 
-       Từ cái thứ năm trở đi thì khác: lúc ấy nhánh đã dài hơn phần bình luận
-       còn lại, và nó đẩy mọi bình luận khác xuống dưới một cuộc trao đổi mà
-       người mới vào không có phần. */
-    var GAP_TU = 4;
+       Gấp CÁI CŨ, không gấp cái mới: đọc một mạch trò chuyện thì cái vừa nói
+       là cái cần thấy trước. Nên nút nằm TRÊN danh sách, và bung ra là chèn
+       ngược lên đầu.
+
+       ── VÀ NÓ PHẢI GẤP LẠI ĐƯỢC ──
+       Bản trước bung xong thì xoá luôn cái nút: mở nhầm một nhánh mười lăm
+       lời đáp là không có đường lùi, phải tải lại cả trang. Nay nút ở lại và
+       đổi lời; các hàng đã bung giữ trong `hangCu` để gấp lại thì gỡ đúng
+       chúng, không đụng vào hai hàng vẫn luôn hiện. */
+    var GAP_TU = 2;
     var an = con.length > GAP_TU ? con.slice(0, con.length - GAP_TU) : [];
     var hien = con.slice(an.length);
 
@@ -777,14 +784,29 @@
       var nut = document.createElement('button');
       nut.type = 'button';
       nut.className = 'bl-them';
-      nut.textContent = L('moreReplies', an.length);
+      var moRa = false;
+      var hangCu = [];
+      function veNhanNut() {
+        nut.textContent = moRa ? L('fewerReplies', an.length)
+                               : L('moreReplies', an.length);
+        nut.setAttribute('aria-expanded', moRa ? 'true' : 'false');
+      }
       nut.addEventListener('click', function () {
-        /* Chèn NGƯỢC lên đầu để thứ tự thời gian vẫn đúng sau khi bung. */
-        an.forEach(function (x, i) {
-          ul.insertBefore(veMot(x, true, goc), ul.children[i] || null);
-        });
-        nut.remove();
+        if (moRa) {
+          for (var i = 0; i < hangCu.length; i++) hangCu[i].remove();
+          hangCu = [];
+        } else {
+          /* Chèn NGƯỢC lên đầu để thứ tự thời gian vẫn đúng sau khi bung. */
+          an.forEach(function (x, i) {
+            var h = veMot(x, true, goc);
+            ul.insertBefore(h, ul.children[i] || null);
+            hangCu.push(h);
+          });
+        }
+        moRa = !moRa;
+        veNhanNut();
       });
+      veNhanNut();
       hopNhanh.appendChild(nut);
     }
 
