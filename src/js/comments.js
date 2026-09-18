@@ -373,10 +373,6 @@
       document.documentElement.classList.add('bl-khoa');
     }
 
-    /* Giữ tên cũ cho mọi chỗ đang gọi: `true` là sang cột bên, `false` là về
-       gốc. Chỗ mở khung gọi thẳng `datCho` để chọn được cả 'tam'. */
-    function doiCho(vaoBen) { datCho(vaoBen ? 'ben' : 'goc'); }
-
     /* Nút "Back" trong khung bấm hộ chính nút đã mở khung: một đường đóng duy
        nhất, nên trạng thái `aria-expanded`, việc dời chỗ và cú cuộn đều đi qua
        cùng một chỗ. Dựng riêng một đường đóng thứ hai là sớm muộn có một đường
@@ -537,6 +533,7 @@
   }
 
   function ve(ds) {
+    dsHienTai = ds;
     dsEl.textContent = '';
     if (deEl) deEl.textContent = ds.length ? String(ds.length) : '';
     if (demEl) {
@@ -553,8 +550,71 @@
       dsEl.appendChild(trong);
       return;
     }
-    dungCay(ds).forEach(function (c) { dsEl.appendChild(veMot(c, false, c)); });
+    /* ══════════════════════════════════════════════════════════════════════
+       MƯỜI BÌNH LUẬN MỘT TRANG
+
+       Một bài có bốn chục bình luận thì khu ấy dài hơn cả bài, và người vừa
+       đọc xong bài phải cuộn qua bốn chục cái nữa mới tới ô gõ. Ở điện thoại
+       thì tệ hơn: khu bình luận là một tấm trượt, nên nó đẩy chính nó dài ra
+       khỏi màn.
+
+       Mười một trang, và `‹ ›` để đi tới lui — cùng con số với mọi danh sách
+       khác của trang (xem §17). Chỉ đếm bình luận GỐC: trả lời đi theo gốc của
+       nó, không tách sang trang khác được, không thì một mạch trò chuyện bị
+       cắt làm đôi giữa hai trang.
+
+       Trang hiện tại giữ trong biến, không nằm ở địa chỉ: người ta tới đây từ
+       một link chia sẻ, mà một link chở số trang BÌNH LUẬN là thứ không ai
+       muốn gửi đi. */
+    var goc = dungCay(ds);
+    if (goc.length <= MOI_TRANG) {
+      goc.forEach(function (c) { dsEl.appendChild(veMot(c, false, c)); });
+      return;
+    }
+    var soTrang = Math.ceil(goc.length / MOI_TRANG);
+    if (trangNay >= soTrang) trangNay = soTrang - 1;
+    goc.slice(trangNay * MOI_TRANG, (trangNay + 1) * MOI_TRANG)
+       .forEach(function (c) { dsEl.appendChild(veMot(c, false, c)); });
+    dsEl.appendChild(veThanhTrang(soTrang, goc.length));
   }
+
+  /* Thanh `‹ 2/4 ›`. Là một `<li>` vì nó nằm trong `<ul class="bl-ds">` — một
+     `<div>` lạc giữa các `<li>` là HTML sai, và trình đọc màn hình đọc ra một
+     mục danh sách rỗng. */
+  function veThanhTrang(soTrang, tong) {
+    var li = document.createElement('li');
+    li.className = 'bl-trang';
+    function nut(chu, di, tat) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'bl-trang-nut';
+      b.textContent = chu;
+      b.disabled = !!tat;
+      b.setAttribute('aria-label', chu === '‹' ? L('prevPage', 'Previous page')
+                                               : L('nextPage', 'Next page'));
+      b.addEventListener('click', function () {
+        trangNay = di;
+        ve(dsHienTai);
+        /* Cuộn về đầu khu, không để người ta đứng giữa trang mới. */
+        try { dsEl.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
+      });
+      return b;
+    }
+    li.appendChild(nut('‹', trangNay - 1, trangNay === 0));
+    var giua = document.createElement('span');
+    giua.className = 'bl-trang-so';
+    giua.textContent = (trangNay + 1) + '/' + soTrang + ' · ' + tong;
+    li.appendChild(giua);
+    li.appendChild(nut('›', trangNay + 1, trangNay === soTrang - 1));
+    return li;
+  }
+
+  /* Mười bình luận gốc một trang, và trang đang xem. Cả hai sống ở đây chứ
+     không trong `ve()`: `ve()` chạy lại sau mỗi lần gửi hoặc duyệt, mà lúc ấy
+     người đọc vẫn phải ở nguyên trang họ đang xem. */
+  var MOI_TRANG = 10;
+  var trangNay = 0;
+  var dsHienTai = [];
 
   function veMot(c, laCon, goc) {
     var li = document.createElement('li');
@@ -701,7 +761,15 @@
     var ul = document.createElement('ul');
     ul.className = 'bl-ds bl-ds--con';
 
-    var GAP_TU = 2;
+    /* ── GẤP TỪ CÁI THỨ NĂM ──
+       Trước bản này gấp từ cái thứ BA: một nhánh bốn trả lời đã phải bấm "xem
+       thêm" mới đọc hết. Bốn trả lời là một mạch trò chuyện bình thường — gấp
+       nó lại là bắt người đọc bấm để xem một thứ lẽ ra nên thấy luôn.
+
+       Từ cái thứ năm trở đi thì khác: lúc ấy nhánh đã dài hơn phần bình luận
+       còn lại, và nó đẩy mọi bình luận khác xuống dưới một cuộc trao đổi mà
+       người mới vào không có phần. */
+    var GAP_TU = 4;
     var an = con.length > GAP_TU ? con.slice(0, con.length - GAP_TU) : [];
     var hien = con.slice(an.length);
 

@@ -1372,7 +1372,10 @@
        đường viền ở đó (Mach band). Quầng tắt hẳn ở `r·6,2` thì đúng tại vòng
        tròn ấy hiện ra một cái VÀNH mờ quanh mặt trời. Nay `r·9,5` và bảy
        chặng, ba chặng ngoài đã dưới một phần nghìn. */
-    function veDia(c, x, y, r, m, moQuang, moDia, xoa) {
+    /* `ky` — pha của kỳ trăng, 0 là tròn và 1 là tối hẳn. Mặt trời luôn
+       truyền 0: nó không có pha, và một mặt trời khuyết thì đó là nhật thực. */
+    function veDia(c, x, y, r, m, moQuang, moDia, xoa, ky) {
+      ky = ky || 0;
       if (moQuang <= 0.004 && moDia <= 0.004) return;
       c.save();
       if (xoa) c.globalCompositeOperation = 'destination-out';
@@ -1396,9 +1399,52 @@
         gd.addColorStop(0.93, 'rgba(' + m + ',' + (moDia * 0.90).toFixed(3) + ')');
         gd.addColorStop(1,    'rgba(' + m + ',0)');
         c.fillStyle = gd;
-        c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+        c.beginPath();
+        if (ky > 0.001) duongKy(c, x, y, r, ky); else c.arc(x, y, r, 0, Math.PI * 2);
+        c.fill();
       }
       c.restore();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       MỘT KỲ TRĂNG — TRÒN · KHUYẾT · BÁN KHUYẾT · LƯỠI LIỀM
+
+       Phần sáng của mặt trăng không phải một hình tuỳ ý: nó luôn là một nửa
+       đường TRÒN ghép với một nửa đường BẦU DỤC. Bầu dục ấy là đường phân giới
+       (terminator) — vòng tròn ngăn ngày với đêm trên quả cầu, mà ta nhìn
+       nghiêng nên nó dẹt lại.
+
+       Bán trục ngang của nó là `r · cos θ`, với θ là góc pha:
+
+           θ = 0        cos = 1     bầu dục trùng đường tròn  →  TRĂNG TRÒN
+           θ = 60°      cos = .50   bầu dục phình sang phải   →  KHUYẾT
+           θ = 90°      cos = 0     bầu dục dẹt thành đoạn thẳng → BÁN KHUYẾT
+           θ = 130°     cos = −.64  bầu dục cong ngược lại    →  LƯỠI LIỀM
+
+       Dấu của `cos θ` quyết định bầu dục cong về bên nào, và `ellipse()` của
+       canvas nhận điều đó qua tham số chiều quay — nên đúng MỘT công thức lo
+       cả bốn dáng, không phải bốn nhánh `if`.
+
+       Vẽ ngược chiều kim cho nửa đường tròn rồi xuôi chiều cho nửa bầu dục
+       (hoặc ngược lại khi đã qua bán khuyết): hai nửa phải nối đầu–đuôi, không
+       thì `fill()` ra một hình số tám. */
+    function duongKy(c, x, y, r, ky) {
+      var th = ky * Math.PI;
+      var a = r * Math.cos(th);
+      /* Nửa đường tròn bên TRÁI — phía còn sáng. Đi NGƯỢC chiều kim từ −90°
+         tới 90° thì nó vòng qua 180°, tức nửa trái; đi xuôi chiều là vòng qua
+         0° và ra nửa PHẢI, lúc ấy hình đổ ra là phần BÓNG chứ không phải phần
+         sáng — kỳ trăng chạy ngược, lưỡi liềm trước rồi mới tròn.
+
+         Đo để chốt, không suy: đổ hình rồi đếm điểm ảnh, lấy tỉ lệ trên diện
+         tích đĩa. Cách này ra 0,999 · 0,852 · 0,499 · 0,181 · 0 cho
+         ky = 0 · 0,25 · 0,5 · 0,72 · 1 — đúng một kỳ trăng đi từ tròn xuống
+         tối. Cách kia ra đúng dãy số ấy nhưng lộn đầu. */
+      c.arc(x, y, r, -Math.PI / 2, Math.PI / 2, true);
+      /* Nửa đường phân giới. `a < 0` thì nó cong ngược, và cờ chiều quay đảo
+         theo để hai nửa vẫn nối liền. */
+      c.ellipse(x, y, Math.abs(a), r, 0, Math.PI / 2, -Math.PI / 2, a > 0);
+      c.closePath();
     }
 
     /* ══════════════════════════════════════════════════════════════════════
@@ -1969,9 +2015,43 @@
                 0.070 * am * hienS * (1 - dem), false);
         }
 
-        /* ── 2 · MẶT TRĂNG: vẽ bằng một phép XOÁ ── */
+        /* ══════════════════════════════════════════════════════════════════
+           2 · MẶT TRĂNG — VẼ BẰNG MỘT PHÉP XOÁ, VÀ ĐI TRỌN MỘT KỲ
+
+           Suốt đêm trăng đi hết một kỳ: tròn khi vừa lên, rồi khuyết dần, bán
+           khuyết, và tàn đêm thì còn một lưỡi liềm. Một đêm thật thì không như
+           thế — kỳ trăng dài hai mươi chín ngày. Nhưng cả bức này vốn nén một
+           ngày vào bảy mươi giây, nên kỳ trăng nén theo là cùng một phép nói;
+           và nó cho mắt một thứ để đo thời gian trôi, thay vì một đĩa trắng
+           đứng yên suốt hơn nửa vòng.
+
+           Dừng ở 0,72 chứ không đi hết 1,0: qua đó thì phần sáng mỏng tới mức
+           trên khung 955px nó còn chưa tới hai pixel — đọc ra là một vệt xước,
+           không ra là mặt trăng. Lưỡi liềm ở 0,72 vẫn dày chừng một phần ba
+           bán kính, vẫn ra dáng.
+
+           `tienTrang` là cùng một đồng hồ với đường đi chéo 15° — trăng lên
+           cao tới đâu thì khuyết tới đó, hai chuyển động nói cùng một chuyện
+           là "đêm đang trôi". */
         var sangTrang = dem * muot(p, 0.42, 0.52);
-        veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang, true);
+        var kyTrang = 0.72 * tienTrang;
+        veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang,
+              true, kyTrang);
+
+        /* ── CHIỀU SÂU: MỘT VỆT MỰC RẤT MỎNG DỌC ĐƯỜNG PHÂN GIỚI ──
+           Đĩa vẽ bằng phép xoá nên nó ra một mảng giấy trắng PHẲNG — đúng, mà
+           phẳng quá: mặt trăng thật có rìa tối dần (limb darkening) và một
+           vùng chuyển ở sát đường phân giới.
+
+           Đổ lại một lớp mực rất nhạt, hình bầu dục, nằm lệch về phía tối. Nó
+           không vẽ ra hình gì nhận biết được — chỉ đủ để rìa thôi sắc lẻm và
+           đĩa có một chiều. Alpha 0,055 ở tâm: cao hơn là thấy ra một cái bóng
+           dán lên, thấp hơn là không khác gì. */
+        if (sangTrang > 0.02) {
+          var lech = mr * 0.42 * Math.cos(kyTrang * Math.PI);
+          loang(ctx, mx + lech, my + mr * 0.10, mr * 0.92, mr * 0.88,
+                mau(58, 64, 82), 0.055 * sangTrang, false);
+        }
 
         /* ── 3 · SAO ── */
         /* ── SAO LÀ CHỖ LẤY MỰC ĐI, KHÔNG PHẢI CHỖ ĐỔ MỰC VÀO ──

@@ -53,6 +53,14 @@
    màn 27 inch là một tấm ảnh tràn mép trên điện thoại, và khổ ảnh trong một
    bài viết phải là một trong vài nấc có sẵn thì cả bài mới cùng một nhịp —
    đó là lý do Medium, Substack, Ghost đều cho nấc chứ không cho kéo góc. */
+/* Một NỬA nấc hẹp — cho ảnh dọc, bìa sách, logo: ở 62% chúng vẫn to quá. */
+.prose figure.rat-hep img,.prose figure.rat-hep video{
+  width:31%;margin-inline:auto;display:block;
+}
+.prose figure.rat-hep figcaption{text-align:center}
+@media (max-width:640px){
+  .prose figure.rat-hep img,.prose figure.rat-hep video{width:52%}
+}
 .prose figure.hep img,.prose figure.hep video{
   width:62%;margin-inline:auto;display:block;
 }
@@ -1692,4 +1700,58 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 @media (prefers-reduced-motion:no-preference){
   .anh-to[open]{animation:anh-no .18s var(--ease-glass)}
   @keyframes anh-no{from{opacity:0;transform:scale(.97)}}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KHU BÌNH LUẬN KHÔNG ĐƯỢC CAO QUÁ NỬA MÀN
+
+   Mười bình luận một trang đã chặn được phần lớn, nhưng mười cái mà mỗi cái
+   ba bốn dòng thì khu ấy vẫn dài hơn cả màn hình — và ở điện thoại, nơi khu
+   bình luận là một TẤM TRƯỢT, nó đẩy chính nó dài ra khỏi tầm với: ô gõ nằm
+   dưới đáy, muốn tới phải cuộn qua hết mười cái.
+
+   Nên danh sách tự cuộn trong lòng nó, cao tối đa nửa màn. Ô gõ và thanh
+   `‹ ›` vì thế luôn nằm trong tầm mắt, còn phần đọc thì cuộn riêng.
+
+   `50svh` chứ không `50vh`: trên trình duyệt điện thoại, `vh` tính theo màn
+   hình lúc thanh địa chỉ đã ẩn, nên khi thanh ấy còn hiện thì 50vh đã tràn.
+   `svh` là khổ NHỎ NHẤT — chỗ chắc chắn luôn thấy được.
+
+   Chỉ chặn khi danh sách thật sự dài: `min-height` giữ cho một hai bình luận
+   không bị nhốt trong một ô cuộn cao bằng nửa màn với đầy khoảng trống. */
+.bl-ds{
+  max-height:50svh;
+  overflow-y:auto;
+  /* Chừa chỗ cho thanh cuộn khỏi đè lên chữ, và một quãng đệm dưới để dòng
+     cuối không dính sát mép. */
+  scrollbar-gutter:stable;
+  padding-right:var(--s2);
+}
+/* Nhánh trả lời cuộn theo danh sách cha, không tự cuộn thêm một tầng nữa —
+   hai thanh cuộn lồng nhau là thứ không ai gỡ được bằng ngón tay. */
+.bl-ds--con{max-height:none;overflow:visible;padding-right:0}
+
+/* ── THANH SANG TRANG ──
+   Nằm trong `<ul>` nên nó là một `<li>`; bỏ dấu chấm đầu dòng và đường kẻ
+   ngăn của `.bl-item` vì nó không phải một bình luận. */
+.bl-trang{
+  display:flex;align-items:center;justify-content:center;gap:var(--s4);
+  padding:var(--s4) 0 var(--s2);
+  position:sticky;bottom:0;
+  /* Dính đáy ô cuộn: cuộn tới đâu cũng thấy nút sang trang. Nền đục vì có
+     chữ trôi qua phía dưới nó — lý do đầy đủ ở `.ad-chon-thanh` trong
+     admin.css. */
+  background:var(--surface-solid);
+}
+.bl-trang-nut{
+  appearance:none;border:0;background:none;cursor:pointer;
+  width:30px;height:30px;border-radius:var(--r-xs);
+  font:inherit;font-size:var(--fs-sm);line-height:1;color:var(--text-muted);
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+.bl-trang-nut:hover:not(:disabled){color:var(--accent-ink);background:var(--accent-wash)}
+.bl-trang-nut:disabled{opacity:.3;cursor:default}
+.bl-trang-so{
+  font-family:var(--font-mono);font-size:var(--fs-3xs);
+  color:var(--text-faint);font-variant-numeric:tabular-nums;
 }

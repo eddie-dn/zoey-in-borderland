@@ -155,12 +155,15 @@
    ảnh bên trong — hai lớp, hai luật, rõ hơn là một luật cộng một thuộc tính
    phải nhớ gắn. */
 .sz-khung img.sz-anh--goc{width:auto;max-width:100%;margin-inline:auto;display:block}
+.sz-khung img.sz-anh--rat-hep{width:31%;margin-inline:auto;display:block}
 .sz-khung img.sz-anh--hep{width:62%;margin-inline:auto;display:block}
 .sz-khung p:has(> img.sz-anh--goc)::after{content:"cỡ gốc — không phóng to"}
+.sz-khung p:has(> img.sz-anh--rat-hep)::after{content:"nhỏ — một phần ba cột chữ"}
 .sz-khung p:has(> img.sz-anh--hep)::after{content:"hẹp — hai phần ba cột chữ"}
 .sz-khung p:has(> img.sz-anh--wide)::after{content:"wide — rộng hơn cột chữ"}
 .sz-khung p:has(> img.sz-anh--full)::after{content:"full — tràn hết bề ngang"}
 .sz-khung p:has(> img.sz-anh--goc)::after,
+.sz-khung p:has(> img.sz-anh--rat-hep)::after,
 .sz-khung p:has(> img.sz-anh--hep)::after,
 .sz-khung p:has(> img.sz-anh--wide)::after,
 .sz-khung p:has(> img.sz-anh--full)::after{
