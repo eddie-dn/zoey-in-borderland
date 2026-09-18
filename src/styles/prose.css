@@ -883,7 +883,10 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* ── HÀNG CHIP LỌC CỦA BÀN DUYỆT ──
    Cùng khuôn với hàng chip ở ngăn Post: hai bàn làm việc cạnh nhau thì không
    nên có hai kiểu lọc khác nhau. */
-.bl-duyet-loc{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 var(--s4)}
+/* `.bl-duyet` là một cột `flex` có `gap`, nên thanh công cụ trong nó không
+   cần lề dưới riêng nữa — để cả hai thì khoảng giữa thanh và hàng đầu rộng
+   gấp đôi khoảng giữa hai hàng. */
+.bl-duyet > .ad-thanh{margin-bottom:0}
 .bl-duyet-them{display:block;margin:var(--s5) auto 0}
 
 /* ── HAI NÚT CỦA CHỦ TRANG TRÊN TỪNG BÌNH LUẬN ──

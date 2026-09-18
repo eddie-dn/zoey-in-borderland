@@ -253,7 +253,18 @@ a.tag:hover{color:var(--accent-ink-hover);text-decoration:underline;
   border-radius:var(--r-pill);font-family:var(--font-label);
   font-size:var(--fs-2xs);font-weight:600;letter-spacing:.14em;text-transform:uppercase;
 }
-.badge--draft{background:var(--warn-wash);color:var(--warn)}
+/* ── BIẾN THIÊN GỌI THEO SẮC, KHÔNG GỌI THEO NGHĨA ──
+   `--warn` chứ không phải `--draft`, `--cho`, `--chua-duyet`. Nghĩa thì mỗi
+   bàn một bộ — bài có Nháp/Ẩn, bình luận có Chờ/Đã duyệt, mai thêm ngăn nữa
+   lại thêm một bộ tên nữa — và mỗi bộ mới là một lần phải tra lại "cái này
+   trông thế nào". Đó đúng là chỗ ba lối vẽ cùng một ý đã sinh ra: huy hiệu ở
+   ngoài bài, chữ trần `.ad-cd--*` trong admin, chip ở hàng lọc.
+
+   Sắc thì chỉ có ba và ai cũng chọn được ngay: còn chờ người làm gì → warn,
+   xong → ok, bị gỡ → bad. CHỮ trong huy hiệu nói nghĩa; LỚP chỉ nói sắc. */
+.badge--warn{background:var(--warn-wash);color:var(--warn)}
+.badge--ok{background:var(--ok-wash);color:var(--ok)}
+.badge--bad{background:var(--bad-wash);color:var(--bad)}
 
 /* ── NÚT CHUYỂN THEME ──
    BA hình chồng nhau, chỉ một hình hiện — đổi bằng CSS chứ không xoá/dựng lại

@@ -388,8 +388,6 @@ const NHAN = {
   vbShown     : 'Loaded {n} of {t}.',
   vbMore      : 'Load more',
   vbFind      : 'Filter by title or category',
-  vbFindMuc   : 'Filter by category',
-  vbAllMuc    : 'All categories',
   vbNoMuc     : '(none)',
   vbNoMatch   : 'Nothing matches, in what is loaded so far.',
   vbCapped    : 'The repository is too large to list in full.',
@@ -604,13 +602,13 @@ const NHAN = {
      con số ấy là thứ duy nhất chặn được một cú bấm nhầm khi vừa tick nhầm cả
      trang. `Hide` thì nói thêm là không lùi được. */
   blPick      : 'Select',
+  blPickAll   : 'Select all',
   blPicked    : '{n} selected',
   blPickNone  : 'Clear',
   blAskApprove: 'Approve {n} comments?',
   blAskUnappr : 'Unapprove {n} comments?',
   blAskHide   : 'Hide {n} comments? This cannot be undone.',
   blStateOff  : 'Pending',
-  blStateOn   : 'Live',
   blFPending  : 'Pending',
   blFDone     : 'Approved',
   blFAll      : 'All',
@@ -1144,8 +1142,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         anon: NHAN.anon,
                         fPending: NHAN.blFPending, fDone: NHAN.blFDone,
                         fAll: NHAN.blFAll, more: NHAN.vbMore,
-                        stateOff: NHAN.blStateOff, stateOn: NHAN.blStateOn,
-                        pick: NHAN.blPick, picked: NHAN.blPicked,
+                        stateOff: NHAN.blStateOff,
+                        pick: NHAN.blPick, pickAll: NHAN.blPickAll,
+                        picked: NHAN.blPicked,
                         pickNone: NHAN.blPickNone, askApprove: NHAN.blAskApprove,
                         askUnapprove: NHAN.blAskUnappr, askHide: NHAN.blAskHide
                       }))}"`
@@ -1198,7 +1197,6 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         empty: NHAN.vbEmptyList, capped: NHAN.vbCapped, clash: NHAN.vbClash,
                         shown: NHAN.vbShown, more: NHAN.vbMore,
                         find: NHAN.vbFind, noMatch: NHAN.vbNoMatch,
-                        findMuc: NHAN.vbFindMuc, allMuc: NHAN.vbAllMuc,
                         noMuc: NHAN.vbNoMuc,
                         slug: NHAN.vbSlug, slugAuto: NHAN.vbSlugAuto,
                         slugMoved: NHAN.vbSlugMoved, slugLong: NHAN.vbSlugLong,
@@ -2571,7 +2569,7 @@ function trangBai(bai, congKhai) {
     dateText    : ngayAnh(bai.date),
     mocBlock    : mocHTML(bai),
     xemBlock    : xemHTML(bai),
-    draftBadge  : bai.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : '',
+    draftBadge  : bai.draft ? `<span class="badge badge--warn">${NHAN.draft}</span>` : '',
 
     cover       : coverHTML(bai),
     body        : bai.html,
@@ -2931,11 +2929,6 @@ function trangTinh(t, soBai, soTag) {
     ? khungChuong(t, soBai, soTag)
     : khungBento(t, soBai, soTag);
 
-  /* Nền động bọc NGOÀI nội dung, không chèn vào giữa: canvas phải phủ cả khối
-     mà không đẩy chữ đi đâu cả. */
-  if (t.nen === 'dong') {
-    than = `<div class="nen-boc" data-nen>${than}</div>`;
-  }
 
   return trang({
     title      : `${t.title} · ${CAU.title}`,
@@ -2943,6 +2936,23 @@ function trangTinh(t, soBai, soTag) {
     description: t.summary,
     canonical  : `${CAU.url}${t.url}`,
     ogType     : 'profile',
+    /* ── NỀN ĐỘNG BÁM VÀO `.shell`, GIỐNG TRANG CHỦ ──
+       Đời trước trang này bọc nội dung trong một `<div class="nen-boc">` riêng.
+       Cái div ấy nằm TRONG `.page-layout` (lề 28px, max-width 1180) và nó
+       `position:static`, nên canvas `position:absolute` bên trong không neo vào
+       nó — nó neo lên tận `<body>`. Kết quả đúng bề ngang một cách tình cờ, mà
+       chiều cao thì bằng CẢ TRANG: 1881px ở đây so với 1002px ở trang chủ.
+
+       Một bức có chân trời kéo cao gấp đôi thì mặt nước tụt khỏi tầm mắt và
+       để lại hai màn trời trắng — đó là "nền About hỏng" từ V2.8.8. Chiều cao
+       khung vẽ nay có trần riêng trong nen.js, còn ở đây thì bỏ cái div trung
+       gian đi: `data-nen` đặt lên `.shell` như trang chủ, nên chỉ còn MỘT chỗ
+       trên cả trang web mang nền động, và nó là một khối đã `position:relative`
+       sẵn với đủ luật nâng con lên trên canvas.
+
+       Giá trị `"mo"` là để giữ một luật riêng của trang tĩnh: nền ở đây hạ
+       xuống `opacity:.5`, vì trang này kín chữ từ trên xuống dưới. */
+    shellAttr  : t.nen === 'dong' ? ' data-nen="mo"' : '',
     loaiCSS    : 'gt',
     lang       : t.lang,
     duong      : t.url.replace(BASE, ''),
@@ -3315,7 +3325,7 @@ function hangMeta(b) {
     ${mocHTML(b)}
     ${xemHTML(b)}
     ${muc ? `<span>${escapeHtml(muc)}</span>` : ''}
-    ${b.draft ? `<span class="badge badge--draft">${NHAN.draft}</span>` : ''}
+    ${b.draft ? `<span class="badge badge--warn">${NHAN.draft}</span>` : ''}
   </div>`;
 }
 

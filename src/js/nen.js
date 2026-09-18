@@ -788,6 +788,36 @@
   ══════════════════════════════════════════════════════════════════════ */
   function dungSuongGiang() {
     var xa = null, gan = null, W0 = 0, H0 = 0, chim = [], sao = [], may = [], vet = [];
+    var cumSao = [];
+
+    /* ══════════════════════════════════════════════════════════════════════
+       KHUNG VẼ CAO NHẤT MỘT MÀN HÌNH
+
+       Ba hiệu ứng kia — hoa rơi, thiên hà, thác — KHÔNG có bố cục theo chiều
+       dọc: cánh hoa rơi ở đâu cũng là cánh hoa, sao ở đâu cũng là sao. Kéo
+       chúng cao bao nhiêu cũng đúng, nên chúng phủ trọn khối chứa.
+
+       Bức này thì có CHÂN TRỜI. Mọi thứ trong nó đo theo chiều cao khung: núi
+       xa ở 0,35, mép nước ở 0,75, trăng ở 0,22. Cho khung cao gấp đôi thì mặt
+       nước tụt xuống khỏi tầm mắt và để lại hai màn trời trắng — đúng chuyện
+       đã xảy ra ở trang About, nơi khối chứa cao 1881px trong khi màn hình cao
+       877px. Người dùng nhìn ra ngay: "nền About hỏng".
+
+       Nên khung vẽ cao nhất một màn hình. Phần khối chứa còn lại phía dưới
+       không bỏ trắng — nó là NƯỚC kéo dài tiếp, mà nước kéo dài thì vẫn là
+       nước: một cái hồ rộng ra về phía người xem. Không có mép cắt nào, vì
+       chỗ nối mang đúng sắc của đáy dải nước.
+
+       1,20 chứ không phải 1,00. Trang chủ cao 1002px trên màn 877px — tức
+       1,14 màn — và bố cục ở đó đã được ngắm kỹ rồi; hạ trần xuống 1,06 là
+       xén nó đi 72px và làm tan mất nếp bờ gần ở đáy bức. Trần phải đủ rộng
+       để KHÔNG chạm vào những trang chỉ hơn một màn một quãng, và chỉ can
+       thiệp vào những khối cao gấp đôi trở lên như trang About (1825px).
+       ══════════════════════════════════════════════════════════════════════ */
+    function caoKhung() {
+      var man = window.innerHeight || H;
+      return Math.min(H, Math.max(320, man * 1.20));
+    }
     var CHU_KY = 4200;          /* khung hình một vòng — ~70 giây ở 60fps */
 
     /* ══════════════════════════════════════════════════════════════════════
@@ -1203,12 +1233,28 @@
        lên trên một chút thì mép nước thôi là một mốc, nó thành một quãng.
        ══════════════════════════════════════════════════════════════════════ */
     function veTanNuoc(c) {
-      var y1 = H0 * (MEP_NUOC - 0.012), y2 = H0 * (MEP_NUOC + 0.050);
+      /* ── TAN SỚM HƠN MÉP NƯỚC MỘT QUÃNG RỘNG ──
+           Đo trên bản trước, lấy độ sáng bình quân từng hàng (mực đã hợp lên
+           giấy trắng): 0,69 H ra 247, rồi TỤT xuống 217 ở 0,73, rồi lên lại
+           247 ở 0,78. Một dải tối rộng chừng 6% khung nằm NGAY TRÊN mép nước
+           — đó là chân mấy nếp núi gần, chỗ mực đậm nhất của chúng, và lớp
+           giấy phủ nước lúc ấy mới bắt đầu ở 0,738 nên không với tới.
+
+           Mắt không đọc dải ấy ra là "chân núi". Nó đọc ra là một vạch tương
+           phản chạy ngang bên trên bờ nước — tức đúng cái mà cả lượt làm mềm
+           bờ nước định bỏ đi, chỉ là nó lùi lên cao hơn vài chục pixel.
+
+           Nay lớp giấy bắt đầu tan từ 0,688 và mạnh tay sớm: ở 0,73 nó phủ
+           chừng nửa, nên dải tối chỉ còn là một chỗ hơi sẫm chứ không còn là
+           một vạch. Chân núi vẫn chìm dần vào nước — chỉ là nó chìm từ cao
+           hơn, đúng như một bờ nông thoải. */
+      var y1 = H0 * (MEP_NUOC - 0.062), y2 = H0 * (MEP_NUOC + 0.055);
       var rgb = giayRGB();
       var g = c.createLinearGradient(0, y1, 0, y2);
       g.addColorStop(0,    'rgba(' + rgb + ',0)');
-      g.addColorStop(0.30, 'rgba(' + rgb + ',0.34)');
-      g.addColorStop(0.62, 'rgba(' + rgb + ',0.76)');
+      g.addColorStop(0.14, 'rgba(' + rgb + ',0.52)');
+      g.addColorStop(0.34, 'rgba(' + rgb + ',0.78)');
+      g.addColorStop(0.66, 'rgba(' + rgb + ',0.88)');
       g.addColorStop(1,    'rgba(' + rgb + ',0.94)');
       c.fillStyle = g;
       c.fillRect(0, y1, W0, H0 - y1);
@@ -1338,7 +1384,7 @@
        suốt khung.
        ══════════════════════════════════════════════════════════════════════ */
     function veTamNen() {
-      W0 = W; H0 = H;
+      W0 = W; H0 = caoKhung();
       xa = document.createElement('canvas');
       xa.width = Math.max(1, Math.round(W0));
       xa.height = Math.max(1, Math.round(H0));
@@ -1465,10 +1511,27 @@
          sát mặt nước thì cái mắt thấy không phải khối đất, nó là hơi nước bốc
          trên mặt hồ. Đi nét vào đấy là đóng đáy bức lại bằng một đường kẻ, và
          cả một phần tư khung dành cho nước thành ra chỉ là một cái khung. */
-      veNui(g, {
-        y: 0.965, cao: 0.055, muc: MUC_GAN, dam: 0.170, suong: 0.20,
-        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]]
-      });
+      /* ── NẾP BỜ GẦN NHẤT CHỈ VẼ KHI KHUNG BẰNG CẢ KHỐI ──
+         Nó là TIỀN CẢNH: đáy bức, chỗ mắt đứng, và nó chỉ đúng vai khi mép
+         dưới khung vẽ cũng là mép dưới khối chứa. Ở một khối cao gấp đôi
+         (trang About) thì dưới nó còn cả một dải nước nữa, nên nó thành một
+         vạch sẫm nằm ngang GIỮA trang — một cái bờ mọc giữa hồ.
+
+         Đã thử phủ giấy tan dần lên nó thay vì bỏ hẳn. Không ăn: nếp này trải
+         từ 0,91 tới 1,0 khung, nên muốn phủ kín thì lớp giấy phải đạt trị tối
+         đa ngay ở 0,91 — và thế thì chính chỗ 0,91 ấy lại thành một mép. Đo
+         ra 239 so với 248 hai bên: chín nấc, mà chín nấc trên một mảng gần
+         trắng thì mắt đọc ra một đường kẻ (vành Mach, xem §12.1).
+
+         Bỏ hẳn thì mặt nước ở đó là mặt nước, liền một mạch xuống tới đáy
+         khối. Một cái hồ rộng ra về phía người xem thì không có tiền cảnh —
+         đúng thế mới phải. */
+      if (H <= H0 + 0.5) {
+        veNui(g, {
+          y: 0.965, cao: 0.055, muc: MUC_GAN, dam: 0.170, suong: 0.20,
+          song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]]
+        });
+      }
     }
 
     return {
@@ -1498,6 +1561,59 @@
             nhip: 0.018 + Math.random() * 0.045
           });
         }
+
+        /* ══════════════════════════════════════════════════════════════════
+           LẤP LÁNH THEO CỤM, KHÔNG THEO TỪNG SAO
+
+           Bản trước cho mỗi sao một pha và một nhịp riêng. Nghe thì "tự
+           nhiên", mà kết quả ngược lại: ở bất cứ khoảnh khắc nào cũng có
+           chừng một nửa số sao đang sáng, rải đều khắp trời, nên không mảng
+           nào nổi lên so với mảng nào. Trời đứng yên về TỔNG THỂ và chỉ rung
+           ở chi tiết — mắt đọc ra là nhiễu màn hình, không đọc ra là lấp lánh.
+
+           Gom sao vào mấy cụm và cho cả cụm thở cùng một nhịp thì có lúc một
+           MẢNG trời rực lên rồi lịm đi trong khi mảng bên cạnh đang lịm. Đó
+           là thứ nhìn ra được từ xa. Và nó gần thật hơn: cái làm sao lấp lánh
+           là khí quyển, mà một khối khí thì phủ cả một vùng trời chứ không
+           phủ đúng một ngôi sao.
+
+           Vẫn chừa cho từng sao một quãng lệch pha (±0,8 radian) và một chút
+           lệch nhịp: cả cụm bật tắt cùng một khắc thì đọc ra là một bóng đèn
+           nhấp nháy, không ra là một vùng trời.
+
+           Khoảng cách tính với trục tung nhân 1,6 — cụm vì thế trải NGANG hơn
+           là trải dọc, đúng dáng một mảng khí quyển nhìn từ dưới lên, và cũng
+           vừa với dải trời cao 0,46 khung mà sao được rải vào.
+           ══════════════════════════════════════════════════════════════════ */
+        cumSao = [];
+        var nCum = Math.max(4, Math.min(7, Math.round(W0 / 220)));
+        for (var ic = 0; ic < nCum; ic++) {
+          cumSao.push({
+            /* ── RẢI PHÂN TẦNG, KHÔNG RẢI THUẦN NGẪU NHIÊN ──
+               Chia bề ngang thành `nCum` băng rồi đặt một cụm vào mỗi băng,
+               lệch tự do trong băng ấy. Rải thuần ngẫu nhiên với bốn cụm thì
+               rất hay có một góc trời không cụm nào — đo ra đúng thế ở khổ
+               446px: một phần tư khung bên trái có nhịp bằng 0, tức góc ấy
+               đứng chết suốt đêm. Phân tầng thì mọi phần trời đều có nhịp,
+               mà vẫn không ra đều đặn vì chỗ đứng trong băng là ngẫu nhiên. */
+            x: W0 * ((ic + 0.15 + 0.70 * Math.random()) / nCum),
+            y: (0.05 + 0.36 * Math.random()) * H0,
+            pha: Math.random() * Math.PI * 2,
+            nhip: 0.020 + Math.random() * 0.022,
+            manh: 0.55 + Math.random() * 0.45
+          });
+        }
+        for (var js = 0; js < sao.length; js++) {
+          var k0 = sao[js], gan0 = cumSao[0], dMin = Infinity;
+          for (var jc = 0; jc < cumSao.length; jc++) {
+            var ddx = k0.x - cumSao[jc].x, ddy = (k0.y - cumSao[jc].y) * 1.6;
+            var d0 = ddx * ddx + ddy * ddy;
+            if (d0 < dMin) { dMin = d0; gan0 = cumSao[jc]; }
+          }
+          k0.pha = gan0.pha + (Math.random() - 0.5) * 1.6;
+          k0.nhip = gan0.nhip * (0.92 + Math.random() * 0.16);
+          k0.manh = gan0.manh;
+        }
       },
 
       /* ══════════ MỘT VÒNG NGÀY ══════════
@@ -1514,6 +1630,10 @@
          khoảng trống phía trên. */
       ve: function (t) {
         ctx.clearRect(0, 0, W, H);
+        /* `HK` = chiều cao KHUNG VẼ (xem `caoKhung`), khác `H` = chiều cao
+           canvas. Mọi con số bố cục đo theo `HK`; chỉ hai việc dùng `H`: xoá
+           canvas, và tô nốt dải nước phía dưới khung. */
+        var HK = H0 || H;
         var p = (t % CHU_KY) / CHU_KY;
         /* ── CỠ ĐĨA KHÔNG ĐƯỢC TÍNH THEO CẠNH NGẮN ──
            Trước đây `Math.min(W, H)`. Ở khổ ngang thì cạnh ngắn là chiều cao,
@@ -1528,8 +1648,8 @@
            trời và 19,5px cho mặt trăng. To hơn theo tỉ lệ bề ngang so với
            desktop, và đúng thế mới phải: trời trên điện thoại rộng và trống
            hơn nhiều, một cái đĩa bằng tỉ lệ cũ thì lọt thỏm trong đó. */
-        var m = Math.min(H, W * 2);
-        var chanTroi = H * CHAN_TROI;
+        var m = Math.min(HK, W * 2);
+        var chanTroi = HK * CHAN_TROI;
 
         /* ── MỘT LƯỢT MẶT TRỜI, RỒI SANG TRĂNG ──
            Bản trước có HAI bao ấm: `binhMinh` đỉnh ở quãng 0,10 và `hoangHon`
@@ -1623,7 +1743,7 @@
         /* Hạ dần theo cú zoom: 0,140 lúc còn xa → 0,255 lúc đã tới gần. Càng
            gần càng thấp, và càng thấp thì càng đỏ — màu với độ cao nói cùng
            một chuyện. */
-        var sy = H * (0.140 + 0.115 * tien + 0.012 * Math.sin(p * Math.PI * 2));
+        var sy = HK * (0.140 + 0.115 * tien + 0.012 * Math.sin(p * Math.PI * 2));
         /* Bán kính đo theo cạnh NGẮN của khung. 0,058 lúc rạng/tà → đĩa rộng
            chừng 11% chiều cao, đúng cỡ trong tranh gốc; giữa trưa nhỏ lại còn
            0,042. Từng để 0,078: đĩa rộng 15% khung và ở lối "đứng một chỗ" thì
@@ -1650,9 +1770,46 @@
            lại thì nó đã ở chỗ khác. */
         var tienTrang = muot(p, 0.40, 0.92);
         var mx = W * (0.655 + 0.017 * tienTrang);
-        /* Trăng dâng ngược chiều mặt trời: 0,215 lúc vừa hiện → 0,095 lúc gần
-           tàn. Cao hơn quãng của mặt trời, vì trăng lên là trời đã khuya. */
-        var my = H * (0.215 - 0.120 * tienTrang + 0.008 * Math.sin(p * Math.PI * 2));
+        /* ── ĐIỂM BẮT ĐẦU THẤP HƠN, VÀ DÂNG ÍT HƠN ──
+           Từng là 0,215 → 0,095. Hai chỗ sai với một con số ấy:
+
+           Một, 0,095 H là KỊCH KHUNG. Ở khổ điện thoại đĩa bán kính 19,5px
+           đặt tâm ở 0,095 × 812 = 77px, tức mép trên đĩa ở 58px — lọt vào
+           đúng vùng thanh đầu trang. Trăng đi tới đó là đi hết trời, và cái
+           mắt đọc ra không phải "trăng đã lên cao" mà "trăng sắp ra khỏi
+           tranh".
+
+           Hai, càng lên cao thì trăng càng RỜI mặt nước. Vệt sáng dưới nước
+           vẽ ở 0,768 → 0,995 H, cố định; trăng ở 0,095 thì khoảng cách giữa
+           đĩa và bóng của nó bằng hai phần ba khung, và mắt thôi nối hai thứ
+           ấy làm một. Cái mất đi chính là hiệu ứng trăng-dưới-nước.
+
+           ── LẦN NÀY CON SỐ ĐO RA, KHÔNG ƯỚM ──
+           Đường sống của mỗi dãy xa là tổng ba sóng sin, không có bao, nên
+           đỉnh của nó tính được thẳng: `y = y0 − h·cao` với `h` là tổng ba
+           sin. Chạy cả ba dãy xa qua mọi bề ngang 340 → 1900px và lấy giá trị
+           nhỏ nhất trong dải x mà trăng đi qua (0,63 → 0,70 W):
+
+               đỉnh cao nhất = 0,1815 H   (ở bề ngang 580px)
+
+           Và đó cũng đúng bằng đỉnh cao nhất của CẢ khung — ba sóng không bao
+           giờ cùng đạt cực đại, nên biên độ tổng 0,93 chỉ ra tới đấy. Con số
+           ấy không đổi theo bề ngang: sóng bị kéo giãn, không bị nâng lên.
+
+           Nên mép DƯỚI của đĩa phải ở trên 0,1815 H. Bán kính 0,026 của cạnh
+           tính cỡ, cộng một quãng dư 0,010, ra trần 0,145 H cho tâm đĩa.
+
+           Điều này phơi ra một lỗi cũ: bản trước cho trăng VỪA HIỆN ở 0,215 H
+           — tức nằm sau núi ở gần như mọi bề ngang — rồi mới dâng lên chỗ
+           thấy được. Nửa đầu đêm không có mặt trăng, và không ai gọi tên được
+           chuyện ấy vì cuối đêm thì nó có.
+
+           Nay 0,150 → 0,122: thấy được từ khắc đầu, dâng đúng một quãng nhỏ
+           (0,028 khung — chừng 23px ở khổ điện thoại), và mép trên đĩa lúc
+           cao nhất còn cách nóc khung 80px, tức không kịch vào thanh đầu
+           trang nữa. Muốn trăng xuống thấp hơn nữa thì phải hạ dãy núi xa —
+           mà bố cục ấy đã chốt, nên không đụng tới. */
+        var my = HK * (0.150 - 0.028 * tienTrang + 0.008 * Math.sin(p * Math.PI * 2));
         var mr = m * 0.026;
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
         /* Tắt hẳn trong quãng 0,46–0,58 để nhường chỗ cho trăng — không dùng
@@ -1679,7 +1836,7 @@
 
              Và đậm hơn hẳn bản trước (0,150 → 0,255 ở đỉnh). Xem chú thích ở
              bước 6b về chuyện tương phản núi với trời. */
-          var gd = ctx.createLinearGradient(0, 0, 0, H);
+          var gd = ctx.createLinearGradient(0, 0, 0, HK);
           gd.addColorStop(0,    'rgba(' + mau(36, 42, 58) + ',' + (0.255 * dem).toFixed(3) + ')');
           gd.addColorStop(0.30, 'rgba(' + mau(38, 44, 60) + ',' + (0.210 * dem).toFixed(3) + ')');
           gd.addColorStop(0.55, 'rgba(' + mau(42, 48, 64) + ',' + (0.155 * dem).toFixed(3) + ')');
@@ -1694,18 +1851,18 @@
            lớp hồng phẳng và không ai đọc ra ánh sáng đang tới từ phía nào. */
         if (am > 0.002) {
           var mAm = hoangHon >= binhMinh ? mau(208, 104, 62) : mau(214, 130, 100);
-          var ga = ctx.createLinearGradient(0, H * 0.22, 0, chanTroi);
+          var ga = ctx.createLinearGradient(0, HK * 0.22, 0, chanTroi);
           ga.addColorStop(0, 'rgba(' + mAm + ',0)');
           ga.addColorStop(0.55, 'rgba(' + mAm + ',' + (0.018 * am).toFixed(3) + ')');
           ga.addColorStop(1, 'rgba(' + mAm + ',' + (0.052 * am).toFixed(3) + ')');
           ctx.fillStyle = ga;
-          ctx.fillRect(0, H * 0.22, W, chanTroi - H * 0.22);
+          ctx.fillRect(0, HK * 0.22, W, chanTroi - HK * 0.22);
           /* Nhân thêm `(1 - dem)`: hoàng hôn và đêm CHỒNG LẤN nhau một quãng
              (hoangHon chạy tới 0,68 mà dem đã bắt đầu từ 0,56), nên có một
              khoảng cả bệt ấm và lớp rửa đêm cùng có mặt. Một bệt cam nằm trên
              một nền trời đang sẫm lại thì đọc ra hai cục màu chồng nhau, chứ
              không ra một buổi chiều muộn. */
-          loang(ctx, sx, Math.min(sy, chanTroi), W * 0.40, H * 0.26, mAm,
+          loang(ctx, sx, Math.min(sy, chanTroi), W * 0.40, HK * 0.26, mAm,
                 0.070 * am * hienS * (1 - dem), false);
         }
 
@@ -1723,9 +1880,38 @@
         if (dem > 0.02) {
           ctx.save();
           ctx.globalCompositeOperation = 'destination-out';
+          /* ── MẢNG SÁNG CỦA CẢ CỤM ──
+             Mấy chấm sao nói CHI TIẾT; thứ làm "vùng chớp sáng" đọc được từ
+             xa là một bệt rất mờ phủ cả cụm, thở cùng nhịp với nó. Cũng vẽ
+             bằng phép LẤY MỰC ĐI như sao, nên nó là chỗ lớp rửa đêm mỏng
+             bớt — một mảng trời trong hơn, không phải một đám sương tô thêm.
+
+             ── CON SỐ PHẢI ĐO, KHÔNG ƯỚM ──
+             Bản đầu để 0,030. Tính ra thì nó vô hình: trời đêm hợp lên giấy
+             ra chừng 197 trên thang 255, tức cách trắng 58 nấc, nên lấy đi 3%
+             lớp rửa chỉ sáng thêm 1,7 nấc ở TÂM bệt — và bình quân trên một
+             mảng trời thì còn 0,3 nấc. Đo thật cũng đúng thế: cả một vòng
+             nhịp chỉ đưa mảng trời qua 0,11 nấc.
+
+             0,115 thì tâm bệt sáng thêm chừng bảy nấc — đọc ra được là một
+             mảng trời trong hơn, mà vẫn chưa thành một quầng có đường biên
+             (đuôi gradient của `loang` chia nhiều chặng chính là để không có
+             biên). Bệt cũng nhỏ lại một bậc: một mảng bằng nửa bề ngang khung
+             thì đọc ra là cả trời đang sáng lên, không ra là một mảng. */
+          for (var ig = 0; ig < cumSao.length; ig++) {
+            var g0 = cumSao[ig];
+            var n0 = 0.5 + 0.5 * Math.sin(t * g0.nhip + g0.pha);
+            loang(ctx, g0.x, g0.y, W * 0.17, HK * 0.060, '0,0,0',
+                  0.115 * dem * g0.manh * n0, true);
+          }
           for (var s = 0; s < sao.length; s++) {
             var k = sao[s];
-            var nhay = 0.55 + 0.45 * Math.sin(t * k.nhip + k.pha);
+            /* Biên độ theo cụm: cụm thở mạnh thì sao trong nó tắt gần hẳn rồi
+               sáng hẳn (0,25 → 1,00), cụm thở nhẹ thì chỉ hơi đưa. Bản trước
+               cố định 0,55 ± 0,45 cho mọi sao, nên mọi chỗ nhấp nháy bằng
+               nhau và cả trời ra một mặt phẳng đang rung. */
+            var bien = 0.30 + 0.45 * (k.manh || 0.7);
+            var nhay = (1 - bien) + bien * (0.5 + 0.5 * Math.sin(t * k.nhip + k.pha));
             var a = k.mo * dem * nhay;
             ctx.fillStyle = 'rgba(0,0,0,' + a.toFixed(3) + ')';
             ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2); ctx.fill();
@@ -1747,8 +1933,36 @@
               (0.20 - 0.05 * cung) * hienS, (0.86 - 0.42 * cung) * hienS, false);
 
         /* ── 5 · NÚI XA · 6 · NẾP GẦN + MẶT NƯỚC ── */
-        if (xa) ctx.drawImage(xa, 0, 0, W, H);
-        if (gan) ctx.drawImage(gan, 0, 0, W, H);
+        if (xa) ctx.drawImage(xa, 0, 0, W, H0);
+        if (gan) ctx.drawImage(gan, 0, 0, W, H0);
+        /* ── 6b · DƯỚI KHUNG VẼ, NƯỚC KÉO DÀI TIẾP ──
+           Chỉ chạy ở những trang mà khối chứa cao hơn một màn hình. Sắc lấy
+           đúng bằng chặng cuối của dải nước (`veNuoc`: giấy alpha .93), nên
+           chỗ nối không có mép. Lớp rửa trời phủ 0 → H nên nó cũng phủ dải
+           này — nước dưới khung vì thế tối đi đúng bằng nước trong khung. */
+        if (H > H0 + 0.5) {
+          var rgbN = giayRGB();
+          /* ── CHỖ NỐI PHẢI TAN, KHÔNG ĐƯỢC CẮT ──
+             Nếp bờ gần nhất vẽ ở 0,965 khung — nó là TIỀN CẢNH, đáy bức, chỗ
+             mắt đứng. Đo ra dải ấy sẫm chừng 218 trên thang 255 trong khi mặt
+             nước quanh nó 247. Ở một khung bằng đúng màn hình thì nó nằm sát
+             mép dưới và đọc ra đúng vai; ở một khối cao gấp đôi thì nó thành
+             một vạch tối nằm ngang GIỮA trang, và dưới nó lại là nước — tức
+             một cái bờ mọc giữa hồ.
+
+             Nếp bờ gần nhất nay không vẽ ra ở trường hợp này (lý do ở chỗ
+             khai nó trong `veTamNen`), nên chỗ nối chỉ còn phải khớp nước với
+             nước — một quãng tan ngắn là đủ, và ngắn thì không lấy mất mấy
+             nét ngang của mặt nước. */
+          var yj = H0 * 0.965;
+          var gj = ctx.createLinearGradient(0, yj, 0, H0);
+          gj.addColorStop(0, 'rgba(' + rgbN + ',0)');
+          gj.addColorStop(1, 'rgba(' + rgbN + ',0.93)');
+          ctx.fillStyle = gj;
+          ctx.fillRect(0, yj, W, H0 - yj);
+          ctx.fillStyle = 'rgba(' + rgbN + ',0.93)';
+          ctx.fillRect(0, H0 - 0.5, W, H - H0 + 1);
+        }
 
         /* ── 7 · MÂY LÀ MỘT CÁI TẨY, KHÔNG PHẢI MỘT NÉT VẼ ──
            Từng vẽ mây bằng màu TRẮNG chồng lên. Nó không bao giờ hiện ra được,
@@ -1826,7 +2040,7 @@
            cũng được phủ lại một lớp mỏng: chỗ mây đi qua vẫn sáng lên, nhưng
            sáng thành một vệt sương, không thành một lỗ. */
         if (dem > 0.002) {
-          var g2 = ctx.createLinearGradient(0, 0, 0, H);
+          var g2 = ctx.createLinearGradient(0, 0, 0, HK);
           g2.addColorStop(0, 'rgba(' + mau(40, 46, 64) + ',' + (0.030 * dem).toFixed(3) + ')');
           g2.addColorStop(CHAN_TROI, 'rgba(' + mau(52, 58, 72) + ',' + (0.022 * dem).toFixed(3) + ')');
           g2.addColorStop(1, 'rgba(' + mau(44, 50, 66) + ',' + (0.028 * dem).toFixed(3) + ')');
@@ -1835,9 +2049,9 @@
         }
 
         /* ── 8 · VỆT SÁNG TRÊN NƯỚC ── */
-        var choiTroi = hienS * (1 - muot(sy + sr, H * 0.60, H * 0.70));
+        var choiTroi = hienS * (1 - muot(sy + sr, HK * 0.60, HK * 0.70));
         veVet(ctx, sx, sr * 1.5, mTroi, 0.13 * choiTroi, t, false);
-        var choiTrang = sangTrang * (1 - muot(my + mr, H * 0.58, H * 0.70));
+        var choiTrang = sangTrang * (1 - muot(my + mr, HK * 0.58, HK * 0.70));
         veVet(ctx, mx, mr * 1.7, '0,0,0', 0.85 * choiTrang, t, true);
 
         /* ── 9 · VỆT SƯƠNG MỎNG, VẼ THẬT ──

@@ -62,8 +62,6 @@
   oSan.appendChild(hop);
 
   var dsMuc = null;
-  /* Chuyên mục đang lọc ở bảng bài. Rỗng = tất cả. */
-  var locMuc = '';
 
   /* Móc bằng THUỘC TÍNH — lý do giống hệt `noi()` bên muc.js. */
   function noi(chu, kieu) {
@@ -146,6 +144,9 @@
   function nhatChu(x) { return khongDau(x).replace(/[-_/]+/g, ' '); }
 
   var TEN_TRANG = { hien: 'Live', nhap: 'Draft', an: 'Hidden' };
+  /* Trạng thái → SẮC của huy hiệu. Chờ người làm gì thì warn, bị gỡ thì bad.
+     Luật chung ở docs/DESIGN-SYSTEM.md §20.1. */
+  var SAC_TRANG = { nhap: 'warn', an: 'bad' };
 
   function veBang() {
     soan = null;
@@ -161,20 +162,16 @@
                  'placeholder="' + tho(L('find', 'Filter by title')) + '" ' +
                  'aria-label="' + tho(L('find', 'Filter by title')) + '">' +
         '</label>' +
-        /* ── LỌC THEO CHUYÊN MỤC ──
-           Ô gõ ở trên lọc theo TÊN BÀI; nó không giúp gì khi câu hỏi là "mục
-           tản mạn có những bài nào". Gõ tên mục vào ô ấy cũng không ra, vì
-           chuyên mục không nằm trong tiêu đề.
+        /* ── MỘT Ô TÌM, KHÔNG HAI ──
+           Ở đây từng có thêm một ô chọn chuyên mục. Nó dư: ô gõ bên trên soi
+           CẢ tiêu đề LẪN tên chuyên mục (chỗ lọc ở dưới), nên gõ "tarot" là ra
+           đủ, bất kể đó là tên mục hay một chữ trong tiêu đề. Hai thứ làm một
+           việc đứng cạnh nhau thì người dùng phải đoán xem chúng khác nhau chỗ
+           nào — mà chúng không khác.
 
-           Một ô chọn chứ không phải một ô gõ nữa: chuyên mục là một tập ĐÓNG
-           và ngắn, nên bày sẵn cả tập ra thì vừa nhanh hơn gõ vừa nói luôn có
-           những mục nào — kể cả mục mình quên mất là có. Số bài in ngay trong
-           từng dòng chọn. */
-        '<label class="ad-tim ad-tim--chon">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>' +
-          '<select data-muc aria-label="' + tho(L('findMuc', 'Filter by category')) + '"></select>' +
-        '</label>' +
+           Cái mất đi là "bày sẵn cả tập mục ra cho người xem". Đổi lại thanh
+           công cụ còn ba thứ thay vì bốn, và mỗi hàng bài đã in chuyên mục của
+           nó ngay dưới tiêu đề rồi. */
         '<div class="ad-loc" data-loc></div>' +
       '</div>' +
       '<div class="ad-bang" data-bang>' +
@@ -196,14 +193,6 @@
         /* `veHang` dựng lại phần bảng chứ không dựng lại thanh trên, nên ô gõ
            không mất tiêu điểm — nhưng phòng khi sau này có người đổi. */
         if (document.activeElement !== oTim) oTim.focus();
-      });
-    }
-
-    var oMuc = hop.querySelector('[data-muc]');
-    if (oMuc) {
-      oMuc.addEventListener('change', function () {
-        locMuc = oMuc.value;
-        veHang();
       });
     }
 
@@ -281,34 +270,9 @@
       });
     }
 
-    /* ── ĐỔ Ô CHỌN CHUYÊN MỤC ──
-       Danh sách dựng từ chính phần bảng ĐÃ TẢI, không từ `dsMuc` của máy chủ:
-       `dsMuc` có cả những mục chưa bài nào, và bày một mục rỗng ra ô lọc thì
-       chọn vào là ra bảng trắng — đúng nhưng vô ích. Cộng thêm một dòng cho
-       mục đang chọn nếu nó vừa rơi khỏi tầm (lọc trạng thái làm sạch nó), để
-       ô không tự nhảy về "tất cả" sau lưng người dùng. */
-    var oMuc = hop.querySelector('[data-muc]');
-    if (oMuc) {
-      var demMuc = {};
-      bangDS.forEach(function (b) {
-        var m = mucCua(b);
-        demMuc[m] = (demMuc[m] || 0) + 1;
-      });
-      if (locMuc && demMuc[locMuc] == null) demMuc[locMuc] = 0;
-      var ten = Object.keys(demMuc).sort();
-      var hm = '<option value="">' + tho(L('allMuc', 'All categories')) +
-               ' (' + bangDS.length + ')</option>';
-      ten.forEach(function (m) {
-        hm += '<option value="' + tho(m) + '"' + (locMuc === m ? ' selected' : '') + '>' +
-              tho(m || L('noMuc', '(none)')) + ' (' + demMuc[m] + ')</option>';
-      });
-      oMuc.innerHTML = hm;
-    }
-
     var chu = locChu ? nhatChu(locChu) : '';
     var ds = bangDS.filter(function (b) {
       if (locTrang && b.trang !== locTrang) return false;
-      if (locMuc && mucCua(b) !== locMuc) return false;
       /* Gõ vào ô tìm thì soi CẢ tiêu đề lẫn chuyên mục: người ta gõ "tarot"
          mà không nhớ đó là tên mục hay một chữ trong tiêu đề.
 
@@ -344,9 +308,15 @@
         '<span class="ad-phu">' + tho(b.date) + '</span>' +
         '<span class="ad-chinh">' + tho(b.title) +
           '<span class="ad-mo">' + tho(m || L('noMuc', '(none)')) + '</span></span>' +
-        (b.trang !== 'hien'
-          ? '<span class="ad-cd ad-cd--' + b.trang + '">' + tho(TEN_TRANG[b.trang]) + '</span>'
-          : '<span class="ad-cd"></span>') +
+        /* CHỈ đánh dấu cái LỆCH khỏi bình thường. Một bài đang hiện là chuyện
+           thường, nên nó không cần huy hiệu nào — mà ô vẫn phải còn để cột nút
+           phía sau thẳng hàng với những hàng có huy hiệu. */
+        '<span class="ad-cd">' +
+          (b.trang !== 'hien'
+            ? '<span class="badge badge--' + SAC_TRANG[b.trang] + '">' +
+                tho(TEN_TRANG[b.trang]) + '</span>'
+            : '') +
+        '</span>' +
         '<span class="ad-lenh-hang">' +
           '<button type="button" class="ad-lenh" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
           '<button type="button" class="ad-lenh" data-an>' +

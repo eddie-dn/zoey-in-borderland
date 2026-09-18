@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.3 | 2026-09-18 | 03 | nền About hết méo: nền động về .shell, khung vẽ 霜降 có trần; trăng xuống dưới đỉnh núi đo được; sao lấp lánh theo cụm |
+| V2.9.2 | 2026-09-18 | 02 | một design system cho chip · huy hiệu · con số; tick tất cả ở bàn duyệt; bỏ ô chọn mục dư ở ngăn Post |
 | V2.9.1 | 2026-09-18 | 01 | bờ nước tan mềm · trăng lên cao · cỡ đĩa ở khổ dọc |
 | V2.9.0 | 2026-09-18 | 00 | index theo lượt xem · nền 霜降 một lượt mặt trời · sửa méo đĩa |
 | V2.8.9 | 2026-09-18 | 09 | nền 霜降 — sơn thuỷ nhạt, thiên thể chuyển cảnh |
@@ -241,6 +243,42 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.3 — 18-Sep-2026
+
+- **Nền trang About hết méo.** Từ V2.8.8 tới nay bức sơn thuỷ ở /about/ bị kéo
+  cao bằng CẢ trang — 1825px so với 1002px ở trang chủ — nên mặt nước tụt khỏi
+  tầm mắt và chỉ còn hai màn trời trắng. Nền động nay bám vào `.shell` ở mọi
+  trang (một chỗ duy nhất, đúng như trang chủ), và khung vẽ có trần một màn
+  hình rưỡi; phần trang còn lại phía dưới là mặt nước kéo dài tiếp, không có
+  mép nối nào.
+- **Mặt trăng hạ xuống chỗ thấy được.** Đỉnh núi xa cao nhất đo ra `0,1815`
+  khung ở mọi bề ngang, nên trăng vừa hiện ở `0,215` là nằm SAU núi — nửa đầu
+  đêm vốn không có mặt trăng, và không ai gọi tên được vì cuối đêm thì nó có.
+  Nay nó thấy được từ khắc đầu, dâng nhẹ một quãng nhỏ, không còn kịch vào
+  thanh đầu trang, và ở gần mặt nước hơn nên bóng trên nước đọc ra là bóng của
+  nó.
+- **Trời sao lấp lánh theo mảng.** Trước đây mỗi sao nhấp nháy một nhịp riêng,
+  nên lúc nào cũng có một nửa số sao đang sáng ở khắp nơi — đọc ra là nhiễu.
+  Nay sao gom thành mấy cụm thở cùng nhịp, mỗi cụm kèm một mảng sáng rất mờ:
+  có lúc một vùng trời rực lên rồi lịm đi trong khi vùng bên cạnh đang lịm.
+  Kèm theo, dải mực sẫm còn sót ngay trên bờ nước tan bớt (30 nấc còn 5).
+
+## V2.9.2 — 18-Sep-2026
+
+- **Một ý, một hình.** Trạng thái của một mục từng được vẽ ba kiểu khác nhau:
+  viên thuốc `.badge` ngoài trang danh sách, chữ trần tô màu trong /z-admin/, và
+  ở bàn duyệt lại thêm một kiểu nữa. Nay cả ba chỗ dùng đúng một huy hiệu, và
+  biến thiên của nó gọi theo SẮC (`--warn · --ok · --bad`) chứ không theo nghĩa
+  của từng bàn. Kèm theo một luật mới: chỉ đánh dấu cái LỆCH khỏi bình thường,
+  nên hàng đã duyệt và bài đang hiện không còn nhãn nào.
+- **Bàn duyệt có ô tick tất cả.** Mở bàn duyệt ra thường là mươi cái spam giống
+  hệt nhau; trước bản này vẫn phải tick từng dòng cho một quyết định duy nhất.
+  Ô ấy cũng lấp nửa trái thanh công cụ, nên hàng chip lọc ở ba ngăn Post ·
+  Comment · Category nay dạt phải đều nhau thay vì mỗi ngăn một kiểu.
+- **Bớt một thứ, dọn một thứ.** Ngăn Post bỏ ô chọn chuyên mục — ô tìm ngay
+  cạnh vốn đã soi cả tiêu đề lẫn tên mục. Con số tổng của ngăn Category xuống
+  góc phải chân bảng, nơi nút `‹ ›` sang trang sẽ vào khi danh sách dài ra.
 
 ## V2.9.1 — 18-Sep-2026
 

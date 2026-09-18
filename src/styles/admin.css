@@ -302,22 +302,33 @@
   border:0;background:none;outline:none;padding:0;
   font-family:var(--font-body);font-size:var(--fs-xs);color:var(--text);
 }
-/* Ô chọn chuyên mục co theo nội dung chứ không giãn: nó ngồi cùng thanh với ô
-   tìm, mà ô tìm mới là thứ đáng được rộng. */
-.ad-tim--chon{padding-right:var(--s2)}
-.ad-tim--chon select{flex:0 1 auto;cursor:pointer}
 /* Nút xoá riêng của Safari/Chrome trong <input type=search> vẽ một chữ × đặc,
    không ăn theo theme — bỏ đi, ô ngắn thế này xoá bằng phím nhanh hơn. */
 .ad-tim input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
 
-/* Con số "8 trên 12" ở thanh trên ngăn Category. Ngăn Post không cần: hàng
-   chip lọc ở đó đã in số vào từng chip. */
+/* ── CON SỐ: MỘT LỐI VẼ, BA CHỖ ĐỨNG ──
+   "8 of 12" của cả danh sách, và "12 posts" của một hàng, là cùng một loại
+   thứ: một con số để đọc, không bấm được. Nên cùng một lối vẽ — phông máy,
+   mờ, chữ số đều bề rộng.
+
+   `margin-left:auto` KHÔNG nằm trong lối vẽ ấy. Nó là chuyện chỗ đứng, và
+   chỗ đứng thì khác nhau: dạt phải ở thanh trên và ở chân bảng, mà nằm
+   nguyên chỗ khi ở trong một ô hàng. Trộn hai thứ vào một khai báo thì đem
+   con số vào ô hàng là nó tự dạt đi mất. */
 .ad-dem{
   font-family:var(--font-mono);font-size:var(--fs-3xs);
-  color:var(--text-faint);font-variant-numeric:tabular-nums;margin-left:auto;
+  color:var(--text-faint);font-variant-numeric:tabular-nums;
 }
+.ad-thanh > .ad-dem,.ad-chan > .ad-dem{margin-left:auto}
 .ad-bang{display:flex;flex-direction:column}
-/* Dòng "đã tải 20 trên 63" + nút tải thêm, ngay dưới mục cuối. */
+/* ── CHÂN BẢNG ──
+   Dòng "đã tải 20 trên 63" + nút tải thêm, ngay dưới mục cuối.
+
+   Cũng là chỗ của con số tổng ở ngăn Category. Nó vốn ngồi ở thanh TRÊN, cạnh
+   nút New và ô tìm — tức đọc ra như một thứ điều khiển, mà nó chỉ là một con
+   số. Và mai này có nút `‹ ›` sang trang thì nút ấy phải ở chân bảng (nó nói
+   về phần dưới nó), nên con số đếm phải xuống theo để hai thứ đứng chung một
+   chỗ: "8 of 12   ‹ ›". */
 .ad-chan{
   display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s3);
   padding-top:var(--s4);
@@ -343,6 +354,21 @@
   /* Vùng bấm nới ra quanh ô 14px mà không đẩy hàng cao lên: lề âm bù lại. */
   padding:9px 6px;margin:-9px -6px}
 .ad-tick input{accent-color:var(--accent);cursor:pointer;margin:0}
+/* ── TICK TẤT CẢ, Ở NỬA TRÁI THANH CÔNG CỤ ──
+   Hai việc một lúc. Việc thứ nhất: duyệt cả bàn bằng một cú bấm thay vì tick
+   mươi dòng — mở bàn duyệt ra thường là mươi cái spam giống hệt nhau, và
+   quyết định là MỘT, không phải mươi.
+
+   Việc thứ hai: nó lấp nửa trái của thanh. Ngăn Post và ngăn Category có nút
+   New rồi ô tìm ở nửa trái, nên hàng chip lọc dạt phải là đúng. Ngăn Comment
+   không có cả hai thứ ấy; cho chip dạt phải thì nửa trái trống trơn, mà để
+   chip về trái thì ba ngăn cạnh nhau có hai kiểu thanh khác nhau. Ô tick tất
+   cả là thứ đáng nằm chỗ ấy — nó cũng là một thứ điều khiển cả bảng. */
+.ad-tick--het{gap:8px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+  transition:color var(--dur-fast)}
+.ad-tick--het:hover{color:var(--text)}
 .ad-dong--dang-chon{background:var(--accent-wash)}
 
 /* ── THANH LÀM HÀNG LOẠT ──
@@ -431,13 +457,34 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
    trạng thái, nên mọi hàng ra cùng một bề rộng và trông như thẳng cột.
 
    `width` cố định thì hàng nào cũng đúng một bề rộng, bất kể chữ trong nó. */
-.ad-cd{width:5.4rem;flex:none;
+.ad-cd{width:6.4rem;flex:none;display:flex;align-items:center;
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
-.ad-cd--nhap{color:var(--warn)}
-.ad-cd--an{color:var(--bad)}
-.ad-cd--cho{color:var(--warn)}
-.ad-cd--roi{color:var(--ok)}
+/* ── Ô NÀY LÀ MỘT CHỖ ĐỨNG, KHÔNG PHẢI MỘT LỐI VẼ ──
+   Trước bản này `.ad-cd--nhap|an|cho|roi` tự vẽ trạng thái bằng chữ trần tô
+   màu — tức trong admin một bài Nháp là chữ cam, còn ngoài trang danh sách
+   đúng bài ấy là một viên thuốc `.badge` nền cam. Một ý, hai hình, và không
+   ai cố ý làm thế: hai chỗ viết cách nhau vài tháng.
+
+   Nay ô chỉ giữ phần CHỖ ĐỨNG — bề rộng cố định để mọi hàng thẳng cột — còn
+   hình thì mượn `.badge` của ngoài bài. Bề rộng nhấc từ 5.4 lên 6.4rem vì
+   viên thuốc có thêm lề trong hai bên.
+
+   Vì sao phải cố định: `auto` thì mỗi hàng tự tính bề rộng theo chữ CỦA CHÍNH
+   NÓ, "PENDING" rộng hơn "LIVE" chừng hai mươi pixel, và cả cột nút phía sau
+   lệch theo. Chỉ lộ ra khi bấm bộ lọc **All** — hai bộ lọc kia mỗi cái chỉ có
+   một loại trạng thái nên mọi hàng ra cùng bề rộng và trông như thẳng cột. */
+/* ── HUY HIỆU TRONG BẢNG HẠ MỘT BẬC ──
+   `.badge` dựng cho hàng thông tin dưới tiêu đề bài: --fs-2xs, khoảng chữ
+   .14em, lề trong 9px. Đặt nguyên cỡ ấy vào một hàng bảng cao 27px thì viên
+   thuốc cao gần bằng cả hàng, và mười lăm hàng đọc ra là một cột thuốc con.
+
+   Cùng một hình, hạ một bậc THEO CHỖ ĐỨNG — chứ không phải thêm một lớp
+   `.badge--nho` mà chỗ nào cũng phải nhớ gõ kèm. */
+.ad-cd > .badge{font-size:var(--fs-3xs);letter-spacing:.1em;padding:1px 7px 2px}
+/* Con số trong ô ấy (ngăn Category: "12 posts") mượn lối của `.ad-dem`: một
+   con số thì đọc bằng phông máy, không đọc bằng viên thuốc. */
+.ad-cd > .ad-dem{text-transform:none;letter-spacing:0}
 /* ── MỖI NÚT MỘT CỘT CỐ ĐỊNH ──
    Để `flex` thì mỗi ô rộng đúng bằng chữ trong nó, mà chữ thì đổi theo trạng
    thái: `Approve` ở hàng này, `Unapprove` ở hàng kia, `Hide` và `Unhide` cũng

@@ -145,7 +145,6 @@
                  'placeholder="' + tho(L('mucFind', 'Filter by name')) + '" ' +
                  'aria-label="' + tho(L('mucFind', 'Filter by name')) + '">' +
         '</label>' +
-        '<span class="ad-dem" data-dem></span>' +
       '</div>' +
       '<div class="ad-bang">' +
         (loc.length
@@ -157,8 +156,12 @@
                 '<span class="ad-chinh">' + tho(m.title) +
                   (m.description ? '<em class="ad-mo">' + tho(m.description) + '</em>' : '') +
                 '</span>' +
-                '<span class="ad-cd">' +
-                  tho(L('mucCount', '{n} posts').replace('{n}', m.soBai)) + '</span>' +
+                /* Ô thứ ba của hàng: ở hai ngăn kia là huy hiệu trạng thái,
+                   ở đây là một con số. Nên mượn lối của `.ad-dem` — mắt phân
+                   biệt ngay "cái này đếm" với "cái này là trạng thái". */
+                '<span class="ad-cd"><span class="ad-dem">' +
+                  tho(L('mucCount', '{n} posts').replace('{n}', m.soBai)) +
+                '</span></span>' +
                 '<span class="ad-lenh-hang">' +
                   '<button type="button" class="ad-lenh" data-sua>' +
                     tho(L('edit', 'Edit')) + '</button>' +
@@ -172,6 +175,17 @@
               tho(chu ? L('noMatch', 'Nothing matches, in what is loaded so far.')
                       : L('empty', 'Nothing here.')) + '</p>') +
       '</div>' +
+      /* ── CON SỐ TỔNG Ở CHÂN BẢNG, DẠT PHẢI ──
+         Nó vốn ngồi trên thanh công cụ, cạnh nút New và ô tìm. Sai chỗ theo
+         hai lẽ: một, nó chỉ là một con số để đọc, mà đứng giữa hai thứ bấm
+         được thì đọc ra như thứ thứ ba bấm được; hai, nó nói về DANH SÁCH nên
+         chỗ của nó là cạnh danh sách, không phải trên đầu.
+
+         Và đây là chỗ nút `‹ ›` sang trang sẽ vào khi danh sách dài tới mức
+         cần chia trang — con số với nút sang trang là một cặp, "8 of 12  ‹ ›".
+         Đặt sẵn chân bảng bây giờ thì mai thêm nút vào là thêm đúng một dòng,
+         không phải xếp lại cả thanh. */
+      '<div class="ad-chan"><span class="ad-dem" data-dem></span></div>' +
       '<p class="bao" data-bao></p>';
 
     var oDem = hop.querySelector('[data-dem]');

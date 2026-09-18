@@ -190,10 +190,37 @@
       return;
     }
 
-    /* Hàng chip cùng khuôn với ngăn Post — hai bàn làm việc cạnh nhau thì
-       không nên có hai kiểu lọc khác nhau. */
+    /* ── THANH CÔNG CỤ: TICK TẤT CẢ BÊN TRÁI, CHIP LỌC BÊN PHẢI ──
+       Đúng một khuôn `.ad-thanh` với ngăn Post và ngăn Category — ba bàn làm
+       việc cạnh nhau thì không được có ba kiểu thanh trên.
+
+       Trước bản này hàng chip ở đây đứng một mình và dạt TRÁI, vì nó nằm
+       ngoài `.ad-thanh` nên `margin-left:auto` của `.ad-loc` không có gì để
+       đẩy. Đổi tab một cái là hàng lọc nhảy từ phải sang trái.
+
+       Chỗ trống nửa trái nay là ô tick tất cả. Hai ngăn kia có nút New rồi ô
+       tìm ở đó; ngăn này không có cả hai, mà nó có một việc riêng mà hai ngăn
+       kia không có — duyệt cả bàn một lượt. */
+    var thanh = document.createElement('div');
+    thanh.className = 'ad-thanh';
+
+    /* ── TICK TẤT CẢ ──
+       Nó tick những dòng ĐANG HIỆN, tức trong bộ lọc hiện thời và trong trần
+       25 dòng một lượt. Đó là nghĩa duy nhất đúng: các nút làm-hàng-loạt cũng
+       chỉ chạy trên đúng bấy nhiêu dòng, nên "tất cả" mà rộng hơn cái mắt
+       đang thấy thì thành một lời hứa hàm mà máy không giữ. */
+    var oHet = document.createElement('label');
+    oHet.className = 'ad-tick ad-tick--het';
+    var tickHet = document.createElement('input');
+    tickHet.type = 'checkbox';
+    var chuHet = document.createElement('span');
+    chuHet.textContent = L('pickAll', 'Select all');
+    oHet.appendChild(tickHet);
+    oHet.appendChild(chuHet);
+    thanh.appendChild(oHet);
+
     var hangChip = document.createElement('div');
-    hangChip.className = 'ad-loc bl-duyet-loc';
+    hangChip.className = 'ad-loc';
     [['cho', L('fPending'), cho.length],
      ['roi', L('fDone'), roi],
      ['',    L('fAll'), ds.length]].forEach(function (x) {
@@ -209,7 +236,8 @@
       });
       hangChip.appendChild(b);
     });
-    hop.appendChild(hangChip);
+    thanh.appendChild(hangChip);
+    hop.appendChild(thanh);
 
     /* ── THANH LÀM HÀNG LOẠT ──
        Ẩn cho tới khi có ít nhất một dòng được tick. Bày sẵn một thanh trống
@@ -225,6 +253,7 @@
     });
 
     if (!loc1.length) {
+      tickHet.disabled = true;
       var trong2 = document.createElement('p');
       trong2.className = 'bao bl-duyet-bao';
       trong2.textContent = L('queueEmpty');
@@ -242,6 +271,16 @@
     function dangChon() {
       return dsDong.filter(function (d) { return d.oTick && d.oTick.checked; });
     }
+
+    tickHet.addEventListener('change', function () {
+      var bat = tickHet.checked;
+      dsDong.forEach(function (d) {
+        if (!d.oTick) return;
+        d.oTick.checked = bat;
+        d.classList.toggle('ad-dong--dang-chon', bat);
+      });
+      veThanhChon();
+    });
 
     /* ── LÀM HÀNG LOẠT: GỬI TỪNG CÁI, KHÔNG GỬI MỘT GÓI ──
        Máy chủ nhận mỗi lượt một bình luận (`PATCH` với một `ma`). Dựng thêm
@@ -266,6 +305,16 @@
 
     function veThanhChon() {
       var n = dangChon().length;
+      /* ── BA TRẠNG THÁI, KHÔNG PHẢI HAI ──
+         Tick vài dòng bằng tay thì ô "tất cả" phải nói "một phần" — `checked`
+         là nói sai (chưa tick hết), mà bỏ trống cũng là nói sai (đã tick mấy
+         cái rồi). `indeterminate` là trạng thái thứ ba, và trình duyệt vẽ nó
+         thành một gạch ngang.
+
+         Nó không phải một thuộc tính HTML, chỉ là một tính chất của phần tử,
+         nên phải gán lại bằng tay mỗi lần vẽ. */
+      tickHet.checked = n > 0 && n === dsDong.length;
+      tickHet.indeterminate = n > 0 && n < dsDong.length;
       thanhChon.hidden = !n;
       if (!n) return;
       thanhChon.innerHTML = '';
@@ -381,9 +430,26 @@
     o.href = c.trang; o.textContent = c.trang;
     giua.appendChild(o);
 
+    /* ── CHỈ ĐÁNH DẤU CÁI LỆCH KHỎI BÌNH THƯỜNG ──
+       Trước bản này mỗi hàng in một chữ: LIVE xanh hoặc PENDING cam. Mười lăm
+       hàng là mười lăm nhãn, mà mười ba cái trong đó nói "bình thường" —
+       nghĩa là cột ấy gần như chỉ có nhiễu, và đúng cái đáng thấy thì không
+       nổi hơn được bao nhiêu.
+
+       Ngăn Post đã theo luật này từ trước: bài đang hiện không có huy hiệu
+       nào, chỉ Nháp với Ẩn mới có. Bàn duyệt nay theo cùng luật — hàng đã
+       duyệt để trắng (nó còn mờ đi .55 nhờ `.ad-dong--roi`, và nút của nó đọc
+       ra là "Unapprove", nên không thiếu chỗ nào nói nó đã xong).
+
+       Ô vẫn phải còn kể cả khi rỗng: nó giữ bề rộng cho cột nút phía sau. */
     var cd = document.createElement('span');
-    cd.className = 'ad-cd ad-cd--' + (c.duyet ? 'roi' : 'cho');
-    cd.textContent = c.duyet ? L('stateOn', 'Live') : L('stateOff', 'Pending');
+    cd.className = 'ad-cd';
+    if (!c.duyet) {
+      var hh = document.createElement('span');
+      hh.className = 'badge badge--warn';
+      hh.textContent = L('stateOff', 'Pending');
+      cd.appendChild(hh);
+    }
 
     var nut = document.createElement('span');
     nut.className = 'ad-lenh-hang';

@@ -386,7 +386,7 @@ Thêm mảnh mới thì **tra bảng này trước khi vẽ**. Cùng một việ
 | Đường dẫn phân cấp | `.crumbs` | Bài viết / Mục / Mục con |
 | Thẻ bài | `.card` | trang danh sách |
 | Hàng meta | `.meta-row` | ngày · phút đọc · trạng thái |
-| Huy hiệu | `.badge--draft` `--new` `--pin` | |
+| Huy hiệu trạng thái | `.badge` + `--warn` `--ok` `--bad` | biến thiên gọi theo SẮC, xem §20.1 |
 
 ### 3.2 · Chú thích nổi đi xuống dưới, trừ hai chỗ
 
@@ -1175,6 +1175,119 @@ rất mỏng, rồi lấy mấy vệt *giấy* ngang cắt qua cho nó đứt đ
 thứ nói ra rằng mặt kia là nước, tô liền một khối thì ra một tấm gương). Không
 dùng: một phần tư khung giấy gần trắng đọc ra là mặt hồ đủ rồi, và thêm bóng
 thì phần dưới bức nặng lên đúng chỗ thẻ trích dẫn nằm.
+
+#### Khung vẽ cao nhất 1,2 màn hình — và dưới nó là nước
+
+Ba hiệu ứng kia không có bố cục dọc: cánh hoa rơi ở đâu cũng là cánh hoa. Kéo
+chúng cao bao nhiêu cũng đúng. Bức này thì có **chân trời**, và mọi con số
+trong nó đo theo chiều cao khung — núi xa `0,35`, mép nước `0,750`, trăng
+`0,150`. Cho khung cao gấp đôi thì mặt nước tụt xuống khỏi tầm mắt và để lại
+hai màn trời trắng.
+
+Đúng chuyện đã xảy ra ở **/about/** từ V2.8.8 tới V2.9.2. Trang ấy bọc nội dung
+trong một `<div class="nen-boc">` riêng; div ấy nằm trong `.page-layout`
+(`position:static`), nên canvas `position:absolute` bên trong **không neo vào
+nó** — nó neo lên tận `<body>`. Bề ngang ra đúng một cách tình cờ, còn chiều
+cao thì bằng CẢ TRANG: 1825px so với 1002px ở trang chủ. Người đọc nhìn ra ngay
+("About me hỏng"), mà không phép kiểm nào bắt được: HTML hợp lệ, CSS hợp lệ,
+canvas có vẽ.
+
+Hai việc chữa, và phải làm cả hai:
+
+1. **Một chủ cho nền động.** `data-nen` đặt lên `.shell` ở mọi trang, đúng như
+   trang chủ vẫn làm. Bỏ hẳn div trung gian. `.shell` vốn đã `position:relative`
+   và đã có luật nâng `main`/`.site-foot` lên trên canvas. Trang tĩnh giữ được
+   nét riêng của nó (`opacity:.5`) qua giá trị `data-nen="mo"`.
+2. **Trần cho chiều cao khung vẽ**, trong chính `dungSuongGiang`:
+   `H0 = min(H, innerHeight × 1,20)`. Phần khối chứa còn lại phía dưới **không
+   bỏ trắng** — nó là nước kéo dài tiếp, tô đúng sắc chặng cuối của dải nước
+   (giấy alpha `.93`), nên không có mép nối nào.
+
+`1,20` chứ không phải `1,00`: trang chủ cao 1,14 màn và bố cục ở đó đã ngắm kỹ.
+Trần phải đủ rộng để không chạm vào những trang chỉ hơn một màn một quãng, và
+chỉ can thiệp vào những khối cao gấp đôi trở lên.
+
+**Và nếp bờ gần nhất (`y: 0,965`) không được vẽ khi khung bị cắt trần.** Nó là
+tiền cảnh — đáy bức, chỗ mắt đứng — nên nó chỉ đúng vai khi mép dưới khung cũng
+là mép dưới khối chứa. Ở khối cao gấp đôi thì dưới nó còn cả một dải nước nữa,
+và nó thành một vạch sẫm nằm ngang giữa trang: một cái bờ mọc giữa hồ. Đã thử
+phủ giấy tan dần lên nó thay vì bỏ hẳn — không ăn: nếp này trải từ `0,91` tới
+`1,0` khung, nên muốn phủ kín thì lớp giấy phải đạt trị tối đa ngay ở `0,91`,
+và thế thì chính chỗ `0,91` lại thành một mép (đo ra 239 so với 248 hai bên —
+chín nấc, đủ để mắt đọc ra một đường kẻ). Bỏ hẳn thì chỗ nối đo được **1,2
+nấc**, tức không còn gì.
+
+#### Trăng phải ở dưới đỉnh núi ĐO ĐƯỢC
+
+Đường sống mỗi dãy xa là tổng ba sóng sin, không có bao, nên đỉnh tính được
+thẳng: `y = y0 − h·cao`. Chạy cả ba dãy qua mọi bề ngang 340 → 1900px:
+
+> **đỉnh cao nhất của cả khung = `0,1815 H`**, và nó không đổi theo bề ngang —
+> sóng bị kéo giãn, không bị nâng lên. (Ba sóng không bao giờ cùng đạt cực đại,
+> nên biên độ tổng `0,93` chỉ ra tới đấy.)
+
+Nên mép **dưới** của đĩa phải ở trên `0,1815 H`. Trừ bán kính `0,026` và một
+quãng dư `0,010`, trần cho tâm đĩa là **`0,145 H`**.
+
+Con số ấy phơi ra một lỗi sống suốt mấy bản: trăng **vừa hiện** ở `0,215 H` —
+tức nằm sau núi ở gần như mọi bề ngang — rồi mới dâng lên chỗ thấy được. Nửa
+đầu đêm không có mặt trăng, và không ai gọi tên được vì cuối đêm thì nó có.
+Nay `0,150 → 0,122`: thấy được từ khắc đầu, dâng đúng một quãng nhỏ (0,028
+khung), mép trên lúc cao nhất còn cách nóc khung 80px nên không kịch vào thanh
+đầu trang, và cả đêm trăng ở gần mặt nước hơn — bóng của nó trên nước vì thế
+đọc ra là bóng của nó.
+
+> **Luật:** chỗ đứng của thiên thể là một con số **đo từ hình học của núi**,
+> không phải một con số ướm. Lần trước đã thử suy nó ra lúc chạy và sai (phép
+> đo cho ra cùng một giá trị ở mọi bề ngang — dấu hiệu rõ ràng của công thức
+> sai). Đo ngoài, chốt vào mã, ghi cả cách đo vào đây.
+
+#### Sao lấp lánh theo CỤM, không theo từng sao
+
+Mỗi sao một pha và một nhịp riêng nghe thì "tự nhiên", mà kết quả ngược lại: ở
+bất cứ khoảnh khắc nào cũng có chừng một nửa số sao đang sáng, rải đều khắp
+trời, nên không mảng nào nổi lên so với mảng nào. Trời đứng yên về tổng thể và
+chỉ rung ở chi tiết — mắt đọc ra là **nhiễu màn hình**.
+
+Gom sao vào 4–7 cụm, cả cụm thở cùng một nhịp, thì có lúc một **mảng** trời rực
+lên rồi lịm đi trong khi mảng bên cạnh đang lịm. Ba chi tiết làm nó không thành
+một bóng đèn nhấp nháy:
+
+- **Lệch pha riêng từng sao** ±0,8 radian, và lệch nhịp ±8%.
+- **Rải cụm phân tầng**: chia bề ngang thành `nCum` băng, mỗi băng một cụm,
+  lệch tự do trong băng. Rải thuần ngẫu nhiên với bốn cụm thì rất hay có một
+  góc trời không cụm nào — đo ra đúng thế ở khổ 446px: một phần tư khung bên
+  trái có nhịp bằng 0, tức góc ấy đứng chết suốt đêm.
+- **Một bệt sáng rất mờ phủ cả cụm**, thở cùng nhịp với nó, cũng vẽ bằng phép
+  *lấy mực đi*. Chính nó làm "vùng chớp sáng" đọc được từ xa; mấy chấm sao chỉ
+  nói chi tiết.
+
+Biên độ của bệt phải **đo, không ướm**. Bản đầu để `0,030` và nó vô hình: trời
+đêm hợp lên giấy ra chừng 197 trên thang 255, tức cách trắng 58 nấc, nên lấy đi
+3% lớp rửa chỉ sáng thêm 1,7 nấc ở tâm — bình quân trên một mảng trời còn 0,3
+nấc, và đo thật thì cả vòng nhịp chỉ đưa mảng ấy qua **0,11 nấc**. Ở `0,115`
+thì đo ra **3–6 nấc** ở tâm mấy mảng, tức nhìn ra được mà vẫn chưa thành một
+quầng có đường biên.
+
+#### Dải mực trên mép nước phải tan SỚM hơn mép
+
+Sau khi mép nước thôi là một đường kẻ (V2.9.1), còn một chỗ nữa. Đo độ sáng
+bình quân từng hàng ở bản V2.9.1:
+
+| hàng | 0,68 | 0,70 | 0,72 | 0,74 | 0,76 | 0,78 |
+|---|---|---|---|---|---|---|
+| độ sáng | 245 | 243 | **231** | 237 | 243 | 248 |
+
+Một dải tối rộng chừng 6% khung nằm **ngay trên** mép nước. Đó là chân mấy nếp
+núi gần, chỗ mực đậm nhất của chúng, mà lớp giấy phủ nước lúc ấy mới bắt đầu ở
+`0,738` nên không với tới. Mắt không đọc dải ấy ra là "chân núi" — nó đọc ra là
+một vạch tương phản chạy ngang bên trên bờ nước, tức đúng cái mà cả lượt làm
+mềm bờ nước định bỏ đi, chỉ là nó lùi lên cao hơn vài chục pixel.
+
+`veTanNuoc` nay bắt đầu từ `0,688` (thay cho `0,738`) và mạnh tay sớm — ở `0,72`
+nó phủ chừng 0,69. Đo lại: 246 · 247 · **241** · 245 · 246 · 248, tức dải tối
+còn **5 nấc** thay vì 30. Chân núi vẫn chìm dần vào nước, chỉ là chìm từ cao
+hơn, đúng như một bờ nông thoải.
 
 ### 12.2 · Bật ở đâu
 
@@ -2107,21 +2220,28 @@ thế mà ra — không ai cố ý vẽ chúng.
 
 ### Khuôn
 
-Khai một chỗ: khối `.ad-*` ở cuối `src/styles/list.css`.
+Khai một chỗ: khối `.ad-*` trong `src/styles/admin.css`.
 
 ```
-.ad-thanh                 thanh trên: nút chính · ô tìm · ô chọn · chip lọc
-  .ad-tim                   ô lọc theo chữ  (.ad-tim--chon cho <select>)
-  .ad-loc                   hàng chip lọc — dùng .chip, xem components.css
+.ad-thanh                 thanh trên — MỘT hàng, không bao giờ hai
+  .btn                      nút chính của ngăn (New post · New category)
+  .ad-tim                   ô lọc theo chữ
+  .ad-tick--het             ô tick tất cả (chỉ ngăn Comment — nó thay chỗ hai
+                            thứ trên, vì ngăn ấy không có cả hai)
+  .ad-loc                   hàng chip lọc, DẠT PHẢI — dùng .chip
 .ad-bang                  thân danh sách
-  .ad-dong                MỘT hàng — lưới 4 cột
+  .ad-dong                MỘT hàng — lưới 4 cột (5 cột nếu có ô tick)
+    .ad-tick                cột 0 · ô tích để làm hàng loạt
     .ad-phu                 cột 1 · ngày, mã chuyên mục, tên người gửi (mono, nhạt)
     .ad-chinh               cột 2 · tiêu đề bài, tên mục, nội dung bình luận
       .ad-mo                  dòng hai trong cột 2 — chuyên mục, mô tả, đường dẫn
-    .ad-cd                  cột 3 · trạng thái, LUÔN chiếm chỗ kể cả khi rỗng
-    .ad-nut-hang            cột 4 · các nút của hàng
-      .ad-nut                 nút chữ, không viền (.ad-nut--chinh cho nút chính)
-.ad-chan                  "đã tải 20 trên 63" + nút tải thêm
+    .ad-cd                  cột 3 · MỘT CHỖ ĐỨNG bề rộng cố định, không phải
+                            một lối vẽ. Trong nó: .badge (trạng thái) hoặc
+                            .ad-dem (con số). LUÔN chiếm chỗ kể cả khi rỗng.
+    .ad-lenh-hang           cột 4 · các nút của hàng
+      .ad-lenh                nút chữ, không viền (.ad-lenh--chinh cho nút chính)
+.ad-chan                  chân bảng — "đã tải 20 trên 63", nút tải thêm, con số
+                          tổng dạt phải, và chỗ của nút ‹ › sang trang
 ```
 
 Biến thể: `.ad-dong--hai` (hàng chở hai tầng chữ), `.ad-dong--roi` (đã xử lý,
@@ -2159,6 +2279,84 @@ nhầm lại là cái **giấu hẳn** một bình luận.
 Bình luận của chủ trang: một **vạch dọc bên trái**, không tô nền cả khối. Nền
 tô làm khối ấy đọc ra như một ô nhấn (`:::note`) — tức là "đọc cái này trước",
 trong khi ý thật chỉ là "người này là chủ nhà".
+
+### 20.1 · Chip · huy hiệu · con số — BA HÌNH, và cách chọn
+
+Ba hình nhỏ bằng nhau, cùng một cỡ chữ, cùng chỗ đứng na ná nhau. Chúng đã bị
+dùng lẫn nhiều lần, nên luật phải nằm ở một câu hỏi duy nhất — **bấm vào nó có
+chuyện gì xảy ra không?**
+
+| Hình | Lớp | Bấm được? | Nó nói gì | Ở đâu |
+|---|---|---|---|---|
+| **Chip** | `.chip` + `.chip-so` + `.chip--nay` | **Có** — đổi thứ đang thấy | "lọc theo cái này" / "đi tới đây" | `.chip-hang` ngoài trang · `.ad-loc` trong admin |
+| **Huy hiệu** | `.badge` + `--warn` `--ok` `--bad` | Không | trạng thái của **một** mục | hàng meta dưới tiêu đề · ô `.ad-cd` của một hàng |
+| **Con số** | `.ad-dem` | Không | đếm **cả** danh sách, hoặc một con số trong hàng | `.ad-chan` (dạt phải) · trong ô `.ad-cd` |
+
+Không có hình thứ tư. Cần một hình mới thì trước hết phải trả lời được nó khác
+ba cái này ở việc gì.
+
+**Ba dấu hiệu nhận nhau.** Chip có **vòng viền** và nền trong — vòng viền là
+tín hiệu "bấm được" của cả trang, nên không thứ nào khác được mang nó. Huy hiệu
+có **nền rửa màu** và không viền — một khối màu đặc thì đọc ra là trạng thái,
+không phải lời mời bấm. Con số là **phông máy, mờ** — không viền, không nền.
+
+**Biến thiên của huy hiệu gọi theo SẮC, không gọi theo NGHĨA.** `--warn` chứ
+không phải `--draft`, `--cho`, `--chua-duyet`. Nghĩa thì mỗi bàn một bộ — bài có
+Nháp/Ẩn, bình luận có Chờ/Đã duyệt, mai thêm ngăn nữa lại thêm một bộ nữa — và
+mỗi bộ tên mới là một lần phải tra lại "cái này trông thế nào". Sắc thì chỉ có
+ba, và ai cũng chọn được ngay:
+
+| Sắc | Nghĩa | Ví dụ |
+|---|---|---|
+| `--warn` | còn chờ người làm gì | `DRAFT` · `PENDING` |
+| `--ok` | xong, không phải làm gì nữa | dành sẵn |
+| `--bad` | bị gỡ khỏi chỗ của nó | `HIDDEN` |
+
+CHỮ trong huy hiệu nói nghĩa; LỚP chỉ nói sắc.
+
+**Chỉ đánh dấu cái LỆCH khỏi bình thường.** Một bài đang hiện không có huy
+hiệu; một bình luận đã duyệt cũng không. Trước bản V2.9.2 bàn duyệt in cả hai —
+`LIVE` xanh hoặc `PENDING` cam trên mọi hàng — nên mười lăm hàng là mười lăm
+nhãn mà mười ba cái trong đó nói "bình thường". Cột ấy gần như chỉ còn nhiễu, và
+đúng cái đáng thấy thì không nổi hơn được bao nhiêu. Chỗ của hàng đã xong đã có
+hai thứ nói rồi: cả hàng mờ đi `.55`, và nút của nó đọc ra là `Unapprove`.
+
+**Chỗ đứng KHÔNG nằm trong lối vẽ.** `.ad-dem` từng gói luôn `margin-left:auto`
+vào khai báo của nó, vì chỗ duy nhất nó xuất hiện lúc ấy là góc phải một thanh.
+Đem con số ấy vào một ô hàng thì nó tự dạt đi mất. Nay lối vẽ là lối vẽ, còn
+dạt phải là một luật riêng theo chỗ đứng (`.ad-thanh > .ad-dem`,
+`.ad-chan > .ad-dem`). Cùng một lẽ, `.ad-cd` thôi tự vẽ trạng thái: nó chỉ còn
+giữ **bề rộng cố định** để mọi hàng thẳng cột, còn hình thì mượn `.badge`.
+
+### 20.2 · Thanh trên: một hàng, và nửa trái phải có người ở
+
+Cả ba ngăn dùng đúng một `.ad-thanh`, và hàng chip lọc `.ad-loc` **luôn dạt
+phải**. Nửa trái là chỗ của những thứ điều khiển cả bảng:
+
+| Ngăn | Nửa trái | Nửa phải |
+|---|---|---|
+| Post | `New post` · ô tìm | chip `All · Live · Draft · Hidden` |
+| Category | `New category` · ô tìm | — |
+| Comment | ô tick **tất cả** | chip `Pending · Live · All` |
+
+Ngăn Comment không có nút New và không có ô tìm, nên nếu chỉ có chip thì nửa
+trái trống trơn — mà cho chip về trái thì ba ngăn cạnh nhau có hai kiểu thanh.
+Ô tick tất cả giải cả hai: nó cũng là một thứ điều khiển cả bảng, và nó vốn còn
+thiếu. Nó tick những dòng **đang hiện** (trong bộ lọc hiện thời, trong trần 25
+dòng một lượt) — đúng bằng tầm mà các nút làm-hàng-loạt chạy trên đó, vì "tất
+cả" rộng hơn cái mắt đang thấy là một lời hứa máy không giữ. Ba trạng thái chứ
+không hai: tick vài dòng bằng tay thì ô ấy phải là `indeterminate`.
+
+**Ngăn Post bỏ ô chọn chuyên mục.** Nó dư: ô tìm ngay cạnh soi **cả** tiêu đề
+lẫn tên chuyên mục, nên gõ `tarot` là ra đủ, bất kể đó là tên mục hay một chữ
+trong tiêu đề. Hai thứ làm một việc đứng cạnh nhau thì người dùng phải đoán xem
+chúng khác nhau chỗ nào — mà chúng không khác.
+
+**Con số tổng của ngăn Category xuống chân bảng.** Nó vốn ngồi trên thanh, giữa
+nút New và ô tìm, nên đọc ra như thứ thứ ba bấm được. Nó nói về danh sách, nên
+chỗ của nó là cạnh danh sách — và đó cũng là chỗ nút `‹ ›` sang trang sẽ vào
+khi danh sách dài tới mức phải chia trang. Con số với nút sang trang là một cặp:
+`8 of 12  ‹ ›`.
 
 ### Thêm một ngăn mới thì làm gì
 

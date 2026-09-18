@@ -566,24 +566,7 @@
    Ở Galaxy và 霜降 thì hạ tay là mất hẳn: một trời sao ở .30 đọc ra là nhiễu
    màn hình, còn dãy núi 霜降 nằm ở đáy khung nên phần lọt qua khe gần như
    trắng. .50 thì cả bốn theme đều nhận ra được mình đang ở trang nào. */
-/* ── NỀN BỌC PHẢI TỰ LÀM GỐC TOẠ ĐỘ ──
-   `.nen-canvas` là `position:absolute;inset:0`, nên nó lấy kích thước của TỔ
-   ĐỊNH VỊ gần nhất. `.nen-boc` trước đây để `static`, và tổ định vị gần nhất
-   hoá ra là `body` — nên canvas bị căng ra bằng cả trang.
-
-   Đo trên trang giới thiệu: khối bọc 949×908, mà canvas bị căng ra 1013×1275.
-   Cao gấp 1,44 lần. Nền vẽ vào một bộ đệm 949×883 rồi bị kéo giãn theo trục
-   dọc — và cái LỘ RA NGAY là mặt trời với mặt trăng: chúng vẽ bằng `arc`, tức
-   là hình tròn, nên bị kéo thành bầu dục. Núi với nước thì giãn theo mà không
-   ai gọi được tên, vì chúng vốn không có hình chuẩn để so.
-
-   Dòng thứ hai là bắt buộc đi kèm: một thẻ có `z-index:0` thì dựng lên một
-   ngăn xếp riêng và phủ lên nội dung KHÔNG định vị nằm cùng khối. Trang chủ đã
-   gặp đúng chuyện này và giải đúng cách ấy (xem `.shell[data-nen] > …` ở
-   trên); đây là bản cho khối bọc. */
-.nen-boc{position:relative}
-.nen-boc > :not(.nen-canvas){position:relative;z-index:1}
-.nen-boc > .nen-canvas{opacity:.5}
+.shell[data-nen="mo"] > .nen-canvas{opacity:.5}
 
 /* ── LƯỚI BA CỘT ──
    Đường kẻ giữa các cột là thứ làm trang "đọc ra là có cấu trúc". Bỏ chúng đi
