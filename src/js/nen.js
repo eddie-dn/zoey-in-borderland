@@ -1032,12 +1032,27 @@
       var y0 = o.y * H0, cao = o.cao * H0;
       var xaXoi = o.xaXoi, kW = W0 / 1400, d = [], x, k;
 
+      /* ── MÉP NƯỚC CẮT NGANG ĐẤT ──
+         Đường sống của một dãy có chỗ trũng xuống DƯỚI mép nước. Để nguyên thì
+         lớp rửa nước (phủ giấy 86–93%, không phải 100%) chỉ làm mờ phần ấy đi
+         chứ không xoá — và cái còn lại đọc ra là một quả đồi ĐANG NGẬP trong
+         hồ. Vô lý, mà khó chỉ tên: chỗ sai không nằm ở hình nào cả, nó nằm ở
+         chuyện hai hình cùng có mặt ở một nơi chỉ được phép có một.
+
+         Bờ nước thật thì là chỗ đất DỪNG. Nên kẹp đường sống lại ở mép nước:
+         chỗ nào đất thấp hơn mặt nước thì mép của nó chính là mặt nước, và
+         đoạn nằm ngang ấy sau đó bị `veNuoc` phủ lên — đúng như bờ.
+
+         Chỉ những dãy vẽ TRƯỚC mặt nước mới kẹp. Nếp bờ cuối vẽ sau, nó nằm
+         TRÊN nước chứ không bị nước cắt. */
+      var catO = o.catNuoc === false ? Infinity : MEP_NUOC * H0;
       for (x = 0; x <= W0; x += 3) {
         var u = x / W0, h = 0;
         for (k = 0; k < o.song.length; k++) {
           h += Math.sin(u * o.song[k][0] * kW + o.song[k][2]) * o.song[k][1];
         }
-        d.push([x, y0 - h * cao * bao(u, o.bao, o.san)]);
+        var yd = y0 - h * cao * bao(u, o.bao, o.san);
+        d.push([x, yd > catO ? catO : yd]);
       }
 
       function thanNui() {
@@ -1429,7 +1444,7 @@
          cả một phần tư khung dành cho nước thành ra chỉ là một cái khung. */
       veNui(g, {
         y: 0.965, cao: 0.055, muc: MUC_GAN, dam: 0.170, suong: 0.20,
-        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]]
+        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]], catNuoc: false
       });
     }
 
@@ -1480,11 +1495,26 @@
         var m = Math.min(W, H);
         var chanTroi = H * CHAN_TROI;
 
-        var dem      = muot(p, 0.56, 0.70) * (1 - muot(p, 0.93, 1.00));
-        var binhMinh = muot(p, 0.00, 0.06) * (1 - muot(p, 0.16, 0.26));
-        var hoangHon = muot(p, 0.40, 0.50) * (1 - muot(p, 0.58, 0.68));
-        var ngay     = muot(p, 0.12, 0.24) * (1 - muot(p, 0.50, 0.62));
-        var am       = Math.max(binhMinh, hoangHon);
+        /* ── MỘT LƯỢT MẶT TRỜI, RỒI SANG TRĂNG ──
+           Bản trước có HAI bao ấm: `binhMinh` đỉnh ở quãng 0,10 và `hoangHon`
+           đỉnh ở quãng 0,53. Nghĩa là trong một vòng, mặt trời to-và-đỏ rồi
+           nhỏ-và-nhạt rồi lại to-và-đỏ — cú zoom xảy ra hai lần, và lần thứ
+           hai không kể thêm gì. Với lối "đứng một chỗ" thì nó càng lộ: cùng
+           một chỗ, cùng một đĩa, phình ra rồi co lại rồi phình ra.
+
+           Nay đúng một lượt, và đi một chiều: đĩa vào khung ở xa (nhỏ, nhạt,
+           cao), rồi lớn dần, ấm dần, hạ dần — tới 0,46 thì tắt và trăng lên.
+           `tien` là cả cú zoom ấy, từ 0 (xa) tới 1 (gần). */
+        var tien     = muot(p, 0.02, 0.46);
+        var dem      = muot(p, 0.50, 0.64) * (1 - muot(p, 0.93, 1.00));
+        var ngay     = muot(p, 0.06, 0.18) * (1 - muot(p, 0.42, 0.54));
+        /* Lớp trời ấm đi theo cú zoom, và tắt hẳn khi đêm tới. */
+        var am       = tien * (1 - dem);
+        /* Hai tên cũ còn được mấy chỗ dưới đọc: giữ lại, nhưng nay chúng chỉ
+           là hai nửa của MỘT lượt — nửa đầu lúc trời còn sáng, nửa sau lúc
+           trời đã ngả. Nhờ vậy sắc ấm vẫn đổi được từ hồng sang cam đất. */
+        var binhMinh = am * (1 - muot(p, 0.16, 0.34));
+        var hoangHon = am * muot(p, 0.16, 0.34);
 
         /* ══════════════════════════════════════════════════════════════════
            THIÊN THỂ: MỘT CHỖ, MỘT CÚ CHUYỂN CẢNH
@@ -1517,7 +1547,9 @@
            việc: nói mặt trời đang giữa trưa (1 — nhạt, vàng, nhỏ) hay đang lúc
            rạng/tà (0 — đỏ, to). Nên công thức màu và cỡ đĩa giữ nguyên được,
            không phải viết lại. */
-        var cung = 1 - Math.max(binhMinh, hoangHon) * 0.92;
+        /* `cung` = 1 lúc đĩa còn xa (nhỏ, vàng nhạt) → 0,08 lúc nó đã tới gần
+           (to, đỏ). Một chiều, không quay lại. */
+        var cung = 1 - tien * 0.92;
         var sx = W * 0.655;
         /* Hạ xuống một quãng nhỏ lúc rạng và lúc tà. Không phải để làm một cái
            cung thu nhỏ — mà vì màu và độ cao phải nói cùng một chuyện: đĩa lúc
@@ -1528,8 +1560,10 @@
 
            Nhịp sin cuối cho nó trôi lên xuống 0,016 khung suốt cả vòng. Đứng
            chết một chỗ thì đọc ra một cái hình dán lên, không ra thiên thể. */
-        var sy = H * (0.175 + 0.110 * Math.max(binhMinh, hoangHon)
-                      + 0.016 * Math.sin(p * Math.PI * 2));
+        /* Hạ dần theo cú zoom: 0,150 lúc còn xa → 0,285 lúc đã tới gần. Càng
+           gần càng thấp, và càng thấp thì càng đỏ — màu với độ cao nói cùng
+           một chuyện. */
+        var sy = H * (0.150 + 0.135 * tien + 0.014 * Math.sin(p * Math.PI * 2));
         /* Bán kính đo theo cạnh NGẮN của khung. 0,058 lúc rạng/tà → đĩa rộng
            chừng 11% chiều cao, đúng cỡ trong tranh gốc; giữa trưa nhỏ lại còn
            0,042. Từng để 0,078: đĩa rộng 15% khung và ở lối "đứng một chỗ" thì
@@ -1538,7 +1572,9 @@
         var sr = m * (0.058 - 0.016 * cung);
         var mx = sx, my = sy, mr = sr * 0.44;
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
-        var hienS = kep(1 - dem * 1.8);
+        /* Tắt hẳn trong quãng 0,46–0,58 để nhường chỗ cho trăng — không dùng
+           `dem` nữa, vì `dem` lên muộn hơn và hai thiên thể sẽ chồng nhau. */
+        var hienS = 1 - muot(p, 0.46, 0.58);
 
         /* ── 1 · NỀN TRỜI ──
            Trên giấy trắng, "trời sáng" là giấy để trắng; mọi sắc khác là một
@@ -1591,7 +1627,7 @@
         }
 
         /* ── 2 · MẶT TRĂNG: vẽ bằng một phép XOÁ ── */
-        var sangTrang = dem * muot(p, 0.60, 0.68);
+        var sangTrang = dem * muot(p, 0.54, 0.64);
         veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang, true);
 
         /* ── 3 · SAO ── */
@@ -1834,6 +1870,46 @@
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', doiBo);
 
   addEventListener('resize', coLai, { passive: true });
+
+  /* ── CỠ KHỐI ĐỔI MÀ KHÔNG PHẢI DO ĐỔI CỠ CỬA SỔ ──
+     `resize` chỉ bắn khi CỬA SỔ đổi cỡ. Nhưng khối chứa nền còn đổi cỡ vì
+     những lẽ khác: phông vào muộn rồi chữ xếp lại, ảnh tải xong rồi ô ảnh nở
+     ra, một thẻ mở/đóng. Lúc ấy canvas bị CSS căng theo khối mới trong khi bộ
+     đệm vẫn là cỡ cũ — và thứ lộ ra ngay là mặt trời với mặt trăng, vì chúng
+     vẽ bằng `arc` nên hình tròn bị kéo thành bầu dục.
+
+     Đo trên trang giới thiệu: khối cao 908 mà bộ đệm dựng lúc nó còn 883 —
+     giãn dọc 2,8%, đủ để thấy méo.
+
+     Chỉ dựng lại khi cỡ LÀM TRÒN thật sự đổi: `coLai` nướng lại cả năm dãy
+     núi, gọi nó ở mỗi phần nghìn pixel thì vừa tốn vừa có thể tự kích lại
+     chính mình qua vòng lặp bố cục. */
+  var cuW = 0, cuH = 0;
+  function doCo() {
+    var r = hop.getBoundingClientRect();
+    var w = Math.round(r.width), h = Math.round(r.height);
+    if (w === cuW && h === cuH) return;
+    cuW = w; cuH = h;
+    coLai();
+    /* Vẽ ngay một khung: không có dòng này thì lúc đổi cỡ canvas trắng một
+       nhịp rồi mới có hình — thấy rõ nếu người đọc đang cuộn. */
+    if (may) may.ve(t);
+  }
+  if ('ResizeObserver' in window) new ResizeObserver(doCo).observe(hop);
+
+  /* ── VÀ MỘT LỚP KHÔNG PHỤ THUỘC NHỊP VẼ ──
+     ResizeObserver gắn vào các bước dựng hình của trình duyệt, nên ở một tab
+     chạy nền hay một khung xem đang ẩn thì quan sát KHÔNG được giao — y như
+     `requestAnimationFrame`. Trang không được vẽ thì nền sai cỡ cũng chẳng ai
+     thấy, nhưng nó sai ngay lúc trang hiện trở lại, tức là sai đúng lúc có
+     người nhìn.
+
+     `setTimeout` thì chạy bất kể trang có được vẽ hay không. Hai mốc: 400ms
+     cho phông và CSS vào xong, 1600ms cho ảnh tải xong và ô ảnh nở ra. Hai
+     lần đo, và lần nào cỡ không đổi thì `doCo` tự bỏ qua. */
+  setTimeout(doCo, 400);
+  setTimeout(doCo, 1600);
+  addEventListener('load', doCo);
 
   document.addEventListener('visibilitychange', function () {
     moTab = !document.hidden;

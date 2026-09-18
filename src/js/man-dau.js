@@ -101,3 +101,97 @@
     else window.addEventListener('load', toi, { once: true });
   });
 })();
+
+/* ══════════════════════════════════════════════════════════════════════
+   MỤC LỤC TRANG CHỦ — MỘT BÀI MỚI NHẤT + HAI BÀI NHIỀU LƯỢT XEM NHẤT
+
+   ── VÌ SAO VIỆC NÀY PHẢI LÀM Ở ĐÂY, KHÔNG LÀM LÚC DỰNG TRANG ──
+   Lượt xem nằm trong D1 của Cloudflare, và D1 chỉ đọc được lúc CHẠY từ một
+   hàm worker. Trang chủ thì dựng TĨNH lúc build. Nên HTML dựng ra không thể
+   mang sẵn câu trả lời đúng — nó mang ba bài mới nhất, là câu trả lời đúng
+   thứ hai, rồi ở đây xếp lại.
+
+   Nghĩa là hai ô sau sẽ ĐỔI CHỮ một nhịp sau khi trang hiện. Đổi lại: trang
+   không có JavaScript, hay trang lúc API chưa trả về, vẫn có một mục lục đủ
+   nghĩa thay vì ba ô trống. Với một cái nền phụ như mục lục thì đánh đổi ấy
+   đúng; nếu là nội dung chính thì đã phải dựng ở phía máy chủ.
+
+   ── KHÔNG Ô NÀO TRÙNG Ô NÀO ──
+   Bài mới nhất rất có thể cũng là bài nhiều lượt xem nhất. Nên ô đầu chốt
+   trước, rồi hai ô sau lấy theo lượt xem mà BỎ QUA bài đã dùng, và thiếu thì
+   bù bằng bài mới kế tiếp. Khối `#hero-ung-vien` mang mười hai ứng viên nên
+   luôn còn bài để bù.
+
+   ── KHÔNG ĐỔI THÌ KHÔNG ĐỤNG ──
+   Nếu xếp lại mà ra đúng thứ tự đang bày (chuyện thường gặp: bài mới cũng là
+   bài được xem nhiều nhất), thì không ghi lại gì cả. Ghi lại y nguyên vẫn là
+   một cú nhảy chữ, và một cú nhảy không đổi gì thì chỉ làm người đọc giật
+   mình.
+   ══════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var ol = document.querySelector('.hero-ds');
+  var kho = document.getElementById('hero-ung-vien');
+  if (!ol || !kho) return;
+
+  var o = ol.querySelectorAll('.hero-dong');
+  if (!o.length) return;
+
+  var uv;
+  try { uv = JSON.parse(kho.textContent); } catch (e) { return; }
+  if (!uv || uv.length < 2) return;
+
+  function veDong(li, b, i) {
+    var a = li.querySelector('a');
+    var so = li.querySelector('.hero-so');
+    var tt = li.querySelector('.hero-tt');
+    var tm = li.querySelector('.hero-ngay');
+    if (!a || !tt) return;
+    a.setAttribute('href', b.u);
+    if (so) so.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+    tt.textContent = b.t;
+    if (tm) { tm.setAttribute('datetime', b.d); tm.textContent = b.n; }
+  }
+
+  /* `top` xin nhiều hơn số ô cần: mấy bài đầu bảng có thể trùng bài mới nhất,
+     hoặc là bài đã rút xuống bản nháp nên không còn trong danh sách ứng viên. */
+  fetch('/api/xem?top=' + (o.length + 8), { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (kq) {
+      if (!kq || !kq.top || !kq.top.length) return;
+
+      var diem = {};
+      for (var i = 0; i < kq.top.length; i++) diem[kq.top[i].u] = kq.top[i].so;
+
+      var chon = [uv[0]], dung = {};
+      dung[uv[0].u] = 1;
+
+      /* Chỉ xét những bài CÓ trong danh sách ứng viên: bảng lượt xem còn giữ
+         cả đường dẫn của bài đã xoá hay đã rút về nháp, và trỏ vào đó là trỏ
+         vào một trang 404. */
+      var theoView = [];
+      for (var j = 0; j < uv.length; j++) if (diem[uv[j].u]) theoView.push(uv[j]);
+      theoView.sort(function (a, b) {
+        return (diem[b.u] - diem[a.u]) || (a.u < b.u ? -1 : 1);
+      });
+
+      for (var k = 0; k < theoView.length && chon.length < o.length; k++) {
+        if (!dung[theoView[k].u]) { chon.push(theoView[k]); dung[theoView[k].u] = 1; }
+      }
+      for (var m = 0; m < uv.length && chon.length < o.length; m++) {
+        if (!dung[uv[m].u]) { chon.push(uv[m]); dung[uv[m].u] = 1; }
+      }
+      if (chon.length < o.length) return;
+
+      var giong = true;
+      for (var n = 0; n < o.length; n++) {
+        var a0 = o[n].querySelector('a');
+        if (!a0 || a0.getAttribute('href') !== chon[n].u) { giong = false; break; }
+      }
+      if (giong) return;
+
+      for (var q = 0; q < o.length; q++) veDong(o[q], chon[q], q);
+    })
+    .catch(function () { /* mất mạng, hay chưa gắn D1: giữ ba bài mới nhất */ });
+})();

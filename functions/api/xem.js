@@ -97,6 +97,35 @@ export async function onRequest(context) {
     return traLoi({ so }, 200, 'public, max-age=60');
   }
 
+  /* ── XEM NHIỀU NHẤT: `?top=n` ──
+     Trang chủ xếp mục lục theo "một bài mới nhất + hai bài nhiều lượt xem nhất
+     mọi thời điểm". Bài mới nhất thì lúc dựng trang đã biết; còn bài nhiều
+     lượt xem thì chỉ D1 biết, và D1 chỉ đọc được lúc chạy — nên phải có một
+     cửa đọc ngược như cửa này.
+
+     `ORDER BY so DESC, u ASC` — phải có khoá phụ. Chỉ xếp theo `so` thì hai
+     bài bằng điểm sẽ đổi chỗ nhau giữa hai lượt gọi, và mục lục trang chủ
+     nhảy chỗ mỗi lần tải mà không ai hiểu vì sao.
+
+     Cache 300 giây: "nhiều nhất mọi thời điểm" không đổi trong năm phút, mà
+     trang chủ thì bị gọi nhiều nhất trong cả site. */
+  const top = url.searchParams.get('top');
+  if (top !== null) {
+    const n = Math.max(1, Math.min(20, parseInt(top, 10) || 3));
+    let kq;
+    try {
+      kq = await env.DB.prepare(
+        'SELECT u, so FROM xem WHERE so > 0 ORDER BY so DESC, u ASC LIMIT ?'
+      ).bind(n).all();
+    } catch (e) {
+      /* Bảng chưa có = chưa ai xem bài nào. Trả rỗng thì trang chủ giữ nguyên
+         ba bài mới nhất — đúng trạng thái cần. */
+      return traLoi({ top: [] }, 200, 'public, max-age=300');
+    }
+    return traLoi({ top: (kq.results || []).map((r) => ({ u: r.u, so: r.so })) },
+                  200, 'public, max-age=300');
+  }
+
   const u = sach(url.searchParams.get('u'));
   if (!u) return traLoi({ loi: 'thiếu u' }, 400);
 

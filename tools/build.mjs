@@ -591,7 +591,8 @@ const NHAN = {
      Tiếng Việt, khác lệ tiếng Anh của phần khung: chỉ chủ trang đọc mấy dòng
      này, mà chủ trang thì đọc tiếng Việt nhanh hơn. Cùng lý do với ô viết ghi
      chú. */
-  queue       : 'Waiting for review',
+  /* Nhãn `queue` ("Waiting for review") ĐÃ BỎ: nó nói lại đúng con số mà chip
+     "Pending n" ngay dưới đã nói, và nói bằng một dòng to hơn. */
   /* Ba chip lọc của bàn duyệt. Mặc định bật "Pending": bàn duyệt là chỗ LÀM
      XONG một việc, không phải chỗ xem lại thứ đã xong. */
   /* Cột trạng thái của mỗi hàng ở bàn duyệt. Khác hai nhãn chip ngay dưới:
@@ -3505,6 +3506,35 @@ function trangChu(bai) {
 
   /* Màn đầu: TỐI ĐA BA bài. Bốn dòng trở lên là màn hero hết thoáng, mà thoáng
      mới là điểm của nó. */
+  /* ── DANH SÁCH ỨNG VIÊN CHO MỤC LỤC ──
+     Mục lục trang chủ phải là "một bài mới nhất + hai bài nhiều lượt xem nhất
+     mọi thời điểm". Vế đầu lúc dựng trang đã biết; vế sau thì chỉ D1 biết, mà
+     D1 chỉ đọc được lúc chạy — nên HTML dựng ra không thể mang sẵn câu trả
+     lời đúng.
+
+     Cách giải: HTML vẫn in ba bài MỚI NHẤT (để trang không có JavaScript, hay
+     trang lúc API chưa trả về, vẫn có một mục lục đúng nghĩa), và kèm theo một
+     khối dữ liệu đủ rộng để phía trình duyệt xếp lại tại chỗ. Mười hai bài là
+     dư: lấy ba ô mà có mười hai ứng viên thì kể cả khi mấy bài nhiều view
+     trùng nhau hay trùng bài mới nhất, vẫn còn bài để thay vào.
+
+     `JSON.stringify` rồi thay `<` bằng `\u003c`: một tiêu đề có chuỗi
+     `</script>` sẽ cắt đứt khối script ngay giữa, và đó là cách một trang tĩnh
+     bị chèn mã. */
+  const heroUngVien = (ds) => {
+    const uv = ds.slice(0, 12).map((b) => ({
+      u: b.url,
+      /* Dán từ nối ngay ở đây, không để phía trình duyệt làm lại: bảng từ nối
+         nằm trong tools/lib/text.mjs và nó phải ở đúng một chỗ. Chuỗi ra mang
+         sẵn ký tự U+00A0, và phía kia chỉ việc gán vào `textContent`. */
+      t: noiChu(b.titleNgan),
+      d: b.date,
+      n: ngayAnh(b.date).replace(/ \d{4}$/, '')
+    }));
+    return `<script type="application/json" id="hero-ung-vien">`
+      + JSON.stringify(uv).replace(/</g, '\\u003c') + `</script>`;
+  };
+
   const dauTien = xep.slice(0, SL.heroTrangChu);
   const noiBat  = xep[0];
   /* TRANG CHỦ CHỈ GIỮ 6 BÀI ngoài bài nổi bật. Màn đầu là chỗ mời vào, không
@@ -3591,6 +3621,7 @@ function trangChu(bai) {
           </a>
         </li>`).join('')}</ol>` : ''}
       ${coTrang('/posts/') ? `<a class="hero-them" href="${BASE}/posts/">${NHAN.allPosts} →</a>` : ''}
+      ${heroUngVien(xep)}
     </div>
   </div>
 

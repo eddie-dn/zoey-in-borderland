@@ -1114,6 +1114,49 @@ dàn mỏng nét ra và **làm mất mực** (nét 3px nhoè 6px không ra nét 
 nó ra nét 15px nhạt hơn năm lần), còn chồng nét thì không bao giờ mất; và
 `filter` không có ở Safari trước 16.4. Cả năm dãy nướng xong dưới 20ms.
 
+#### Một lượt mặt trời, rồi sang trăng
+
+Từng có HAI bao ấm — `binhMinh` đỉnh ở quãng 0,10 và `hoangHon` đỉnh ở quãng
+0,53 — nghĩa là trong một vòng, đĩa to-và-đỏ rồi nhỏ-và-nhạt rồi lại to-và-đỏ.
+Với lối đứng một chỗ thì càng lộ: cùng một chỗ, cùng một đĩa, phình ra rồi co
+lại rồi phình ra, mà lượt thứ hai không kể thêm gì.
+
+Nay một lượt, đi một chiều: đĩa vào khung ở xa (nhỏ, vàng nhạt, cao 0,150), lớn
+dần và ấm dần và hạ dần tới 0,285, rồi tắt trong quãng 0,46–0,58 để trăng lên.
+Một biến `tien` (0 = xa, 1 = gần) kéo cả ba thứ ấy, nên **màu, cỡ và độ cao
+luôn nói cùng một chuyện** — không bao giờ có cảnh đĩa đỏ ối mà đứng gần đỉnh
+trời.
+
+#### Mép nước cắt ngang đất
+
+Đường sống của một dãy có chỗ trũng xuống dưới mép nước. Để nguyên thì lớp rửa
+nước — phủ giấy 86–93%, không phải 100% — chỉ làm mờ phần ấy đi chứ không xoá,
+và cái còn lại đọc ra là **một quả đồi đang ngập trong hồ**. Vô lý, mà khó chỉ
+tên: chỗ sai không nằm ở hình nào cả, nó nằm ở chuyện hai hình cùng có mặt ở
+một nơi chỉ được phép có một.
+
+Bờ nước thật là chỗ đất DỪNG. Nên đường sống bị kẹp lại ở mép nước: chỗ nào đất
+thấp hơn mặt nước thì mép của nó chính là mặt nước. Chỉ những dãy vẽ TRƯỚC mặt
+nước mới kẹp — nếp bờ cuối vẽ sau, nó nằm trên nước chứ không bị nước cắt.
+
+#### Canvas phải bằng đúng khối chứa nó
+
+`.nen-canvas` là `position:absolute;inset:0`, nên nó lấy cỡ của **tổ định vị gần
+nhất**. Trang chủ có `.shell[data-nen]{position:relative}` nên đúng; khối bọc
+của trang tĩnh (`.nen-boc`) từng để `static`, và tổ định vị gần nhất hoá ra là
+`body` — canvas bị căng ra bằng cả trang. Đo được: khối bọc 949×908 mà canvas
+1013×1275, cao gấp 1,44 lần.
+
+Thứ LỘ RA NGAY là mặt trời với mặt trăng: chúng vẽ bằng `arc`, tức hình tròn,
+nên bị kéo thành bầu dục. Núi với nước cũng giãn theo mà không ai gọi được tên,
+vì chúng vốn không có hình chuẩn để so — đó là vì sao lỗi này sống lâu.
+
+Và cỡ khối còn đổi sau khi trang đã mở: phông vào muộn thì chữ xếp lại, ảnh tải
+xong thì ô ảnh nở ra. `resize` không bắn ở những lúc ấy, nên có thêm
+`ResizeObserver` — kèm hai mốc `setTimeout` (400ms · 1600ms), vì ResizeObserver
+gắn vào nhịp vẽ của trình duyệt và một tab chạy nền thì không được giao quan
+sát, y như `requestAnimationFrame`.
+
 #### Mặt nước — một phần tư khung
 
 Mép nước ở `0,750`. Lớp giấy dựng lên **nhanh** ở mấy phần trăm đầu (0 → 0,58

@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.0 | 2026-09-18 | 00 | index theo lượt xem · nền 霜降 một lượt mặt trời · sửa méo đĩa |
 | V2.8.9 | 2026-09-18 | 09 | nền 霜降 — sơn thuỷ nhạt, thiên thể chuyển cảnh |
 | V2.8.8 | 2026-09-18 | 08 | vẽ lại nền 霜降 — nét, lớp mực, chiều sâu |
 | V2.8.7 | 2026-09-18 | 07 | rà lại toàn bộ tài liệu cho khớp mã: nền động bốn hiệu ứng, ô soạn bài có chương riêng, bàn duyệt bốn ngăn, và mọi con số lạc hậu |
@@ -239,6 +240,26 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.0 — 18-Sep-2026
+
+- **Mục lục trang chủ xếp theo lượt xem.** Ô đầu là bài mới nhất, hai ô sau là
+  hai bài được xem nhiều nhất mọi thời điểm, và không ô nào trùng ô nào — bài
+  mới nhất mà cũng là bài nhiều lượt xem nhất thì hai ô sau tự lấy bài kế tiếp.
+  Lượt xem nằm trong cơ sở dữ liệu nên chỉ đọc được lúc chạy, còn trang chủ thì
+  dựng sẵn; vậy nên trang mở ra có ngay ba bài mới nhất rồi hai ô sau đổi chữ
+  một nhịp. Không có mạng thì nó giữ nguyên ba bài mới — vẫn là một mục lục
+  đúng nghĩa.
+- **Sửa méo mặt trời và mặt trăng ở trang giới thiệu.** Nền động của trang tĩnh
+  bị căng ra bằng cả trang thay vì bằng khối chứa nó — cao gấp 1,44 lần — nên
+  hai cái đĩa tròn bị kéo thành bầu dục. Nền cũng tự dựng lại khi khối đổi cỡ
+  vì phông hay ảnh vào muộn, thay vì chỉ dựng lúc mở trang.
+- **Nền 霜降 và bàn duyệt.** Mặt trời trước đây to-và-đỏ hai lần một vòng, nên
+  cú lại gần xảy ra hai lượt mà lượt sau không kể thêm gì; nay đúng một lượt
+  rồi sang mặt trăng. Sườn núi cũng thôi chạy tiếp xuống dưới mặt nước — chỗ ấy
+  trước đọc ra như một quả đồi đang ngập trong hồ. Ở trang quản trị, bỏ dòng
+  "Waiting for review (n)" vì nó nói lại đúng con số mà chip "Pending n" ngay
+  dưới đã nói, và nhãn ba ngăn về thẳng mép trái của trang.
 
 ## V2.8.9 — 18-Sep-2026
 

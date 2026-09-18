@@ -27,6 +27,16 @@
 .ad-menu{
   display:flex;flex-direction:column;gap:2px;
   position:sticky;top:calc(var(--header-h) + var(--s4));
+  /* ── NHÃN THẲNG MÉP TRANG, VẠCH CHỌN TREO RA NGOÀI ──
+     Mỗi nút có `padding-left: var(--s3)` cộng một vạch 2px bên trái, nên CHỮ
+     của nó nằm lùi vào 14px so với mép trái của trang — không thẳng với tiêu
+     đề "Admin" hay với bất cứ thứ gì khác trên trang. Bốn nhãn lùi cùng một
+     khoảng thì trông vẫn đều, nhưng cả cột lệch so với trang.
+
+     Kéo cả cột ra ngoài đúng 14px ấy: chữ về thẳng mép, còn vạch chọn thì
+     treo vào lề — đúng lối thụt treo của chữ in, và nhờ vậy vạch ấy đọc ra là
+     một dấu CHỈ VÀO mục đang chọn, không đọc ra là một phần của nút. */
+  margin-left:calc(-1 * (var(--s3) + 2px));
 }
 .ad-nut{
   appearance:none;border:0;background:none;cursor:pointer;

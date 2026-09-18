@@ -99,7 +99,6 @@
     dangXin = true;
     if (!lang) {
       hop.textContent = '';
-      hop.appendChild(de(L('queue')));
       var b = document.createElement('p');
       b.className = 'bao bl-duyet-bao';
       b.textContent = L('loading');
@@ -176,7 +175,11 @@
     var cho = ds.filter(function (c) { return !c.duyet; });
     var roi = ds.length - cho.length;
     hop.textContent = '';
-    hop.appendChild(de(L('queue') + (cho.length ? ' (' + cho.length + ')' : '')));
+    /* ── KHÔNG CÒN DÒNG "WAITING FOR REVIEW (n)" ──
+       Nó nói lại đúng cái mà chip "Pending n" ngay dưới đã nói, mà nói bằng
+       một dòng chữ to hơn — nên bàn duyệt mở ra là gặp hai lần cùng một con
+       số, và cái đập vào mắt trước lại là cái nói ít hơn. Bỏ dòng, giữ chip:
+       chip vừa là con số vừa là bộ lọc bấm được. */
 
     if (!ds.length) {
       var trong = document.createElement('p');
