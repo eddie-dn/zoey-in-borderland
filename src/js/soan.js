@@ -433,7 +433,16 @@
              lần sửa lại phải né đúng ba ký tự ấy. */
           var viec = li.getAttribute && li.getAttribute('data-viec');
           var dauViec = viec == null ? '' : (viec === '1' ? '[x] ' : '[ ] ');
-          muc.push(thut + dau + dauViec + trong(ban) + (con.length ? '\n' + con.join('\n') : ''));
+          var chuMuc = trong(ban);
+          /* ── MỤC RỖNG KHÔNG RA MARKDOWN ──
+             Lúc soạn, một `<li>` rỗng là chuyện thường: vừa Enter xong và
+             chưa gõ. Nhưng xuất ra thì nó thành một dòng `-` cụt, và bộ dựng
+             in ra một dấu chấm không có chữ giữa bài.
+
+             Bỏ ở đây chứ không xoá trong DOM — xoá trong DOM là xoá đúng cái
+             dòng người ta sắp gõ vào (lý do đầy đủ ở `donDanhSach`). */
+          if (!chuMuc.trim() && !con.length) continue;
+          muc.push(thut + dau + dauViec + chuMuc + (con.length ? '\n' + con.join('\n') : ''));
         }
         if (muc.length) ra.push(muc.join('\n'));
         continue;
@@ -1215,7 +1224,13 @@
 
     function lenh(ten, gt) {
       khung.focus();
-      try { document.execCommand(ten, false, gt == null ? null : gt); } catch (e) {}
+      /* ── THAM SỐ RỖNG PHẢI LÀ CHUỖI RỖNG, KHÔNG PHẢI `null` ──
+         Vài lệnh của trình duyệt dùng tham số thứ ba làm THUỘC TÍNH của thẻ nó
+         dựng ra. `insertHorizontalRule` lấy nó làm `id`, và `null` thì bị đổi
+         thành chuỗi "null" — đo thật: bấm nút đường kẻ ra `<hr id="null">`.
+         Không đổi hình gì trên màn, nhưng nó là rác nằm lại trong DOM, và một
+         `id` trùng nhau ở hai chỗ là một lỗi HTML thật. */
+      try { document.execCommand(ten, false, gt == null ? '' : gt); } catch (e) {}
       capNhat();
     }
 
@@ -1329,9 +1344,9 @@
     nut(svg('M10 7H6a2 2 0 0 0-2 2v3h4l-2 5M20 7h-4a2 2 0 0 0-2 2v3h4l-2 5'),
         L('quote', 'Quote'), function () { lenh('formatBlock', 'blockquote'); });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M4.5 6h.01M4.5 12h.01M4.5 18h.01']),
-        L('ul', 'Bullet list'), function () { lenh('insertUnorderedList'); donDanhSach(); });
+        L('ul', 'Bullet list'), function () { lamDanhSach('insertUnorderedList'); });
     nut(svg(['M10 6h10M10 12h10M10 18h10', 'M4 5h1v4M4 9h2M4 14.5h2v2H4v2h2']),
-        L('ol', 'Numbered list'), function () { lenh('insertOrderedList'); donDanhSach(); });
+        L('ol', 'Numbered list'), function () { lamDanhSach('insertOrderedList'); });
 
     /* ── CĂN DÒNG: BA NÚT, KHÔNG PHẢI MỘT BẢNG ──
        Bản trước là một nút mở ra bảng bốn dòng có câu mô tả. Căn dòng là việc
@@ -1466,12 +1481,12 @@
       var n3 = s3.getRangeAt(0).startContainer;
       var li3 = (n3.nodeType === 1 ? n3 : n3.parentNode).closest('li');
       if (li3 && !li3.previousElementSibling) return;
-      lenh('indent'); donDanhSach();
+      lamDanhSach('indent');
     });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M6 9l-3 3 3 3']),
         L('outdent', 'Outdent'), function () {
       if (!trongDanhSach()) return;
-      lenh('outdent'); donDanhSach();
+      lamDanhSach('outdent');
     });
     nut('¶', L('para', 'Back to a normal paragraph'), function () {
       lenh('formatBlock', 'p');
@@ -1538,13 +1553,32 @@
 
        Phần TÊN LOẠI (`note`, `tip`…) vẫn khoá: nó do cái nút vừa bấm quyết,
        gõ đè lên nó thì bộ dựng không nhận ra khối nữa. */
+    /* ── MỖI DẠNG DẢI ẢNH MỘT DÒNG NHẮC ──
+       Dạng ghi vào file là một lớp (`.giu`, `.hai`, `.ba`) và nó hiện ra ngay
+       trên nhãn khối. Nhưng `.giu` thì không tự nói nó là gì — ba tháng sau mở
+       lại bài cũ, người viết nhìn `gallery .giu` mà không nhớ mình chọn dạng
+       nào. Nên rê vào nhãn là thấy câu giải thích. */
+    var NHAC_DANG = {
+      ''    : L('gDangLuoi', 'Grid — square crops, fills the row'),
+      'giu' : L('gDangGiu', 'Keeps each photo\'s own shape — no cropping'),
+      'hai' : L('gDangHai', 'Exactly two columns — before and after'),
+      'ba'  : L('gDangBa', 'Exactly three columns')
+    };
+    function nhacDang(ma, ten) {
+      if (ma !== 'gallery') return '';
+      var d = String(ten || '').trim().replace(/^\./, '');
+      return NHAC_DANG[d] || NHAC_DANG[''];
+    }
+
     function chenKhoi(ma, ten) {
       khung.focus();
       document.execCommand('insertHTML', false,
         '<div class="sz-khoi" data-khoi="' + ma + '">' +
           '<div class="sz-khoi-nhan">' +
             '<span class="sz-khoi-loai" contenteditable="false" title="' +
-              thoatHTML(L('bLoaiDoi', 'Click to change: note → tip → warn → stop')) + '">' + ma + '</span>' +
+              thoatHTML(nhacDang(ma, ten) ||
+                        L('bLoaiDoi', 'Click to change: note → tip → warn → stop')) +
+              '">' + ma + (ma === 'gallery' && ten ? ' ' + thoatHTML(ten) : '') + '</span>' +
             '<span class="sz-khoi-de" data-cho="' +
               thoatHTML(L('bDeCho', 'Title — type here')) + '">' +
               (ten ? thoatHTML(ten) : '') + '</span>' +
@@ -1588,7 +1622,10 @@
         var nay = anh.getAttribute('data-lop') || '';
         var ke = VONG[(VONG.indexOf(nay) + 1) % VONG.length];
         if (ke) anh.setAttribute('data-lop', ke); else anh.removeAttribute('data-lop');
-        anh.classList.remove('sz-anh--wide', 'sz-anh--full');
+        anh.classList.remove('sz-anh--goc', 'sz-anh--hep',
+                             'sz-anh--wide', 'sz-anh--full');
+        if (ke === '{.goc}') anh.classList.add('sz-anh--goc');
+        if (ke === '{.hep}') anh.classList.add('sz-anh--hep');
         if (ke === '{.wide}') anh.classList.add('sz-anh--wide');
         if (ke === '{.full}') anh.classList.add('sz-anh--full');
         capNhat();
@@ -1628,7 +1665,21 @@
       });
 
       /* Ba khối bọc: dải ảnh, và hai khổ rộng cho bất kỳ thứ gì nằm trong. */
-      dong(L('bGallery', 'Gallery'), L('bGalleryMo', 'photos side by side'), ':::gallery', function () { chenKhoi('gallery', ''); });
+      /* ── BỐN DẠNG DẢI ẢNH ──
+         Trước bản này chỉ có MỘT: lưới tự xếp, và mọi tấm bị cắt vuông
+         (`aspect-ratio:1/1`). Cắt vuông là một quyết định đúng cho ảnh chụp
+         ngang chụp dọc lẫn lộn, nhưng nó SAI cho ba việc rất thường gặp: ảnh
+         bìa sách (dọc, cắt mất đầu sách), ảnh chụp màn hình (cắt mất nửa
+         dưới), và bộ ảnh trước–sau (phải đúng hai cột mới so được).
+
+         Dạng ghi ra file là một LỚP sau tên khối — `:::gallery .giu` — nên nó
+         vẫn là Markdown đọc được, không phải một cú pháp riêng. Bày sẵn bốn
+         dòng ở đây thay vì bắt người viết gõ tên lớp: người không biết code
+         không có cách nào đoán ra `.giu` nghĩa là gì. */
+      dong(L('bGallery', 'Gallery · grid'), L('bGalleryMo', 'square crops, fills the row'), ':::gallery', function () { chenKhoi('gallery', ''); });
+      dong(L('bGalleryGiu', 'Gallery · keep shape'), L('bGalleryGiuMo', 'no cropping — for book covers, screenshots'), ':::gallery .giu', function () { chenKhoi('gallery', '.giu'); });
+      dong(L('bGalleryHai', 'Gallery · 2 columns'), L('bGalleryHaiMo', 'exactly two — before and after'), ':::gallery .hai', function () { chenKhoi('gallery', '.hai'); });
+      dong(L('bGalleryBa', 'Gallery · 3 columns'), L('bGalleryBaMo', 'exactly three, even on wide screens'), ':::gallery .ba', function () { chenKhoi('gallery', '.ba'); });
       dong(L('bWide', 'Wide block'), L('bWideMo', 'spills past the text column'), ':::wide', function () { chenKhoi('wide', ''); });
       dong(L('bFull', 'Full-bleed block'), L('bFullMo', 'edge to edge of the screen'), ':::full', function () { chenKhoi('full', ''); });
       return b;
@@ -1746,7 +1797,21 @@
       var n = s2.getRangeAt(0).startContainer;
       var o = n.nodeType === 1 ? n : n.parentNode;
       var oNay = o && o.closest ? o.closest('td, th') : null;
-      if (!oNay || !khung.contains(oNay)) return;
+      if (!oNay || !khung.contains(oNay)) {
+        /* ── TAB TRONG DANH SÁCH ──
+           Ở Notion, Google Docs, Word, GitHub — chỗ nào có danh sách thì Tab
+           là thụt vào và Shift+Tab là thụt ra. Đó là phím mà tay người dùng
+           tìm tới trước khi mắt tìm nút trên thanh.
+
+           Trước bản này Tab trong một mục danh sách rơi vào hành vi mặc định
+           của `contenteditable`: nhảy tiêu điểm RA KHỎI cả khung soạn. Đang gõ
+           dở một danh sách mà bấm Tab là mất chỗ, phải bấm chuột vào lại. */
+        var liTab = liDangDung();
+        if (!liTab) return;
+        e.preventDefault();
+        lamDanhSach(e.shiftKey ? 'outdent' : 'indent');
+        return;
+      }
       e.preventDefault();
       var bang = oNay.closest('table');
       var ds = [].slice.call(bang.querySelectorAll('th, td'));
@@ -1772,19 +1837,207 @@
       s2.removeAllRanges(); s2.addRange(r);
     });
 
+    /* ══════════════════════════════════════════════════════════════════════
+       CHÈN MỘT KHỐI, KHÔNG NHỜ `insertHTML`
+
+       `execCommand('insertHTML')` với một thẻ KHỐI trong lúc con trỏ đang nằm
+       trong `<p>` thì trình duyệt phải tự quyết xẻ đoạn ra sao — và với `<pre>`
+       nó quyết sai hẳn: thay vì dựng một khối mã, Chromium đổi nó thành một
+       `<span style="font-family: ui-monospace…">` RỖNG nằm trong đoạn cũ.
+
+       Đo thật: bấm nút khối mã rồi chọn "No colours" ra
+       `<p>y<span style="font-family: ui-monospace, …"></span></p>` — không có
+       `<pre>` nào, và Markdown xuất ra mất sạch phần mã.
+
+       Nên dựng nút bằng tay rồi đặt nó SAU khối đang đứng. Khối đang đứng mà
+       rỗng thì thay luôn nó — không để lại một đoạn trắng ở trên. */
+    function khoiDangDung() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return null;
+      var n = s.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      while (o && o.parentNode !== khung) o = o.parentNode;
+      return (o && khung.contains(o)) ? o : null;
+    }
+
+    function chenKhoiSau(ds) {
+      var truoc = khoiDangDung();
+      var rong = truoc && !truoc.textContent.trim() &&
+                 !truoc.querySelector('img, ul, ol, table, pre');
+      for (var i = 0; i < ds.length; i++) {
+        if (truoc) truoc.parentNode.insertBefore(ds[i], truoc.nextSibling);
+        else khung.appendChild(ds[i]);
+        truoc = ds[i];
+      }
+      if (rong) {
+        var cu = khoiDangDung();
+        if (cu && ds.indexOf(cu) < 0) cu.remove();
+      }
+    }
+
     function chenMa(ngon) {
       khung.focus();
       var n = String(ngon || '').trim().replace(/[^\w-]/g, '');
-      document.execCommand('insertHTML', false,
-        '<pre' + (n ? ' data-ngon="' + n + '"' : '') + '> </pre><p><br></p>');
+      var pre = document.createElement('pre');
+      if (n) pre.setAttribute('data-ngon', n);
+      pre.appendChild(document.createTextNode(' '));
+      var sau = document.createElement('p');
+      sau.appendChild(document.createElement('br'));
+      chenKhoiSau([pre, sau]);
+      datConTroVao(pre);
       capNhat();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       RA MỘT BẬC KHỎI MỘT MỤC RỖNG — LÀM THẲNG TAY
+
+       Đã thử gọi `execCommand('outdent')` cho ca này. Không được, vì cái mốc
+       giữ con trỏ (`camMoc`) là một `<span>` cắm vào chính mục ấy — mục thôi
+       rỗng trong mắt trình duyệt, nên `outdent` XẺ nó: mốc ở lại bên trong,
+       phần rỗng đi ra ngoài. Con trỏ vì thế quay về đúng chỗ cũ, và gõ tiếp
+       là chữ rơi lại vào danh sách con. Đo thật: gõ "Đoạn thường" sau hai lần
+       Enter thì nó nằm trong `<li>` của danh sách con.
+
+       Ca này đơn giản tới mức không cần mượn bộ máy của trình duyệt: mục rỗng
+       thì bỏ đi, rồi dựng chỗ đứng mới ở bậc ngoài.
+
+           đang ở danh sách CON   → một mục mới ngay sau mục cha
+           đang ở bậc NGOÀI CÙNG  → một đoạn văn ngay sau cả danh sách
+
+       Chỉ chạy khi mục rỗng là mục CUỐI của danh sách nó thuộc về. Mục rỗng ở
+       giữa là chỗ người ta vừa chèn thêm một dòng và sắp gõ vào — nhấc nó ra
+       là đảo thứ tự bài. */
+    function datConTroVao(o) {
+      var r = document.createRange();
+      r.selectNodeContents(o);
+      r.collapse(true);
+      var s = window.getSelection();
+      s.removeAllRanges(); s.addRange(r);
+      khung.focus();
+    }
+
+    function raMotBac(li) {
+      var ds = li.parentNode;
+      var chaLi = ds.parentNode && ds.parentNode.closest
+                ? ds.parentNode.closest('li') : null;
+      li.remove();
+      var moi;
+      if (chaLi && khung.contains(chaLi)) {
+        moi = document.createElement('li');
+        moi.appendChild(document.createElement('br'));
+        chaLi.parentNode.insertBefore(moi, chaLi.nextSibling);
+      } else {
+        moi = document.createElement('p');
+        moi.appendChild(document.createElement('br'));
+        ds.parentNode.insertBefore(moi, ds.nextSibling);
+      }
+      if (!ds.children.length) ds.remove();
+      donDanhSach(null);
+      datConTroVao(moi);
+      capNhat();
+    }
+
+    /* `<li>` mà con trỏ đang đứng trong, nếu có. */
+    function liDangDung() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return null;
+      var n = s.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var li = o && o.closest ? o.closest('li') : null;
+      return (li && khung.contains(li)) ? li : null;
+    }
+
+    /* Mọi `<li>` mà vùng chọn chạm tới. Bôi đen ba dòng rồi bấm nút thì cả ba
+       phải đổi, không phải mỗi dòng con trỏ đang đứng. */
+    function cacLiTrongVungChon() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return [];
+      var r = s.getRangeAt(0);
+      var ra = [].slice.call(khung.querySelectorAll('li')).filter(function (li) {
+        return r.intersectsNode ? r.intersectsNode(li) : false;
+      });
+      if (!ra.length) { var l1 = liDangDung(); if (l1) ra = [l1]; }
+      return ra;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       CHECKLIST LÀ MỘT LOẠI DANH SÁCH, KHÔNG PHẢI MỘT THỨ CHÈN VÀO
+
+       Bản trước nút này chèn thẳng một mẩu HTML cố định:
+
+           <ul><li data-viec="0"> </li></ul><p><br></p>
+
+       Ba chỗ sai, và cả ba đều lộ ra ngay lần bấm đầu:
+
+       · Nó KHÔNG đổi dòng đang đứng. Đang gõ dở một đoạn mà bấm thì đoạn ấy
+         vẫn nằm nguyên, dưới nó mọc thêm một ô rỗng.
+       · Nó bỏ rơi con trỏ. `insertHTML` đặt con trỏ sau mẩu vừa chèn, tức vào
+         cái `<p>` cuối — gõ tiếp là chữ rơi ra NGOÀI ô việc vừa tạo. Đo thật:
+         bấm rồi gõ "Việc một" ra `<ul><li data-viec="0"> </li></ul><p>Việc
+         một</p>`.
+       · Bấm khi đang ở trong một danh sách chấm thì nó nhét một `<ul>` vào
+         giữa `<ul>` — HTML sai, và `<p>` lọt vào trong `<ul>`.
+
+       Nay nó là một nút ĐỔI LOẠI, cùng họ với nút chấm và nút số, đúng như
+       Notion · Google Docs · GitHub làm:
+
+           đoạn văn      → mục việc
+           mục chấm/số   → mục việc   (giữ nguyên chữ và bậc thụt)
+           mục việc      → đoạn văn   (bấm lần nữa để bỏ)
+
+       Và nó mượn chính bộ máy danh sách của trình duyệt (`insertUnorderedList`)
+       để gói/bỏ gói, vì bộ máy ấy mới biết cách xử lý vùng chọn nhiều dòng,
+       danh sách lồng nhau, và chỗ nối hai danh sách. Việc riêng của ta chỉ còn
+       là đánh dấu `data-viec` lên những `<li>` vừa thành hình. */
+    function danhDauViec(ds, bat) {
+      for (var i = 0; i < ds.length; i++) {
+        if (bat) {
+          if (!ds[i].hasAttribute('data-viec')) ds[i].setAttribute('data-viec', '0');
+        } else ds[i].removeAttribute('data-viec');
+      }
     }
 
     function chenViec() {
       khung.focus();
-      document.execCommand('insertHTML', false,
-        '<ul><li data-viec="0"> </li></ul><p><br></p>');
-      capNhat();
+      /* ── QUYẾT THEO CẢ VÙNG CHỌN, KHÔNG THEO MỖI DÒNG CON TRỎ ĐỨNG ──
+         Đã thử hỏi `liDangDung()` — cái `<li>` mà con trỏ đang ở trong. Sai khi
+         người ta BÔI ĐEN nhiều dòng: biên đầu vùng chọn có thể rơi vào một
+         đoạn văn trống ở trên, nên hàm ấy trả về `null`, và `chenViec` tưởng
+         "chưa có danh sách nào" rồi gọi `insertUnorderedList` — mà lệnh ấy là
+         một cái CÔNG TẮC: đang có danh sách thì nó BỎ danh sách đi.
+
+         Đo thật: bôi đen ba mục đang là danh sách chấm rồi bấm nút việc, cả ba
+         tan thành một đoạn văn `a<br>b<br>` — mất danh sách, mất cả dòng. */
+      var ds = cacLiTrongVungChon();
+
+      /* Cả vùng chọn đã là việc → bỏ dấu rồi bỏ gói, về đoạn văn. Phải là TẤT
+         CẢ: chọn hai mục việc và một mục chấm thì việc cần làm là biến cái
+         chấm kia thành việc, không phải bỏ hết. */
+      var deuLaViec = ds.length > 0;
+      for (var i = 0; i < ds.length; i++) {
+        if (!ds[i].hasAttribute('data-viec')) { deuLaViec = false; break; }
+      }
+      if (deuLaViec) {
+        danhDauViec(ds, false);
+        lamDanhSach('insertUnorderedList');
+        return;
+      }
+
+      /* Chỉ gọi lệnh khi THẬT SỰ cần gói lại: chưa có mục nào (đang là đoạn
+         văn), hoặc có mục đang nằm trong danh sách SỐ (phải đổi sang chấm).
+         Đang ở danh sách chấm rồi thì chỉ cần đánh dấu — gọi lệnh lúc ấy là
+         tự bỏ mất danh sách.
+
+         Mốc cắm trước lệnh, rồi đánh dấu trước khi trả con trỏ về: đánh dấu
+         chỉ đặt thuộc tính, không dời nút, nên mốc vẫn đúng chỗ. */
+      var canGoi = !ds.length;
+      for (var j = 0; j < ds.length; j++) {
+        if (ds[j].closest('ol')) { canGoi = true; break; }
+      }
+      var moc = camMoc();
+      if (canGoi) lenh('insertUnorderedList');
+      danhDauViec(cacLiTrongVungChon(), true);
+      donDanhSach(moc);
     }
 
 
@@ -2413,7 +2666,83 @@
        Nhấc danh sách ra khỏi `<p>`. `<p>` không còn gì khác thì bỏ luôn nó;
        còn chữ thì để chữ ở lại và đặt danh sách ngay sau. Giữ nguyên các nút
        DOM (không dựng lại) để vùng chọn và con trỏ không nhảy đi đâu. */
-    function donDanhSach() {
+    /* ══════════════════════════════════════════════════════════════════════
+       GIỮ CON TRỎ QUA MỘT CA MỔ DOM
+
+       `donDanhSach` nhấc nguyên `<li>` và `<ul>` sang chỗ khác. Mỗi lần nhấc
+       là mọi `Range` đang trỏ vào chúng bị huỷ — trình duyệt thu con trỏ về
+       một chỗ nào đó không đoán trước được.
+
+       Đo thật: gõ một danh sách, thụt vào một mục, bấm "thụt ra" rồi gõ tiếp —
+       chữ vừa gõ rơi vào mục CŨ chứ không vào mục vừa thụt ra, và ở cuối danh
+       sách còn lại một `<li>` rỗng. Người dùng nói đúng: "thụt vào, thụt ra,
+       bullet points, checkbox dùng cùng nhau bị lỗi".
+
+       Cách chữa là cách mọi trình soạn thảo dùng: cắm một cái mốc rỗng vào
+       đúng chỗ con trỏ TRƯỚC khi mổ, rồi trả con trỏ về cái mốc ấy sau khi mổ
+       xong. Mốc đi theo nút của nó, nút bị nhấc đi đâu thì mốc đi theo đó.
+
+       Mốc là một `<span>` rỗng mang `data-moc`: nó không có bề rộng, không có
+       chữ, và bị gỡ ngay sau khi trả con trỏ — nên không bao giờ lọt ra bài. */
+    function camMoc() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount) return null;
+      var r = s.getRangeAt(0);
+      if (!khung.contains(r.startContainer)) return null;
+      var m = document.createElement('span');
+      m.setAttribute('data-moc', '1');
+      var r2 = r.cloneRange();
+      r2.collapse(true);
+      try { r2.insertNode(m); } catch (e) { return null; }
+      return m;
+    }
+    function veMoc(m) {
+      if (!m || !m.parentNode) return;
+      /* ── GỠ MỐC TRƯỚC, ĐẶT CON TRỎ SAU ──
+         Đã thử làm ngược: đặt `Range` ngay SAU cái mốc rồi mới gỡ mốc đi. Sai.
+         Biên của một `Range` là một cặp (nút cha, CHỈ SỐ con); gỡ mốc đi là
+         mọi chỉ số sau nó tụt một bậc, nên biên vừa đặt trỏ ra ngoài phạm vi
+         và trình duyệt bỏ luôn vùng chọn. Đo thật: sau một cú bấm nút danh
+         sách, `getSelection().rangeCount` bằng 0 — không còn con trỏ nào, và
+         mọi phím gõ tiếp rơi vào hư không.
+
+         Nên: đếm chỉ số của mốc, gỡ mốc, RỒI đặt biên vào đúng chỉ số ấy — chỗ
+         mốc vừa rời khỏi chính là chỗ con trỏ phải đứng.
+
+         Và `focus()` gọi TRƯỚC khi đặt vùng chọn: gọi sau thì ở vài trình
+         duyệt nó tự dời con trỏ về đầu khối. */
+      var cha = m.parentNode;
+      var i = 0;
+      for (var n = cha.firstChild; n && n !== m; n = n.nextSibling) i++;
+      cha.removeChild(m);
+      khung.focus();
+      var r = document.createRange();
+      try { r.setStart(cha, i); } catch (e) { return; }
+      r.collapse(true);
+      var s = window.getSelection();
+      s.removeAllRanges(); s.addRange(r);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       MỘT CỬA CHO MỌI LỆNH DANH SÁCH
+
+       `execCommand('insertUnorderedList')` của Chromium tự nó đã kéo con trỏ
+       đi. Đo thật: con trỏ đứng cuối chữ "Việc một" (offset 8), gọi lệnh xong
+       nó nằm ở offset 0 — đầu chữ. Gõ tiếp là chữ mới chui vào TRƯỚC chữ cũ.
+
+       Nên cái mốc phải cắm TRƯỚC khi gọi lệnh, không phải sau. `donDanhSach`
+       tự cắm mốc thì đã muộn: lúc nó chạy, con trỏ đã ở sai chỗ rồi.
+
+       Mọi nút liên quan tới danh sách — chấm, số, việc, thụt vào, thụt ra,
+       phím Tab, phím Enter — đều đi qua đây. */
+    function lamDanhSach(ten) {
+      var moc = camMoc();
+      lenh(ten);
+      donDanhSach(moc);
+    }
+
+    function donDanhSach(mocSan) {
+      var moc = mocSan || camMoc();
       /* ── CA MỘT: `<ul>` NẰM TRONG `<p>` ── (nút danh sách, xem trên) */
       var ds = khung.querySelectorAll('p > ul, p > ol');
       for (var i = 0; i < ds.length; i++) {
@@ -2466,7 +2795,63 @@
         }
         cha.appendChild(ds2);
       }
+
+      /* ── CA BỐN: `<p>` NẰM THẲNG TRONG `<ul>`/`<ol>` ──
+         Bấm nút danh sách khi con trỏ đang ở một chỗ trình duyệt không biết
+         gói thế nào, nó nhét luôn một `<p>` vào giữa hai `<li>`. HTML sai, mà
+         `sangMD` thì bỏ qua — đoạn văn ấy biến mất khỏi bài.
+
+         Có chữ thì bọc thành một `<li>` để giữ lại; rỗng thì bỏ. */
+      var pTrongDs = khung.querySelectorAll('ul > p, ol > p');
+      for (var q = 0; q < pTrongDs.length; q++) {
+        var pp = pTrongDs[q];
+        if (pp.textContent.trim() || pp.querySelector('img')) {
+          var liMoi = document.createElement('li');
+          while (pp.firstChild) liMoi.appendChild(pp.firstChild);
+          pp.parentNode.replaceChild(liMoi, pp);
+        } else pp.remove();
+      }
+
+      /* ── MỤC RỖNG THÌ KHÔNG XOÁ Ở ĐÂY ──
+         Đã thử: dọn luôn cái `<li>` rỗng ở cuối danh sách, để trong .md không
+         còn dòng `-` cụt. Sai, và sai nặng — `donDanhSach` chạy sau MỖI lần
+         thụt vào/thụt ra, tức là đúng lúc người ta vừa xuống dòng và mục mới
+         còn rỗng. Nó xoá ngay cái mục đang chuẩn bị gõ vào, và con trỏ rơi
+         theo. Đo thật: cả bài mất sạch, còn lại `<p><br></p>`.
+
+         Mục rỗng là trạng thái BÌNH THƯỜNG lúc đang soạn. Chỗ đúng để lọc nó
+         là lúc XUẤT ra Markdown (xem `sangMD`) — ở đó bài đã soạn xong, mục
+         nào còn rỗng thì đúng là rỗng thật.
+
+         Chỉ bỏ cái vỏ `<ul>`/`<ol>` không còn mục nào: vỏ ấy không phải chỗ
+         gõ được, và nó vẫn chiếm một nhịp lề trên màn hình. */
+      var dsRong = khung.querySelectorAll('ul, ol');
+      for (var z = 0; z < dsRong.length; z++) {
+        if (!dsRong[z].children.length) dsRong[z].remove();
+      }
+
+      donRac();
+      veMoc(moc);
       capNhat();
+    }
+
+    /* ── RÁC CỦA TRÌNH DUYỆT ──
+       `execCommand('outdent')` trong Chromium để lại những `<span>` mang đúng
+       một thuộc tính vô nghĩa như `style="text-wrap-mode: initial"`. Chúng
+       không đổi hình gì trên màn, nhưng `sangMD` phải bước qua chúng, và mỗi
+       lượt thụt vào–thụt ra lại đẻ thêm một lớp. Bóc ngay khi thấy: `<span>`
+       không mang lớp màu của trang thì rút xuống còn phần chữ của nó. */
+    function donRac() {
+      var sp = khung.querySelectorAll('span[style]');
+      for (var i = sp.length - 1; i >= 0; i--) {
+        var n = sp[i];
+        if (n.hasAttribute('data-moc')) continue;
+        if (n.className && /sz-mau|mau-/.test(n.className)) continue;
+        var cha = n.parentNode;
+        while (n.firstChild) cha.insertBefore(n.firstChild, n);
+        cha.removeChild(n);
+      }
+      khung.normalize();
     }
 
     /* ── KÉO THẢ ──
@@ -2578,7 +2963,88 @@
       nutMD.classList.toggle('sz-nut--bat', !oMD.hidden);
       if (!oMD.hidden) oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
     });
+    /* ══════════════════════════════════════════════════════════════════════
+       XEM THỬ — DỰNG BẰNG ĐÚNG BỘ DỰNG CỦA TRANG
+
+       Ô soạn đã gần giống bài thật, nhưng "gần" là chưa đủ ở bốn chỗ, và cả
+       bốn chỉ lộ ra sau khi đã đăng:
+
+         · Đoạn ĐẦU của bài tự thành sapo — cỡ chữ lớn hơn, màu nhạt hơn. Trong
+           ô soạn nó là một đoạn thường.
+         · Khối `:::note` trong ô soạn là một khung có nhãn; trên trang nó là
+           một ô nhấn có màu, có lề, có dấu.
+         · Dải ảnh `:::gallery` trong ô soạn xếp dọc; trên trang nó xếp ngang.
+         · Bề ngang CỘT CHỮ thật khác bề ngang ô soạn, nên chỗ chữ ngắt dòng
+           khác — và ảnh `{.nho}` / `{.wide}` chỉ đo được ở bề ngang thật.
+
+       Dựng bằng `window.ZIB.md.render` — tức đúng `tools/lib/markdown.mjs` mà
+       bộ dựng trang dùng, gửi thẳng sang trình duyệt chứ không viết lại. Đó là
+       điều kiện để ô này nói thật: hai bộ dựng thì sớm muộn lệch nhau, và một
+       ô xem thử lệch thì tệ hơn là không có ô nào.
+
+       Không có module ấy (mạng hỏng, hoặc ô soạn nhúng ở trang khác) thì nút
+       tự ẩn — chứ không bày ra một cái nút bấm không ra gì. */
+    var oXem = el('div', 'sz-xem');
+    oXem.hidden = true;
+    var nutXem = el('button', 'sz-nut sz-nut--xem', L('preview', 'Preview'));
+    nutXem.type = 'button';
+    nutXem.title = L('previewTip', 'See it as a published post');
+    nutXem.hidden = !(window.ZIB && window.ZIB.md);
+    window.addEventListener('zib-md-san', function () { nutXem.hidden = false; });
+    nutXem.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    nutXem.addEventListener('click', function () {
+      oXem.hidden = !oXem.hidden;
+      nutXem.classList.toggle('sz-nut--bat', !oXem.hidden);
+      if (oXem.hidden) return;
+      veXemThu(oXem);
+    });
+
+    function veXemThu(o) {
+      o.innerHTML = '';
+      var md = sangMD(khung);
+      if (!md.trim()) {
+        o.appendChild(el('p', 'sz-xem-trong', L('empty', '(nothing yet)')));
+        return;
+      }
+      var kq;
+      try {
+        kq = window.ZIB.md.render(md, { base: '' });
+      } catch (e) {
+        o.appendChild(el('p', 'sz-xem-trong',
+          L('previewFail', 'Could not build the preview') + ' — ' + e.message));
+        return;
+      }
+
+      /* ── THẺ CHIA SẺ ──
+         Thứ người viết KHÔNG thể thấy ở đâu khác, và là thứ vừa làm hỏng mấy
+         lượt chia sẻ: tiêu đề, tóm tắt, ảnh bìa — đúng ba mẩu mà Facebook,
+         Zalo, Messenger đọc. Trang chủ quản đưa vào qua `tuyChon.thongTin()`;
+         không có thì bỏ qua phần này. */
+      var tin = (typeof tuyChon.thongTin === 'function') ? tuyChon.thongTin() : null;
+      if (tin) {
+        var the = el('div', 'sz-xem-the');
+        if (tin.bia) {
+          var anhThe = document.createElement('img');
+          anhThe.src = tin.bia; anhThe.alt = '';
+          the.appendChild(anhThe);
+        }
+        var ruot = el('div', 'sz-xem-the-ruot');
+        ruot.appendChild(el('span', 'sz-xem-the-mien', tin.mien || location.host));
+        ruot.appendChild(el('b', 'sz-xem-the-de', tin.tieuDe || L('noTitle', '(no title)')));
+        if (tin.tomTat) ruot.appendChild(el('p', 'sz-xem-the-tom', tin.tomTat));
+        the.appendChild(ruot);
+        o.appendChild(el('p', 'sz-xem-nhan', L('previewCard', 'Share card')));
+        o.appendChild(the);
+      }
+
+      o.appendChild(el('p', 'sz-xem-nhan', L('previewPost', 'The post')));
+      var bai = el('div', 'prose sz-xem-bai');
+      bai.innerHTML = kq.html;
+      o.appendChild(bai);
+    }
+
     hang[1].appendChild(el('span', 'sz-day'));
+    hang[1].appendChild(nutXem);
     hang[1].appendChild(nutMD);
 
     /* ══════════ TRẠNG THÁI NÚT ══════════
@@ -2620,20 +3086,55 @@
        con trỏ đúng cạnh tấm ảnh — mà ảnh vừa cắt xong thì con trỏ chẳng ở đâu
        cả. Nay bấm thẳng vào tấm ảnh là ba khổ hiện ra ngay dưới nó, khổ đang
        dùng sáng lên. */
-    var KHO_ANH = [['', L('anhThuong', 'Normal')],
-                   ['{.wide}', L('anhRong', 'Wide')],
-                   ['{.full}', L('anhTran', 'Full')]];
+    /* ── BỐN NẤC KHỔ ẢNH ──
+       Thêm nấc NHỎ vào đầu dãy. Ba nấc cũ chỉ đi một chiều — bằng cột chữ,
+       rộng hơn, tràn trang — nên một tấm ảnh dọc chụp từ điện thoại thả vào
+       bài là chiếm trọn chiều cao màn hình mà không có cách nào thu lại.
+
+       Nấc chứ không phải kéo góc tự do: khổ ảnh phải nằm trong vài nấc có sẵn
+       thì cả bài mới cùng một nhịp, và một con số pixel chọn trên màn rộng là
+       một tấm ảnh tràn mép trên điện thoại. Medium · Substack · Ghost đều cho
+       nấc, không cho kéo. */
+    /* ── NĂM NẤC KHỔ ẢNH ──
+       Cùng nếp với ô soạn thư (Gmail: Small · Best fit · Original): người viết
+       chọn NẤC, không kéo góc. Kéo góc cho ra một con số pixel là thứ không
+       viết được vào Markdown — nó biến mất ở lượt lưu — và một con số chọn
+       trên màn 27 inch là một tấm ảnh tràn mép trên điện thoại.
+
+       `{.goc}` là nấc quan trọng nhất mà bản trước thiếu. Mặc định mọi ảnh bị
+       kéo rộng bằng cột chữ (`.prose figure img{width:100%}`), nên một ảnh
+       chụp màn hình rộng 320px bị phóng lên 720px và mờ nhoè. `{.goc}` giữ
+       đúng khổ thật, chỉ thu lại khi ảnh rộng hơn cột chữ.
+
+       `{.hep}` chứ KHÔNG `{.nho}`: `{.nho}` đã là lớp của ĐOẠN CHỮ NHỎ
+       (`.prose .nho{font-size:var(--fs-sm)}`), và bộ chọn ấy là hậu duệ nên nó
+       ăn cả vào `<figure class="nho">` — tấm ảnh kéo theo cỡ chữ nhỏ và màu
+       nhạt cho chú thích của nó. Hai thứ khác hẳn nhau thì phải hai tên.
+
+       Mỗi nấc kèm một dòng giải thích trong `title`: "Hẹp" hay "Rộng" không tự
+       nói ra nó rộng hơn cái gì. */
+    var KHO_ANH = [
+      ['{.goc}',  L('anhGoc', 'Original'),  L('anhGocMo', 'true size — never blown up')],
+      ['{.hep}',  L('anhHep', 'Narrow'),    L('anhHepMo', 'about two thirds of the text column')],
+      ['',        L('anhThuong', 'Normal'), L('anhThuongMo', 'the width of the text column')],
+      ['{.wide}', L('anhRong', 'Wide'),     L('anhRongMo', 'spills a little past the text')],
+      ['{.full}', L('anhTran', 'Full'),     L('anhTranMo', 'edge to edge of the screen')]
+    ];
     var thanhAnh = el('div', 'sz-anh-thanh');
     thanhAnh.hidden = true;
     var nutKho = KHO_ANH.map(function (x) {
       var b = el('button', 'sz-anh-nut', x[1]);
       b.type = 'button';
+      if (x[2]) b.title = x[1] + ' — ' + x[2];
       b.addEventListener('mousedown', function (e) { e.preventDefault(); });
       b.addEventListener('click', function () {
         if (!anhDangChon) return;
         if (x[0]) anhDangChon.setAttribute('data-lop', x[0]);
         else anhDangChon.removeAttribute('data-lop');
-        anhDangChon.classList.remove('sz-anh--wide', 'sz-anh--full');
+        anhDangChon.classList.remove('sz-anh--goc', 'sz-anh--hep',
+                                     'sz-anh--wide', 'sz-anh--full');
+        if (x[0] === '{.goc}') anhDangChon.classList.add('sz-anh--goc');
+        if (x[0] === '{.hep}') anhDangChon.classList.add('sz-anh--hep');
         if (x[0] === '{.wide}') anhDangChon.classList.add('sz-anh--wide');
         if (x[0] === '{.full}') anhDangChon.classList.add('sz-anh--full');
         capNhat();
@@ -2746,6 +3247,27 @@
          không thì gõ tiếp là vẫn nằm trong khối cũ, và cả bài thành một khối
          trích dẫn khổng lồ mà không ai hiểu vì sao. */
       if (e.key === 'Enter' && !e.shiftKey) {
+        /* ── ENTER TRÊN MỘT MỤC RỖNG: RA MỘT BẬC ──
+           Luật này giống nhau ở mọi trình soạn thảo, và người dùng trông đợi
+           nó mà không nghĩ tới: gõ xong danh sách thì Enter hai lần để thoát
+           ra. Enter thứ nhất mở một mục mới; mục ấy còn rỗng nên Enter thứ hai
+           phải ĐƯA RA — ra bậc ngoài nếu đang ở danh sách con, ra hẳn đoạn văn
+           nếu đã ở bậc ngoài cùng.
+
+           Không có luật này thì Enter mãi mãi đẻ thêm mục rỗng, và cách duy
+           nhất để thoát là bấm nút danh sách trên thanh — mà lúc ấy danh sách
+           đã có một dãy mục trắng ở đuôi.
+
+           Chặn TRƯỚC hành vi mặc định, không sửa sau: sửa sau thì màn hình
+           nháy một cái (mục mới hiện ra rồi biến mất). */
+        var liRong = liDangDung();
+        if (liRong && !liRong.textContent.trim() &&
+            !liRong.querySelector('img, ul, ol') &&
+            liRong === liRong.parentNode.lastElementChild) {
+          e.preventDefault();
+          raMotBac(liRong);
+          return;
+        }
         setTimeout(function () {
           var s = window.getSelection();
           if (!s || !s.rangeCount) return;
@@ -2760,7 +3282,60 @@
       }
     });
 
-    khung.addEventListener('input', capNhat);
+    /* ══════════════════════════════════════════════════════════════════════
+       TRONG KHUNG CHỈ CÓ KHỐI, KHÔNG CÓ CHỮ TRẦN
+
+       Ô soạn mở ra rỗng: `khung.innerHTML` là chuỗi rỗng. Gõ chữ đầu tiên vào
+       thì trình duyệt thả nó xuống dưới dạng một NÚT CHỮ TRẦN, con trực tiếp
+       của khung, không có `<p>` nào bọc.
+
+       Từ đó mọi thứ dựa trên khối đều hỏng, mà hỏng lặng lẽ:
+
+       · Enter không tách được đoạn — không có khối nào để tách. Đo thật: gõ
+         "Dòng một", Enter, "Dòng hai" ra `Dòng một<p>Dòng hai</p>`, tức dòng
+         đầu không phải một đoạn.
+       · `formatBlock` (H2, trích dẫn, ¶) không bắt được gì.
+       · `sangMD` duyệt theo khối nên nút chữ trần ấy đi vào Markdown không có
+         dòng trắng ngăn — hai đoạn dính làm một.
+
+       Nên: mở ra thì GIEO sẵn một `<p><br></p>`, và mỗi lần nội dung đổi thì
+       gom mọi nút trần (chữ, `<b>`, `<a>`, `<img>`…) đang làm con trực tiếp
+       của khung vào một `<p>`. Gom theo CỤM liền nhau, không mỗi nút một
+       `<p>`, để một câu có chữ đậm ở giữa không bị xé thành ba đoạn.
+
+       Đây là việc mọi trình soạn thảo đều làm ngay từ lúc khởi tạo; nó không
+       phải một mẹo chữa cháy. */
+    var TRAN_INLINE = { '#text': 1, SPAN: 1, B: 1, STRONG: 1, I: 1, EM: 1, A: 1,
+                        CODE: 1, U: 1, S: 1, MARK: 1, SUP: 1, SUB: 1, BR: 1, IMG: 1 };
+    function baoDamKhoi() {
+      if (!khung.firstChild) { khung.innerHTML = '<p><br></p>'; return; }
+      var co = false, n;
+      for (n = khung.firstChild; n; n = n.nextSibling) {
+        var ten = n.nodeType === 3 ? '#text' : n.nodeName;
+        if (TRAN_INLINE[ten] && !(n.nodeType === 3 && !n.data.trim())) { co = true; break; }
+      }
+      if (!co) return;
+
+      var moc = camMoc();
+      var cum = [];
+      n = khung.firstChild;
+      while (n) {
+        var ke = n.nextSibling;
+        var t2 = n.nodeType === 3 ? '#text' : n.nodeName;
+        if (TRAN_INLINE[t2]) cum.push(n);
+        else if (cum.length) { gomVaoDoan(cum); cum = []; }
+        n = ke;
+      }
+      if (cum.length) gomVaoDoan(cum);
+      veMoc(moc);
+    }
+    function gomVaoDoan(cum) {
+      var p = document.createElement('p');
+      cum[0].parentNode.insertBefore(p, cum[0]);
+      for (var i = 0; i < cum.length; i++) p.appendChild(cum[i]);
+    }
+
+    khung.addEventListener('input', function () { baoDamKhoi(); capNhat(); });
     khung.addEventListener('keyup', capNhat);
     khung.addEventListener('mouseup', capNhat);
 
@@ -2792,6 +3367,8 @@
     /* ══════════ RÁP LẠI ══════════ */
     khoiSoan.appendChild(thanh);
     khoiSoan.appendChild(oBao);
+    /* Ô xem thử nằm DƯỚI ô gõ: nó là kết quả, và kết quả thì đứng sau việc. */
+    khoiSoan.appendChild(oXem);
     khoiSoan.appendChild(oFile);
     khoiSoan.appendChild(thanhAnh);
     khoiSoan.appendChild(bangMedia);
@@ -2810,13 +3387,18 @@
 
     try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
     try { document.execCommand('styleWithCSS', false, false); } catch (e) {}
+    /* Gieo khối ngay lúc mở, trước khi ai kịp gõ chữ nào. */
+    baoDamKhoi();
 
     return {
       layMD   : function () { return sangMD(khung); },
       rong    : function () { return !khung.textContent.trim(); },
       nhapCu  : doNhap,
-      datHTML : function (h) { khung.innerHTML = h || ''; donAnh(); capNhat(); },
-      xoa     : function () { khung.innerHTML = ''; boNhap(); capNhat(); },
+      /* `baoDamKhoi` chạy sau mỗi lần nạp/xoá: bài cũ có thể mở ra với chữ
+         trần ở đầu (bản .md trước đây dựng thế), và ô vừa xoá thì rỗng hẳn —
+         cả hai đều cần gieo lại khối. */
+      datHTML : function (h) { khung.innerHTML = h || ''; donAnh(); baoDamKhoi(); capNhat(); },
+      xoa     : function () { khung.innerHTML = ''; boNhap(); baoDamKhoi(); capNhat(); },
       boNhap  : boNhap,
       tapTrung: function () { khung.focus(); }
     };

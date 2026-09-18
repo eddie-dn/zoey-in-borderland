@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.9 | 2026-09-18 | 09 | ô soạn: năm nấc khổ ảnh có cỡ gốc; tooltip cho khổ ảnh và dạng dải ảnh; sửa khối mã |
+| V2.9.8 | 2026-09-18 | 08 | ô soạn có xem thử dựng bằng chính bộ dựng trang; dải ảnh bốn dạng; sửa thứ tự thẻ og:image |
+| V2.9.7 | 2026-09-18 | 07 | ô soạn: sửa danh sách · thụt vào · ô việc dùng cùng nhau; thêm khổ ảnh nhỏ |
 | V2.9.6 | 2026-09-18 | 06 | bình luận ở cột bên: Reply và Edit về cùng hàng với nội dung |
 | V2.9.5 | 2026-09-18 | 05 | chân trang cao bằng thanh đầu trang; khoảng trên dưới nội dung trang danh sách đều nhau |
 | V2.9.4 | 2026-09-18 | 04 | khu bình luận hai tầng, gửi xong thấy và sửa được; duyệt về hết trong admin; trang danh sách thấy đủ chân trang |
@@ -246,6 +249,54 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.9 — 18-Sep-2026
+
+- **Khổ ảnh có năm nấc, thêm "cỡ gốc".** Cùng nếp với ô soạn thư: chọn nấc chứ
+  không kéo góc. Nấc *cỡ gốc* là thứ trước đây không có — mặc định mọi ảnh bị
+  kéo rộng bằng cột chữ, nên một tấm chụp màn hình rộng 320px bị phóng lên
+  720px và mờ nhoè mà không có cách nào bảo "để yên". Mỗi nấc nay kèm một dòng
+  giải thích khi rê vào, và mỗi dạng dải ảnh cũng vậy.
+- **Khối mã chèn được.** Bấm nút khối mã rồi chọn ngôn ngữ chỉ ra một khoảng
+  trắng — trình duyệt đổi `<pre>` thành một thẻ rỗng nằm trong đoạn văn, và
+  Markdown xuất ra mất sạch phần mã. Nay dựng thẳng tay, không nhờ trình duyệt.
+  Nút đường kẻ cũng thôi để lại một thuộc tính rác.
+- **Rà nốt thanh nút.** Đã thử từng cái như người dùng: tiêu đề, trích dẫn,
+  đậm nghiêng, gạch, mã giữa dòng, tô sáng, mũ trên dưới, căn dòng, xoá định
+  dạng, khối `:::`, bảng, và dán từ Word — chỗ dán rửa sạch `MsoNormal`, thẻ
+  `<style>` và mọi kiểu dáng của Word mà vẫn giữ chữ đậm.
+
+## V2.9.8 — 18-Sep-2026
+
+- **Thẻ chia sẻ hết trơ.** `og:image:width/height/type/secure_url/alt` là thẻ
+  CON của `og:image` và phải nằm liền ngay sau nó, mà `og:locale` với
+  `twitter:card` lại chen vào giữa. Bộ quét dễ tính (Facebook, kể cả công cụ
+  debug của họ) tự nối lại nên mở ra thấy đủ ảnh đủ chữ; bộ quét chặt (Zalo,
+  LinkedIn, iMessage) thì bỏ cả thẻ, ra đúng một dòng link trơ. Đó là lý do
+  "debugger đủ info mà share vẫn trơ".
+- **Ô soạn có nút Xem thử.** Dựng bằng CHÍNH bộ dựng của trang chứ không phải
+  một bản viết lại — nên nó không thể nói lệch với bài thật. Thấy được ba thứ
+  ô soạn không cho thấy: đoạn đầu thành sapo, khối `:::` thành ô nhấn có màu,
+  và bề ngang cột chữ thật. Kèm thẻ chia sẻ đúng khuôn Facebook/Zalo vẫn vẽ.
+- **Dải ảnh có bốn dạng.** Trước chỉ một, và mọi tấm bị cắt vuông — sai cho
+  bìa sách và ảnh chụp màn hình. Nay thêm *giữ tỉ lệ* (không cắt), *hai cột*
+  (ảnh trước–sau) và *ba cột*.
+
+## V2.9.7 — 18-Sep-2026
+
+- **Ô việc thành một loại danh sách thật.** Nút cũ chỉ thả một ô rỗng rồi bỏ
+  rơi con trỏ ra ngoài, nên gõ tiếp là chữ rơi ra khỏi ô vừa tạo. Nay nó đổi
+  chính dòng đang đứng — đoạn văn, mục chấm hay mục số đều thành ô việc và giữ
+  nguyên chữ lẫn bậc thụt; bấm lần nữa thì trả về đoạn văn.
+- **Danh sách và thụt vào thôi ăn nhau.** Lệnh danh sách của trình duyệt kéo
+  con trỏ về đầu dòng (đo được: từ ký tự thứ 8 về 0), còn lượt dọn cấu trúc thì
+  làm mất luôn vùng chọn — hai cái cộng lại là chữ gõ tiếp rơi vào mục cũ và
+  danh sách còn lại mục rỗng. Nay `Tab`/`Shift+Tab` thụt vào ra như mọi trình
+  soạn thảo, và `Enter` trên một mục rỗng đưa ra một bậc rồi ra hẳn khỏi danh
+  sách.
+- **Ảnh có khổ nhỏ.** Ba khổ cũ chỉ đi một chiều — bằng cột chữ, rộng hơn,
+  tràn trang — nên ảnh dọc chụp từ điện thoại thả vào bài là chiếm trọn màn
+  hình mà không thu lại được. Thêm nấc **nhỏ** (62% cột chữ, căn giữa).
 
 ## V2.9.6 — 18-Sep-2026
 

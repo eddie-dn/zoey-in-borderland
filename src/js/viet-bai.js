@@ -623,7 +623,24 @@
         /* Khung soạn thảo lo kéo thả và thu nhỏ; chỗ gửi lên nằm ở đây, vì
            chỉ ở đây mới biết bài đăng năm nào và đường dẫn là gì. */
         taiAnh: taiAnh,
-        khiDoi: hoanSEO
+        khiDoi: hoanSEO,
+        /* ── BA MẨU CHO THẺ CHIA SẺ TRONG Ô XEM THỬ ──
+           Ô soạn chỉ biết THÂN bài; tiêu đề, tóm tắt và ảnh bìa nằm ở mấy ô
+           bên trên, tức ở đây. Đưa vào một hàm chứ không một giá trị: người
+           viết sửa tiêu đề rồi mở xem thử lại thì phải thấy tiêu đề mới, mà
+           một giá trị chụp lúc gắn thì đứng yên mãi. */
+        thongTin: function () {
+          var f = hop.querySelector('form') || hop;
+          var oDe  = f.querySelector('[name="title"]');
+          var oTom = f.querySelector('[name="summary"]');
+          var oBia = f.querySelector('[data-bia-xem]');
+          return {
+            tieuDe: oDe ? oDe.value.trim() : '',
+            tomTat: oTom ? oTom.value.trim() : '',
+            bia   : (oBia && !oBia.hidden && oBia.src) ? oBia.src : '',
+            mien  : location.host
+          };
+        }
       });
       /* Bản nháp lần trước: đóng nhầm tab, mất mạng, bấm nhầm nút — bài gõ dở
          phải còn đó. Chỉ hỏi khi ô đang trống, để "Viết bài nữa" không lôi

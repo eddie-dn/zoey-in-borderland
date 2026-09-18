@@ -14,10 +14,30 @@
 <meta property="og:title" content="{{ogTitle}}">
 <meta property="og:description" content="{{description}}">
 <meta property="og:url" content="{{canonical}}">
+<!-- ══════════════════════════════════════════════════════════════════════
+     og:image VÀ CÁC THẺ CON CỦA NÓ PHẢI LIỀN NHAU
+
+     Trong Open Graph, `og:image:width`, `og:image:height`, `og:image:type`,
+     `og:image:secure_url`, `og:image:alt` là THUỘC TÍNH CÓ CẤU TRÚC: chúng gắn
+     vào cái `og:image` ĐỨNG NGAY TRƯỚC. Chen bất cứ thẻ nào vào giữa là cắt
+     đứt liên kết ấy.
+
+     Bản trước đặt `og:locale` và `twitter:card` vào đúng khe đó. Hậu quả chia
+     hai nhóm, và đó là lý do chuyện này sống lâu mà không ai bắt được:
+
+       · Bộ quét DỄ TÍNH (Facebook, và cả công cụ Sharing Debugger của họ) tự
+         nối lại — nên mở debugger ra thấy đủ ảnh, đủ tiêu đề, không có gì sai.
+       · Bộ quét CHẶT (Zalo, LinkedIn, Slack, iMessage, nhiều app Việt) thì bỏ
+         mấy thẻ con ấy, hoặc coi `og:image:secure_url` lạc loài là MỘT ẢNH MỚI
+         không có đường dẫn gốc — và một mục ảnh hỏng thì cả thẻ chia sẻ bị bỏ,
+         ra đúng một dòng link trơ.
+
+     Nên `{{ogThem}}` — nơi dựng mấy thẻ con — phải nằm SÁT ngay dưới
+     `og:image`. Hai thẻ kia đẩy xuống sau.
+     ══════════════════════════════════════════════════════════════════════ -->
 <meta property="og:image" content="{{ogImage}}">
-<meta property="og:locale" content="{{locale}}">
-<meta name="twitter:card" content="summary_large_image">
 {{ogThem}}
+<meta property="og:locale" content="{{locale}}">
 <link rel="alternate" type="application/rss+xml" title="{{siteTitle}}" href="{{base}}/feed.xml">
 <link rel="icon" href="{{base}}/favicon.svg" type="image/svg+xml">
 

@@ -154,8 +154,14 @@
    thuộc tính có thật trên phần tử, mà ở đây thông tin nằm ở TÊN LỚP của tấm
    ảnh bên trong — hai lớp, hai luật, rõ hơn là một luật cộng một thuộc tính
    phải nhớ gắn. */
+.sz-khung img.sz-anh--goc{width:auto;max-width:100%;margin-inline:auto;display:block}
+.sz-khung img.sz-anh--hep{width:62%;margin-inline:auto;display:block}
+.sz-khung p:has(> img.sz-anh--goc)::after{content:"cỡ gốc — không phóng to"}
+.sz-khung p:has(> img.sz-anh--hep)::after{content:"hẹp — hai phần ba cột chữ"}
 .sz-khung p:has(> img.sz-anh--wide)::after{content:"wide — rộng hơn cột chữ"}
 .sz-khung p:has(> img.sz-anh--full)::after{content:"full — tràn hết bề ngang"}
+.sz-khung p:has(> img.sz-anh--goc)::after,
+.sz-khung p:has(> img.sz-anh--hep)::after,
 .sz-khung p:has(> img.sz-anh--wide)::after,
 .sz-khung p:has(> img.sz-anh--full)::after{
   display:block;margin-top:4px;
@@ -587,3 +593,64 @@
   .sz-cat-thanh{gap:5px}
   .sz-cat-nut{flex:1 1 auto;text-align:center}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Ô XEM THỬ
+
+   Hai khối, và thứ tự ấy là cố ý: THẺ CHIA SẺ trước, BÀI sau.
+
+   Thẻ chia sẻ là thứ người viết không thấy được ở đâu khác và là thứ quyết
+   định người ta có bấm vào bài hay không — nó phải nằm chỗ mắt rơi xuống
+   trước. Bài thì cuộn xuống là thấy, và người viết vừa gõ nó xong rồi.
+
+   Bề ngang bài đóng cứng 720px — đúng bề ngang cột chữ của trang thật (xem
+   §18 trong docs/DESIGN-SYSTEM.md). Để nó co theo ô soạn thì chỗ chữ ngắt
+   dòng khác bài thật, mà một trong những lý do có ô xem thử là để nhìn đúng
+   chỗ ngắt dòng ấy. */
+/* ── NÚT "XEM THỬ" LÀ NÚT CHỮ GIỮA MỘT HÀNG NÚT HÌNH ──
+   Mọi nút khác trên thanh rộng đúng 28px và chở một hình. Nút này chở CHỮ, nên
+   để nguyên 28px là chữ tràn ra ngoài và đè lên nút kế bên — đo được trên màn:
+   "Preview" dính liền vào "</>".
+
+   Cho nó tự rộng theo chữ, thêm lề trong hai bên và một quãng cách với nút
+   sau. Vẫn cùng chiều cao 28px nên hàng nút không gãy nhịp. */
+.sz-nut--xem{
+  width:auto;padding:0 9px;margin-right:var(--s2);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+}
+
+.sz-xem{
+  margin-top:var(--s5);padding:var(--s5);
+  border-radius:var(--r-sm);
+  box-shadow:inset 0 0 0 1px var(--line);
+  background:var(--surface);
+}
+.sz-xem-nhan{
+  margin:0 0 var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);
+}
+.sz-xem-nhan + .sz-xem-bai,.sz-xem-the + .sz-xem-nhan{margin-top:var(--s6)}
+.sz-xem-trong{margin:0;color:var(--text-faint);font-size:var(--fs-2xs)}
+
+/* Thẻ chia sẻ dựng theo đúng khuôn Facebook/Zalo vẫn vẽ: ảnh 1.91:1 nằm trên,
+   dưới là tên miền viết thường, tiêu đề đậm, rồi tóm tắt một hai dòng. */
+.sz-xem-the{
+  max-width:520px;border-radius:var(--r-sm);overflow:hidden;
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.sz-xem-the img{display:block;width:100%;aspect-ratio:1.91/1;object-fit:cover}
+.sz-xem-the-ruot{padding:10px var(--s4) 12px;background:var(--surface-solid)}
+.sz-xem-the-mien{
+  display:block;font-size:var(--fs-3xs);color:var(--text-faint);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.sz-xem-the-de{display:block;margin-top:3px;font-size:var(--fs-sm);line-height:1.3}
+.sz-xem-the-tom{
+  margin:4px 0 0;font-size:var(--fs-2xs);color:var(--text-muted);
+  line-height:1.45;
+  /* Hai dòng rồi cắt — đúng như mấy nền tảng ấy cắt. */
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.sz-xem-bai{max-width:720px}

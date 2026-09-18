@@ -9,10 +9,32 @@
    Đổi lại: đây là một tập con của Markdown, không phải bản đầy đủ.
    Danh sách cú pháp nhận được nằm ở docs/HUONG-DAN-DANG-BAI.md.
    ============================================================ */
-import path from 'node:path';
-import { existsSync } from 'node:fs';
-import { escapeHtml, attr, slugify } from './text.mjs';
-import { kichThuocAnh, tiLe } from './imgsize.mjs';
+/* ══════════════════════════════════════════════════════════════════════════
+   BỘ DỰNG NÀY PHẢI CHẠY ĐƯỢC CẢ Ở TRÌNH DUYỆT
+
+   Nó từng `import` thẳng `node:path` và `node:fs`, nên chỉ chạy được ở Node.
+   Hậu quả không nằm ở bộ dựng — nó nằm ở Ô SOẠN BÀI: muốn cho người viết XEM
+   THỬ bài trước khi đăng thì trang quản trị phải dựng được Markdown ra HTML,
+   mà nó không nạp nổi file này. Đường duy nhất còn lại là viết một bộ dựng
+   THỨ HAI cho trình duyệt — và hai bộ dựng thì sớm muộn lệch nhau, tức là một
+   ô xem thử NÓI DỐI. Thà không có còn hơn.
+
+   Thật ra file này gần như đã thuần rồi: hai thứ của Node chỉ dùng ở đúng bốn
+   chỗ, và cả bốn đều nằm sau `if (ctx.publicDir)` — tức là chúng chỉ chạy khi
+   người gọi đưa vào một thư mục trên đĩa.
+
+   Nay đảo lại cho đúng chiều phụ thuộc: file này KHÔNG biết đĩa là gì, nó chỉ
+   biết hỏi. Người gọi đưa vào hai cái hàm:
+
+       ctx.coFile(duong)  → true/false   file ấy có trên đĩa không
+       ctx.doAnh(duong)   → {w,h}|null   khổ ảnh, nếu đo được
+
+   Ở Node, `build.mjs` đưa vào hai hàm đọc đĩa thật. Ở trình duyệt, không đưa
+   gì cả — hai phép kiểm kia lặng lẽ bỏ qua, ảnh ra không có `width/height`.
+   Bài xem thử vì thế có thể xô nhẹ lúc ảnh tải xong; bài THẬT thì không, vì
+   lúc dựng thật vẫn đo đủ.
+   ══════════════════════════════════════════════════════════════════════════ */
+import { escapeHtml, attr, slugify, tiLe } from './text.mjs';
 
 const NHAN_CALLOUT = { note: 'Ghi chú', tip: 'Mẹo', warn: 'Lưu ý', stop: 'Đừng làm' };
 
@@ -200,13 +222,11 @@ function theAnh({ alt, src, cap, br, lopThem = [], trongDong = false }, ctx) {
   const cls = [...lop, ...lopThem];
 
   let dim = '', style = '';
-  if (src.startsWith('/') && ctx.publicDir) {
-    const that = path.join(ctx.publicDir, src.replace(/^\//, ''));
-    if (!existsSync(that)) {
-      if (ctx.canhBao) ctx.canhBao('ảnh không tồn tại: ' + src +
-        '  (tìm ở ' + path.relative(process.cwd(), that) + ')');
+  if (src.startsWith('/') && ctx.coFile) {
+    if (!ctx.coFile(src)) {
+      if (ctx.canhBao) ctx.canhBao('ảnh không tồn tại: ' + src);
     } else {
-      const kt = kichThuocAnh(that);
+      const kt = ctx.doAnh ? ctx.doAnh(src) : null;
       if (kt && kt.w && kt.h) {
         dim = ' width="' + kt.w + '" height="' + kt.h + '"';
         style = ' style="--ar:' + tiLe(kt.w, kt.h) + '"';
@@ -248,8 +268,7 @@ function theYouTube(id, cap, br, ctx) {
 
 function theVideo(src, cap, br, ctx) {
   const { lop, them } = tachLop(br || '');
-  if (src.startsWith('/') && ctx.publicDir &&
-      !existsSync(path.join(ctx.publicDir, src.replace(/^\//, '')))) {
+  if (src.startsWith('/') && ctx.coFile && !ctx.coFile(src)) {
     if (ctx.canhBao) ctx.canhBao('video không tồn tại: ' + src);
   }
   /* preload="metadata": chỉ tải phần đầu file để biết thời lượng và vẽ thanh
@@ -549,7 +568,11 @@ function danhSach(dong, ctx) {
 export function render(src, opts) {
   opts = opts || {};
   const ctx = {
+    /* `publicDir` giữ lại cho mấy chỗ gọi cũ còn truyền vào; bản thân file này
+       không đụng tới nó nữa — xem chú thích đầu file. */
     publicDir: opts.publicDir || null,
+    coFile: typeof opts.coFile === 'function' ? opts.coFile : null,
+    doAnh: typeof opts.doAnh === 'function' ? opts.doAnh : null,
     base: opts.base || '',
     host: opts.host || GIU,
     canhBao: opts.canhBao || null,

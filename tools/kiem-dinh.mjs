@@ -1037,21 +1037,79 @@ const KIEM = [
     }
   },
   {
-    /* ── LỆNH DANH SÁCH PHẢI ĐƯỢC DỌN NGAY SAU ──
+    /* ── og:image VÀ THẺ CON CỦA NÓ PHẢI LIỀN MỘT MẠCH ──
+       `og:image:width`, `:height`, `:type`, `:secure_url`, `:alt` là THUỘC
+       TÍNH CÓ CẤU TRÚC của Open Graph: chúng gắn vào cái `og:image` đứng ngay
+       trước. Chen bất cứ thẻ nào vào giữa là cắt đứt liên kết.
+
+       Chuyện đã xảy ra thật và sống rất lâu, vì nó chia bộ quét làm hai nhóm:
+
+         · Dễ tính (Facebook, kể cả Sharing Debugger của họ) tự nối lại — mở
+           debugger ra thấy đủ ảnh đủ chữ, không có gì sai.
+         · Chặt (Zalo, LinkedIn, Slack, iMessage) bỏ mấy thẻ con, hoặc coi
+           `og:image:secure_url` lạc loài là một ảnh MỚI không có đường dẫn —
+           một mục ảnh hỏng thì cả thẻ chia sẻ bị bỏ, ra một dòng link trơ.
+
+       Nên người dùng thấy "debugger đủ info mà share ra vẫn trơ", và đi tìm
+       mãi ở phía ảnh. Phép kiểm này soi HTML ĐÃ DỰNG, không soi mẫu — mẫu đúng
+       mà chỗ chèn sai thì vẫn hỏng. */
+    ten: 'Thẻ con của og:image nằm liền ngay sau og:image',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const dist = path.join(goc, 'dist');
+      if (!fs.existsSync(dist)) return [];
+      const ra = [];
+      const CON = ['og:image:width', 'og:image:height', 'og:image:type',
+                   'og:image:secure_url', 'og:image:alt'];
+      /* Vài trang tiêu biểu là đủ: cả site đi qua cùng một mẫu shell. */
+      const thu = ['index.html', 'about/index.html',
+                   'posts/tan-man/chiec-guong/index.html'];
+      for (const t of thu) {
+        const f = path.join(dist, t);
+        if (!fs.existsSync(f)) continue;
+        const html = fs.readFileSync(f, 'utf8');
+        const the = [...html.matchAll(/<meta\s+(?:property|name)="([^"]+)"/g)]
+                      .map((m) => m[1]);
+        const i = the.indexOf('og:image');
+        if (i < 0) { ra.push(`dist/${t}: không có og:image`); continue; }
+        /* Mọi thẻ con phải nằm trong khối liền ngay sau `og:image`. */
+        let j = i + 1;
+        while (j < the.length && the[j].startsWith('og:image:')) j++;
+        const trongKhoi = new Set(the.slice(i + 1, j));
+        for (const c of CON) {
+          if (the.includes(c) && !trongKhoi.has(c)) {
+            ra.push(`dist/${t}: \`${c}\` bị tách khỏi \`og:image\` — ` +
+                    `có "${the[i + 1]}" chen vào giữa. Zalo và mấy bộ quét chặt ` +
+                    'sẽ bỏ cả thẻ chia sẻ, chỉ còn một dòng link trơ.');
+          }
+        }
+      }
+      return ra;
+    }
+  },
+  {
+    /* ── LỆNH DANH SÁCH PHẢI ĐI QUA ĐÚNG MỘT CỬA ──
        Bốn lệnh `insertUnorderedList` · `insertOrderedList` · `indent` ·
-       `outdent` của trình duyệt đều có thể trả về HTML SAI, và mỗi kiểu sai
-       mất một thứ khác nhau khi đổi ra Markdown:
+       `outdent` của trình duyệt đều để lại hai loại hư hỏng:
 
-         <p><ul>…</ul></p>        cả danh sách bị nuốt — nút trông như hỏng
-         <li>một<li>hai</li></li> hai mục dính thành một dòng
-         <ul><li>…</li><ul>…</ul></ul>   MẤT HẲN mục con khỏi bài
+       1 · HTML SAI, và mỗi kiểu sai mất một thứ khác nhau khi ra Markdown:
 
-       Cả ba đã gặp thật, và cả ba đều im lặng: chữ chỉ biến mất lúc lưu ra
-       file .md. `donDanhSach()` sửa cả ba, nhưng nó chỉ chạy nếu có người gọi.
+            <p><ul>…</ul></p>              cả danh sách bị nuốt
+            <li>một<li>hai</li></li>       hai mục dính thành một dòng
+            <ul><li>…</li><ul>…</ul></ul>  MẤT HẲN mục con khỏi bài
 
-       Phép kiểm này canh đúng chuyện đó: bốn lệnh ấy không được đứng một mình.
-       Thêm một nút mới gọi `indent` mà quên dọn thì đỏ ngay. */
-    ten: 'Lệnh danh sách trong ô soạn thảo luôn được dọn ngay sau',
+       2 · CON TRỎ BỊ KÉO ĐI. Đo thật ở Chromium: con trỏ đứng cuối chữ "Việc
+           một" (offset 8), gọi `insertUnorderedList` xong nó nằm ở offset 0.
+           Gõ tiếp là chữ mới chui vào TRƯỚC chữ cũ.
+
+       Cả hai đều im lặng — chữ chỉ lộ ra sai lúc mở file .md, hoặc lúc người
+       dùng thấy mình gõ ngược. `lamDanhSach()` lo cả hai: cắm mốc giữ con trỏ
+       TRƯỚC khi gọi lệnh, gọi lệnh, dọn cấu trúc, rồi trả con trỏ về mốc.
+
+       Nên luật là: bốn lệnh ấy chỉ được gọi từ TRONG `lamDanhSach`, không chỗ
+       nào khác. Gọi thẳng `lenh('indent')` ở một nút mới là đỏ ngay — kể cả
+       khi có nhớ gọi `donDanhSach()` sau, vì như thế vẫn mất con trỏ. */
+    ten: 'Lệnh danh sách trong ô soạn thảo chỉ gọi từ lamDanhSach',
     muc: 'loi',
     chay: ({ goc }) => {
       const f = path.join(goc, 'src', 'js', 'soan.js');
@@ -1059,26 +1117,49 @@ const KIEM = [
       const ma = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
       const LENH = ['insertUnorderedList', 'insertOrderedList', 'indent', 'outdent'];
       const ra = [];
+
+      /* Thân của `lamDanhSach` — chỗ DUY NHẤT được phép gọi bốn lệnh ấy. */
+      const iCua = ma.indexOf('function lamDanhSach');
+      if (iCua < 0) {
+        ra.push('src/js/soan.js: không còn `lamDanhSach()` — mọi lệnh danh sách ' +
+                'đang gọi thẳng, con trỏ sẽ nhảy về đầu dòng sau mỗi cú bấm');
+        return ra;
+      }
+      const cua = ma.slice(iCua, iCua + 260);
+      if (!cua.includes('camMoc') || !cua.includes('donDanhSach')) {
+        ra.push('src/js/soan.js: `lamDanhSach()` phải cắm mốc (camMoc) TRƯỚC khi ' +
+                'gọi lệnh và dọn (donDanhSach) sau — thiếu một trong hai là mất ' +
+                'con trỏ hoặc mất mục danh sách');
+      }
+
       /* Tìm bằng chuỗi thẳng, KHÔNG bằng regex: mẫu cần tìm có sẵn dấu ngoặc
          và dấu nháy, mà mỗi lớp thoát là một dịp thoát hụt — bản đầu viết
          bằng regex và nó không khớp được dòng nào, tức là một phép kiểm luôn
          xanh vì lý do sai. */
+      let soCho = 0;
       for (const l of LENH) {
-        const mau = `lenh('${l}')`;
-        let i2 = ma.indexOf(mau), thay = 0;
-        while (i2 >= 0) {
-          thay++;
-          const sau = ma.slice(i2 + mau.length, i2 + mau.length + 80);
-          if (!sau.includes('donDanhSach')) {
-            ra.push(`src/js/soan.js: \`${mau}\` không gọi donDanhSach() ngay sau — ` +
-                    'trình duyệt có thể trả về danh sách lồng sai và chữ mất lúc lưu');
+        for (const mau of [`lenh('${l}')`, `execCommand('${l}')`,
+                           `lamDanhSach('${l}')`]) {
+          let i2 = ma.indexOf(mau);
+          while (i2 >= 0) {
+            soCho++;
+            /* Qua cửa: hợp lệ, không cần xét gì thêm. */
+            if (mau.startsWith('lamDanhSach')) { i2 = ma.indexOf(mau, i2 + 1); continue; }
+            /* Gọi thẳng thì phải TỰ cắm mốc ngay trước — `chenViec` đi đường
+               này, vì nó còn phải đánh dấu `data-viec` giữa lệnh và lúc trả
+               con trỏ về. */
+            const truoc = ma.slice(Math.max(0, i2 - 200), i2);
+            if (!truoc.includes('camMoc')) {
+              ra.push(`src/js/soan.js: \`${mau}\` gọi ngoài lamDanhSach và ` +
+                      'không tự cắm mốc — con trỏ sẽ nhảy về đầu dòng sau cú bấm');
+            }
+            i2 = ma.indexOf(mau, i2 + 1);
           }
-          i2 = ma.indexOf(mau, i2 + 1);
         }
-        if (!thay) {
-          ra.push(`src/js/soan.js: không còn chỗ nào gọi \`${mau}\` — ` +
-                  'phép kiểm này đã lạc hậu, sửa lại danh sách LENH');
-        }
+      }
+      if (!soCho) {
+        ra.push('src/js/soan.js: không còn chỗ nào gọi bốn lệnh danh sách — ' +
+                'phép kiểm này đã lạc hậu, sửa lại danh sách LENH');
       }
       return ra;
     }
@@ -1341,8 +1422,28 @@ const KIEM = [
     chay: ({ dist }) => {
       const thuMuc = path.join(dist, 'assets');
       if (!fs.existsSync(thuMuc)) return [];
-      return fs.readdirSync(thuMuc).filter((f) => f.endsWith('.js')).flatMap((f) => {
-        try { new Function(fs.readFileSync(path.join(thuMuc, f), 'utf8')); return []; }
+      /* ── FILE `.mjs` LÀ MODULE, KHÔNG DỊCH ĐƯỢC NHƯ SCRIPT THƯỜNG ──
+         `new Function()` dựng một script cổ điển, mà `import`/`export` là cú
+         pháp chỉ hợp lệ trong module — nên một module hoàn toàn đúng vẫn ném
+         "Cannot use import statement outside a module". Đó là phép kiểm nói
+         sai, không phải file sai.
+
+         Không `import()` thật được: đường dẫn trong mấy file ấy là tuyệt đối
+         theo GỐC TRANG (`/assets/…`), mà dưới `file://` thì gốc là gốc ổ đĩa.
+
+         Nên cắt mấy dòng `import`/`export` đi rồi mới dịch phần thân. Đúng thứ
+         phép kiểm này vốn lo: bộ cắt chú thích có làm hỏng cú pháp không. */
+      const boModule = (s) => s
+        .replace(/^\s*import[^;]*;/gm, '')
+        .replace(/^\s*export\s+\{[^}]*\}[^;]*;/gm, '')
+        .replace(/^(\s*)export\s+/gm, '$1');
+      return fs.readdirSync(thuMuc)
+        .filter((f) => f.endsWith('.js') || f.endsWith('.mjs')).flatMap((f) => {
+        try {
+          const ma = fs.readFileSync(path.join(thuMuc, f), 'utf8');
+          new Function(f.endsWith('.mjs') ? boModule(ma) : ma);
+          return [];
+        }
         catch (e) { return [`dist/assets/${f} không dịch được: ${e.message}`]; }
       });
     }

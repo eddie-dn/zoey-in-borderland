@@ -28,6 +28,39 @@
    Bản trước để ảnh bìa mặc định là `.wide`, nên mọi bài đều có một tấm ảnh
    thò ra khỏi mép chữ ngay đầu bài — mắt đọc ra là lệch, không phải là chủ ý. */
 .prose > *{grid-column:text}
+/* ── KHỔ GỐC: KHÔNG BAO GIỜ PHÓNG TO ──
+   Mặc định `.prose figure img{width:100%}` kéo MỌI tấm ảnh rộng bằng cột chữ.
+   Đúng cho ảnh chụp, sai hẳn cho ảnh chụp màn hình, sơ đồ, logo: một tấm rộng
+   320px bị phóng lên 720px và mờ nhoè — mà người viết không có cách nào bảo
+   "để yên nó đấy".
+
+   `width:auto` + `max-width:100%`: giữ đúng khổ thật, và chỉ thu lại khi ảnh
+   rộng hơn cột chữ. `aspect-ratio:auto` để thôi cắt theo khung. */
+.prose figure.goc img,.prose figure.goc video{
+  width:auto;max-width:100%;height:auto;
+  aspect-ratio:auto;object-fit:contain;margin-inline:auto;display:block;
+}
+.prose figure.goc figcaption{text-align:center}
+
+/* ── KHỔ HẸP: HẸP HƠN CỘT CHỮ ──
+   Ba khổ cũ đều đi MỘT CHIỀU: bằng cột chữ, rộng hơn cột chữ, tràn cả trang.
+   Không có đường nào cho một tấm ảnh NHỎ LẠI — mà đó là khổ cần nhất cho ảnh
+   chụp màn hình dọc, ảnh bìa sách, hay một cái ảnh minh hoạ nhỏ giữa bài.
+   Người dùng nói đúng: "image khi drop vào khung rồi ko thể resize co lại cho
+   vừa".
+
+   62% cột chữ, căn giữa. Không cho gõ số tuỳ ý: một con số pixel chọn trên
+   màn 27 inch là một tấm ảnh tràn mép trên điện thoại, và khổ ảnh trong một
+   bài viết phải là một trong vài nấc có sẵn thì cả bài mới cùng một nhịp —
+   đó là lý do Medium, Substack, Ghost đều cho nấc chứ không cho kéo góc. */
+.prose figure.hep img,.prose figure.hep video{
+  width:62%;margin-inline:auto;display:block;
+}
+.prose figure.hep figcaption{text-align:center}
+@media (max-width:640px){
+  /* Ở khổ hẹp, 62% của một cột đã hẹp là một tấm ảnh bé tí không nhìn ra gì. */
+  .prose figure.hep img,.prose figure.hep video{width:86%}
+}
 .prose > .wide{grid-column:wide}
 .prose > .full{grid-column:full}
 
@@ -300,13 +333,38 @@
 /* Ảnh trong suốt (PNG sản phẩm, sơ đồ) — đừng cắt xén, đừng bo nền */
 .prose figure.plain img{object-fit:contain;background:none;aspect-ratio:auto}
 
-/* Bộ ảnh 2–3 cột. Tự xuống 1 cột ở màn hẹp, không cần media query nhờ auto-fit. */
+/* ══════════════════════════════════════════════════════════════════════════
+   DẢI ẢNH — BỐN DẠNG
+
+   Dạng mặc định (lưới tự xếp, cắt vuông) đúng cho một bộ ảnh chụp lẫn lộn
+   ngang dọc: cắt vuông hết thì hàng nào cũng thẳng, mắt đọc ra một BỘ chứ
+   không ra mấy tấm rời. Nhưng nó sai ở ba chỗ rất thường gặp, và mỗi chỗ có
+   một dạng riêng:
+
+     (mặc định)  lưới tự xếp · cắt vuông    bộ ảnh chụp
+     .giu        giữ nguyên tỉ lệ từng tấm  bìa sách, ảnh chụp màn hình
+     .hai        đúng hai cột               ảnh trước – ảnh sau
+     .ba         đúng ba cột                bộ ba, không để lẻ hàng
+
+   `.hai` và `.ba` vẫn xuống một cột ở khổ hẹp: ép hai cột trên màn 375px là
+   hai tấm ảnh rộng 160px, nhỏ hơn cả ngón tay. */
 .prose .gallery{
   display:grid;gap:var(--s3);
   grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));
 }
 .prose .gallery figure{margin:0}
 .prose .gallery img{aspect-ratio:var(--ar,1/1)}
+
+/* Giữ tỉ lệ: bỏ khung vuông, để mỗi tấm cao theo chính nó. `align-items:start`
+   để tấm thấp không bị kéo giãn cho bằng tấm cao bên cạnh. */
+.prose .gallery.giu{align-items:start}
+.prose .gallery.giu img{aspect-ratio:auto;height:auto}
+
+.prose .gallery.hai{grid-template-columns:repeat(2,1fr)}
+.prose .gallery.ba{grid-template-columns:repeat(3,1fr)}
+@media (max-width:640px){
+  .prose .gallery.hai,.prose .gallery.ba{grid-template-columns:1fr}
+}
 
 /* ── VIDEO ──
    Hai dạng. Dạng 1: file .mp4 tự chứa. Dạng 2: YouTube — KHÔNG nhúng iframe

@@ -16,6 +16,19 @@ import { docFrontMatter, kiemBai } from './lib/frontmatter.mjs';
 import { render } from './lib/markdown.mjs';
 import crypto from 'node:crypto';
 import { kichThuocAnh, tiLe } from './lib/imgsize.mjs';
+
+/* ── HAI CÁI CẦU TỪ BỘ DỰNG MARKDOWN SANG ĐĨA ──
+   `tools/lib/markdown.mjs` nay không biết đĩa là gì — nó phải chạy được cả
+   trong trình duyệt để ô soạn bài xem thử được (lý do đầy đủ ở đầu file ấy).
+   Nó chỉ hỏi qua hai hàm; đây là chỗ trả lời, và là chỗ DUY NHẤT trong đường
+   dựng Markdown còn chạm vào đĩa. */
+const MD_DIA = {
+  coFile: (src) => fs.existsSync(path.join(THU_MUC.public, src.replace(/^\//, ''))),
+  doAnh : (src) => {
+    try { return kichThuocAnh(path.join(THU_MUC.public, src.replace(/^\//, ''))); }
+    catch { return null; }
+  }
+};
 import { docSo, docChiTiet, temNgay } from './lib/lichsu.mjs';
 import { vanTay, capNhatMoc } from './lib/moc.mjs';
 import { docNguon } from './lib/doc-nguon.mjs';
@@ -480,7 +493,30 @@ const NHAN = {
   szBTableMach: 'The first row is the header. Tab moves to the next cell.',
   szHuy       : 'Cancel',
   /* Ba khổ ảnh — bấm vào tấm ảnh trong ô soạn là hiện ra ngay dưới nó. */
+  szBGalleryGiu  : 'Gallery · keep shape',
+  szBGalleryGiuMo: 'no cropping — for book covers, screenshots',
+  szBGalleryHai  : 'Gallery · 2 columns',
+  szBGalleryHaiMo: 'exactly two — before and after',
+  szBGalleryBa   : 'Gallery · 3 columns',
+  szBGalleryBaMo : 'exactly three, even on wide screens',
+  szGDangLuoi : 'Grid — square crops, fills the row',
+  szGDangGiu  : "Keeps each photo's own shape — no cropping",
+  szGDangHai  : 'Exactly two columns — before and after',
+  szGDangBa   : 'Exactly three columns',
+  szPreview   : 'Preview',
+  szPreviewTip: 'See it as a published post',
+  szPreviewCard: 'Share card',
+  szPreviewPost: 'The post',
+  szPreviewFail: 'Could not build the preview',
+  szNoTitle   : '(no title)',
+  szAnhGoc    : 'Original',
+  szAnhGocMo  : 'true size — never blown up',
+  szAnhHep    : 'Narrow',
+  szAnhHepMo  : 'about two thirds of the text column',
   szAnhThuong : 'Normal',
+  szAnhThuongMo: 'the width of the text column',
+  szAnhRongMo : 'spills a little past the text',
+  szAnhTranMo : 'edge to edge of the screen',
   szAnhRong   : 'Wide',
   szAnhTran   : 'Full',
   /* Bảng ngôn ngữ của khối mã: nói ra nó DÙNG ĐỂ LÀM GÌ, không chỉ hỏi tên. */
@@ -858,7 +894,7 @@ function docBai(file) {
 
   const canhBaoBai = (m) => CANH_BAO.push(`${nhan}: ${m}`);
   const kq2 = render(than, {
-    publicDir: THU_MUC.public,
+    publicDir: THU_MUC.public, ...MD_DIA,
     base: BASE,
     host: new URL(CAU.url).host,
     canhBao: canhBaoBai,
@@ -980,7 +1016,7 @@ function docTrang(file) {
 
   const slug = String(fm.slug || slugify(path.basename(file, '.md')));
   const kq = render(than, {
-    publicDir: THU_MUC.public, base: BASE,
+    publicDir: THU_MUC.public, ...MD_DIA, base: BASE,
     host: new URL(CAU.url).host,
     canhBao: (m) => CANH_BAO.push(`${nhan}: ${m}`),
     khongSapo: true
@@ -1231,6 +1267,19 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bTableCot: NHAN.szBTableCot, bTableHang: NHAN.szBTableHang,
                         bTableOk: NHAN.szBTableOk, bTableMach: NHAN.szBTableMach,
                         huy: NHAN.szHuy,
+                        bGalleryGiu: NHAN.szBGalleryGiu, bGalleryGiuMo: NHAN.szBGalleryGiuMo,
+                        bGalleryHai: NHAN.szBGalleryHai, bGalleryHaiMo: NHAN.szBGalleryHaiMo,
+                        bGalleryBa: NHAN.szBGalleryBa, bGalleryBaMo: NHAN.szBGalleryBaMo,
+                        gDangLuoi: NHAN.szGDangLuoi, gDangGiu: NHAN.szGDangGiu,
+                        gDangHai: NHAN.szGDangHai, gDangBa: NHAN.szGDangBa,
+                        preview: NHAN.szPreview, previewTip: NHAN.szPreviewTip,
+                        previewCard: NHAN.szPreviewCard,
+                        previewPost: NHAN.szPreviewPost,
+                        previewFail: NHAN.szPreviewFail, noTitle: NHAN.szNoTitle,
+                        anhGoc: NHAN.szAnhGoc, anhGocMo: NHAN.szAnhGocMo,
+                        anhHep: NHAN.szAnhHep, anhHepMo: NHAN.szAnhHepMo,
+                        anhThuongMo: NHAN.szAnhThuongMo,
+                        anhRongMo: NHAN.szAnhRongMo, anhTranMo: NHAN.szAnhTranMo,
                         anhThuong: NHAN.szAnhThuong, anhRong: NHAN.szAnhRong,
                         anhTran: NHAN.szAnhTran,
                         bCodeMach: NHAN.szBCodeMach, bCodeTron: NHAN.szBCodeTron,
@@ -2498,10 +2547,20 @@ function ogThemHTML({ ogImage, ogAnhMo, ogTitle, description, bai }) {
   }
   if (ogAnhMo) ra.push(`<meta property="og:image:alt" content="${attr(ogAnhMo)}">`);
 
+  /* ── TỪ ĐÂY TRỞ XUỐNG KHÔNG CÒN LÀ THẺ CON CỦA `og:image` ──
+     Mọi thẻ `og:image:*` phải nằm TRÊN dòng này và không được để thẻ nào chen
+     vào giữa chúng với `og:image` ở shell.html — xem chú thích ở đó. */
+
   /* ── THẺ TWITTER ──
      `twitter:card` đứng một mình từ trước tới nay. Twitter/X tự lùi về đọc thẻ
      og khi thiếu, nhưng Threads và vài ứng dụng khác thì KHÔNG lùi — chúng đọc
-     `twitter:*` trước, không thấy thì bỏ qua luôn chứ không đi tìm og. */
+     `twitter:*` trước, không thấy thì bỏ qua luôn chứ không đi tìm og.
+
+     Cả nhóm dựng ở đây, kể cả `twitter:card`. Trước đây `twitter:card` nằm
+     trong shell.html và nó rơi vào đúng khe giữa `og:image` với mấy thẻ con —
+     chính chỗ không được phép có gì chen vào. Gom về một chỗ thì không còn ai
+     đặt lạc nữa. */
+  ra.push('<meta name="twitter:card" content="summary_large_image">');
   ra.push(`<meta name="twitter:title" content="${attr(ogTitle)}">`);
   ra.push(`<meta name="twitter:description" content="${attr(description)}">`);
   if (ogImage) ra.push(`<meta name="twitter:image" content="${attr(ogImage)}">`);
@@ -3038,7 +3097,7 @@ function vanTayAssets() {
 
   const doi = new Map();          /* 'style.css' → 'style.a3f21c9d.css' */
   for (const f of fs.readdirSync(thu)) {
-    if (!/\.(js|css)$/.test(f)) continue;
+    if (!/\.(js|mjs|css)$/.test(f)) continue;
     const that = path.join(thu, f);
     const bam = crypto.createHash('sha256')
       .update(fs.readFileSync(that)).digest('hex').slice(0, 8);
@@ -3056,7 +3115,7 @@ function vanTayAssets() {
     for (const f of fs.readdirSync(d)) {
       const p2 = path.join(d, f);
       if (fs.statSync(p2).isDirectory()) { suaTrong(p2); continue; }
-      if (!/\.(html|js|css|json|xml|txt)$/.test(f)) continue;
+      if (!/\.(html|js|mjs|css|json|xml|txt)$/.test(f)) continue;
       let t = fs.readFileSync(p2, 'utf8');
       let doiGi = false;
       for (const [cu, moi] of doi) {
@@ -3953,7 +4012,7 @@ function docGhiChu() {
     const than = dong.slice(1).join('\n').trim();
     if (!than) continue;
     ra.push({ ngay: m[1], loai: (m[2] || '').trim(),
-              html: render(than, { publicDir: THU_MUC.public, base: BASE }).html });
+              html: render(than, { publicDir: THU_MUC.public, ...MD_DIA, base: BASE }).html });
   }
   return ra.sort((a, b) => (a.ngay < b.ngay ? 1 : -1));
 }
@@ -4097,7 +4156,19 @@ function trangChuTrang() {
       <div class="ad-than">${than}
       </div>
     </div>`,
-    scripts: `<script src="${BASE}/assets/khoa.js" defer></script>` +
+    scripts: /* ── BỘ DỰNG MARKDOWN CHO Ô XEM THỬ ──
+                Nạp dạng module và treo lên `window.ZIB.md`, vì mấy file quản
+                trị kia là script thường (IIFE) nên không `import` được.
+                `type="module"` tự hoãn, không cần `defer`.
+
+                Nạp ở CUỐI và không chặn: thiếu nó thì nút "Xem thử" tự ẩn đi,
+                phần còn lại của trang quản trị vẫn chạy nguyên. */
+             `<script type="module">` +
+             `import { render } from "${BASE}/assets/md.mjs";` +
+             `window.ZIB = window.ZIB || {}; window.ZIB.md = { render };` +
+             `window.dispatchEvent(new Event("zib-md-san"));` +
+             `</script>` +
+             `\n<script src="${BASE}/assets/khoa.js" defer></script>` +
              `\n<script src="${BASE}/assets/admin.js" defer></script>` +
              `\n<script src="${BASE}/assets/ghi-chu.js" defer></script>` +
              `\n<script src="${BASE}/assets/duyet.js" defer></script>` +
@@ -4515,6 +4586,28 @@ async function chay() {
       }
       ghi(path.join(THU_MUC.dist, 'assets', j), ra);
     }
+    /* ══════════════════════════════════════════════════════════════════════
+       BỘ DỰNG MARKDOWN, GỬI LUÔN CHO TRÌNH DUYỆT
+
+       `/z-admin/` cần dựng Markdown ra HTML để người viết XEM THỬ bài trước
+       khi đăng. Nó phải là ĐÚNG bộ dựng của trang, không phải một bản viết
+       lại — hai bộ dựng thì sớm muộn lệch nhau, và một ô xem thử lệch là một ô
+       xem thử NÓI DỐI, tệ hơn không có.
+
+       Gửi nguyên hai file nguồn dưới dạng ES module, không gói, không rút gọn:
+       `markdown.mjs` nay đã thuần (xem chú thích đầu file ấy) nên chép thẳng
+       là chạy. Đường dẫn `./text.mjs` đổi thành `/assets/md-text.js` để bước
+       vân tay ở `vanTayAssets` nhận ra và thay được tên có mã băm.
+
+       Đuôi `.mjs` — nói thẳng ra đây là ES module. Bước vân tay và bước thay
+       tên ở `vanTayAssets` đều đã nhận đuôi này, nên chúng vẫn được đổi tên
+       theo nội dung như mọi asset khác. */
+    for (const [tu, ten] of [['text.mjs', 'md-text.mjs'], ['markdown.mjs', 'md.mjs']]) {
+      let ma = fs.readFileSync(path.join(GOC, 'tools', 'lib', tu), 'utf8');
+      ma = ma.replace(/from '\.\/text\.mjs'/g, "from '/assets/md-text.mjs'");
+      ghi(path.join(THU_MUC.dist, 'assets', ten), boChuThichJS(ma));
+    }
+
     ghi(path.join(THU_MUC.dist, 'so-tay.json'), SO_TAY());
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
     ghi(path.join(THU_MUC.dist, 'favicon-calm.svg'), FAVICON_CALM);

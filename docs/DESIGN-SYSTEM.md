@@ -2754,14 +2754,173 @@ không phải một chuỗi `3x4` gõ vào `window.prompt`. Trần **5 × 20**: 
 chuyện bề ngang thật (cột chữ rộng chừng 66 ký tự, chia sáu cột là mỗi cột mười
 ký tự), trần hàng chỉ để chặn gõ nhầm.
 
-### 22.5 · Ảnh: ba khổ, và không có khổ thứ tư
+### 22.5 · Ảnh: năm NẤC khổ, và không có tay kéo
 
-Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay dưới nó với ba
-nút — **thường · rộng (`{.wide}`) · tràn (`{.full}`)** — khổ đang dùng sáng lên.
+Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay dưới nó với năm
+nút, khổ đang dùng sáng lên. Cùng nếp với ô soạn thư (Gmail: *Small · Best fit
+· Original*): chọn nấc, không kéo góc.
 
-Ba, và chỉ ba. Kéo góc cho to nhỏ tuỳ ý là thứ **không viết ra được thành
-Markdown**, nên một con số pixel sẽ biến mất ở lượt lưu — bày ra một tay cầm
-kéo được rồi để nó mất tác dụng còn tệ hơn là không có.
+| nút | ghi ra file | nghĩa |
+|---|---|---|
+| Cỡ gốc | `{.goc}` | đúng khổ thật, **không bao giờ phóng to** |
+| Hẹp | `{.hep}` | 62% cột chữ, căn giữa |
+| Thường | *(không có)* | bằng cột chữ |
+| Rộng | `{.wide}` | rộng hơn cột chữ một chút |
+| Tràn | `{.full}` | tràn hết bề ngang màn hình |
+
+Mỗi nút kèm một dòng giải thích trong `title`: "Hẹp" hay "Rộng" không tự nói ra
+nó rộng hơn **cái gì**.
+
+**`{.goc}` là nấc quan trọng nhất mà bản trước thiếu.** Mặc định
+`.prose figure img{width:100%}` kéo mọi tấm ảnh rộng bằng cột chữ — đúng cho
+ảnh chụp, sai hẳn cho ảnh chụp màn hình, sơ đồ, logo: một tấm rộng 320px bị
+phóng lên 720px và mờ nhoè, mà người viết không có cách nào bảo "để yên nó
+đấy".
+
+**Và nó phải tên `{.hep}`, KHÔNG phải `{.nho}`.** `{.nho}` đã là lớp của đoạn
+chữ nhỏ (`.prose .nho{font-size:var(--fs-sm);color:var(--text-faint)}`), mà bộ
+chọn ấy là **hậu duệ** — nên nó ăn luôn vào `<figure class="nho">` và tấm ảnh
+kéo theo cỡ chữ nhỏ, màu nhạt cho chú thích của nó. Hai thứ khác hẳn nhau thì
+phải hai tên. Đã suýt trùng một lần; ghi lại đây để lần sau đặt tên lớp mới thì
+tra bảng trước.
+
+Nấc chứ không phải tay kéo. Kéo góc cho to nhỏ tuỳ ý là thứ **không viết ra
+được thành Markdown**, nên một con số pixel sẽ biến mất ở lượt lưu — bày ra một
+tay cầm kéo được rồi để nó mất tác dụng còn tệ hơn là không có. Và một con số
+chọn trên màn 27 inch là một tấm ảnh tràn mép trên điện thoại. Medium ·
+Substack · Ghost đều cho nấc, không cho kéo.
+
+**Nấc `nho` là nấc mới, và nó lấp một lỗ thật.** Ba nấc cũ đều đi MỘT CHIỀU:
+bằng cột chữ, rộng hơn cột chữ, tràn cả trang — không có đường nào cho ảnh
+**nhỏ lại**. Thả một tấm ảnh dọc chụp từ điện thoại vào bài là nó chiếm trọn
+chiều cao màn hình và không có cách nào thu. `62%` cột chữ, căn giữa; ở khổ
+hẹp nới lên `86%`, vì 62% của một cột đã hẹp là một tấm ảnh bé không nhìn ra gì.
+
+### 22.5b · Danh sách · thụt vào · ô việc — BA LUẬT, VÀ CHÚNG PHẢI ĐI VỚI NHAU
+
+Ba nút này dùng riêng thì chạy, dùng cùng nhau thì hỏng — và hỏng im lặng.
+Dưới đây là từng ca, cách xử đúng, và con số đo được của cái sai.
+
+**Ca 1 · Gõ chữ rồi mới bấm nút danh sách.** `execCommand('insertUnorderedList')`
+của Chromium tự kéo con trỏ về đầu dòng: đo được offset 8 → offset 0. Gõ tiếp
+là chữ mới chui vào TRƯỚC chữ cũ. Nên mọi lệnh danh sách phải đi qua
+`lamDanhSach()`: **cắm mốc giữ con trỏ trước khi gọi lệnh**, gọi lệnh, dọn cấu
+trúc, rồi trả con trỏ về mốc. `npm run kiem` canh đúng luật này.
+
+**Ca 2 · Mốc phải gỡ TRƯỚC khi đặt con trỏ.** Biên của một `Range` là cặp (nút
+cha, chỉ số con). Đặt biên ngay sau cái mốc rồi mới gỡ mốc thì mọi chỉ số sau
+nó tụt một bậc, biên trỏ ra ngoài phạm vi, và trình duyệt **bỏ luôn vùng chọn**
+— `rangeCount` về 0, mọi phím gõ tiếp rơi vào hư không. Đếm chỉ số, gỡ, rồi mới
+đặt biên vào đúng chỉ số ấy.
+
+**Ca 3 · Ô việc là một LOẠI danh sách, không phải một thứ chèn vào.** Bản cũ
+chèn thẳng một mẩu `<ul><li data-viec="0"> </li></ul><p><br></p>` cố định: nó
+không đổi dòng đang đứng, nó bỏ rơi con trỏ ra ngoài ô việc vừa tạo, và bấm khi
+đang ở trong một danh sách thì nó nhét `<ul>` vào giữa `<ul>`. Nay nó là nút
+**đổi loại**, cùng họ với nút chấm và nút số:
+
+| đang là | bấm nút việc thành |
+|---|---|
+| đoạn văn | mục việc |
+| mục chấm | mục việc (giữ chữ và bậc thụt) |
+| mục số | mục việc (đổi `<ol>` → `<ul>`) |
+| mục việc | đoạn văn |
+
+**Ca 4 · Quyết theo CẢ vùng chọn, không theo mỗi dòng con trỏ đứng.** Bôi đen
+ba mục rồi bấm: biên đầu vùng chọn có thể rơi vào một đoạn trống ở trên, nên
+hỏi "con trỏ đang ở `<li>` nào" trả về `null`, và nút tưởng "chưa có danh
+sách" rồi gọi `insertUnorderedList` — mà lệnh ấy là một cái CÔNG TẮC: đang có
+danh sách thì nó **bỏ** danh sách đi. Đo thật: ba mục tan thành `a<br>b<br>`.
+
+**Ca 5 · `Tab` / `Shift+Tab` trong danh sách = thụt vào / thụt ra.** Đó là phím
+tay người dùng tìm tới trước khi mắt tìm nút, và nó giống nhau ở Notion, Google
+Docs, Word, GitHub. Trước bản này Tab trong một mục rơi vào hành vi mặc định
+của `contenteditable`: nhảy tiêu điểm **ra khỏi cả khung soạn**.
+
+**Ca 6 · `Enter` trên một mục rỗng = ra một bậc.** Enter thứ nhất mở mục mới;
+mục ấy còn rỗng nên Enter thứ hai phải đưa ra — ra bậc ngoài nếu đang ở danh
+sách con, ra hẳn đoạn văn nếu đã ở bậc ngoài cùng. Không có luật này thì Enter
+mãi mãi đẻ thêm mục rỗng và cách duy nhất để thoát là bấm nút trên thanh.
+
+Ca này **không** mượn `execCommand('outdent')`: cái mốc giữ con trỏ là một
+`<span>` cắm vào chính mục ấy, nên mục thôi rỗng trong mắt trình duyệt và
+`outdent` XẺ nó — mốc ở lại trong, phần rỗng đi ra. Làm thẳng tay: bỏ mục rỗng,
+dựng chỗ đứng mới ở bậc ngoài. Và chỉ chạy khi mục rỗng là mục **cuối** danh
+sách — mục rỗng ở giữa là chỗ người ta vừa chèn thêm dòng và sắp gõ vào.
+
+**Ca 7 · Trong khung chỉ có KHỐI, không có chữ trần.** Ô soạn mở ra rỗng thì
+chữ đầu tiên gõ vào là một nút chữ trần, con trực tiếp của khung, không `<p>`
+nào bọc. Từ đó Enter không tách được đoạn (không có khối để tách), `formatBlock`
+không bắt được gì, và `sangMD` xuất ra hai đoạn dính làm một. Nên: gieo sẵn
+`<p><br></p>` lúc mở, và mỗi lần nội dung đổi thì gom mọi nút trần vào một
+`<p>` — gom theo CỤM liền nhau, để một câu có chữ đậm ở giữa không bị xé thành
+ba đoạn.
+
+**Ca 8 · Mục rỗng lọc lúc XUẤT, không xoá trong DOM.** Đã thử dọn `<li>` rỗng
+ngay trong `donDanhSach`. Sai nặng: hàm ấy chạy sau mỗi lần thụt vào/thụt ra,
+tức đúng lúc mục mới còn rỗng — nó xoá ngay cái mục đang chuẩn bị gõ vào, con
+trỏ rơi theo, và cả bài mất sạch còn `<p><br></p>`. Mục rỗng là trạng thái
+**bình thường** lúc đang soạn; chỗ đúng để lọc nó là lúc `sangMD` xuất ra.
+
+### 22.7 · Ô xem thử — và vì sao nó chỉ đáng có sau khi bộ dựng thuần
+
+Ô soạn đã gần giống bài thật, nhưng "gần" chưa đủ ở bốn chỗ, và cả bốn chỉ lộ
+ra **sau khi đã đăng**:
+
+| | trong ô soạn | trên trang |
+|---|---|---|
+| đoạn đầu bài | một đoạn thường | **sapo** — cỡ lớn hơn, màu nhạt hơn |
+| `:::note` | khung có nhãn | ô nhấn có màu, có lề, có dấu |
+| `:::gallery` | ảnh xếp dọc | xếp ngang thành lưới |
+| bề ngang | bề ngang ô soạn | **cột chữ thật** — chỗ ngắt dòng khác |
+
+**Điều kiện để có ô xem thử: chỉ được có MỘT bộ dựng.** Hai bộ thì sớm muộn
+lệch nhau, và một ô xem thử lệch là một ô **nói dối** — tệ hơn không có, vì
+người viết tin nó. Nên trước khi làm ô này, `tools/lib/markdown.mjs` được gỡ
+hết phụ thuộc vào Node: nó từng `import` thẳng `node:path` và `node:fs`, nay
+chỉ hỏi qua hai hàm người gọi đưa vào (`ctx.coFile`, `ctx.doAnh`). Bộ dựng
+trang đưa vào hai hàm đọc đĩa thật; trình duyệt không đưa gì, và hai phép kiểm
+ảnh lặng lẽ bỏ qua.
+
+Kiểm lại cú gỡ ấy bằng cách so **thân HTML của từng bài** với bản đang chạy
+thật (bản ấy dựng bằng mã cũ): 15/16 giống hệt từng byte, cái còn lại là trang
+danh sách chuyên mục chứ không phải bài.
+
+Hai file ấy gửi sang trình duyệt nguyên dạng ES module (`/assets/md.mjs` +
+`/assets/md-text.mjs`, ~18KB), không gói, không rút gọn. Đuôi `.mjs` để nói
+thẳng ra đây là module — và cả bước vân tay lẫn phép kiểm "mọi file JS đều
+dịch được" đều đã dạy để hiểu đuôi ấy (`new Function()` dựng script cổ điển
+nên `import`/`export` ném lỗi; phải cắt mấy dòng ấy đi rồi mới dịch phần thân).
+
+**Cái ô này KHÔNG đo được:** khổ ảnh. `ctx.doAnh` cần đọc file trên đĩa, mà
+trình duyệt thì không có đĩa — nên ảnh trong ô xem thử thiếu `width`/`height`
+và có thể xô nhẹ lúc tải xong. Bài THẬT thì không, vì lúc dựng thật vẫn đo đủ.
+
+Ô này còn chở **thẻ chia sẻ** — tiêu đề, tóm tắt, ảnh bìa, dựng theo đúng khuôn
+Facebook/Zalo vẫn vẽ. Đó là thứ người viết không thấy được ở đâu khác, và là
+thứ quyết định người ta có bấm vào bài hay không. Ba mẩu ấy nằm ở ô viết bài
+chứ không ở ô soạn, nên trang chủ quản đưa vào qua một HÀM (`tuyChon.thongTin`)
+— một giá trị chụp lúc gắn thì sửa tiêu đề xong mở lại vẫn thấy tiêu đề cũ.
+
+### 22.8 · Dải ảnh — bốn dạng
+
+Trước bản này chỉ có **một**: lưới tự xếp, và mọi tấm bị cắt vuông. Cắt vuông
+đúng cho một bộ ảnh chụp lẫn lộn ngang dọc — hàng nào cũng thẳng, mắt đọc ra
+một BỘ chứ không ra mấy tấm rời. Nhưng nó sai ở ba chỗ rất thường gặp:
+
+| dạng | ghi ra file | dùng khi |
+|---|---|---|
+| (mặc định) | `:::gallery` | bộ ảnh chụp — cắt vuông, lưới tự xếp |
+| giữ tỉ lệ | `:::gallery .giu` | bìa sách, ảnh chụp màn hình — **không cắt** |
+| hai cột | `:::gallery .hai` | ảnh trước – ảnh sau |
+| ba cột | `:::gallery .ba` | bộ ba, không để lẻ hàng |
+
+Dạng là một **lớp** sau tên khối, nên nó vẫn là Markdown đọc được, không phải
+một cú pháp riêng. Bốn dòng bày sẵn trong bảng Media chứ không bắt gõ tên lớp:
+người không biết code không có cách nào đoán ra `.giu` nghĩa là gì.
+
+`.hai` và `.ba` vẫn xuống một cột ở khổ hẹp — ép hai cột trên màn 375px là hai
+tấm ảnh rộng 160px, nhỏ hơn cả ngón tay.
 
 ### 22.6 · Ba luật cứng của mọi thứ trong ô soạn
 

@@ -76,8 +76,7 @@ export function kichThuocAnh(duongDanThat){
 
 /* Rút gọn tỉ lệ cho gọn mắt khi soi CSS: 1600×900 → "16 / 9" chứ không phải
    "1600 / 900". Trình duyệt hiểu như nhau, nhưng người đọc code thì khác. */
-export function tiLe(w, h){
-  const ucln = (a, b) => b ? ucln(b, a % b) : a;
-  const g = ucln(Math.round(w), Math.round(h)) || 1;
-  return `${Math.round(w) / g} / ${Math.round(h) / g}`;
-}
+/* `tiLe` dọn sang `text.mjs` — nó là phép toán thuần, không đụng đĩa, mà
+   `markdown.mjs` cần nó và phải chạy được cả trong trình duyệt. Xuất lại ở đây
+   để mấy chỗ gọi cũ (`anh.mjs`, `build.mjs`) không phải sửa. */
+export { tiLe } from './text.mjs';

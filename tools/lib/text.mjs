@@ -111,3 +111,13 @@ export function noiChu(s){
   }
   return ra;
 }
+
+/* ── TỈ LỆ KHUNG ẢNH, RÚT GỌN ──
+   Ở đây chứ không ở `imgsize.mjs`, vì đây là một phép toán THUẦN: nó không
+   đụng tới đĩa, không cần Node. `markdown.mjs` phải chạy được cả trong trình
+   duyệt (xem chú thích đầu file ấy), nên mọi thứ nó cần đều phải thuần. */
+export function tiLe(w, h){
+  const ucln = (a, b) => b ? ucln(b, a % b) : a;
+  const g = ucln(Math.round(w), Math.round(h)) || 1;
+  return `${Math.round(w) / g} / ${Math.round(h) / g}`;
+}
