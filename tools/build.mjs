@@ -305,6 +305,8 @@ const NHAN = {
   gcPostFail  : 'Could not send. Check the key or your connection.',
   gcDel       : 'Delete note',
   gcDelFail   : 'Could not delete.',
+  blPrevPage  : 'Previous page',
+  blNextPage  : 'Next page',
   blSentWait  : 'Waiting for review — only you can see it. {n} edits left this session.',
   /* ── trang quản lý /z-admin/ ──
      Ba việc, ba ngăn, chỉ một ngăn hiện mỗi lúc. Nhãn để NGẮN vì chúng nằm
@@ -401,6 +403,8 @@ const NHAN = {
   vbMore      : 'Load more',
   vbFind      : 'Filter by title or category',
   vbNoMuc     : '(none)',
+  vbDup       : 'A post with that name already exists.',
+  vbBadMuc    : 'No such category.',
   vbNoMatch   : 'Nothing matches, in what is loaded so far.',
   vbCapped    : 'The repository is too large to list in full.',
   /* ── ĐƯỜNG DẪN BÀI ──
@@ -511,13 +515,13 @@ const NHAN = {
   szNoTitle   : '(no title)',
   szAnhGoc    : 'Original',
   szAnhGocMo  : 'true size — never blown up',
+  szAnhRatHep : 'Small',
+  szAnhRatHepMo: 'a third of the text column',
   szAnhHep    : 'Narrow',
   szAnhHepMo  : 'about two thirds of the text column',
   szAnhThuong : 'Normal',
   szAnhThuongMo: 'the width of the text column',
-  szAnhRongMo : 'spills a little past the text',
   szAnhTranMo : 'edge to edge of the screen',
-  szAnhRong   : 'Wide',
   szAnhTran   : 'Full',
   /* Bảng ngôn ngữ của khối mã: nói ra nó DÙNG ĐỂ LÀM GÌ, không chỉ hỏi tên. */
   szBCodeMach : 'Pick the language so the code gets syntax colours on the page.',
@@ -894,7 +898,7 @@ function docBai(file) {
 
   const canhBaoBai = (m) => CANH_BAO.push(`${nhan}: ${m}`);
   const kq2 = render(than, {
-    publicDir: THU_MUC.public, ...MD_DIA,
+    ...MD_DIA,
     base: BASE,
     host: new URL(CAU.url).host,
     canhBao: canhBaoBai,
@@ -1016,7 +1020,7 @@ function docTrang(file) {
 
   const slug = String(fm.slug || slugify(path.basename(file, '.md')));
   const kq = render(than, {
-    publicDir: THU_MUC.public, ...MD_DIA, base: BASE,
+    ...MD_DIA, base: BASE,
     host: new URL(CAU.url).host,
     canhBao: (m) => CANH_BAO.push(`${nhan}: ${m}`),
     khongSapo: true
@@ -1233,6 +1237,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         shown: NHAN.vbShown, more: NHAN.vbMore,
                         find: NHAN.vbFind, noMatch: NHAN.vbNoMatch,
                         noMuc: NHAN.vbNoMuc,
+                        dup: NHAN.vbDup, badMuc: NHAN.vbBadMuc,
                         slug: NHAN.vbSlug, slugAuto: NHAN.vbSlugAuto,
                         slugMoved: NHAN.vbSlugMoved, slugLong: NHAN.vbSlugLong,
                         mucNew: NHAN.mucNew, mucAdd: NHAN.mucAdd,
@@ -1262,7 +1267,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bStop: NHAN.szBStop, bStopMo: NHAN.szBStopMo,
                         bGallery: NHAN.szBGallery, bGalleryMo: NHAN.szBGalleryMo,
                         bWide: NHAN.szBWide, bWideMo: NHAN.szBWideMo,
-                        bTable: NHAN.szBTable, bTableMo: NHAN.szBTableMo,
+                        bTable: NHAN.szBTable,
                         bTableAsk: NHAN.szBTableAsk,
                         bTableCot: NHAN.szBTableCot, bTableHang: NHAN.szBTableHang,
                         bTableOk: NHAN.szBTableOk, bTableMach: NHAN.szBTableMach,
@@ -1277,19 +1282,20 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         previewPost: NHAN.szPreviewPost,
                         previewFail: NHAN.szPreviewFail, noTitle: NHAN.szNoTitle,
                         anhGoc: NHAN.szAnhGoc, anhGocMo: NHAN.szAnhGocMo,
+                        anhRatHep: NHAN.szAnhRatHep, anhRatHepMo: NHAN.szAnhRatHepMo,
                         anhHep: NHAN.szAnhHep, anhHepMo: NHAN.szAnhHepMo,
                         anhThuongMo: NHAN.szAnhThuongMo,
-                        anhRongMo: NHAN.szAnhRongMo, anhTranMo: NHAN.szAnhTranMo,
-                        anhThuong: NHAN.szAnhThuong, anhRong: NHAN.szAnhRong,
+                        anhTranMo: NHAN.szAnhTranMo,
+                        anhThuong: NHAN.szAnhThuong,
                         anhTran: NHAN.szAnhTran,
                         bCodeMach: NHAN.szBCodeMach, bCodeTron: NHAN.szBCodeTron,
                         bCodeTronMo: NHAN.szBCodeTronMo,
                         canTrai: NHAN.szCanTrai,
                         canGiua: NHAN.szCanGiua,
                         canPhai: NHAN.szCanPhai,
-                        bCode: NHAN.szBCode, bCodeMo: NHAN.szBCodeMo,
-                        bTask: NHAN.szBTask, bTaskMo: NHAN.szBTaskMo,
-                        bDeCho: NHAN.szBDeCho, bCodeAsk: NHAN.szBCodeAsk,
+                        bCode: NHAN.szBCode,
+                        bTask: NHAN.szBTask,
+                        bDeCho: NHAN.szBDeCho,
                         cropHint: NHAN.szCropHint, cropFree: NHAN.szCropFree,
                         cropSkip: NHAN.szCropSkip, cropDo: NHAN.szCropDo,
                         undo: NHAN.szUndo, redo: NHAN.szRedo,
@@ -1298,9 +1304,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         bYoutube: NHAN.szBYoutube, bYoutubeMo: NHAN.szBYoutubeMo,
                         bVideo: NHAN.szBVideo, bVideoMo: NHAN.szBVideoMo,
                         bAnhRong: NHAN.szBAnhRong, bAnhRongMo: NHAN.szBAnhRongMo,
-                        bNho: NHAN.szBNho, bNhoMo: NHAN.szBNhoMo,
+                        bNho: NHAN.szBNho,
                         sup: NHAN.szSup, sub: NHAN.szSub, kbd: NHAN.szKbd,
-                        bThuong: NHAN.szBThuong, bThuongMo: NHAN.szBThuongMo,
+                        bThuong: NHAN.szBThuong,
                         bYtAsk: NHAN.szBYtAsk, bYtSai: NHAN.szBYtSai,
                         bVidAsk: NHAN.szBVidAsk, bCapAsk: NHAN.szBCapAsk,
                         bAnhChua: NHAN.szBAnhChua,
@@ -1309,12 +1315,9 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         upOne: NHAN.szUpOne, upMany: NHAN.szUpMany,
                         upFail: NHAN.szUpFail, upRead: NHAN.szUpRead,
                         upLost: NHAN.szUpLost,
-                        gHelpAnh: NHAN.szGHelpAnh,
-                        a1: NHAN.szA1, a2: NHAN.szA2, a3: NHAN.szA3, a4: NHAN.szA4,
-                        g2: NHAN.szG2, g3: NHAN.szG3,
                         cover: NHAN.vbCover, coverDrop: NHAN.vbCoverDrop,
                         coverAlt: NHAN.vbCoverAlt, coverOff: NHAN.vbCoverOff,
-                        coverUp: NHAN.vbCoverUp, coverOk: NHAN.vbCoverOk,
+                        coverOk: NHAN.vbCoverOk,
                         upOff: NHAN.vbUpOff, upNeedTitle: NHAN.vbUpNeedTitle,
                         seo: NHAN.vbSeo, sBad: NHAN.vbSBad, sWarn: NHAN.vbSWarn,
                         sGood: NHAN.vbSGood,
@@ -2184,7 +2187,7 @@ function binhLuanHTML(bai) {
     editFail: NHAN.editFail,
     newThread: NHAN.newThread, threadFull: NHAN.threadFull,
     moreReplies: NHAN.moreReplies, noComments: NHAN.noComments,
-    sending: NHAN.sending, tooShort: NHAN.tooShort, sent: NHAN.sent,
+    sending: NHAN.sending, tooShort: NHAN.tooShort,
     failed: NHAN.failed, netErr: NHAN.netErr, notLinked: NHAN.notLinked,
     charsLeft: NHAN.charsLeft,
     /* ── CHỈ NHỮNG NHÃN comments.js THẬT SỰ ĐỌC ──
@@ -2199,7 +2202,8 @@ function binhLuanHTML(bai) {
        nó vẫn còn, và không có gì báo. Một bộ nhãn dư thì mỗi trang bài phải
        chở thêm mấy trăm byte để không ai dùng. */
     sentOwner: NHAN.sentOwner, laChu: NHAN.blLaChu,
-    sentWait: NHAN.blSentWait, stateOff: NHAN.blStateOff
+    sentWait: NHAN.blSentWait, stateOff: NHAN.blStateOff,
+    prevPage: NHAN.blPrevPage, nextPage: NHAN.blNextPage
   }));
 
   /* `c.api` chứ không còn `c.url`. Địa chỉ nay là một đường dẫn NỘI BỘ
@@ -4012,7 +4016,7 @@ function docGhiChu() {
     const than = dong.slice(1).join('\n').trim();
     if (!than) continue;
     ra.push({ ngay: m[1], loai: (m[2] || '').trim(),
-              html: render(than, { publicDir: THU_MUC.public, ...MD_DIA, base: BASE }).html });
+              html: render(than, { ...MD_DIA, base: BASE }).html });
   }
   return ra.sort((a, b) => (a.ngay < b.ngay ? 1 : -1));
 }

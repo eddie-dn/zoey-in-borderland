@@ -1037,6 +1037,89 @@ const KIEM = [
     }
   },
   {
+    /* ── BẢNG NHÃN VÀ MÃ ĐỌC NÓ PHẢI KHỚP NHAU HAI CHIỀU ──
+       Mọi chữ hiện trên giao diện quản trị sống ở đúng một chỗ: bảng `NHAN`
+       trong `tools/build.mjs`. Build gói chúng thành JSON rồi gắn vào một
+       thuộc tính `data-…-nhan`; mấy file trong `src/js/` đọc ra.
+
+       Hai đầu ấy trôi xa nhau rất dễ, và cả hai chiều đều hỏng lặng lẽ:
+
+       · Mã ĐỌC một khoá mà build không gửi → hiện ra chữ dự phòng tiếng Anh
+         gõ cứng trong mã, tức là một chuỗi không đổi được từ cấu hình. Không
+         có gì báo, vì nó vẫn ra chữ.
+       · Build GỬI một khoá mà không ai đọc → mấy chục byte chết nằm trong
+         thuộc tính `data-nhan` của MỌI trang, mãi mãi. Đo thật ở lượt rà này:
+         15 nhãn như thế, 14 cái sót lại từ bảng Blocks đã bỏ từ lâu.
+
+       Phép kiểm soi cả hai chiều. Chỗ đọc nhận ba lối viết đang dùng trong mã
+       — `L('k')`, `nhan('k')`, và `.k` — vì mấy file không ra đời cùng lúc và
+       mỗi file tự đặt tên hàm tra nhãn của nó. */
+    ten: 'Bảng nhãn và mã đọc nó khớp nhau hai chiều',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const fB = path.join(goc, 'tools', 'build.mjs');
+      const thuJS = path.join(goc, 'src', 'js');
+      if (!fs.existsSync(fB) || !fs.existsSync(thuJS)) return [];
+      const build = fs.readFileSync(fB, 'utf8');
+      const ra = [];
+
+      /* Chỉ những khối `JSON.stringify({…})` đứng gần chữ "nhan" mới là bảng
+         nhãn. `JSON.stringify` còn dùng cho JSON-LD, số trang, quy tắc tải
+         trước — gom hết vào là phép kiểm đỏ ở những chỗ không liên quan. */
+      const khoiNhan = [];
+      for (let i = build.indexOf('JSON.stringify({'); i >= 0;
+           i = build.indexOf('JSON.stringify({', i + 1)) {
+        const truoc = build.slice(Math.max(0, i - 260), i);
+        if (!/nhan|NHAN/.test(truoc)) continue;
+        let j = build.indexOf('{', i), sau = 0, k = j;
+        for (; k < build.length; k++) {
+          if (build[k] === '{') sau++;
+          else if (build[k] === '}') { sau--; if (!sau) { k++; break; } }
+        }
+        khoiNhan.push({ dong: build.slice(0, i).split('\n').length, than: build.slice(j, k) });
+      }
+      if (!khoiNhan.length) {
+        return ['tools/build.mjs: không tìm thấy bảng nhãn nào — phép kiểm này đã lạc hậu'];
+      }
+
+      let maJS = '';
+      const theoFile = {};
+      for (const f of fs.readdirSync(thuJS)) {
+        if (!f.endsWith('.js')) continue;
+        const t = fs.readFileSync(path.join(thuJS, f), 'utf8')
+                    .replace(/\/\*[\s\S]*?\*\//g, ' ');
+        theoFile[f] = t; maJS += t;
+      }
+      const coDoc = (k) => {
+        const e = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp("\\b(?:L|nhan)\\(\\s*['\"]" + e + "['\"]").test(maJS) ||
+               new RegExp("\\." + e + "\\b").test(maJS) ||
+               new RegExp("\\[['\"]" + e + "['\"]\\]").test(maJS);
+      };
+
+      const daGui = new Set();
+      for (const { dong, than } of khoiNhan) {
+        for (const m of than.matchAll(/(?:^|[,{\s])([A-Za-z0-9_]+)\s*:/g)) {
+          daGui.add(m[1]);
+          if (!coDoc(m[1])) {
+            ra.push(`tools/build.mjs:${dong}: gửi nhãn \`${m[1]}\` mà không file nào ` +
+                    'trong src/js/ đọc — mấy chục byte chết trên mọi trang');
+          }
+        }
+      }
+
+      for (const [f, t] of Object.entries(theoFile)) {
+        for (const m of t.matchAll(/\b(?:L|nhan)\(\s*['\"]([A-Za-z0-9_]+)['\"]/g)) {
+          if (!daGui.has(m[1])) {
+            ra.push(`src/js/${f}: đọc nhãn \`${m[1]}\` mà bảng NHAN không gửi — ` +
+                    'chữ ấy sẽ là chuỗi gõ cứng trong mã, không đổi được từ cấu hình');
+          }
+        }
+      }
+      return ra;
+    }
+  },
+  {
     /* ── og:image VÀ THẺ CON CỦA NÓ PHẢI LIỀN MỘT MẠCH ──
        `og:image:width`, `:height`, `:type`, `:secure_url`, `:alt` là THUỘC
        TÍNH CÓ CẤU TRÚC của Open Graph: chúng gắn vào cái `og:image` đứng ngay
@@ -1162,6 +1245,47 @@ const KIEM = [
                 'phép kiểm này đã lạc hậu, sửa lại danh sách LENH');
       }
       return ra;
+    }
+  },
+  {
+    /* ── GÕ TẮT MARKDOWN PHẢI HOÃN MỘT NHỊP ──
+       `goTat()` chạy TRONG sự kiện `input`. Gọi `execCommand` ngay trong một
+       sự kiện `input` thì Chromium lặng lẽ bỏ qua — đo được là chữ mồi biến
+       mất đúng như mong, nhưng khối không đổi: gõ `# ` ra `<p>` chứ không ra
+       `<h2>`. Không báo lỗi, không ném gì, chỉ là không xảy ra.
+
+       Nên mọi lệnh trong `MAU_GO` phải đi qua một `setTimeout`, để nó chạy sau
+       khi sự kiện đã xong. Bỏ cái hoãn ấy đi là gõ tắt chết câm. */
+    ten: 'Gõ tắt Markdown hoãn lệnh ra ngoài sự kiện input',
+    muc: 'loi',
+    chay: ({ goc }) => {
+      const f = path.join(goc, 'src', 'js', 'soan.js');
+      if (!fs.existsSync(f)) return [];
+      const ma = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
+      if (!ma.includes('MAU_GO')) return [];
+      const i = ma.indexOf('function goTat');
+      if (i < 0) {
+        return ['src/js/soan.js: có bảng MAU_GO mà không còn `goTat()` — ' +
+                'gõ tắt Markdown đã mất đường chạy'];
+      }
+      /* Cắt đúng thân hàm bằng đếm ngoặc, KHÔNG bằng một cửa sổ bao nhiêu
+         ký tự: bản đầu lấy 900 ký tự và cửa sổ ấy tràn sang `luuNhap()` ngay
+         bên dưới — hàm ấy có sẵn một `setTimeout`, nên phép kiểm xanh cả khi
+         `goTat` đã bị gọi thẳng. Thử phá mới lòi ra. */
+      const moKhoi = ma.indexOf('{', i);
+      let sau = 0, het = moKhoi;
+      while (het < ma.length) {
+        if (ma[het] === '{') sau++;
+        else if (ma[het] === '}' && --sau === 0) break;
+        het++;
+      }
+      const than = ma.slice(i, het);
+      if (!than.includes('setTimeout')) {
+        return ['src/js/soan.js: `goTat()` gọi lệnh thẳng trong sự kiện input — ' +
+                'Chromium bỏ qua, gõ `# ` sẽ mất chữ mồi mà không thành tiêu đề; ' +
+                'bọc lệnh trong setTimeout(..., 0)'];
+      }
+      return [];
     }
   },
   {

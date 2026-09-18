@@ -568,9 +568,6 @@ function danhSach(dong, ctx) {
 export function render(src, opts) {
   opts = opts || {};
   const ctx = {
-    /* `publicDir` giữ lại cho mấy chỗ gọi cũ còn truyền vào; bản thân file này
-       không đụng tới nó nữa — xem chú thích đầu file. */
-    publicDir: opts.publicDir || null,
     coFile: typeof opts.coFile === 'function' ? opts.coFile : null,
     doAnh: typeof opts.doAnh === 'function' ? opts.doAnh : null,
     base: opts.base || '',
