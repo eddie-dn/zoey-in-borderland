@@ -787,57 +787,41 @@
      bài học ấy đã trả giá một lần ở bản trước.
   ══════════════════════════════════════════════════════════════════════ */
   function dungSuongGiang() {
-    var xa = null, gan = null, W0 = 0, H0 = 0, chim = [], sao = [];
+    var xa = null, gan = null, W0 = 0, H0 = 0, chim = [], sao = [], may = [], vet = [];
     var CHU_KY = 4200;          /* khung hình một vòng — ~70 giây ở 60fps */
 
-    /* ── BỐN BẬC MỰC, KHÔNG PHẢI MỘT BẬC BỐN ĐỘ MỜ ──
-       Bản trước chỉ có đúng một màu mực (`17,19,21`) và phân tầng xa gần bằng
-       cách hạ độ mờ. Hạ độ mờ của cùng một màu thì ra cùng một sắc xám nhạt
-       hơn — nên năm dãy núi đọc ra là NĂM LỚP CỦA MỘT VỆT, không ra năm khoảng
-       cách khác nhau. Mắt đọc chiều sâu qua SẮC chứ không chỉ qua độ đậm: một
-       dãy núi cách mười cây số thì cả một khối không khí nằm giữa, và khối
-       không khí ấy làm mực ngả LẠNH và nhạt sắc đi, chứ không chỉ mờ.
+    /* ══════════════════════════════════════════════════════════════════════
+       MỰC NHẠT, VÀ VÌ SAO PHẢI NHẠT ĐẾN THẾ
 
-       Nên bốn bậc ở đây khác nhau cả sắc lẫn độ: xa thì xám ngả lam bạc, càng
-       gần càng dồn về mực đen thật. Cả bốn đều dưới 8 điểm bão hoà — cùng mức
-       "điểm chút màu" mà `--bg-tint` của theme này chịu được (xem tokens.css),
-       nên bức tranh vẫn là tranh mực, không thành tranh màu. */
-    var MUC      = '17,19,21';    /* mực đặc — chim, sao, nét cuối */
-    var MUC_XA   = '118,125,134'; /* dãy xa nhất — sau một khối không khí dày */
-    var MUC_GIUA = '80,86,94';    /* dãy giữa */
-    var MUC_GAN  = '30,34,40';    /* dãy gần — khối chính của bức */
-    var MUC_BO   = '22,25,29';    /* mép bờ sát nước — chỗ đậm nhất */
+       Cả bảng dưới 0,24 — và bốn lớp núi xa thì dưới 0,14. Đã từng đẩy lên
+       gấp ba (0,25–0,34) với lý do "một bức mực không có chỗ nào đậm thật thì
+       không có trọng lượng". Lý do ấy đúng với một bức tranh treo tường và sai
+       với cái này, vì hai lẽ:
 
-    /* ── NÉT ĐI BẰNG MỰC ĐẶC HƠN LỚP RỬA ──
-       Người vẽ mực chấm bút vào mực đặc để đi nét, rồi pha loãng ra để rửa —
-       không ai đi cả hai bằng một độ mực. Có lý do kỹ thuật: nét nằm NGAY
-       TRÊN chỗ lớp rửa đậm nhất (cả hai đều áp vào đường sống), nên nét chỉ
-       đọc ra được khi nó đậm hơn cái nền ngay cạnh nó. Bản trước đi nét bằng
-       đúng mực của lớp rửa: đo ra nét còn NHẠT HƠN vệt mực nằm dưới nó, nên
-       viền tàng hình — mắt chỉ thấy một mép chuyển mềm.
+       · Đây là NỀN của một trang để đọc. Mực đậm thì nó thôi là nền mà thành
+         một bức tranh có chữ đè lên.
+       · Sơn thuỷ sống bằng phần KHÔNG vẽ. Mực nhạt thì chỗ nào cũng còn thấy
+         giấy dưới nó, và cái đọc ra là hơi nước; mực đậm thì giấy bị bịt, và
+         cái đọc ra là địa hình.
 
-       Nét cũng phải nhạt sắc dần theo chiều sâu như lớp rửa, nếu không thì
-       dãy xa nhất lại có cái viền đen sắc nét nhất bức. */
-    var NET_XA   = '88,95,104';
-    var NET_GIUA = '46,51,58';
-    var NET_GAN  = '16,18,22';
+       Bốn bậc ở đây khác nhau cả sắc lẫn độ — xa thì ngả lạnh, gần thì về mực
+       đen — nhưng cả bốn đều nằm trong một quãng rất hẹp (chừng 234 → 184 trên
+       giấy trắng). Chỗ tương phản mạnh của bức không nằm ở núi: nó nằm ở MẶT
+       TRỜI và MẶT TRĂNG. Một bức có đúng một điểm sáng mạnh thì mắt biết đậu
+       vào đâu; có năm chỗ đậm thì mắt không đậu vào đâu cả.
+       ══════════════════════════════════════════════════════════════════════ */
+    var MUC      = '17,19,21';    /* mực đặc — chim, sao */
+    var MUC_XA   = '46,54,66';
+    var MUC_XA2  = '38,45,56';
+    var MUC_GIUA = '28,33,42';
+    var MUC_GAN  = '17,19,21';
 
-    /* Mép nước. Nâng khỏi đáy để dải nước đủ chỗ hứng bóng mặt trời và trăng. */
-    var MEP_NUOC = 0.755;
-    /* Đường chân trời — mốc chung cho nền trời, cung mặt trời và cung trăng. */
-    var CHAN_TROI = 0.70;
+    var MEP_NUOC = 0.750;
+    var CHAN_TROI = 0.700;
 
     function kep(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
     function muot(p, a, b) { var u = kep((p - a) / (b - a)); return u * u * (3 - 2 * u); }
     function mau(r, g, b) { return Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b); }
-
-    /* Số ngẫu nhiên CÓ HẠT GIỐNG. Vân đá được nướng vào tấm nền một lần, nhưng
-       tấm nền được nướng LẠI mỗi lần đổi khổ màn — dùng Math.random thì xoay
-       ngang điện thoại một cái là cả sườn núi đổi vân. Cùng một hạt giống thì
-       cùng một hòn núi, ở mọi khổ màn. */
-    function bam(h) {
-      return function () { h = (h * 1664525 + 1013904223) % 4294967296; return h / 4294967296; };
-    }
 
     function veChim(c, x, y, r, mo, vo) {
       c.strokeStyle = 'rgba(' + MUC + ',' + mo.toFixed(3) + ')';
@@ -856,7 +840,7 @@
       return {
         lop: lop,
         x: batDau ? Math.random() * W : -40 - Math.random() * W * 0.5,
-        y: H * (0.12 + Math.random() * 0.24),
+        y: H * (0.10 + Math.random() * 0.22),
         r: 4 + lop * 9,
         v: 0.16 + lop * 0.34,
         pha: Math.random() * Math.PI * 2,
@@ -867,21 +851,76 @@
       };
     }
 
-    /* Màu giấy của theme — để tô ĐẶC dãy núi gần. Mực rửa trong suốt không che
-       được gì; tô một lớp giấy dưới mực là núi thành vật thật. */
+    /* ── MỘT DẢI MÂY ──
+       Lớp: 0 = dải xa tít, 1 = dải ngay trước mặt. Cỡ, độ đậm và tốc độ đều
+       suy ra từ một con số ấy.
+
+       Mây chỉ ở quãng có mực núi. Mây lửng lơ giữa trời trống thì không có gì
+       để nó ôm lấy — và vì nó là một cái TẨY (xem vòng vẽ), ở chỗ trống nó
+       không để lại gì cả. */
+    function moiMay(batDau) {
+      var lop = Math.random();
+      var r = 60 + lop * 190;
+      return {
+        lop: lop,
+        x: batDau ? Math.random() * (W + r * 4) - r * 2 : -r * 2.4,
+        y: H * (0.50 + Math.random() * 0.40),
+        r: r,
+        /* Dải gần trôi nhanh hơn dải xa — thị sai, và nó là thứ duy nhất ở
+           đây nói ra chiều sâu, vì màu thì cả mấy dải gần như nhau. */
+        v: 0.05 + lop * 0.16,
+        /* ── BA CON SỐ LÀM NÊN "LỀNH BỀNH" ──
+           Mây trôi thuần ngang với một tốc độ không đổi thì đúng về vật lý
+           nhưng nhìn ra là TRƯỢT chứ không ra là trôi: mắt bắt được ngay cái
+           đều đặn, và một thứ đều đặn thì thôi là mây mà thành thanh cuộn.
+
+           `pha` cho mỗi dải một điểm xuất phát riêng trên vòng sin, để chúng
+           không bao giờ cùng lên cùng xuống. `bien` là biên độ dập dềnh dọc,
+           tính theo CỠ dải — dải to bồng bềnh rộng hơn dải nhỏ. `nhip` là tốc
+           độ thở: dải xa thở chậm hơn dải gần. Tất cả đều rất nhỏ. */
+        pha: Math.random() * Math.PI * 2,
+        bien: r * (0.04 + lop * 0.05),
+        nhip: 0.0016 + lop * 0.0022,
+        mo: 0.05 + lop * 0.13,
+        /* Mỗi dải vài quầng lệch tâm, sinh SẴN một lần. Sinh lại mỗi khung
+           thì bờ mây rung như nhiễu. */
+        cum: (function () {
+          var n = 3 + ((Math.random() * 3) | 0), ra = [];
+          for (var i = 0; i < n; i++) {
+            ra.push({ dx: (Math.random() - 0.5) * r * 2.1,
+                      dy: (Math.random() - 0.5) * r * 0.5,
+                      rr: r * (0.45 + Math.random() * 0.5) });
+          }
+          return ra;
+        })()
+      };
+    }
+
+    /* Một vệt sương mỏng ở NỬA TRÊN — chỗ không có mực núi để mây xoá. */
+    function moiVet(batDau) {
+      var r = 140 + Math.random() * 260;
+      return {
+        r: r,
+        x: batDau ? Math.random() * (W + r * 2) - r : -r * 2,
+        y: H * (0.16 + Math.random() * 0.34),
+        v: 0.03 + Math.random() * 0.07,
+        /* Dưới 0,025: đủ để thấy có gì trôi khi nhìn vào khoảng trống, không
+           đủ để đọc ra một vật. Để 0,044 như bản cũ thì trên một mặt giấy
+           trắng trơn nó hiện ra thành một vệt bẩn hình bầu dục. */
+        mo: 0.009 + Math.random() * 0.016
+      };
+    }
+
+    /* Màu giấy của theme — để tô ĐẶC mọi dãy núi. */
     var GIAY = (getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#fff').trim() || '#fff';
     function giayRGB() {
       var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(GIAY);
       return m ? parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) : '255,255,255';
     }
 
-    /* ── MỘT BỆT LOANG ──
-       Một hàm cho cả sương, cả quầng sáng, cả vệt ấm ở chân trời: bệt mực
-       loang ra từ một tâm, hình bầu dục, mép tan hẳn.
-
-       Vì sao một hàm dùng chung: ba thứ ấy khác nhau đúng ở màu và ở chỗ ĐỔ
-       mực hay LẤY mực. Gradient tròn không nhận tỉ lệ bầu dục, nên co trục
-       tung lại bằng `scale` rồi vẽ tròn — cùng một mẹo cho cả ba. */
+    /* Một bệt loang: dùng cho quầng sáng và cho sương tĩnh. Gradient tròn
+       không nhận tỉ lệ bầu dục nên co trục tung lại bằng `scale` rồi vẽ tròn.
+       Đuôi chia nhiều chặng — xem chú thích ở `veDia` về vành Mach. */
     function loang(c, cx, cy, rx, ry, m, a, xoa) {
       if (a <= 0.002 || rx <= 0.5 || ry <= 0.5) return;
       c.save();
@@ -889,103 +928,117 @@
       c.translate(cx, cy);
       c.scale(1, ry / rx);
       var g = c.createRadialGradient(0, 0, 0, 0, 0, rx);
-      g.addColorStop(0,    'rgba(' + m + ',' + a.toFixed(3) + ')');
-      g.addColorStop(0.40, 'rgba(' + m + ',' + (a * 0.70).toFixed(3) + ')');
-      g.addColorStop(0.72, 'rgba(' + m + ',' + (a * 0.22).toFixed(3) + ')');
+      g.addColorStop(0,    'rgba(' + m + ',' + a.toFixed(4) + ')');
+      g.addColorStop(0.30, 'rgba(' + m + ',' + (a * 0.72).toFixed(4) + ')');
+      g.addColorStop(0.52, 'rgba(' + m + ',' + (a * 0.400).toFixed(4) + ')');
+      g.addColorStop(0.70, 'rgba(' + m + ',' + (a * 0.180).toFixed(4) + ')');
+      g.addColorStop(0.86, 'rgba(' + m + ',' + (a * 0.048).toFixed(4) + ')');
       g.addColorStop(1,    'rgba(' + m + ',0)');
       c.fillStyle = g;
       c.beginPath(); c.arc(0, 0, rx, 0, Math.PI * 2); c.fill();
       c.restore();
     }
 
-    /* ── BÚT MỀM ──
-       Một nét có mép tan dần, dựng bằng cách chồng nhiều nét cùng đường mà
-       khác bề rộng: rộng nhất ở ngoài, hẹp nhất ở trong, mỗi nét một lớp mực
-       rất mỏng. Cộng lại ra một dải đậm ở lõi và nhạt ra hai mép.
+    /* ══════════════════════════════════════════════════════════════════════
+       ĐƯỜNG SỐNG NÚI: TỔNG SIN, VÀ MỘT CÁI BAO RỘNG
 
-       ── VÌ SAO KHÔNG DÙNG `ctx.filter = 'blur()'` ──
-       Đã thử, và đã bỏ. Nhoè bằng `filter` thì đúng về mặt hình học, nhưng
-       Chromium xé vùng lọc thành từng Ô rồi lọc riêng từng ô, và với một nét
-       rộng vài trăm pixel trải hết bề ngang thì mép các ô không khớp nhau:
-       trên màn điện thoại cả sườn núi hiện ra thành một bậc thang những khối
-       chữ nhật lệch nhau một hai nấc xám. Không phải lỗi mình gọi sai, và
-       không có cách nào chỉnh — nên không dùng.
+       Đã thử ba cách dựng sống núi. Hai cách sau đều sai, và sai theo cùng một
+       kiểu: chúng cố làm cho đỉnh núi SẮC hơn.
 
-       Thêm hai cái được của cách này: `filter` trên một nét HẸP hơn bán kính
-       nhoè thì dàn mỏng nét ra và làm mất độ đậm (một nét 3px nhoè 6px không
-       ra nét 3px mềm mép, nó ra nét 15px nhạt hơn năm lần) — chồng nét thì
-       không bao giờ mất mực. Và `filter` không có ở Safari trước 16.4.
+       · TỔNG SIN + ĐƯỜNG CHUÔNG hẹp (`rong` 0,09). Chuông CỘNG vào nền sin thì
+         át hẳn nền, nên ngọn lấy đúng dáng chuông: cao, hẹp, sườn cong lõm —
+         đọc ra hình vi cá.
+       · NHIỄU GẤP NẾP (`1-|nhiễu|` bình phương, chồng tầng). Đúng cách dựng
+         sống núi thật, cho ra đỉnh sắc và khe có đáy. Nhưng sắc là thứ bức này
+         KHÔNG cần: một cái nền trang thì mọi đỉnh nhọn đều thành một mũi chỉ
+         vào chữ, và mấy chục nếp gấp nhỏ đọc ra là răng cưa.
 
-       Số lớp tính từ BỀ RỘNG THẬT, không để cứng: mép của hai nét cạnh nhau
-       phải cách nhau dưới khoảng một điểm ảnh, vì mắt bắt ra chỗ gãy độ đậm
-       giỏi hơn bắt ra độ đậm nhiều lần — cách nhau 5px thì đọc ra một chùm
-       đường đồng mức, cách nhau 1px thì đọc ra một dải chuyển liền.
+       Quay về TỔNG BA SÓNG SIN như bản V2.8.8 — mềm, liền, không đỉnh nào nhọn.
+       Cái phải sửa không phải dáng sống núi, là mấy thứ khác: mực nhạt đi và
+       trải rộng ra, núi kéo lại gần hơn, và bức phải có một điểm nhìn.
 
-       Mực chồng nhau không cộng tuyến tính (hai lớp 0,3 ra 0,51 chứ không ra
-       0,6), nên `dam` khai mức đậm MUỐN CÓ ở lõi và độ mờ mỗi lớp được giải
-       ngược ra từ đó. */
-    function toMem(c, veDuong, rong0, rong1, muc, dam, lopToiDa) {
-      var lop = Math.max(5, Math.min(lopToiDa || 60, Math.round((rong1 - rong0) / 2.2)));
-      var a = 1 - Math.pow(1 - Math.min(0.97, dam), 1 / lop);
-      var mo = 'rgba(' + muc + ',' + a.toFixed(4) + ')';
-      for (var k = lop - 1; k >= 0; k--) {
-        c.lineWidth = rong0 + (rong1 - rong0) * (k / (lop - 1));
-        c.strokeStyle = mo;
-        veDuong();
-        c.stroke();
+       ── TẦN SỐ THEO BỀ NGANG THẬT, KHÔNG THEO TỈ LỆ ──
+       Tính theo `u = x / W0` thì số ngọn trên một dãy luôn bằng nhau bất kể màn
+       rộng hay hẹp. Trên 1400px thì vừa; nhét đúng chừng ấy ngọn vào một cái
+       điện thoại 375px thì chúng chen nhau thành một hàng răng cưa. Nay bước
+       sóng đo bằng PIXEL: màn hẹp thấy ít ngọn hơn, mỗi ngọn vẫn rộng đúng
+       chừng ấy — như cắt một khúc của cùng một bức tranh.
+
+       ── BAO: ĐIỂM NHÌN, KHÔNG PHẢI HÌNH DÁNG ──
+       `bao` NHÂN vào biên độ của tổng sin, nên chỗ nào bao lớn thì dãy nhấp
+       nhô mạnh hơn và cao hơn, chỗ nào bao nhỏ thì nó xẹp về gần đường giữa.
+       Đó là cách cho bức một chỗ để mắt đậu mà không phải dựng một cái đỉnh
+       riêng: DÁNG vẫn do sin vẽ, bao chỉ nói "chỗ này lớn hơn chỗ kia".
+
+       Bề rộng bao phải RỘNG — từ 0,30 trở lên. Hẹp hơn thì nó lại thành cái
+       chuông, và ta quay về đúng lỗi đầu tiên. `san` là mức sàn, mặc định 1
+       (không bao, dãy nhấp nhô đều suốt bề ngang).
+       ══════════════════════════════════════════════════════════════════════ */
+    function bao(u, dsBao, san) {
+      if (!dsBao || !dsBao.length) return 1;
+      var e = san === undefined ? 1 : san, k, dd, v;
+      for (k = 0; k < dsBao.length; k++) {
+        dd = (u - dsBao[k][0]) / dsBao[k][1];
+        v = dsBao[k][2] * Math.exp(-dd * dd * 1.7);
+        if (v > e) e = v;
       }
+      return e;
     }
 
-    /* ── MỘT DÃY NÚI ──
-       `o.song` là danh sách [tần số, biên độ, lệch pha] — mỗi dãy một bộ riêng
-       nên không dãy nào trùng đường với dãy nào.
+    /* ══════════════════════════════════════════════════════════════════════
+       MỘT NẾP NÚI
 
-       ── TẦN SỐ PHẢI THEO BỀ NGANG THẬT, KHÔNG THEO TỈ LỆ ──
-       Bản trước tính theo `u = x / W0`, tức là số ngọn núi trên một dãy luôn
-       bằng nhau bất kể màn rộng hay hẹp. Trên màn 1400px thì vừa; nhét đúng
-       chừng ấy ngọn vào một cái điện thoại 375px thì chúng chen nhau thành
-       một hàng răng cưa lởm chởm — đúng cái "trên mobile núi lôm côm".
-       Nay bước sóng đo bằng PIXEL: màn hẹp thấy ít ngọn hơn, mỗi ngọn vẫn
-       rộng đúng chừng ấy — giống hệt việc cắt một khúc của cùng một bức tranh.
+       Đường sống là tổng BA SÓNG SIN lệch pha, cộng thêm mấy ĐƯỜNG CHUÔNG nếu
+       dãy ấy có ngọn cao.
 
-       ── BỐN LẦN ĐI MỰC, KHÔNG PHẢI MỘT ──
-       Một dãy núi ở đây được đi bốn lượt, đúng thứ tự người vẽ mực thật làm:
+       ── VÌ SAO ĐƯỜNG CHUÔNG CỘNG VÀO, KHÔNG PHẢI ĐỈNH RỜI ──
+       Đã thử dựng mỗi dãy bằng một chùm đỉnh rời, mỗi đỉnh một dáng
+       `(1-|t|)^n`. Về số thì kiểm soát tốt hơn hẳn, nhưng nhìn thì sai: dáng
+       ấy có một GÓC ở đỉnh và hai sườn gần như thẳng, nên mỗi đỉnh đọc ra một
+       cái nón, và ba cái nón cạnh nhau đọc ra hình minh hoạ chứ không ra sơn
+       thuỷ. Chỗ hai đỉnh gặp nhau lại thành một cái khe chữ V, phải đi làm
+       tròn thêm một lượt nữa.
 
-         1 · GIẤY   tô đặc (chỉ dãy gần) — để nó CHE được thứ nằm sau.
-         2 · RỬA    một lớp mỏng phủ cả khối, cho nó có thân.
-         3 · LÒNG   mực đậm ÁP SÁT ĐƯỜNG SỐNG rồi tan xuống chân.
-         4 · NÉT    đường sống, đi bằng nét thay đổi bề dày.
+       Đường chuông `exp(-d²·4)` thì không có góc nào cả, và vì nó CỘNG vào nếp
+       sin có sẵn nên ngọn núi MỌC LÊN TỪ dãy chứ không dán đè lên dãy: chân
+       ngọn hoà vào đường sống chung, sườn bên này bên kia không bao giờ giống
+       nhau (nền sin bên dưới đã lệch), và không có chỗ nào cần làm tròn.
 
-       Lượt 3 là lượt bản trước không có, và là chỗ hỏng chính. Một gradient
-       dọc thì đậm nhạt theo ĐỘ CAO TRÊN KHUNG, còn núi thì phải đậm nhạt theo
-       KHOẢNG CÁCH TỚI ĐƯỜNG SỐNG — hai chuyện khác nhau, và chúng chỉ trùng
-       nhau khi đường sống nằm ngang. Sống núi có đỉnh có khe, nên gradient dọc
-       làm đỉnh nhạt bằng khe: cả dãy xẹp thành một dải xám nằm ngang, đúng cái
-       "hai object chính đọc ra là hai thanh phẳng".
+       ── TẦN SỐ THEO BỀ NGANG THẬT, KHÔNG THEO TỈ LỆ ──
+       Tính theo `u = x / W0` thì số ngọn trên một dãy luôn bằng nhau bất kể
+       màn rộng hay hẹp. Trên 1400px thì vừa; nhét đúng chừng ấy ngọn vào một
+       cái điện thoại 375px thì chúng chen nhau thành một hàng răng cưa. Nay
+       bước sóng đo bằng PIXEL: màn hẹp thấy ít ngọn hơn, mỗi ngọn vẫn rộng
+       đúng chừng ấy — như cắt một khúc của cùng một bức tranh. Đường chuông
+       thì giữ theo TỈ LỆ, vì ngọn cao là chuyện bố cục: nó phải nằm đúng chỗ
+       ấy trong khung ở mọi khổ màn.
 
-       Lượt 3 chồng vài nét RẤT DÀY lên chính đường sống, nét sau mảnh hơn và
-       đậm hơn nét trước, tất cả bị cắt trong lòng khối. Cộng lại ra một vệt
-       mực đậm nhất ngay tại sống rồi nhạt dần xuống — tức là một gradient CHẠY
-       THEO ĐƯỜNG SỐNG, thứ mà canvas không cho dựng trực tiếp. */
+       ── HAI CÁCH TÔ, CHO HAI LOẠI NÚI ──
+       NÚI XA (có `dinh`): đậm nhất ngay tại đường sống rồi nhoè dần xuống.
+       Nhìn một dãy núi xa qua sương thì đúng như vậy — đường sống cắt vào nền
+       trời còn đọc được, còn chân núi thì chìm trong sương. Tô ngược lại thì
+       cái đỉnh, thứ duy nhất làm nó ra một NGỌN, lại là chỗ mờ nhất.
+
+       NÚI GẦN (không `dinh`): NGƯỢC LẠI — nhạt ở đỉnh, đậm dần xuống chân.
+       Đỉnh tan vào giấy, vì núi thuỷ mặc không có đường viền trên, và vì mấy
+       nếp gần ở đây là đồi thấp nằm trong sương chứ không phải ngọn nhô lên
+       khỏi sương.
+
+       Chính hai cách tô này là chỗ bản trước làm hỏng: nó đánh khối
+       đậm-trên-nhạt-dưới cho MỌI dãy, nên năm dãy xếp lên nhau ra năm nếp lụa
+       gấp cùng một kiểu.
+       ══════════════════════════════════════════════════════════════════════ */
     function veNui(c, o) {
-      var y0 = o.y * H0, cao = o.cao * H0, song = o.song;
-      var muc = o.muc, kW = W0 / 1400;
-      var d = [], i, j, k;
-      for (var x = 0; x <= W0; x += 2) {
-        var u = x / W0, h = 0;
-        for (k = 0; k < song.length; k++) {
-          h += Math.sin(u * song[k][0] * kW + song[k][2]) * song[k][1];
-        }
-        d.push([x, y0 - h * cao]);
-      }
+      var y0 = o.y * H0, cao = o.cao * H0;
+      var xaXoi = o.xaXoi, kW = W0 / 1400, d = [], x, k;
 
-      /* Đỉnh và khe của chính dãy này — để nét ở lượt 4 biết chỗ nào là đỉnh. */
-      var yCao = Infinity, yThap = -Infinity;
-      for (i = 0; i < d.length; i++) {
-        if (d[i][1] < yCao) yCao = d[i][1];
-        if (d[i][1] > yThap) yThap = d[i][1];
+      for (x = 0; x <= W0; x += 3) {
+        var u = x / W0, h = 0;
+        for (k = 0; k < o.song.length; k++) {
+          h += Math.sin(u * o.song[k][0] * kW + o.song[k][2]) * o.song[k][1];
+        }
+        d.push([x, y0 - h * cao * bao(u, o.bao, o.san)]);
       }
-      var khoang = Math.max(1, yThap - yCao);
 
       function thanNui() {
         c.beginPath();
@@ -994,270 +1047,124 @@
         c.lineTo(W0, H0);
         c.closePath();
       }
-      function duongSong(a, b) {
-        c.beginPath();
-        c.moveTo(d[a][0], d[a][1]);
-        for (var q = a + 1; q <= b; q++) c.lineTo(d[q][0], d[q][1]);
-      }
 
-      /* ── 1 · GIẤY ──
-         ── VÌ SAO DÃY XA CŨNG PHẢI CÓ LỚP GIẤY ──
-         Bản trước chỉ hai dãy gần được tô giấy; ba dãy xa để trong suốt hoàn
-         toàn. Một dãy trong suốt thì KHÔNG CHE được gì, và ba chuyện xấu đi
-         cùng nhau:
-
-         · Đường sống của dãy sau chạy XUYÊN QUA thân dãy trước. Mắt đọc ra ba
-           tấm voan xếp lên nhau, không ra ba dãy núi cách nhau mấy cây số —
-           vì vật thật thì che nhau, đó là dấu hiệu duy nhất nói ra cái nào
-           đứng trước.
-
-         · MẶT TRỜI VÀ MẶT TRĂNG được vẽ TRƯỚC cả ba dãy, nên chúng lọt qua
-           núi mà hiện ra. Đây đúng là chỗ "hai object chính hơi mờ": không
-           phải sương che, mà là cái đĩa đang nằm sau một hòn núi nhìn thấu
-           được. Một mặt trời còn chưa mọc khỏi sống núi mà đã thấy tròn vành
-           vạnh thì mắt không đọc ra nó tròn — nó đọc ra là mờ.
-
-         · Lớp rửa của dãy sau cộng dồn vào lớp rửa của dãy trước, nên chỗ nào
-           trùng nhau cũng đậm hơn — thang sắc độ theo chiều sâu dựng công
-           bằng mấy vẫn bị mấy vùng trùng đó phá.
-
-         Nên `o.dac` nay là một SỐ, không phải một cờ bật-tắt: dãy xa tô giấy
-         gần đặc (0,88–0,94) — đủ để che hình, còn chừa một phần rất mỏng cho
-         quầng sáng sau núi rọi qua, đúng chặng "rạng" trước lúc mặt trời mọc.
-         Hai dãy gần thì đặc hẳn. */
-      /* ── 0 · SƯƠNG CHÂN NÚI ──
-         Một dải giấy mỏng rắc DỌC THEO đường sống, vẽ TRƯỚC cả lớp giấy đặc,
-         nên nó xoá mờ đúng cái CHÂN của dãy đứng sau.
-
-         Không có dải này thì mỗi đường sống là một chỗ cắt: mực của dãy sau
-         đang đậm, tới sống dãy trước thì đứt phựt và đổi sang mực của dãy
-         trước. Bức tranh gốc không có chỗ cắt nào — chân dãy nào cũng tan hẳn
-         vào một vệt sương trước khi dãy trước nó dựng lên. Đó là thứ làm năm
-         dãy núi thành MỘT không gian có không khí ở giữa, chứ không thành năm
-         miếng giấy dán chồng.
-
-         Chỉ hai dãy gần dùng nó, và dùng bằng cách tô GIẤY. Dãy xa thì phải
-         XOÁ (xem `veSuong`), vì thứ nằm dưới chúng là nền trời — trời lọt qua
-         sương là đúng; còn xoá trên tấm `gan` thì lại chọc lỗ xuống dãy xa. */
+      /* ── SƯƠNG CHÂN NÚI ──
+         Một dải giấy mỏng rắc dọc đường sống, vẽ TRƯỚC lớp giấy đặc, nên nó
+         xoá mờ đúng cái CHÂN của dãy đứng sau. Bản cũ không cần dải này vì các
+         lớp của nó trong suốt và cộng dồn vào nhau; ở đây lớp nào cũng tô giấy
+         đặc (xem dưới), nên không có nó thì mỗi đường sống là một chỗ cắt. */
       if (o.suong) {
         c.save();
-        c.lineCap = 'butt';
         c.lineJoin = 'round';
-        toMem(c, function () { duongSong(0, d.length - 1); },
-              cao * 0.06, cao * 1.15, giayRGB(), o.suong, 48);
+        c.lineCap = 'butt';
+        var lop = 30, a1 = 1 - Math.pow(1 - o.suong, 1 / lop);
+        c.strokeStyle = 'rgba(' + giayRGB() + ',' + a1.toFixed(4) + ')';
+        for (k = lop - 1; k >= 0; k--) {
+          c.lineWidth = cao * (0.05 + (k / (lop - 1)) * 0.80);
+          c.beginPath();
+          c.moveTo(d[0][0], d[0][1]);
+          for (var q1 = 1; q1 < d.length; q1++) c.lineTo(d[q1][0], d[q1][1]);
+          c.stroke();
+        }
         c.restore();
       }
 
+      /* ── GIẤY ĐẶC ──
+         Bản cũ để mọi lớp trong suốt. Nhìn thì êm, nhưng nó không che được gì,
+         và bản cũ không có thiên thể nên không ai phát hiện. Thêm mặt trời với
+         mặt trăng vào thì lỗi lộ ra ngay: cái đĩa được vẽ TRƯỚC núi, nên nó
+         lặn xuống dưới sống núi rồi mà vẫn thấy tròn vành vạnh — nhìn xuyên
+         qua đá. Từng thử chừa 6–12% cho "quầng rạng" rọi qua: 12% của một đĩa
+         đặc vẫn là một vệt cam rõ mồn một nằm giữa sườn núi. Núi che là che
+         kín; chặng rạng lấy từ phần quầng NHÔ TRÊN sống núi, quầng rộng gấp
+         chín lần cái đĩa nên vẫn còn nguyên. */
       thanNui();
-      var docDac = o.dac === true ? 1 : (o.dac || 0);
-      if (docDac > 0) {
-        c.save();
-        c.globalAlpha = docDac;
-        c.fillStyle = GIAY;
-        c.fill();
-        c.restore();
-      }
+      c.fillStyle = GIAY;
+      c.fill();
 
-      /* ── 2 · RỬA ── */
       var g;
-      if (o.xaXoi) {
-        /* Núi xa: đậm nhất ngay tại đường sống rồi nhoè xuống chân — cách mắt
-           thấy một khối núi qua một lớp không khí dày. */
-        g = c.createLinearGradient(0, y0 - cao * 1.7, 0, y0 + cao * 0.6);
-        g.addColorStop(0, 'rgba(' + muc + ',' + o.dam.toFixed(3) + ')');
-        g.addColorStop(0.55, 'rgba(' + muc + ',' + (o.dam * 0.55).toFixed(3) + ')');
-        g.addColorStop(1, 'rgba(' + muc + ',0)');
+      if (xaXoi) {
+        g = c.createLinearGradient(0, y0 - cao * 1.55, 0, y0 + cao * 0.50);
+        g.addColorStop(0, 'rgba(' + o.muc + ',' + o.dam.toFixed(3) + ')');
+        g.addColorStop(0.62, 'rgba(' + o.muc + ',' + (o.dam * 0.55).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(' + o.muc + ',0)');
       } else {
-        /* Núi gần: cũng ĐẬM TRÊN NHẠT DƯỚI, không ngược lại. Bản trước để
-           `0 → mo` từ trên xuống, tức là chân núi đậm nhất và sống núi trong
-           suốt — trên giấy trắng thì đọc ra là một cái bục, không ra một hòn
-           núi. Núi mực thì chân núi phải TAN vào sương: đó là chỗ để dành cho
-           mặt nước và cho dãy đứng trước nó. */
-        /* Neo vào ĐỈNH và KHE THẬT của chính dãy này, không vào `y0`. `y0` là
-           đường giữa của dao động, nên neo vào nó thì cái đỉnh cao nhất rơi
-           ra NGOÀI chặng đầu của gradient và được tô bằng màu của chặng 0 —
-           tức là đỉnh nhạt hơn sườn. Sai đúng chỗ quan trọng nhất của một
-           hòn núi. */
-        g = c.createLinearGradient(0, yCao - cao * 0.06, 0, yThap + cao * 1.60);
-        g.addColorStop(0,    'rgba(' + muc + ',' + o.dam.toFixed(3) + ')');
-        g.addColorStop(0.40, 'rgba(' + muc + ',' + (o.dam * 0.74).toFixed(3) + ')');
-        g.addColorStop(0.74, 'rgba(' + muc + ',' + (o.dam * 0.42).toFixed(3) + ')');
-        g.addColorStop(1,    'rgba(' + muc + ',' + (o.dam * 0.16).toFixed(3) + ')');
+        g = c.createLinearGradient(0, y0 - cao, 0, y0 + cao * 0.90);
+        g.addColorStop(0, 'rgba(' + o.muc + ',0)');
+        g.addColorStop(0.45, 'rgba(' + o.muc + ',' + (o.dam * 0.72).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(' + o.muc + ',' + o.dam.toFixed(3) + ')');
       }
       c.fillStyle = g;
       c.fill();
 
-      /* ── 3 · LÒNG: mực áp sát đường sống ──
-         Đây là lượt bản trước KHÔNG CÓ, và là chỗ hỏng chính.
+      /* ── NÉT SỐNG NÚI: TUỲ CHỌN, MẶC ĐỊNH TẮT ──
+         Với lối tô ở trên thì MÉP TRÊN CỦA LỚP RỬA ĐÃ LÀ NÉT: chỗ đậm nhất của
+         gradient núi xa nằm đúng trên đường sống, nên cái sống ấy tự cắt vào
+         nền trời thành một đường. Đi thêm một nét nữa lên đúng chỗ ấy là kẻ hai
+         lần một đường, và đường thứ hai — dù mảnh, dù ngắt quãng — vẫn biến
+         bóng núi thành một hình tô màu có outline. Tranh thuỷ mặc không viền
+         núi: chỗ nào cần sắc thì để mực đậm lại ở đó.
 
-         Một gradient dọc thì đậm nhạt theo ĐỘ CAO TRÊN KHUNG, còn núi thì
-         phải đậm nhạt theo KHOẢNG CÁCH TỚI ĐƯỜNG SỐNG — hai chuyện khác nhau,
-         và chúng chỉ trùng nhau khi đường sống nằm ngang. Sống núi có đỉnh có
-         khe, nên gradient dọc làm đỉnh nhạt bằng khe: cả dãy xẹp thành một
-         dải xám nằm ngang, đúng cái "hai object chính đọc ra là hai thanh
-         phẳng".
+         Nên `o.vien` để TRỐNG ở mọi dãy trong bản dựng. Nó còn ở đây vì có một
+         lối vẽ khác cũng đúng: mực rửa nhạt tới mức gần như không có, và toàn
+         bộ hình do NÉT gánh — khi ấy nét không chồng lên một mảng đậm nào cả,
+         nên nó không ra outline mà ra chính cái hình. Muốn thử lối ấy thì khai
+         `vien` với một lớp rửa rất nhạt, chứ không phải thêm nét vào lớp rửa
+         hiện tại.
 
-         Lượt này đi một nét BÚT MỀM rất rộng lên chính đường sống rồi cắt nó
-         trong lòng khối, nên nửa trên bị bỏ và nửa dưới ở lại: ra một vệt mực
-         đậm nhất ngay tại sống rồi nhạt dần xuống chân. Tức là một gradient
-         CHẠY THEO ĐƯỜNG SỐNG, thứ mà canvas không cho dựng trực tiếp. */
-      if (o.long) {
-        c.save();
-        thanNui();
-        c.clip();
-        c.lineJoin = 'round';
-        c.lineCap = 'butt';
-        toMem(c, function () { duongSong(0, d.length - 1); },
-              cao * 0.04, cao * 1.80, muc, o.long, 60);
-        /* ── MÉP ƯỚT ──
-           Một nét cuối, hẹp, ngay sát đường sống. Mực rửa trên giấy ướt luôn
-           đọng lại thành một vệt đậm ở đúng cái mép nó dừng — đó là dấu hiệu
-           mắt dùng để nhận ra "cái này vẽ bằng mực" chứ không phải "cái này
-           tô bằng máy". */
-        c.lineWidth = cao * 0.09;
-        c.strokeStyle = 'rgba(' + muc + ',' + (o.long * 0.30).toFixed(3) + ')';
-        duongSong(0, d.length - 1);
-        c.stroke();
-        c.restore();
-      }
-
-      /* ── 3b · VỆT RỬA ──
-         Mấy đường mực chạy SONG SONG VỚI SỐNG NÚI, cách sống một quãng, mỗi
-         đường lại lượn lệch đi một chút.
-
-         Bản trước để chỗ này là mấy nét buông thẳng đứng từ sống xuống —
-         định tả thớ đá. Ở 2× thì rõ ngay là hỏng: chúng đọc ra một hàng vạch
-         dọc mảnh cách nhau đều đều, đúng như lỗi của một cái màn hình, vì nét
-         thẳng đứng thì CẮT NGANG mọi đường trong bức, mà cả bức này không có
-         một đường thẳng đứng nào khác.
-
-         Nay vệt đi THEO sống. Người vẽ mực không tô một mảng bằng một lượt:
-         họ rửa một lượt tới ngang đâu thì dừng, chờ ráo, rửa tiếp lượt nữa
-         xuống thấp hơn — và mỗi chỗ dừng để lại một cái mép. Ba bốn cái mép
-         như thế là toàn bộ lý do một mảng mực đọc ra "vẽ bằng tay". Không có
-         chúng thì mảng nào cũng là một dải chuyển toán học, và mắt gọi đó là
-         phun sơn. */
-      if (o.vet) {
-        var rt = bam(Math.round(song[0][2] * 100000) + 7);
-        c.save();
-        thanNui();
-        c.clip();
-        c.lineCap = 'round';
-        c.lineJoin = 'round';
-        for (var q2 = 0; q2 < 4; q2++) {
-          var lechV = cao * (0.16 + q2 * 0.36 + rt() * 0.22);
-          var bienV = cao * (0.07 + rt() * 0.20);
-          var tanV = 2.2 + rt() * 4.5;
-          var phaV = rt() * 6.283;
-          /* Đường của vệt này: chính đường sống, dịch xuống `lechV`, cộng một
-             sóng dài riêng — nên nó SONG SONG với sống mà không trùng sống. */
-          var dv = [];
-          for (i = 0; i < d.length; i++) {
-            dv.push([d[i][0],
-              d[i][1] + lechV + Math.sin((d[i][0] / W0) * tanV * kW + phaV) * bienV]);
-          }
-          /* Vệt dưới sâu thì nhạt hơn — lớp rửa sau bao giờ cũng loãng hơn
-             lớp đầu, và phần thấp của dãy đằng nào cũng đang chìm vào sương. */
-          var dayV = cao * (0.05 + rt() * 0.11);
-          var moV = o.vet * (1 - q2 * 0.19) * (0.55 + rt() * 0.55);
-          toMem(c, (function (duong) {
-            return function () {
-              c.beginPath();
-              c.moveTo(duong[0][0], duong[0][1]);
-              for (var w = 1; w < duong.length; w++) c.lineTo(duong[w][0], duong[w][1]);
-            };
-          })(dv), dayV * 0.4, dayV * 3.6, muc, moV, 12);
-        }
-        c.restore();
-      }
-
-      /* ── 3c · VẨY: LỚP RỬA KHÔNG ĐỀU TAY ──
-         Một gradient là một hàm toán: mỗi dòng pixel một giá trị, không dòng
-         nào lệch. Cái đó không tồn tại trong tự nhiên và mắt biết — nên năm
-         dãy núi dựng bằng năm gradient, dù sắc độ đã đúng, vẫn đọc ra là năm
-         cái đồi cát phun sơn. Chỗ hỏng không nằm ở màu mà nằm ở chỗ màu QUÁ
-         ĐỀU.
-
-         Lượt này rắc mấy bệt mực rất lớn và rất mỏng, chỗ đậm chỗ nhạt, vào
-         trong lòng khối. Không ai nhìn ra được một bệt riêng lẻ; cái nhìn ra
-         được là lớp rửa thôi phẳng — giấy chỗ ăn mực nhiều chỗ ăn ít, đúng
-         như một lượt tô bằng bút ướt.
-
-         Dãy có tô giấy đặc thì chỉ ĐỔ mực, không LẤY: lấy mực trên tấm `gan`
-         là chọc một lỗ xuyên qua lớp giấy, và dãy núi xa nằm dưới sẽ hiện lên
-         qua cái lỗ ấy — núi gần hoá ra trong suốt. Dãy xa thì lấy được, vì
-         thứ nằm dưới nó là nền trời, và trời lọt qua sương thì đúng. */
-      if (o.vay) {
-        var rv = bam(Math.round(song[0][2] * 100000) + 23);
-        var choXoa = !o.dac;
-        c.save();
-        thanNui();
-        c.clip();
-        for (i = 0; i < 9; i++) {
-          var vx = W0 * (rv() * 1.24 - 0.12);
-          var vy = yCao + rv() * (khoang + cao * 1.30);
-          loang(c, vx, vy, W0 * (0.09 + rv() * 0.21), cao * (0.22 + rv() * 0.75),
-                muc, o.vay * (0.35 + rv() * 0.65), choXoa && rv() < 0.5);
-        }
-        c.restore();
-      }
-
-      /* ── 4 · NÉT SỐNG NÚI ──
-         Sương xoá mực, nên một dãy chìm trong sương thì tan biến hoàn toàn và
-         bức tranh mất khung. Nét sống giữ lại cái KHUNG ấy: sương mỏng đi là
-         viền hiện ra trước tiên, đúng như núi thật ló ra khỏi mây.
-
-         Bản trước đi nét này bằng MỘT đường `lineWidth = 1`, một độ mờ, chạy
-         suốt từ mép trái sang mép phải. Bề dày không đổi thì nó không còn là
-         nét bút mà là đường kẻ của bản vẽ kỹ thuật — và đó đúng là cái "viền
-         chưa ổn". Nét bút thật dày lên ở chỗ bút ĐÈ và mảnh đi ở chỗ bút
-         BUÔNG; trên một dãy núi thì bút đè ở đỉnh, ở sườn dốc, và buông ở khe.
-
-         Nay nét được cắt thành từng khúc, mỗi khúc một bề dày và một độ mờ
-         tính từ ba thứ: sống ở đây CAO hay THẤP, sườn DỐC hay THOẢI, và một
-         nhịp dài chạy ngang cho bút có chỗ thở. Hai mép khung thì nét nhạt
-         hẳn — bức tranh mực không bao giờ kết thúc bằng một đường kẻ cụt. */
+         Nét TẮT HẲN ở chỗ sống chưa nhô khỏi mặt nước: chỗ ấy đằng nào cũng
+         chìm dưới lớp rửa nước, đi nét vào đó là kẻ một đường ngang suốt khung. */
       if (o.vien) {
+        /* Pha của nhịp bút lấy từ `o.song[0][2]` — pha của sóng đầu tiên, thứ
+           mọi dãy đều có. Bản trước lấy từ một tham số của bộ dựng nhiễu đã
+           bỏ: nó thành `undefined`, `Math.sin(x + undefined)` ra `NaN`, và
+           `NaN.toFixed(3)` ra chuỗi "NaN". Canvas gặp một màu không hợp lệ thì
+           KHÔNG báo lỗi — nó lặng lẽ giữ `strokeStyle` cũ, mà cũ ở đây là màu
+           mặc định: ĐEN ĐẶC. Nên cả nét sống hiện ra thành một đường đen tuyệt
+           đối, đo ra "tối nhất 0". Cùng chuyện với `lineWidth = NaN`.
+
+           Đây là kiểu lỗi canvas dễ để lọt nhất: không ngoại lệ, không cảnh
+           báo, chỉ một con số sai và một cái nét sai màu. */
+        var nuoc = MEP_NUOC * H0, B = 6, day = o.vienDay || 1.1;
+        var phaBut = o.song[0][2];
         c.lineCap = 'round';
         c.lineJoin = 'round';
-        var B = 8, day = o.vienDay || 1.2, phaVien = song[0][2] * 1.7;
-        for (i = 0; i + B < d.length; i += B) {
-          var t0 = d[i], t1 = d[i + B];
-          var doc = Math.min(1, Math.abs((t1[1] - t0[1]) / (t1[0] - t0[0])) * 1.35);
-          var treoV = 1 - (t0[1] - yCao) / khoang;
-          var uu = t0[0] / W0;
-          /* Hai nhịp lệch tần: một nhịp dài cho bút thở, một nhịp ngắn cho
-             giấy ăn mực không đều. Một nhịp thôi thì nét dày mỏng đều đặn như
-             sóng sin — vẫn là một đường kẻ, chỉ là đường kẻ gợn. */
-          var tho = 0.5 + 0.5 * Math.sin(uu * 11.5 * kW + phaVien);
-          var nham2 = 0.5 + 0.5 * Math.sin(uu * 31.0 * kW + phaVien * 2.7);
-          var but = tho * 0.68 + nham2 * 0.32;
-          var mep = muot(uu, 0, 0.05) * (1 - muot(uu, 0.95, 1));
-          c.lineWidth = day * (0.34 + treoV * 0.80 + doc * 0.78) * (0.62 + 0.62 * but);
-          /* Luỹ 1,5 chứ không tuyến tính: bút thật có chỗ ĂN HẲN vào giấy và
-             chỗ BỎ TRẮNG, không rải mực đều hai đầu thang. */
-          c.strokeStyle = 'rgba(' + (o.mucVien || muc) + ',' +
-            (o.vien * mep * (0.26 + treoV * 0.74) * Math.pow(0.30 + 0.70 * but, 1.5)).toFixed(3) + ')';
-          duongSong(i, i + B);
+        for (k = 0; k + B < d.length; k += B) {
+          var t0 = d[k], t1 = d[k + B];
+          if (t0[1] >= nuoc) continue;
+          var noiLen = muot(nuoc - t0[1], 0, cao * 0.12);
+          var doc = Math.min(1, Math.abs((t1[1] - t0[1]) / (t1[0] - t0[0])) * 1.3);
+          var uu2 = t0[0] / W0;
+          /* Hai nhịp lệch tần cho bút có chỗ thở; luỹ 1,4 để có chỗ ăn hẳn vào
+             giấy và chỗ bỏ trắng, thay vì dày mỏng đều như một sóng sin. */
+          var but = (0.5 + 0.5 * Math.sin(uu2 * 13.0 + phaBut * 1.7)) * 0.7
+                  + (0.5 + 0.5 * Math.sin(uu2 * 34.0 + phaBut * 2.9)) * 0.3;
+          c.lineWidth = day * (0.46 + doc * 0.84) * (0.66 + 0.56 * but);
+          c.strokeStyle = 'rgba(' + (o.mucVien || o.muc) + ',' +
+            (o.vien * noiLen * Math.pow(0.32 + 0.68 * but, 1.4)).toFixed(3) + ')';
+          c.beginPath();
+          c.moveTo(t0[0], t0[1]);
+          for (var q3 = k + 1; q3 <= k + B; q3++) c.lineTo(d[q3][0], d[q3][1]);
           c.stroke();
         }
       }
+      /* ── NÉT CHỈ ĐI Ở DÃY GẦN ──
+         Ba dãy xa để `vien` trống, và đó là chủ ý: với lối tô của núi xa thì
+         MÉP TRÊN CỦA LỚP RỬA ĐÃ LÀ NÉT — chỗ đậm nhất của gradient nằm đúng
+         trên đường sống, nên cái sống ấy tự cắt vào nền trời thành một đường.
+         Vẽ thêm một nét lên đúng chỗ ấy là kẻ hai lần một đường, và đường thứ
+         hai biến bóng núi thành một hình tô màu có outline.
+
+         Hai nếp gần thì ngược: chúng tô nhạt-ở-đỉnh, nên mép trên của chúng
+         TAN vào giấy và không có gì cắt ra hình. Ở đấy nét không chồng lên mảng
+         đậm nào cả, nên nó không ra outline mà ra chính cái hình. */
+
     }
 
-    /* ── SƯƠNG ──
-       XOÁ mực trong một dải ngang — nhưng KHÔNG đều tay suốt bề ngang.
-
-       Bản trước là một `fillRect` phủ trọn chiều ngang với một gradient dọc:
-       mọi cột pixel bị lấy đi đúng bằng nhau, nên cái hiện ra là một THANH
-       NGANG mờ chạy hết khung, và cả bức có ba cái thanh như thế xếp trên
-       nhau. Sương thật không nằm thành thanh — nó đọng ở khe núi, dày lên
-       thành đám, chỗ này kín chỗ kia hở.
-
-       Nay: một lớp nền rất mỏng cho cả dải (để hai đám không hở ra mép cứng),
-       rồi mấy ĐÁM bầu dục đặt rời nhau, mỗi đám một cỡ. `lech` đẩy cả cụm
-       trôi ngang theo thời gian — nên chỗ nào đang bị che thì lát sau hở ra,
-       và đó là cái làm núi với mặt trời "lúc mờ lúc tỏ" thay vì mờ đều. */
-    function veSuong(c, y, cao, manh, lech) {
+    /* Sương TĨNH nướng vào tấm nền: xoá mực trong một dải ngang, đậm giữa dải,
+       tan ra hai mép, và không đều tay suốt bề ngang — bốn bệt rời đặt lệch
+       nhau, vì sương thật đọng thành đám chứ không nằm thành thanh. */
+    function veSuong(c, y, cao, manh) {
       if (manh <= 0.002 || cao <= 0) return;
       c.save();
       c.globalCompositeOperation = 'destination-out';
@@ -1268,35 +1175,36 @@
       c.fillStyle = g;
       c.fillRect(0, y - cao, W0, cao * 2);
       c.restore();
-
       var DAM = [[0.16, 0.30, 1.00], [0.47, 0.40, 0.72], [0.78, 0.26, 0.94], [0.97, 0.20, 0.55]];
       for (var i = 0; i < DAM.length; i++) {
-        var cx = W0 * (((DAM[i][0] + (lech || 0)) % 1.34) - 0.17);
-        loang(c, cx, y, W0 * DAM[i][1], cao * 1.30, '0,0,0', manh * DAM[i][2], true);
+        loang(c, W0 * DAM[i][0], y, W0 * DAM[i][1], cao * 1.30, '0,0,0', manh * DAM[i][2], true);
       }
     }
 
-    /* Mặt nước: phủ GIẤY (không xoá mực — xoá thì tấm `gan` thủng và thứ nằm
+    /* Mặt nước: phủ GIẤY (không xoá mực — xoá thì tấm nền thủng và thứ nằm
        dưới nó lộ ra qua lỗ), rồi mấy nét ngang mảnh. */
     function veNuoc(c) {
       var y0 = H0 * MEP_NUOC;
       var rgb = giayRGB();
       var g = c.createLinearGradient(0, y0, 0, H0);
       g.addColorStop(0, 'rgba(' + rgb + ',0)');
-      g.addColorStop(0.25, 'rgba(' + rgb + ',0.74)');
-      g.addColorStop(1, 'rgba(' + rgb + ',0.88)');
+      g.addColorStop(0.10, 'rgba(' + rgb + ',0.58)');
+      g.addColorStop(0.30, 'rgba(' + rgb + ',0.86)');
+      g.addColorStop(1, 'rgba(' + rgb + ',0.93)');
       c.fillStyle = g;
       c.fillRect(0, y0, W0, H0 - y0);
       c.lineCap = 'round';
-      for (var i = 0; i < 12; i++) {
-        var yy = y0 + H0 * (0.018 + i * 0.017) + Math.sin(i * 2.7) * 3;
+      /* Dải nước nay chiếm một phần tư khung, cao gần gấp đôi bản trước, nên
+         số nét phải tăng theo — chín nét trải trên một dải cao gấp đôi thì nửa
+         dưới trống trơn, và một mặt nước trống trơn đọc ra là giấy chưa vẽ chứ
+         không ra là nước. */
+      for (var i = 0; i < 16; i++) {
+        var yy = y0 + H0 * (0.022 + i * 0.0145) + Math.sin(i * 2.7) * 3;
         if (yy > H0 - 4) break;
-        var dai = W0 * (0.16 + ((i * 7) % 5) * 0.09);
-        var x0 = W0 * (0.08 + ((i * 3) % 7) * 0.11);
+        var dai = W0 * (0.13 + ((i * 7) % 5) * 0.08);
+        var x0 = W0 * (0.07 + ((i * 3) % 7) * 0.11);
         if (x0 + dai > W0) x0 = W0 - dai - 10;
-        /* Nét nước lấy mực của DÃY GẦN, không lấy mực đặc: nó là bóng của bờ
-           in xuống nước, nên phải cùng một sắc với cái bờ ấy. */
-        c.strokeStyle = 'rgba(' + MUC_GAN + ',' + (0.075 + (i % 3) * 0.028).toFixed(3) + ')';
+        c.strokeStyle = 'rgba(' + MUC_GAN + ',' + (0.030 + (i % 3) * 0.014).toFixed(3) + ')';
         c.lineWidth = 0.8 + (i % 2) * 0.5;
         c.beginPath(); c.moveTo(x0, yy); c.lineTo(x0 + dai, yy); c.stroke();
       }
@@ -1305,13 +1213,9 @@
     /* ── VỆT SÁNG TRÊN NƯỚC ──
        Không phải một cái bầu dục loang. Ánh sáng trên mặt nước là một CỘT
        những vệt ngang rời nhau: gần bờ thì ngắn và khít, càng ra xa càng dài
-       và thưa, và cả cột rung theo sóng. Vẽ đúng như thế thì nó ra ánh sáng;
-       vẽ một khối mờ thì nó ra một vũng dầu.
-
-       `xoa` = vệt sáng thật (ánh trăng): lấy bớt lớp rửa trên mặt nước để
-       giấy hiện lên. `false` = thêm mực màu (ánh mặt trời lúc thấp). */
+       và thưa, cả cột rung theo sóng. Vẽ một khối mờ thì ra một vũng dầu. */
     function veVet(c, x, rong, m, mo, t, xoa) {
-      var y0 = H0 * (MEP_NUOC + 0.015), y1 = H0 * 0.995;
+      var y0 = H0 * (MEP_NUOC + 0.018), y1 = H0 * 0.995;
       if (y1 <= y0 || mo <= 0.004) return;
       c.save();
       if (xoa) c.globalCompositeOperation = 'destination-out';
@@ -1319,7 +1223,6 @@
       for (var i = 0; i < n; i++) {
         var u = i / (n - 1);
         var y = y0 + (y1 - y0) * u;
-        /* Xa bờ thì vệt dài ra và mảnh đi; cộng một nhịp sóng cho nó thở. */
         var song = Math.sin(t * 0.05 + i * 1.7);
         var w = rong * (0.35 + u * 1.25) * (0.82 + 0.18 * song);
         var a = mo * (1 - u * 0.82) * (0.72 + 0.28 * Math.sin(t * 0.035 + i * 2.3));
@@ -1339,38 +1242,38 @@
     }
 
     /* ── ĐĨA SÁNG: MỘT HÀM CHO CẢ MẶT TRỜI LẪN MẶT TRĂNG ──
-       Khác nhau đúng ở chỗ ĐỔ MỰC hay LẤY MỰC: trên giấy trắng, mặt trăng
-       sáng được là nhờ lấy bớt lớp rửa đêm đi, còn mặt trời thì tự nó là một
-       vệt màu ấm.
+       Khác nhau đúng ở chỗ ĐỔ MỰC hay LẤY MỰC: trên giấy trắng, mặt trăng sáng
+       được là nhờ lấy bớt lớp rửa đêm đi, còn mặt trời thì tự nó là một vệt
+       màu ấm.
 
-       ── QUẦNG VÀ ĐĨA LÀ HAI THỨ, KHÔNG PHẢI MỘT ──
-       Bản trước dựng cả hai bằng MỘT dải chuyển tám chặng. Một gradient thì
-       chỉ có một mức đậm ở tâm, mà quầng với đĩa cần hai mức cách nhau rất
-       xa: quầng phải mỏng tới mức gần như không thấy (nó rộng gấp sáu lần đĩa,
-       đậm thêm một chút là cả góc trời bị nhuộm), còn đĩa phải ĐẶC để đọc ra
-       là một vật. Nhét cả hai vào một gradient thì mức đậm phải chọn theo cái
-       rộng hơn — nên đĩa bị kéo mờ xuống theo quầng. Đó là vì sao mặt trời và
-       mặt trăng "hơi mờ": không phải sương che, mà tại chính cái gradient.
+       Quầng và đĩa đi HAI LƯỢT, không một. Một gradient chỉ có một mức đậm ở
+       tâm, mà quầng rộng gấp mấy lần đĩa nên phải mỏng tới mức gần như không
+       thấy, còn đĩa phải ĐẶC để đọc ra là một vật — nhét cả hai vào một
+       gradient thì mức đậm phải chọn theo cái rộng hơn, và đĩa bị kéo mờ theo
+       quầng. Đó là vì sao hai thiên thể từng "hơi mờ".
 
-       Nay hai lượt: quầng rộng và mỏng, rồi đĩa nhỏ và đặc, mép đĩa tan trong
-       7% bán kính cuối — đủ để không thấy răng cưa, không đủ để thành quầng. */
+       Đuôi quầng phải RẤT dài. Trên mặt giấy trắng trơn thì không có gì che
+       được một chỗ gãy độ đậm, kể cả gãy một nấc trên 255: mắt tự vẽ thêm một
+       đường viền ở đó (Mach band). Quầng tắt hẳn ở `r·6,2` thì đúng tại vòng
+       tròn ấy hiện ra một cái VÀNH mờ quanh mặt trời. Nay `r·9,5` và bảy
+       chặng, ba chặng ngoài đã dưới một phần nghìn. */
     function veDia(c, x, y, r, m, moQuang, moDia, xoa) {
       if (moQuang <= 0.004 && moDia <= 0.004) return;
       c.save();
       if (xoa) c.globalCompositeOperation = 'destination-out';
-
       if (moQuang > 0.004) {
-        var R = r * 6.2;
+        var R = r * 9.5;
         var gq = c.createRadialGradient(x, y, r * 0.55, x, y, R);
-        gq.addColorStop(0,    'rgba(' + m + ',' + moQuang.toFixed(3) + ')');
-        gq.addColorStop(0.16, 'rgba(' + m + ',' + (moQuang * 0.46).toFixed(3) + ')');
-        gq.addColorStop(0.38, 'rgba(' + m + ',' + (moQuang * 0.17).toFixed(3) + ')');
-        gq.addColorStop(0.66, 'rgba(' + m + ',' + (moQuang * 0.05).toFixed(3) + ')');
+        gq.addColorStop(0,    'rgba(' + m + ',' + moQuang.toFixed(4) + ')');
+        gq.addColorStop(0.10, 'rgba(' + m + ',' + (moQuang * 0.46).toFixed(4) + ')');
+        gq.addColorStop(0.25, 'rgba(' + m + ',' + (moQuang * 0.170).toFixed(4) + ')');
+        gq.addColorStop(0.42, 'rgba(' + m + ',' + (moQuang * 0.055).toFixed(4) + ')');
+        gq.addColorStop(0.60, 'rgba(' + m + ',' + (moQuang * 0.018).toFixed(4) + ')');
+        gq.addColorStop(0.80, 'rgba(' + m + ',' + (moQuang * 0.004).toFixed(4) + ')');
         gq.addColorStop(1,    'rgba(' + m + ',0)');
         c.fillStyle = gq;
         c.beginPath(); c.arc(x, y, R, 0, Math.PI * 2); c.fill();
       }
-
       if (moDia > 0.004) {
         var gd = c.createRadialGradient(x, y - r * 0.18, r * 0.12, x, y, r);
         gd.addColorStop(0,    'rgba(' + m + ',' + Math.min(1, moDia * 1.06).toFixed(3) + ')');
@@ -1383,15 +1286,24 @@
       c.restore();
     }
 
-    /* ── BỐ CỤC NÚI ──
-       Ba lớp xa dựng thành một cụm lệch trái, cao dần vào giữa; hai lớp gần
-       thấp và trải rộng. Mỗi lớp một bộ sóng riêng, và lớp nào cũng có ít
-       nhất hai sóng dài để đường sống có chỗ nghỉ — một dãy toàn sóng ngắn
-       đọc ra là hàng răng cưa, không ra là núi.
+    /* ══════════════════════════════════════════════════════════════════════
+       BỐ CỤC — HAI NGỌN CAO Ở XA, MẤY NẾP THẤP Ở GẦN
 
-       ĐƯỜNG CONG KHÔNG ĐỔI so với bản trước — chỗ sửa nằm hết ở mực: mỗi dãy
-       nay có sắc riêng theo chiều sâu, có lượt mực áp sống, và có nét sống đi
-       bằng bút thay vì bằng thước. */
+       Hai lớp đầu là NÚI XA: cao hơn hẳn, nhạt hơn hẳn, mỗi lớp một ngọn nhô
+       lên (`dinh`). Chúng đứng ở nửa trên khung để còn chỗ cho mây trôi ngang
+       qua CHÂN chúng — mây che ngang lưng một ngọn núi cao là hình ảnh làm nên
+       cả bức, còn mây trôi trên một dãy đồi thấp thì chỉ là mây trôi trên trời.
+
+       Hai ngọn không cùng cỡ và không cùng độ cao: một ở x=0,23 cao 0,85, một
+       ở x=0,69 cao 0,72. Bằng nhau là đối xứng, và đối xứng trong sơn thuỷ đọc
+       ra là hình trang trí.
+
+       Mấy lớp sau là nếp gần, thấp và đậm dần xuống đáy, đỉnh tan vào giấy.
+
+       Rồi mặt nước. Chân mọi nếp nằm dưới mép nước nên chúng chìm hẳn — đó là
+       cách một ngọn núi mọc lên từ mặt hồ mà không kéo theo một dải đất chạy
+       suốt khung.
+       ══════════════════════════════════════════════════════════════════════ */
     function veTamNen() {
       W0 = W; H0 = H;
       xa = document.createElement('canvas');
@@ -1399,56 +1311,126 @@
       xa.height = Math.max(1, Math.round(H0));
       var c = xa.getContext('2d');
 
-      /* Dãy xa nhất: cao, thoải, lệch trái — cái đỉnh mặt trời sẽ mọc lên từ
-         phía sau nó. Con số đầu mỗi cặp là SỐ RADIAN trải hết bề ngang ở khổ
-         1400px; chia cho 2π ra số ngọn. Dưới 4 thì cả dãy chỉ còn một cái gò
-         thoai thoải — không ra núi. */
+      /* Hai ngọn cao ở XA: cao hơn hẳn, nhạt hơn hẳn. Chúng đứng ở nửa trên
+         khung để còn chỗ cho mây trôi ngang qua CHÂN chúng — mây che ngang
+         lưng một ngọn núi cao là hình ảnh làm nên cả bức, còn mây trôi trên
+         một dãy đồi thấp thì chỉ là mây trôi trên trời.
+
+         Hai ngọn không cùng cỡ và không cùng độ cao. Bằng nhau là đối xứng, và
+         đối xứng trong sơn thuỷ đọc ra là hình trang trí. */
+      /* ── CHÂN DÃY ĐẶT DƯỚI MÉP NƯỚC ──
+         `chan` là chỗ đường sống tụt về khi cái bao tắt. Đặt nó TRÊN mặt nước
+         thì cái vai phẳng ấy hiện ra thành một đường ngang suốt khung. Nên nó
+         xuống dưới mép nước (0,86–0,88 so với mép nước 0,80) và `cao` tăng lên
+         bù: ngọn vẫn tới đúng độ cao ấy trong khung, còn vai phẳng thì chìm
+         hẳn dưới lớp rửa nước. Đó là cách một ngọn núi mọc lên từ mặt hồ mà
+         không kéo theo một dải đất chạy suốt khung.
+
+         ── VÀ VÌ SAO SÀN KHÔNG ĐƯỢC VỀ 0 ──
+         Đã thử `san: 0` cho gọn: mỗi dãy chỉ còn một khối quanh ngọn của nó,
+         rất nhiều giấy trắng. Đo ra mới thấy sai — mực chỉ còn phủ 30% khung,
+         trong khi bản V2.6.9 (bản đọc ra "hữu tình") phủ tới 56%. Hoá ra cái
+         làm nên không khí của lối vẽ ấy KHÔNG phải một chỗ nào đậm: chỗ đậm
+         nhất của nó còn nhạt hơn ở đây (201 so với 192 trên thang 255). Nó là
+         một TRƯỜNG mực rất nhạt trải rộng — mực mỏng thì chỗ nào cũng còn thấy
+         giấy dưới nó, và cái đọc ra là hơi nước; để trống thì đọc ra là trống.
+
+         Nên sàn trở lại 0,32–0,36: dãy vẫn trải ngang, nhưng phần trải ấy nằm
+         sát mặt nước và mỏng tới mức nó là sương chứ là đất. */
+      /* ── NÚI KÉO LẠI GẦN ──
+         Tần số sóng hạ hẳn xuống (1,4–6,4 radian trên khổ 1400px, so với
+         2,2–14 của bản trước): ít ngọn hơn, mỗi ngọn rộng hơn. Đó là cách duy
+         nhất nói ra "gần" trong một bức không có phối cảnh — vật gần thì chiếm
+         nhiều góc nhìn hơn, nên ít vật hơn mà mỗi vật lớn hơn. Đẩy `cao` lên
+         cũng làm núi lớn, nhưng nó làm núi CAO chứ không làm núi GẦN.
+
+         Bốn tầng sát nhau (0,64 · 0,70 · 0,76 · 0,81) thay vì trải từ 0,37:
+         khoảng giữa các tầng hẹp lại thì mắt đọc ra chúng cách nhau ít, tức là
+         cả cụm đang ở gần. */
+      /* ── NÚI KÉO LẠI GẦN, MÀ KHÔNG ĐỔI TẦN SỐ SÓNG ──
+         Đã thử hạ tần số (1,4–6,4 thay cho 2,2–14) với lý do "ít ngọn hơn,
+         mỗi ngọn rộng hơn thì đọc ra là gần". Sai: dưới một chu kỳ trên cả bề
+         ngang thì dãy núi không còn là dãy núi, nó là một đường chân trời hơi
+         nghiêng. Và nét sống đi trên một đường gần thẳng thì đọc ra đúng là
+         một nét kẻ.
+
+         Nên bộ tần số giữ nguyên của V2.8.8 (đường cong ấy đã đẹp), còn "gần"
+         dồn vào hai chỗ khác: `cao` nhân 1,35 và cả cụm tụt xuống chừng 0,06
+         khung. Vật gần thì CHE nhiều hơn và trùm cao hơn trong khung — đó mới
+         là dấu hiệu của khoảng cách. Mép nước xuống theo (0,755 → 0,855): núi
+         lại gần thì thấy ít mặt hồ hơn, đúng như bước lên vài bước. */
+      /* ── NÚI KÉO LẠI GẦN, MÀ KHÔNG ĐỔI TẦN SỐ SÓNG ──
+         Đã thử hạ tần số (1,4–6,4 thay cho 2,2–14) với lý do "ít ngọn hơn,
+         mỗi ngọn rộng hơn thì đọc ra là gần". Sai: dưới một chu kỳ trên cả bề
+         ngang thì dãy núi không còn là dãy núi, nó là một đường chân trời hơi
+         nghiêng. Và nét sống đi trên một đường gần thẳng thì đọc ra đúng là
+         một nét kẻ.
+
+         Nên bộ tần số giữ nguyên của V2.8.8 (đường cong ấy đã đẹp), còn "gần"
+         dồn vào hai chỗ khác: `cao` nhân 1,35 và cả cụm tụt xuống chừng 0,06
+         khung. Vật gần thì CHE nhiều hơn và trùm cao hơn trong khung — đó mới
+         là dấu hiệu của khoảng cách. Mép nước xuống theo (0,755 → 0,855): núi
+         lại gần thì thấy ít mặt hồ hơn, đúng như bước lên vài bước. */
+      /* ── NÚI KÉO LẠI GẦN, MÀ KHÔNG ĐỔI TẦN SỐ SÓNG ──
+         Đã thử hạ tần số (1,4–6,4 thay cho 2,2–14) với lý do "ít ngọn hơn,
+         mỗi ngọn rộng hơn thì đọc ra là gần". Sai: dưới một chu kỳ trên cả bề
+         ngang thì dãy núi không còn là dãy núi, nó là một đường chân trời hơi
+         nghiêng. Và nét sống đi trên một đường gần thẳng thì đọc ra đúng là
+         một nét kẻ.
+
+         Nên bộ tần số giữ nguyên của V2.8.8 (đường cong ấy đã đẹp), còn "gần"
+         dồn vào hai chỗ khác: `cao` nhân 1,35 và cả cụm tụt xuống chừng 0,06
+         khung. Vật gần thì CHE nhiều hơn và trùm cao hơn trong khung — đó mới
+         là dấu hiệu của khoảng cách. Mép nước xuống theo (0,755 → 0,855): núi
+         lại gần thì thấy ít mặt hồ hơn, đúng như bước lên vài bước. */
       veNui(c, {
-        y: 0.375, cao: 0.285, muc: MUC_XA, dam: 0.170,
-        song: [[5.4, 0.46, 0.6], [2.2, 0.34, 2.1], [10.5, 0.13, 4.4]],
-        xaXoi: true, dac: 0.88, long: 0.34, vet: 0.026, vay: 0.014,
-        vien: 0.62, mucVien: NET_XA, vienDay: 1.05
+        y: 0.440, cao: 0.380, muc: MUC_XA, dam: 0.085, xaXoi: true,
+        song: [[4.3, 0.46, 0.6], [1.8, 0.34, 2.1], [8.4, 0.13, 4.4]]
       });
-      veSuong(c, H0 * 0.40, H0 * 0.050, 0.42);
-      /* Dãy giữa: thấp hơn, đỉnh lệch phải cho cụm không đối xứng. */
+      veSuong(c, H0 * 0.510, H0 * 0.042, 0.22);
       veNui(c, {
-        y: 0.470, cao: 0.225, muc: MUC_XA, dam: 0.220,
-        song: [[6.8, 0.44, 3.4], [2.9, 0.30, 0.8], [12.6, 0.11, 1.9]],
-        xaXoi: true, dac: 0.90, long: 0.42, vet: 0.038, vay: 0.016,
-        vien: 0.70, mucVien: NET_XA, vienDay: 1.15
+        y: 0.540, cao: 0.300, muc: MUC_XA2, dam: 0.100, xaXoi: true, suong: 0.22,
+        song: [[5.4, 0.44, 3.4], [2.3, 0.30, 0.8], [10.1, 0.11, 1.9]]
       });
-      veSuong(c, H0 * 0.490, H0 * 0.038, 0.46);
-      /* Dãy thứ ba: đậm hơn, làm nền cho dãy gần đứng lên. */
+      veSuong(c, H0 * 0.600, H0 * 0.036, 0.22);
       veNui(c, {
-        y: 0.570, cao: 0.190, muc: MUC_GIUA, dam: 0.300,
-        song: [[4.6, 0.48, 1.5], [8.2, 0.22, 5.2], [14.0, 0.09, 3.1]],
-        xaXoi: true, dac: 0.94, long: 0.56, vet: 0.055, vay: 0.020,
-        vien: 0.78, mucVien: NET_GIUA, vienDay: 1.3
+        y: 0.635, cao: 0.255, muc: MUC_GIUA, dam: 0.118, xaXoi: true, suong: 0.22,
+        song: [[3.7, 0.48, 1.5], [6.6, 0.22, 5.2], [11.2, 0.09, 3.1]]
       });
 
       gan = document.createElement('canvas');
       gan.width = xa.width; gan.height = xa.height;
       var g = gan.getContext('2d');
-      /* Khối chính của bức. Đây là chỗ được phép đậm: nó ở gần nhất, và một
-         bức tranh mực không có chỗ nào đậm thật thì cả bức không có trọng
-         lượng — mọi thứ trôi lửng lơ ở một khoảng xám giữa. */
+
+      /* ── ĐIỂM NHÌN NẰM Ở ĐÂY ──
+         Hai nếp gần đậm hơn ba dãy xa một bậc rõ, và có nét sống. Trên trang
+         chủ thì chỗ này nằm dưới dòng chữ lớn và sau thẻ trích dẫn — đúng phần
+         mắt đi tới sau khi đọc xong tiêu đề. Dồn tương phản vào đấy thì bức có
+         chỗ kết, mà chữ ở trên vẫn nằm trên giấy gần như trắng.
+
+         Mép nước lên 1/4 khung (0,750) nên hai nếp này xếp lại: nếp chính lên
+         0,700 để một nửa sống của nó còn nhô trên nước, còn nếp cuối tụt xuống
+         0,965 và mỏng đi một nửa — nó chỉ còn là một vệt bờ ở sát đáy, chừa
+         nguyên dải nước ở giữa. */
       veNui(g, {
-        y: 0.660, cao: 0.140, muc: MUC_GAN, dam: 0.340,
-        song: [[3.4, 0.55, 2.6], [7.1, 0.25, 4.9]],
-        xaXoi: false, dac: true, suong: 0.62, long: 0.62, vet: 0.085, vay: 0.024,
-        vien: 0.90, mucVien: NET_GAN, vienDay: 1.70
-      });
-      /* Mép bờ sát nước: KHÔNG dày thêm một khối nữa — chỉ một nét đậm và một
-         lườn mỏng. Bờ nước là đường chuyển giữa đất và nước, mà đường chuyển
-         thì đọc bằng NÉT. Dựng nó thành một khối đậm thì đáy bức có một thanh
-         tối chắn ngang, và cả bức bị đóng lại ở dưới. */
-      veNui(g, {
-        y: 0.728, cao: 0.070, muc: MUC_BO, dam: 0.120,
-        song: [[4.2, 0.50, 5.6], [9.0, 0.20, 1.2]],
-        xaXoi: false, dac: true, suong: 0.50, long: 0.30, vet: 0.070, vay: 0.018,
-        vien: 0.92, mucVien: NET_GAN, vienDay: 1.40
+        y: 0.700, cao: 0.180, muc: MUC_GAN, dam: 0.175, suong: 0.26,
+        song: [[2.7, 0.55, 2.6], [5.7, 0.25, 4.9]],
+        vien: 0.38, mucVien: '26,30,36', vienDay: 1.15
       });
       veNuoc(g);
+      /* ── VÙNG NƯỚC LẤY CỦA Ý E, NÚI LẤY CỦA Ý D ──
+         Nếp bờ cuối vẽ SAU mặt nước: nó ở gần nhất, nằm TRÊN nước chứ không
+         chìm dưới lớp rửa nước. Nhưng nó nhạt hơn núi một bậc rõ và KHÔNG có
+         nét sống — ngược với mấy nếp núi ở trên.
+
+         Nghe như phá luật "càng gần càng đậm", mà không: một vệt bờ thấp nằm
+         sát mặt nước thì cái mắt thấy không phải khối đất, nó là hơi nước bốc
+         trên mặt hồ. Đi nét vào đấy là đóng đáy bức lại bằng một đường kẻ, và
+         cả một phần tư khung dành cho nước thành ra chỉ là một cái khung. */
+      veNui(g, {
+        y: 0.965, cao: 0.055, muc: MUC_GAN, dam: 0.170, suong: 0.20,
+        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]]
+      });
     }
 
     return {
@@ -1457,6 +1439,15 @@
         var n = Math.max(6, Math.min(16, Math.round(W0 / 130)));
         chim = [];
         for (var i = 0; i < n; i++) chim.push(moiChim(true));
+
+        var nm = Math.max(5, Math.min(16, Math.round(W0 / 120)));
+        may = [];
+        for (var im = 0; im < nm; im++) may.push(moiMay(true));
+
+        var nv = Math.max(3, Math.min(9, Math.round(W0 / 220)));
+        vet = [];
+        for (var iv = 0; iv < nv; iv++) vet.push(moiVet(true));
+
         sao = [];
         var m = Math.max(28, Math.min(70, Math.round(W0 / 16)));
         for (var j = 0; j < m; j++) {
@@ -1473,16 +1464,16 @@
 
       /* ══════════ MỘT VÒNG NGÀY ══════════
          0.00 → 0.05  đêm tàn, chân trời đông ửng
-         0.03 → 0.16  MẶT TRỜI MỌC — quầng sáng dâng lên từ sau dãy núi xa
+         0.03 → 0.16  MẶT TRỜI MỌC — quầng sáng dâng lên từ sau ngọn núi xa
          0.16 → 0.42  lên cao, nhỏ và nhạt dần; giấy gần như trắng
          0.42 → 0.58  hạ về bên phải, to và đỏ lại; một dải ấm ở chân trời
          0.56 → 0.70  chạng vạng, sương dâng, sao hiện
          0.62 → 0.98  trăng đi một cung từ phải sang trái rồi lặn
          0.93 → 1.00  trời nhạt dần, nối về đầu vòng
 
-         Sương THỞ suốt cả vòng: ba dải, mỗi dải một nhịp riêng, lúc dày lúc
-         mỏng, và cả cụm trôi ngang. Khi mỏng thì nét sống núi hiện ra — đó là
-         phần chuyển động chính của bức này, thay cho mấy đám mây đã bỏ. */
+         Chuyển động chính KHÔNG phải vòng ngày ấy — nó chậm quá, chẳng ai ngồi
+         đợi. Chuyển động chính là MÂY TRÔI ngang lưng núi, và mấy vệt sương ở
+         khoảng trống phía trên. */
       ve: function (t) {
         ctx.clearRect(0, 0, W, H);
         var p = (t % CHU_KY) / CHU_KY;
@@ -1495,77 +1486,132 @@
         var ngay     = muot(p, 0.12, 0.24) * (1 - muot(p, 0.50, 0.62));
         var am       = Math.max(binhMinh, hoangHon);
 
-        /* Cung mặt trời — tính sớm vì lớp trời ấm ở bước 1 phải biết nó đang
-           ở ĐÂU. */
-        var uS = kep((p - 0.03) / 0.55);
-        var cung = Math.sin(Math.PI * uS);
-        var sx = W * (0.19 + 0.62 * uS);
-        var sy = H * 0.82 - (H * 0.82 - H * 0.14) * cung;
-        var sr = m * (0.072 - 0.028 * cung);
+        /* ══════════════════════════════════════════════════════════════════
+           THIÊN THỂ: MỘT CHỖ, MỘT CÚ CHUYỂN CẢNH
+
+           Mặt trăng đặt ĐÚNG chỗ mặt trời, không lệch một chút nào. Trời sẫm
+           dần, mặt trời nhạt đi, mặt trăng hiện lên ngay tại đó. Lệch ra một
+           quãng thì mắt đọc ra hai vật — một cái tắt, một cái bật; trùng khít
+           thì nó đọc ra MỘT vật đang đổi.
+
+           ── ĐÃ THỬ LỐI ĐI MỘT CUNG QUA TRỜI, VÀ ĐÃ BỎ ──
+           Mỗi thiên thể đi một cung từ chân trời bên này sang bên kia, đúng
+           như trời thật. Đẹp khi ngồi ngắm, sai khi làm nền một trang để đọc:
+
+           · Một cái đĩa trôi ngang khung kéo mắt đi ngang đúng lúc đang đọc
+             một dòng. Cùng cái lo đã làm cánh hoa ở trang giới thiệu bị hạ
+             xuống .22 — bắt được một vật đang bay ngang nghĩa là đã mất một
+             nhịp đọc.
+           · Phần lớn vòng thì đĩa nằm thấp và bị núi che, nên chẳng thấy gì;
+             rồi đột ngột có một vật băng qua. Cả vòng 70 giây, mà khách ở lại
+             20 giây thì chỉ gặp một mảnh của chuyến đi.
+           · Đi qua trời là đi qua CHỮ. Đứng một chỗ thì chọn được chỗ ấy một
+             lần cho xong: 0,655 ngang · 0,175–0,285 dọc — khoảng trống giữa
+             dòng chữ lớn và cột mục lục.
+
+           Đổi lại, cái thay đổi dồn hết vào NỀN TRỜI. Một lớp rửa sẫm dần thì
+           lúc đọc không ai thấy, lúc rời mắt khỏi chữ mới thấy — đó đúng là
+           chỗ một cái nền nên đứng.
+           ══════════════════════════════════════════════════════════════════ */
+        /* `cung` ở đây không còn là độ cao trên cung trời. Nó chỉ còn làm một
+           việc: nói mặt trời đang giữa trưa (1 — nhạt, vàng, nhỏ) hay đang lúc
+           rạng/tà (0 — đỏ, to). Nên công thức màu và cỡ đĩa giữ nguyên được,
+           không phải viết lại. */
+        var cung = 1 - Math.max(binhMinh, hoangHon) * 0.92;
+        var sx = W * 0.655;
+        /* Hạ xuống một quãng nhỏ lúc rạng và lúc tà. Không phải để làm một cái
+           cung thu nhỏ — mà vì màu và độ cao phải nói cùng một chuyện: đĩa lúc
+           ấy to và ĐỎ, mà đỏ là màu của thấp (ánh sáng đi qua nhiều khí quyển
+           hơn). Một mặt trời đỏ ối đứng gần đỉnh trời thì mắt biết ngay là sai,
+           dù không gọi được tên chỗ sai. 0,175 giữa trưa → 0,285 lúc tà: đủ để
+           đọc ra buổi, chưa đủ để thành một chuyến đi.
+
+           Nhịp sin cuối cho nó trôi lên xuống 0,016 khung suốt cả vòng. Đứng
+           chết một chỗ thì đọc ra một cái hình dán lên, không ra thiên thể. */
+        var sy = H * (0.175 + 0.110 * Math.max(binhMinh, hoangHon)
+                      + 0.016 * Math.sin(p * Math.PI * 2));
+        /* Bán kính đo theo cạnh NGẮN của khung. 0,058 lúc rạng/tà → đĩa rộng
+           chừng 11% chiều cao, đúng cỡ trong tranh gốc; giữa trưa nhỏ lại còn
+           0,042. Từng để 0,078: đĩa rộng 15% khung và ở lối "đứng một chỗ" thì
+           nó thành một cục màu to nằm mãi một chỗ, chứ không thành một thiên
+           thể. Đi một cung thì to mấy cũng được, vì nó đi qua rồi hết. */
+        var sr = m * (0.058 - 0.016 * cung);
+        var mx = sx, my = sy, mr = sr * 0.44;
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
         var hienS = kep(1 - dem * 1.8);
 
         /* ── 1 · NỀN TRỜI ──
            Trên giấy trắng, "trời sáng" là giấy để trắng; mọi sắc khác là một
            lớp rửa mỏng phủ lên. Lớp đêm phủ tới TẬN ĐÁY, không dừng ở chân
-           trời: mặt nước phản chiếu bầu trời, nên nước ban đêm phải sẫm theo
-           — và chính nhờ vậy vệt trăng dưới nước mới có thứ để mà lấy đi. */
+           trời: mặt nước phản chiếu bầu trời, nên nước ban đêm phải sẫm theo —
+           và chính nhờ vậy vệt trăng dưới nước mới có thứ để mà lấy đi. */
         if (dem > 0.002) {
+          /* ── DẢI CHUYỂN PHẢI ĐƠN ĐIỆU, KHÔNG ĐƯỢC LÕM ──
+             Bản trước đi 0,150 → 0,098 → 0,034 ở chân trời → 0,082 ở đáy. Ba
+             chặng đầu nhạt dần rồi chặng cuối đậm lại, tức là dải chuyển có
+             một chỗ LÕM đúng tại chân trời. Mắt đọc một chỗ lõm trong dải
+             chuyển ra thành một VỆT SÁNG nằm ngang — và trên một nền trời
+             đêm thì vệt ấy là một "cục màu" rõ mồn một, dù mọi trị số nhìn
+             riêng đều hợp lý.
+
+             Nay nhạt dần một chiều từ đỉnh xuống chân trời rồi GIỮ NGUYÊN
+             xuống đáy. Nước sẫm bằng chân trời chứ không sẫm hơn: nó phản
+             chiếu đúng cái mảng trời thấp nhất, không phản chiếu cả bầu trời.
+
+             Và đậm hơn hẳn bản trước (0,150 → 0,255 ở đỉnh). Xem chú thích ở
+             bước 6b về chuyện tương phản núi với trời. */
           var gd = ctx.createLinearGradient(0, 0, 0, H);
-          gd.addColorStop(0, 'rgba(' + mau(38, 44, 62) + ',' + (0.155 * dem).toFixed(3) + ')');
-          gd.addColorStop(0.45, 'rgba(' + mau(44, 50, 66) + ',' + (0.100 * dem).toFixed(3) + ')');
-          gd.addColorStop(CHAN_TROI, 'rgba(' + mau(58, 62, 74) + ',' + (0.034 * dem).toFixed(3) + ')');
-          gd.addColorStop(1, 'rgba(' + mau(46, 52, 68) + ',' + (0.085 * dem).toFixed(3) + ')');
+          gd.addColorStop(0,    'rgba(' + mau(36, 42, 58) + ',' + (0.255 * dem).toFixed(3) + ')');
+          gd.addColorStop(0.30, 'rgba(' + mau(38, 44, 60) + ',' + (0.210 * dem).toFixed(3) + ')');
+          gd.addColorStop(0.55, 'rgba(' + mau(42, 48, 64) + ',' + (0.155 * dem).toFixed(3) + ')');
+          gd.addColorStop(CHAN_TROI, 'rgba(' + mau(46, 52, 68) + ',' + (0.115 * dem).toFixed(3) + ')');
+          gd.addColorStop(1,    'rgba(' + mau(46, 52, 68) + ',' + (0.112 * dem).toFixed(3) + ')');
           ctx.fillStyle = gd;
           ctx.fillRect(0, 0, W, H);
         }
-        /* ── LỚP TRỜI ẤM: MỘT DẢI MỎNG CỘNG MỘT ĐÁM QUANH MẶT TRỜI ──
-           Bản trước chỉ có cái dải: một gradient phủ đều suốt bề ngang từ
-           H*0.14 xuống chân trời. Phủ đều nghĩa là góc trời bên kia ửng hồng
-           đúng bằng góc có mặt trời — nên cả bức bị nhuộm một lớp hồng phẳng,
-           và không ai đọc ra ánh sáng đang tới từ phía nào. Đó là chỗ "layer
-           màu chưa ổn": không phải sai màu, mà là màu không có HƯỚNG.
-
-           Nay dải giữ lại nhưng hạ xuống còn hơn một nửa — nó chỉ còn làm cái
-           việc thật của nó, là ửng ở sát chân trời. Phần còn lại dồn vào một
-           đám loang quanh chính mặt trời. Trời bên có mặt trời ấm, bên kia
-           gần như là giấy: bức tranh có nguồn sáng. */
+        /* Lớp trời ấm phải có HƯỚNG: một dải rất mỏng sát chân trời, cộng một
+           đám loang quanh chính mặt trời. Phủ đều suốt bề ngang thì góc trời
+           bên kia ửng hồng đúng bằng góc có mặt trời, nên cả bức bị nhuộm một
+           lớp hồng phẳng và không ai đọc ra ánh sáng đang tới từ phía nào. */
         if (am > 0.002) {
           var mAm = hoangHon >= binhMinh ? mau(208, 104, 62) : mau(214, 130, 100);
           var ga = ctx.createLinearGradient(0, H * 0.22, 0, chanTroi);
           ga.addColorStop(0, 'rgba(' + mAm + ',0)');
-          ga.addColorStop(0.55, 'rgba(' + mAm + ',' + (0.022 * am).toFixed(3) + ')');
-          ga.addColorStop(1, 'rgba(' + mAm + ',' + (0.062 * am).toFixed(3) + ')');
+          ga.addColorStop(0.55, 'rgba(' + mAm + ',' + (0.018 * am).toFixed(3) + ')');
+          ga.addColorStop(1, 'rgba(' + mAm + ',' + (0.052 * am).toFixed(3) + ')');
           ctx.fillStyle = ga;
           ctx.fillRect(0, H * 0.22, W, chanTroi - H * 0.22);
-          loang(ctx, sx, Math.min(sy, chanTroi), W * 0.42, H * 0.30, mAm, 0.085 * am * hienS, false);
+          /* Nhân thêm `(1 - dem)`: hoàng hôn và đêm CHỒNG LẤN nhau một quãng
+             (hoangHon chạy tới 0,68 mà dem đã bắt đầu từ 0,56), nên có một
+             khoảng cả bệt ấm và lớp rửa đêm cùng có mặt. Một bệt cam nằm trên
+             một nền trời đang sẫm lại thì đọc ra hai cục màu chồng nhau, chứ
+             không ra một buổi chiều muộn. */
+          loang(ctx, sx, Math.min(sy, chanTroi), W * 0.40, H * 0.26, mAm,
+                0.070 * am * hienS * (1 - dem), false);
         }
 
-        /* ── 2 · MẶT TRĂNG ──
-           Vẽ trước mọi thứ khác và bằng một phép XOÁ: đĩa là chỗ lớp rửa đêm
-           bị lấy đi hẳn, quầng là chỗ bị lấy đi một phần. Không một nét viền.
-           Đĩa lấy tới 0,95 — tức là gần như trả về đúng mặt giấy, nên trăng là
-           vật SÁNG NHẤT trong bức lúc đêm, không phải một vệt xám nhạt hơn
-           nền một chút. */
-        var uM = kep((p - 0.62) / 0.36);
-        var mx = W * (0.80 - 0.60 * uM);
-        var my = chanTroi - (chanTroi - H * 0.11) * Math.sin(Math.PI * uM);
-        var mr = m * 0.032;
+        /* ── 2 · MẶT TRĂNG: vẽ bằng một phép XOÁ ── */
         var sangTrang = dem * muot(p, 0.60, 0.68);
-        var noTrang = 1 - muot(my + mr, H * 0.60, H * 0.72);
-        veDia(ctx, mx, my, mr, '0,0,0',
-              0.30 * sangTrang, 0.95 * sangTrang * (0.10 + 0.90 * noTrang), true);
+        veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang, true);
 
         /* ── 3 · SAO ── */
+        /* ── SAO LÀ CHỖ LẤY MỰC ĐI, KHÔNG PHẢI CHỖ ĐỔ MỰC VÀO ──
+           Bản trước vẽ sao bằng mực ĐẬM (`MUC` = 17,19,21). Trên một nền trời
+           đêm thì một chấm đậm hơn nền không đọc ra là sao — nó đọc ra là bụi
+           trên mặt giấy. Sao sáng hơn trời, nên nó phải là chỗ lớp rửa đêm bị
+           LẤY ĐI, đúng cùng một phép với mặt trăng. Vẽ trước núi, nên sao nào
+           nằm sau núi thì bị núi che — đúng như phải thế. */
         if (dem > 0.02) {
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-out';
           for (var s = 0; s < sao.length; s++) {
             var k = sao[s];
             var nhay = 0.55 + 0.45 * Math.sin(t * k.nhip + k.pha);
             var a = k.mo * dem * nhay;
-            ctx.fillStyle = 'rgba(' + MUC + ',' + a.toFixed(3) + ')';
+            ctx.fillStyle = 'rgba(0,0,0,' + a.toFixed(3) + ')';
             ctx.beginPath(); ctx.arc(k.x, k.y, k.r, 0, Math.PI * 2); ctx.fill();
             if (k.tia) {
-              ctx.strokeStyle = 'rgba(' + MUC + ',' + (a * 0.6).toFixed(3) + ')';
+              ctx.strokeStyle = 'rgba(0,0,0,' + (a * 0.55).toFixed(3) + ')';
               ctx.lineWidth = 0.7;
               var d2 = k.r * (2.4 + nhay * 1.6);
               ctx.beginPath();
@@ -1574,92 +1620,140 @@
               ctx.stroke();
             }
           }
+          ctx.restore();
         }
 
-        /* ── 4 · MẶT TRỜI, VẼ TRƯỚC CẢ DÃY XA ──
-           Nó nằm SAU mọi dãy núi, nên lúc mọc thì thứ hiện ra đầu tiên là
-           quầng sáng dâng lên từ phía sau cụm núi cao ở xa, rồi cái đĩa mới
-           từ từ trồi khỏi đường sống.
+        /* ── 4 · MẶT TRỜI, VẼ TRƯỚC CẢ NÚI ── */
+        veDia(ctx, sx, sy, sr, mTroi,
+              (0.20 - 0.05 * cung) * hienS, (0.86 - 0.42 * cung) * hienS, false);
 
-           Đĩa nhạt dần khi tâm hạ xuống dưới sống dãy gần: tới đó thì núi đã
-           che nó bằng lớp giấy đặc, nhưng mặt nước chỉ phủ giấy 74–88% nên
-           một cái đĩa đặc nằm dưới mép nước sẽ hắt lên thành một vũng hồng.
-           `noTroi` cắt đúng cái vũng ấy mà vẫn để quầng sáng ở lại — nên chặng
-           "rạng" trước lúc mọc không mất. */
-        var noTroi = 1 - muot(sy, H * 0.62, H * 0.74);
-        var moDiaTroi = (0.86 - 0.42 * cung) * hienS * (0.06 + 0.94 * noTroi);
-        veDia(ctx, sx, sy, sr, mTroi, (0.21 - 0.05 * cung) * hienS, moDiaTroi, false);
-
-        /* ── 5 · DÃY XA ── */
+        /* ── 5 · NÚI XA · 6 · NẾP GẦN + MẶT NƯỚC ── */
         if (xa) ctx.drawImage(xa, 0, 0, W, H);
-
-        /* ── 6 · DÃY GẦN + MẶT NƯỚC ── */
         if (gan) ctx.drawImage(gan, 0, 0, W, H);
 
-        /* ── 6b · TRỜI PHỦ LẦN HAI, LÊN TRÊN CẢ NÚI ──
-           Núi nay có lớp giấy đặc, nên lớp rửa đêm vẽ ở bước 1 nằm HẲN SAU
-           núi và không tới được nó. Để vậy thì nửa đêm trời sẫm mà năm dãy
-           núi vẫn trắng như giữa trưa — mỗi lớp đúng một mình nó, cả bức thì
-           sai, vì đêm xuống là xuống cho mọi thứ cùng lúc.
+        /* ── 7 · MÂY LÀ MỘT CÁI TẨY, KHÔNG PHẢI MỘT NÉT VẼ ──
+           Từng vẽ mây bằng màu TRẮNG chồng lên. Nó không bao giờ hiện ra được,
+           và lý do hiển nhiên khi nói thành lời: canvas này trong suốt và nằm
+           trên một trang GIẤY TRẮNG, nên tô trắng lên nó là tô trắng lên trắng.
 
-           Nên lớp đêm được phủ lần thứ hai, mỏng hơn, lên trên tất cả. Mỏng
-           hơn chứ không bằng: núi vốn sáng hơn trời đêm thật (tuyết, đá trần,
-           hơi nước bốc lên), và giữ cho chúng sáng hơn một bậc là cách duy
-           nhất để đêm không bôi cả bức thành một mảng xám phẳng.
+           `destination-out` mới đúng việc: nó xoá phần alpha đã có ở chỗ hình
+           được vẽ. Mực núi bị tẩy đi, giấy trắng phía sau hiện ra — tức là
+           sương che khuất núi, đúng cách mây được vẽ trong tranh thuỷ mặc (chỗ
+           trắng là chỗ CHỪA LẠI, không phải chỗ tô thêm). Và vì nó tẩy theo
+           gradient tròn, mép sương tan dần chứ không có đường viền.
 
-           Chiều thì ngược lại: một vệt ấm rất mỏng rọi từ phía mặt trời sang,
-           chỉ đủ để sườn núi bên ấy hồng lên một chút. Bỏ nó đi thì mặt trời
-           đỏ rực mà cả dãy núi ngay dưới nó vẫn xám lạnh — hai thứ trong cùng
-           một bức mà chịu hai thứ ánh sáng khác nhau. */
+           ── VÌ SAO MÂY TRÔI, KHÔNG PHẢI SƯƠNG THỞ TẠI CHỖ ──
+           Từng thay chỗ này bằng ba dải sương nằm ngang, dày mỏng theo một
+           nhịp sin tại chỗ. Về số thì cũng là "lúc mờ lúc tỏ", nhưng mắt đọc
+           ra hai thứ rất khác nhau: một dải đổi độ đậm mà không đi đâu thì đọc
+           ra là màn hình đang nhấp nháy; một đám ĐI QUA thì đọc ra là có gió.
+           Cùng một lượng mực bị lấy đi, mà một cái làm bức tranh sống và một
+           cái làm nó chập chờn. */
+        /* ── VỀ ĐÊM MÂY PHẢI TẨY NHẸ TAY HƠN, KHÔNG PHẢI MẠNH HƠN ──
+           Bản trước để `0,60 + 0,30·dem`: càng đêm tẩy càng mạnh, với lý do
+           "đêm nhiều mực hơn thì cú tẩy càng đọc được". Đúng về lượng, sai về
+           mắt — ban ngày cái bị tẩy là mực núi nhạt nên chỗ tẩy chỉ mờ đi một
+           chút; ban đêm cái bị tẩy là cả lớp rửa trời, nên chỗ tẩy nhảy hẳn về
+           màu giấy và đọc ra một CỤC SÁNG. Nay `0,60 - 0,22·dem`. */
+        var dayMay = 0.60 - 0.22 * dem;
+        ctx.globalCompositeOperation = 'destination-out';
+        for (var i = 0; i < may.length; i++) {
+          var mm = may[i];
+          var song = Math.sin(t * mm.nhip + mm.pha);
+          /* Tốc độ ngang cũng thở theo CÙNG sóng ấy, biên độ một phần tư: dải
+             mây thật lúc nhanh lúc chậm theo túi gió. Hai sóng rời thì dải bò
+             thành hình số tám. */
+          mm.x += mm.v * (1 + song * 0.25);
+          var ly = song * mm.bien;
+          if (mm.x - mm.r * 2.4 > W) { may[i] = moiMay(false); continue; }
+          for (var k2 = 0; k2 < mm.cum.length; k2++) {
+            var q = mm.cum[k2];
+            var cx = mm.x + q.dx, cy = mm.y + q.dy + ly;
+            var gm = ctx.createRadialGradient(cx, cy, 0, cx, cy, q.rr);
+            /* Màu ở đây không quan trọng, chỉ alpha quan trọng. Để đen cho rõ
+               ý: đây là một cái tẩy, không phải một nét vẽ. */
+            gm.addColorStop(0, 'rgba(0,0,0,' + (mm.mo * dayMay).toFixed(3) + ')');
+            gm.addColorStop(0.55, 'rgba(0,0,0,' + (mm.mo * dayMay * 0.6).toFixed(3) + ')');
+            gm.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = gm;
+            ctx.beginPath(); ctx.arc(cx, cy, q.rr, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+        ctx.globalCompositeOperation = 'source-over';
+
+        /* ── 7b · TRỜI PHỦ LẦN HAI, LÊN TRÊN CẢ NÚI VÀ CẢ MÂY ──
+           Núi có lớp giấy đặc nên lớp rửa đêm ở bước 1 nằm HẲN SAU núi và
+           không tới được nó; để vậy thì nửa đêm trời sẫm mà núi vẫn trắng như
+           giữa trưa. Mỏng hơn lượt đầu chứ không bằng: núi vốn sáng hơn trời
+           đêm thật, và giữ chúng sáng hơn một bậc là cách duy nhất để đêm
+           không bôi cả bức thành một mảng xám phẳng. Và lượt này là một dải
+           PHẲNG suốt bề ngang — một bệt loang nằm trên sườn núi thì đọc ra
+           đúng là mặt trời đang thấu qua đá, mà đó là thứ vừa bỏ.
+
+           ── ĐÂY LÀ CHỖ QUYẾT ĐỊNH TƯƠNG PHẢN NÚI VỚI TRỜI ──
+           Trời đêm phủ 0,255, còn núi chỉ phủ thêm đúng lượt này. Bản trước để
+           0,066: đo ra trời 223 và núi 227 trên thang 255 — chênh nhau BỐN
+           nấc, tức là không chênh. Đó là cả lý do "không ra tương phản núi với
+           trời", và nó không nằm ở mực của núi, nó nằm ở đúng con số này.
+
+           Nay 0,030. Núi ban đêm phải SÁNG hơn trời rõ rệt, và đó cũng là
+           chuyện thật: tuyết, đá trần, hơi nước bốc lên đều bắt sáng, còn bầu
+           trời thì không có gì để bắt.
+
+           ── VÀ NÓ PHẢI VẼ SAU MÂY ──
+           Mây là một cái tẩy. Đặt nó sau lượt này thì mỗi đám mây chọc một lỗ
+           xuyên qua cả hai lớp trời, xuống tận mặt giấy — mấy cục sáng trên
+           nền trời đêm chính là mấy cái lỗ ấy. Đặt lượt này SAU mây thì lỗ nào
+           cũng được phủ lại một lớp mỏng: chỗ mây đi qua vẫn sáng lên, nhưng
+           sáng thành một vệt sương, không thành một lỗ. */
         if (dem > 0.002) {
           var g2 = ctx.createLinearGradient(0, 0, 0, H);
-          g2.addColorStop(0, 'rgba(' + mau(40, 46, 64) + ',' + (0.070 * dem).toFixed(3) + ')');
-          g2.addColorStop(CHAN_TROI, 'rgba(' + mau(52, 58, 72) + ',' + (0.048 * dem).toFixed(3) + ')');
-          g2.addColorStop(1, 'rgba(' + mau(44, 50, 66) + ',' + (0.062 * dem).toFixed(3) + ')');
+          g2.addColorStop(0, 'rgba(' + mau(40, 46, 64) + ',' + (0.030 * dem).toFixed(3) + ')');
+          g2.addColorStop(CHAN_TROI, 'rgba(' + mau(52, 58, 72) + ',' + (0.022 * dem).toFixed(3) + ')');
+          g2.addColorStop(1, 'rgba(' + mau(44, 50, 66) + ',' + (0.028 * dem).toFixed(3) + ')');
           ctx.fillStyle = g2;
           ctx.fillRect(0, 0, W, H);
         }
-        if (am > 0.002) {
-          var mAm2 = hoangHon >= binhMinh ? mau(206, 112, 74) : mau(212, 138, 110);
-          loang(ctx, sx, Math.min(sy + H * 0.10, H * 0.78), W * 0.36, H * 0.20,
-                mAm2, 0.050 * am * hienS, false);
-        }
 
-        /* ── 7 · VỆT SÁNG TRÊN NƯỚC ──
-           Chỉ khi thiên thể còn nhô trên đường sống dãy gần — khuất rồi thì
-           không còn gì để mà chiếu xuống. */
+        /* ── 8 · VỆT SÁNG TRÊN NƯỚC ── */
         var choiTroi = hienS * (1 - muot(sy + sr, H * 0.60, H * 0.70));
-        veVet(ctx, sx, sr * 1.5, mTroi, 0.14 * choiTroi, t, false);
-        /* Trăng thì LẤY BỚT lớp rửa đêm trên mặt nước — nước đêm sẫm hơn giấy
-           nên chỗ bị lấy đi đọc ra là sáng. */
+        veVet(ctx, sx, sr * 1.5, mTroi, 0.13 * choiTroi, t, false);
         var choiTrang = sangTrang * (1 - muot(my + mr, H * 0.58, H * 0.70));
         veVet(ctx, mx, mr * 1.7, '0,0,0', 0.85 * choiTrang, t, true);
 
-        /* ── 8 · SƯƠNG THỞ ──
-           Ba dải, ba nhịp lệch nhau, mỗi dải vừa dày mỏng vừa trôi lên xuống
-           vừa TRÔI NGANG. Đây là phần chuyển động chính: lúc một đám dày trùm
-           qua thì cả một tầng núi tan vào giấy, lúc nó đi khỏi thì nét sống
-           hiện lại. Về đêm sương dâng cao hơn và đậm hơn.
-
-           Sương ĐỘNG vẽ lại mỗi khung, khác hẳn sương TĨNH nướng sẵn một lần
-           vào tấm nền — nên cùng một con số ở đây nặng gấp nhiều lần. Bản đầu
-           để 0,30–0,72 và cả bức trắng xoá. Nay sương đi thành đám nên nó
-           không còn xoá đều tay nữa: cùng một lượng mực bị lấy đi, nhưng lấy
-           tập trung vào mấy chỗ thay vì rải mỏng khắp bức — nên trị số hạ
-           thêm một nấc so với bản dải ngang. */
-        var dayDem = 0.60 + 0.55 * dem;
-        var DAI = [[0.615, 0.042, 0.0061, 0.0, 0.00011],
-                   [0.515, 0.036, 0.0043, 2.1, -0.00007],
-                   [0.735, 0.030, 0.0078, 4.2, 0.00016]];
-        for (var q = 0; q < DAI.length; q++) {
-          var o = DAI[q];
-          var tho = 0.5 + 0.5 * Math.sin(t * o[2] + o[3]);
-          var y = H * (o[0] - 0.035 * dem) + Math.sin(t * o[2] * 0.6 + o[3]) * H * 0.012;
-          var lech = ((t * o[4]) % 1 + 1) % 1;
-          veSuong(ctx, y, H * o[1] * (0.65 + 0.7 * tho), (0.085 + 0.145 * tho) * dayDem, lech);
+        /* ── 9 · VỆT SƯƠNG MỎNG, VẼ THẬT ──
+           Phần trên chỉ XOÁ, nên ở khoảng giấy trống — chỗ không có mực núi —
+           nó không để lại gì. Mà khoảng trống ấy chiếm nửa trên màn, và một
+           nửa màn đứng im thì cả hiệu ứng đọc ra là một tấm hình tĩnh có góc
+           dưới hơi động đậy. Nên thêm vài vệt sương XÁM rất mỏng, vẽ bình
+           thường, đi chậm hơn mây, alpha dưới 0,05 — đủ để thấy có gì trôi khi
+           nhìn vào khoảng trống, không đủ để đọc ra là một vật. */
+        for (var j = 0; j < vet.length; j++) {
+          var v = vet[j];
+          v.x += v.v;
+          if (v.x - v.r * 2 > W) { vet[j] = moiVet(false); continue; }
+          /* Đuôi chia nhiều chặng. Một gradient hai chặng thì độ đậm giảm
+             ĐỀU theo bán kính, nên tới mép nó vẫn còn một nấc rồi tắt đột —
+             trên giấy trắng trơn mắt bắt ra ngay cái mép ấy, và bệt sương đọc
+             ra thành một cái đĩa bầu dục lơ lửng. Đó đúng là cái "đĩa bay" ở
+             góc trên bản V2.6.9. */
+          /* Nhạt hẳn về đêm. Ban ngày chúng là thứ duy nhất động ở khoảng
+             giấy trống phía trên; ban đêm khoảng ấy đã có lớp rửa trời và có
+             sao, nên thêm mấy bệt xám nữa chỉ làm nền trời lấm tấm. */
+          var moV = v.mo * (1 - dem * 0.78);
+          var gv = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, v.r);
+          gv.addColorStop(0,    'rgba(42,52,64,' + moV.toFixed(4) + ')');
+          gv.addColorStop(0.34, 'rgba(42,52,64,' + (moV * 0.66).toFixed(4) + ')');
+          gv.addColorStop(0.60, 'rgba(42,52,64,' + (moV * 0.28).toFixed(4) + ')');
+          gv.addColorStop(0.82, 'rgba(42,52,64,' + (moV * 0.065).toFixed(4) + ')');
+          gv.addColorStop(1,    'rgba(42,52,64,0)');
+          ctx.fillStyle = gv;
+          ctx.beginPath();
+          ctx.ellipse(v.x, v.y, v.r, v.r * 0.26, 0, 0, Math.PI * 2);
+          ctx.fill();
         }
 
-        /* ── 9 · CHIM: bay ban ngày, thưa dần khi chiều xuống ── */
+        /* ── 10 · CHIM: bay ban ngày, thưa dần khi chiều xuống ── */
         var baySang = Math.max(ngay, binhMinh * 0.55);
         if (baySang > 0.02) {
           for (var i3 = 0; i3 < chim.length; i3++) {
@@ -1674,6 +1768,7 @@
       }
     };
   }
+
 
   /* ══════════ ĐIỀU PHỐI ══════════ */
 

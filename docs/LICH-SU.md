@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.9 | 2026-09-18 | 09 | nền 霜降 — sơn thuỷ nhạt, thiên thể chuyển cảnh |
 | V2.8.8 | 2026-09-18 | 08 | vẽ lại nền 霜降 — nét, lớp mực, chiều sâu |
 | V2.8.7 | 2026-09-18 | 07 | rà lại toàn bộ tài liệu cho khớp mã: nền động bốn hiệu ứng, ô soạn bài có chương riêng, bàn duyệt bốn ngăn, và mọi con số lạc hậu |
 | V2.8.6 | 2026-09-18 | 06 | ô soạn: bấm vào ảnh là hiện thanh ba khổ; màn hình sau khi đăng gom lại một khối gọn; bảng trên trang có hàng kẻ xen kẽ |
@@ -238,6 +239,27 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.9 — 18-Sep-2026
+
+- **Nền 霜降 vẽ lại lần nữa, theo hướng khác V2.8.8.** Bản kia đi tìm trọng
+  lượng: mực đậm, nét sống rõ, mỗi dãy một sắc riêng. Đo lại đời nền cũ mới thấy
+  hướng ấy sai — chỗ đậm nhất của bản được yêu thích chỉ tới 201 trên thang 255,
+  mà nó phủ tới 56% khung. Không khí của lối vẽ này không đến từ chỗ nào đậm, nó
+  đến từ một trường mực rất nhạt trải rộng. Nay mực nhạt hẳn, núi kéo lại gần,
+  mặt nước chiếm một phần tư khung, và đường sống quay về kiểu cong mềm (đã thử
+  ba kiểu sắc hơn — đỉnh nhọn nào cũng thành một mũi chỉ vào chữ).
+- **Mặt trời không đi qua trời nữa.** Thay vì mỗi thiên thể đi một cung rồi
+  lặn, cả hai đứng một chỗ trong khoảng trống bên phải: trời sẫm dần, mặt trời
+  nhạt đi, mặt trăng hiện lên đúng tại đó. Một cái đĩa trôi ngang khung kéo mắt
+  đi ngang đúng lúc đang đọc một dòng — và phần lớn vòng bảy mươi giây thì nó
+  nằm thấp sau núi, chẳng ai thấy gì.
+- **Trời đêm hết lấm tấm, và núi nổi lên khỏi trời.** Ba chỗ hỏng: dải chuyển
+  trời đêm có một quãng lõm ở chân trời nên mắt đọc ra một vệt sáng ngang; mây
+  vẽ sau lớp trời nên mỗi đám chọc một lỗ xuống tận mặt giấy thành một cục sáng;
+  và lớp phủ lên núi dày quá nên trời với núi chỉ chênh nhau bốn nấc xám. Nay
+  chênh 38 nấc, và sao chuyển sang vẽ bằng cách lấy mực đi thay vì đổ mực vào —
+  một chấm đậm hơn nền trời đêm thì đọc ra là bụi trên giấy, không ra là sao.
 
 ## V2.8.8 — 18-Sep-2026
 
