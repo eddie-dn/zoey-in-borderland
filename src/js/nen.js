@@ -1032,27 +1032,12 @@
       var y0 = o.y * H0, cao = o.cao * H0;
       var xaXoi = o.xaXoi, kW = W0 / 1400, d = [], x, k;
 
-      /* ── MÉP NƯỚC CẮT NGANG ĐẤT ──
-         Đường sống của một dãy có chỗ trũng xuống DƯỚI mép nước. Để nguyên thì
-         lớp rửa nước (phủ giấy 86–93%, không phải 100%) chỉ làm mờ phần ấy đi
-         chứ không xoá — và cái còn lại đọc ra là một quả đồi ĐANG NGẬP trong
-         hồ. Vô lý, mà khó chỉ tên: chỗ sai không nằm ở hình nào cả, nó nằm ở
-         chuyện hai hình cùng có mặt ở một nơi chỉ được phép có một.
-
-         Bờ nước thật thì là chỗ đất DỪNG. Nên kẹp đường sống lại ở mép nước:
-         chỗ nào đất thấp hơn mặt nước thì mép của nó chính là mặt nước, và
-         đoạn nằm ngang ấy sau đó bị `veNuoc` phủ lên — đúng như bờ.
-
-         Chỉ những dãy vẽ TRƯỚC mặt nước mới kẹp. Nếp bờ cuối vẽ sau, nó nằm
-         TRÊN nước chứ không bị nước cắt. */
-      var catO = o.catNuoc === false ? Infinity : MEP_NUOC * H0;
       for (x = 0; x <= W0; x += 3) {
         var u = x / W0, h = 0;
         for (k = 0; k < o.song.length; k++) {
           h += Math.sin(u * o.song[k][0] * kW + o.song[k][2]) * o.song[k][1];
         }
-        var yd = y0 - h * cao * bao(u, o.bao, o.san);
-        d.push([x, yd > catO ? catO : yd]);
+        d.push([x, y0 - h * cao * bao(u, o.bao, o.san)]);
       }
 
       function thanNui() {
@@ -1194,6 +1179,39 @@
       for (var i = 0; i < DAM.length; i++) {
         loang(c, W0 * DAM[i][0], y, W0 * DAM[i][1], cao * 1.30, '0,0,0', manh * DAM[i][2], true);
       }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       BỜ NƯỚC LÀ CHỖ MỰC TAN, KHÔNG PHẢI MỘT ĐƯỜNG
+
+       Chỗ nào đường sống trũng xuống dưới mép nước thì phần đất ấy phải đi
+       mất. Đã thử cách thẳng tay nhất: KẸP đường sống lại ở mép nước. Nó giải
+       đúng bài — không còn quả đồi ngập trong hồ — rồi tạo ra một lỗi nặng
+       hơn, vì chỗ kẹp là một đoạn NẰM NGANG TUYỆT ĐỐI, và mọi chỗ kẹp trên cả
+       bề ngang nối nhau thành một đường kẻ chạy suốt khung. Đọc ra là "đây là
+       bờ nè" — thô, và đó là thứ duy nhất trong bức có một đường thẳng.
+
+       Bờ nước thật không phải một đường. Nó là chỗ mực THƯA đi rồi hết: nước
+       nông thì còn thấy đáy, sâu dần thì mất hẳn. Nên thay cú kẹp bằng một dải
+       giấy phủ dần, bắt đầu từ HƠI TRÊN mép nước (−0,012 khung) và đặc hẳn ở
+       dưới mép 0,05 khung. Ranh giới của đất khi ấy vẫn là chính đường sống
+       uốn lượn của nó — chỗ nào nhô cao thì còn thấy, chỗ nào trũng thì tan
+       vào nước — và không có một đoạn thẳng nào cả.
+
+       Bắt đầu từ trên mép nước là chủ ý: nếu bắt đầu đúng tại mép thì tại đó
+       giấy còn trong suốt, nên vẫn còn một nấc chuyển thấy được. Cho nó chớm
+       lên trên một chút thì mép nước thôi là một mốc, nó thành một quãng.
+       ══════════════════════════════════════════════════════════════════════ */
+    function veTanNuoc(c) {
+      var y1 = H0 * (MEP_NUOC - 0.012), y2 = H0 * (MEP_NUOC + 0.050);
+      var rgb = giayRGB();
+      var g = c.createLinearGradient(0, y1, 0, y2);
+      g.addColorStop(0,    'rgba(' + rgb + ',0)');
+      g.addColorStop(0.30, 'rgba(' + rgb + ',0.34)');
+      g.addColorStop(0.62, 'rgba(' + rgb + ',0.76)');
+      g.addColorStop(1,    'rgba(' + rgb + ',0.94)');
+      c.fillStyle = g;
+      c.fillRect(0, y1, W0, H0 - y1);
     }
 
     /* Mặt nước: phủ GIẤY (không xoá mực — xoá thì tấm nền thủng và thứ nằm
@@ -1413,10 +1431,6 @@
         song: [[3.7, 0.48, 1.5], [6.6, 0.22, 5.2], [11.2, 0.09, 3.1]]
       });
 
-      gan = document.createElement('canvas');
-      gan.width = xa.width; gan.height = xa.height;
-      var g = gan.getContext('2d');
-
       /* ── ĐIỂM NHÌN NẰM Ở ĐÂY ──
          Hai nếp gần đậm hơn ba dãy xa một bậc rõ, và có nét sống. Trên trang
          chủ thì chỗ này nằm dưới dòng chữ lớn và sau thẻ trích dẫn — đúng phần
@@ -1427,11 +1441,20 @@
          0,700 để một nửa sống của nó còn nhô trên nước, còn nếp cuối tụt xuống
          0,965 và mỏng đi một nửa — nó chỉ còn là một vệt bờ ở sát đáy, chừa
          nguyên dải nước ở giữa. */
+      /* Dải tan đặt trên tấm XA trước: chân ba dãy xa cũng trũng xuống dưới
+         mép nước, và chúng lộ qua tấm gần ở những chỗ tấm gần không che. */
+      veTanNuoc(c);
+
+      gan = document.createElement('canvas');
+      gan.width = xa.width; gan.height = xa.height;
+      var g = gan.getContext('2d');
+
       veNui(g, {
         y: 0.700, cao: 0.180, muc: MUC_GAN, dam: 0.175, suong: 0.26,
         song: [[2.7, 0.55, 2.6], [5.7, 0.25, 4.9]],
         vien: 0.38, mucVien: '26,30,36', vienDay: 1.15
       });
+      veTanNuoc(g);
       veNuoc(g);
       /* ── VÙNG NƯỚC LẤY CỦA Ý E, NÚI LẤY CỦA Ý D ──
          Nếp bờ cuối vẽ SAU mặt nước: nó ở gần nhất, nằm TRÊN nước chứ không
@@ -1444,7 +1467,7 @@
          cả một phần tư khung dành cho nước thành ra chỉ là một cái khung. */
       veNui(g, {
         y: 0.965, cao: 0.055, muc: MUC_GAN, dam: 0.170, suong: 0.20,
-        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]], catNuoc: false
+        song: [[3.4, 0.50, 5.6], [7.2, 0.20, 1.2]]
       });
     }
 
@@ -1492,7 +1515,20 @@
       ve: function (t) {
         ctx.clearRect(0, 0, W, H);
         var p = (t % CHU_KY) / CHU_KY;
-        var m = Math.min(W, H);
+        /* ── CỠ ĐĨA KHÔNG ĐƯỢC TÍNH THEO CẠNH NGẮN ──
+           Trước đây `Math.min(W, H)`. Ở khổ ngang thì cạnh ngắn là chiều cao,
+           hợp lý. Ở khổ dọc thì cạnh ngắn là bề NGANG — 375 so với 964 — nên
+           mọi cỡ đĩa co lại hơn một nửa: mặt trăng từ bán kính 22px xuống còn
+           9,75px, tức một đĩa 20px mờ nhạt trên một khoảng trời rộng. Trên
+           điện thoại thì đọc ra là KHÔNG CÓ mặt trăng, và đó đúng là chuyện
+           đã gặp.
+
+           `Math.min(H, W * 2)` giữ nguyên khổ ngang (ở đó `H` vẫn nhỏ hơn) và
+           ở khổ dọc thì lấy theo bề ngang nhân hai — ra bán kính 43px cho mặt
+           trời và 19,5px cho mặt trăng. To hơn theo tỉ lệ bề ngang so với
+           desktop, và đúng thế mới phải: trời trên điện thoại rộng và trống
+           hơn nhiều, một cái đĩa bằng tỉ lệ cũ thì lọt thỏm trong đó. */
+        var m = Math.min(H, W * 2);
         var chanTroi = H * CHAN_TROI;
 
         /* ── MỘT LƯỢT MẶT TRỜI, RỒI SANG TRĂNG ──
@@ -1505,9 +1541,19 @@
            Nay đúng một lượt, và đi một chiều: đĩa vào khung ở xa (nhỏ, nhạt,
            cao), rồi lớn dần, ấm dần, hạ dần — tới 0,46 thì tắt và trăng lên.
            `tien` là cả cú zoom ấy, từ 0 (xa) tới 1 (gần). */
-        var tien     = muot(p, 0.02, 0.46);
-        var dem      = muot(p, 0.50, 0.64) * (1 - muot(p, 0.93, 1.00));
-        var ngay     = muot(p, 0.06, 0.18) * (1 - muot(p, 0.42, 0.54));
+        /* ── MẶT TRỜI NHANH, MẶT TRĂNG LÂU ──
+           Trước đây mặt trời chiếm 0,02–0,46 của vòng và trăng 0,50–0,93 —
+           gần như chia đôi. Nhưng hai chặng ấy không cùng một lượng chuyện để
+           kể: mặt trời có cả cú lại gần (lớn dần, ấm dần, hạ dần), còn mặt
+           trăng thì chỉ có một đĩa trắng trên nền trời sẫm — và chính cái
+           TĨNH ấy mới là điều đáng giữ lâu. Nhìn nhanh qua một đêm thì nó
+           thành một nhịp chuyển, không thành một cảnh.
+
+           Nay mặt trời gói vào 0,02–0,34 (nhanh hơn một phần ba), và đêm trải
+           từ 0,38 tới 0,95 — 57% của vòng, gần gấp đôi chặng ngày. */
+        var tien     = muot(p, 0.02, 0.34);
+        var dem      = muot(p, 0.38, 0.50) * (1 - muot(p, 0.95, 1.00));
+        var ngay     = muot(p, 0.05, 0.14) * (1 - muot(p, 0.30, 0.40));
         /* Lớp trời ấm đi theo cú zoom, và tắt hẳn khi đêm tới. */
         var am       = tien * (1 - dem);
         /* Hai tên cũ còn được mấy chỗ dưới đọc: giữ lại, nhưng nay chúng chỉ
@@ -1549,6 +1595,18 @@
            không phải viết lại. */
         /* `cung` = 1 lúc đĩa còn xa (nhỏ, vàng nhạt) → 0,08 lúc nó đã tới gần
            (to, đỏ). Một chiều, không quay lại. */
+        /* ── CHỖ ĐỨNG KHAI BẰNG CON SỐ, KHÔNG SUY TỪ ĐỈNH NÚI ──
+           Đã thử suy dải trời ra từ đỉnh núi cao nhất đo được lúc nướng tấm
+           nền, để chắc chắn thiên thể không bao giờ bị che ở bất cứ khổ màn
+           nào. Ý đúng, mà phép đo sai: con số đỉnh tính ra giống nhau ở mọi bề
+           ngang — dấu hiệu rõ ràng của một công thức sai — và nó đẩy mặt trăng
+           xuống 0,33 H, tức vào đúng chỗ dòng chữ lớn.
+
+           Nên quay về khai bằng con số, ở quãng đã biết là chạy được (0,095 →
+           0,255 H, đều nằm trên đỉnh núi 0,352 với dư một quãng rộng). Muốn
+           buộc vào đỉnh núi thì phải đo lại cho đúng trước, không phải đoán —
+           và chuyện ấy để một lượt khác. */
+
         var cung = 1 - tien * 0.92;
         var sx = W * 0.655;
         /* Hạ xuống một quãng nhỏ lúc rạng và lúc tà. Không phải để làm một cái
@@ -1560,21 +1618,46 @@
 
            Nhịp sin cuối cho nó trôi lên xuống 0,016 khung suốt cả vòng. Đứng
            chết một chỗ thì đọc ra một cái hình dán lên, không ra thiên thể. */
-        /* Hạ dần theo cú zoom: 0,150 lúc còn xa → 0,285 lúc đã tới gần. Càng
+        /* Hạ dần theo cú zoom: từ nóc dải xuống đáy dải. Càng gần càng thấp,
+           và càng thấp thì càng đỏ — màu với độ cao nói cùng một chuyện. */
+        /* Hạ dần theo cú zoom: 0,140 lúc còn xa → 0,255 lúc đã tới gần. Càng
            gần càng thấp, và càng thấp thì càng đỏ — màu với độ cao nói cùng
            một chuyện. */
-        var sy = H * (0.150 + 0.135 * tien + 0.014 * Math.sin(p * Math.PI * 2));
+        var sy = H * (0.140 + 0.115 * tien + 0.012 * Math.sin(p * Math.PI * 2));
         /* Bán kính đo theo cạnh NGẮN của khung. 0,058 lúc rạng/tà → đĩa rộng
            chừng 11% chiều cao, đúng cỡ trong tranh gốc; giữa trưa nhỏ lại còn
            0,042. Từng để 0,078: đĩa rộng 15% khung và ở lối "đứng một chỗ" thì
            nó thành một cục màu to nằm mãi một chỗ, chứ không thành một thiên
            thể. Đi một cung thì to mấy cũng được, vì nó đi qua rồi hết. */
         var sr = m * (0.058 - 0.016 * cung);
-        var mx = sx, my = sy, mr = sr * 0.44;
+
+        /* ── MẶT TRĂNG ĐI RIÊNG MỘT ĐƯỜNG, RẤT CHẬM ──
+           Trước đây trăng đặt ĐÚNG chỗ mặt trời (`mx = sx, my = sy`) để cú
+           chuyển cảnh đọc ra là một vật đang đổi. Cú chuyển ấy giữ nguyên —
+           lúc giao nhau hai đĩa vẫn trùng chỗ — nhưng sau đó trăng tự dâng
+           lên: 0,235 khung lúc vừa hiện, tới 0,158 lúc gần tàn, cộng một quãng
+           trôi ngang 0,017 cho nó không thành một cú trượt thẳng đứng.
+
+           Cả quãng dâng chỉ 0,077 khung trải trên hơn nửa vòng — chừng 40 giây
+           cho 66 pixel ở khổ 863. Chậm tới mức không ai bắt được lúc nó đang
+           đi, mà nhìn lại thì nó đã ở chỗ khác. Đó là tốc độ đúng cho một cái
+           nền: đủ để bức tranh không phải một tấm hình tĩnh, không đủ để kéo
+           mắt khỏi dòng chữ đang đọc. */
+        /* Trăng đi ngược chiều mặt trời trong cùng dải ấy: vừa hiện thì ở đáy
+           dải, gần tàn thì lên nóc. Cả quãng dâng chỉ bằng chiều cao dải —
+           chừng 60 pixel ở khổ 863 — trải trên hơn nửa vòng, tức khoảng bốn
+           mươi giây. Chậm tới mức không ai bắt được lúc nó đang đi, mà nhìn
+           lại thì nó đã ở chỗ khác. */
+        var tienTrang = muot(p, 0.40, 0.92);
+        var mx = W * (0.655 + 0.017 * tienTrang);
+        /* Trăng dâng ngược chiều mặt trời: 0,215 lúc vừa hiện → 0,095 lúc gần
+           tàn. Cao hơn quãng của mặt trời, vì trăng lên là trời đã khuya. */
+        var my = H * (0.215 - 0.120 * tienTrang + 0.008 * Math.sin(p * Math.PI * 2));
+        var mr = m * 0.026;
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
         /* Tắt hẳn trong quãng 0,46–0,58 để nhường chỗ cho trăng — không dùng
            `dem` nữa, vì `dem` lên muộn hơn và hai thiên thể sẽ chồng nhau. */
-        var hienS = 1 - muot(p, 0.46, 0.58);
+        var hienS = 1 - muot(p, 0.34, 0.46);
 
         /* ── 1 · NỀN TRỜI ──
            Trên giấy trắng, "trời sáng" là giấy để trắng; mọi sắc khác là một
@@ -1627,7 +1710,7 @@
         }
 
         /* ── 2 · MẶT TRĂNG: vẽ bằng một phép XOÁ ── */
-        var sangTrang = dem * muot(p, 0.54, 0.64);
+        var sangTrang = dem * muot(p, 0.42, 0.52);
         veDia(ctx, mx, my, mr, '0,0,0', 0.30 * sangTrang, 0.95 * sangTrang, true);
 
         /* ── 3 · SAO ── */
@@ -1825,7 +1908,26 @@
   }
 
   function coLai() {
-    var r = hop.getBoundingClientRect();
+    /* ── ĐO CHÍNH CANVAS, KHÔNG ĐO KHỐI BỌC ──
+       Bản trước đo `hop` (khối mang `data-nen`) rồi đặt bộ đệm theo số ấy.
+       Đúng khi hai cái bằng nhau, mà không phải lúc nào cũng bằng: canvas là
+       `position:absolute;inset:0`, nên cỡ CSS của nó do TỔ ĐỊNH VỊ gần nhất
+       quyết định — và tổ ấy có thể không phải `hop`. Ở trang giới thiệu, khối
+       bọc để `static` nên tổ định vị gần nhất là `body`: canvas rộng 1013×1275
+       trong khi bộ đệm dựng theo 949×883. Bộ đệm bị kéo giãn dọc 1,44 lần, và
+       thứ lộ ra ngay là mặt trời với mặt trăng — chúng vẽ bằng `arc`, tức hình
+       tròn, nên thành bầu dục.
+
+       Đã thử chữa bằng cách cho `.nen-boc{position:relative}`. Nó sửa được cái
+       méo, và làm hỏng một chuyện khác: canvas thôi phủ cả trang mà co về đúng
+       khối bọc, nên trang giới thiệu hiện ra một khối xám có mép vuông ngay
+       giữa trang.
+
+       Chữa đúng chỗ là ở ĐÂY: đo chính canvas. Bộ đệm khi ấy luôn bằng cỡ vẽ
+       ra của nó, bất kể CSS cho nó phủ tới đâu — hình tròn là hình tròn, mà độ
+       phủ thì để CSS quyết. Một phép đo, không một luật CSS nào phải đổi. */
+    var r = cv.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) r = hop.getBoundingClientRect();
     W = Math.max(1, r.width); H = Math.max(1, r.height);
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1886,7 +1988,8 @@
      chính mình qua vòng lặp bố cục. */
   var cuW = 0, cuH = 0;
   function doCo() {
-    var r = hop.getBoundingClientRect();
+    var r = cv.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) r = hop.getBoundingClientRect();
     var w = Math.round(r.width), h = Math.round(r.height);
     if (w === cuW && h === cuH) return;
     cuW = w; cuH = h;
@@ -1895,7 +1998,7 @@
        nhịp rồi mới có hình — thấy rõ nếu người đọc đang cuộn. */
     if (may) may.ve(t);
   }
-  if ('ResizeObserver' in window) new ResizeObserver(doCo).observe(hop);
+  if ('ResizeObserver' in window) new ResizeObserver(doCo).observe(cv);
 
   /* ── VÀ MỘT LỚP KHÔNG PHỤ THUỘC NHỊP VẼ ──
      ResizeObserver gắn vào các bước dựng hình của trình duyệt, nên ở một tab

@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.1 | 2026-09-18 | 01 | bờ nước tan mềm · trăng lên cao · cỡ đĩa ở khổ dọc |
 | V2.9.0 | 2026-09-18 | 00 | index theo lượt xem · nền 霜降 một lượt mặt trời · sửa méo đĩa |
 | V2.8.9 | 2026-09-18 | 09 | nền 霜降 — sơn thuỷ nhạt, thiên thể chuyển cảnh |
 | V2.8.8 | 2026-09-18 | 08 | vẽ lại nền 霜降 — nét, lớp mực, chiều sâu |
@@ -240,6 +241,24 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.1 — 18-Sep-2026
+
+- **Bờ nước thôi là một đường kẻ.** Bản trước cắt đất phẳng ngang ở mép nước để
+  khỏi có quả đồi ngập trong hồ; nó chữa được chuyện ấy mà tạo ra một đường
+  ngang tuyệt đối chạy suốt khung — thứ duy nhất trong bức có một đoạn thẳng,
+  và đọc ra là "đây là bờ nè". Nay mực TAN dần qua mép nước, nên ranh giới của
+  đất vẫn là chính đường sống uốn lượn của nó.
+- **Mặt trăng hiện ra trên điện thoại.** Cỡ hai thiên thể trước đây tính theo
+  cạnh NGẮN của khung. Ở khổ ngang cạnh ngắn là chiều cao, hợp lý; ở khổ dọc nó
+  là bề ngang, nên đĩa co lại hơn một nửa và mặt trăng thành một điểm 20px mờ
+  trên một khoảng trời rộng — trên điện thoại thì đọc ra là không có mặt trăng.
+  Trăng cũng dâng nhẹ suốt đêm thay vì đứng một chỗ, và đêm nay dài gần gấp đôi
+  chặng ngày.
+- **Sửa méo mặt trời/mặt trăng mà không đụng bố cục.** Bản trước chữa bằng một
+  luật CSS, và luật ấy làm nền thôi phủ cả trang mà co về một khối có mép vuông
+  ngay giữa trang giới thiệu. Nay chữa ở chỗ đúng: bộ đệm đo theo chính canvas
+  chứ theo khối bọc — hình tròn là hình tròn, còn độ phủ để CSS quyết.
 
 ## V2.9.0 — 18-Sep-2026
 
