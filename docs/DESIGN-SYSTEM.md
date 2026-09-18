@@ -1289,6 +1289,48 @@ nó phủ chừng 0,69. Đo lại: 246 · 247 · **241** · 245 · 246 · 248, t
 còn **5 nấc** thay vì 30. Chân núi vẫn chìm dần vào nước, chỉ là chìm từ cao
 hơn, đúng như một bờ nông thoải.
 
+#### Một kỳ trăng trong một đêm
+
+Suốt đêm trăng đi hết một kỳ: **tròn → khuyết → bán khuyết → lưỡi liềm**. Một
+đêm thật thì không thế — kỳ trăng dài hai mươi chín ngày. Nhưng cả bức này vốn
+nén một ngày vào bảy mươi giây, nên nén kỳ trăng theo là cùng một phép nói; và
+nó cho mắt một thứ để đo thời gian trôi, thay vì một đĩa trắng đứng yên suốt
+hơn nửa vòng. Cùng một đồng hồ (`tienTrang`) với đường đi chéo 15°, nên trăng
+lên cao tới đâu thì khuyết tới đó.
+
+**Phần sáng không phải một hình tuỳ ý.** Nó luôn là một nửa đường TRÒN ghép với
+một nửa đường BẦU DỤC — bầu dục ấy là đường phân giới ngày/đêm trên quả cầu, mà
+ta nhìn nghiêng nên nó dẹt lại. Bán trục ngang của nó là `r · cos θ`:
+
+| θ | `cos θ` | dáng |
+|---|---|---|
+| 0 | 1 | bầu dục trùng đường tròn → **tròn** |
+| 60° | .50 | phình sang phải → **khuyết** |
+| 90° | 0 | dẹt thành đoạn thẳng → **bán khuyết** |
+| 130° | −.64 | cong ngược lại → **lưỡi liềm** |
+
+Dấu của `cos θ` quyết định bầu dục cong về bên nào, và `ellipse()` nhận điều đó
+qua tham số chiều quay — nên đúng **một** công thức lo cả bốn dáng.
+
+**Chiều quay của nửa đường tròn phải ĐO, không suy.** Đi ngược chiều kim từ −90°
+tới 90° thì vòng qua 180°, ra nửa trái; đi xuôi chiều thì vòng qua 0°, ra nửa
+phải — và lúc ấy hình đổ ra là phần BÓNG, tức kỳ trăng chạy ngược: lưỡi liềm
+trước rồi mới tròn. Hai cách nhìn mã gần như giống nhau. Cách phân định: đổ
+hình rồi **đếm điểm ảnh**, lấy tỉ lệ trên diện tích đĩa —
+
+```
+ky   =  0     0,25    0,5     0,72    1
+sáng =  0,999 0,852   0,499   0,181   0
+```
+
+Dừng ở `0,72` chứ không đi hết `1,0`: qua đó phần sáng mỏng tới mức trên khung
+955px chưa tới hai pixel — đọc ra một vệt xước, không ra mặt trăng.
+
+**Và một vệt mực rất mỏng cho có chiều.** Đĩa vẽ bằng phép xoá nên nó ra một
+mảng giấy trắng PHẲNG. Đổ lại một bệt bầu dục alpha `0,055`, lệch về phía tối
+theo `cos θ`: đủ để rìa thôi sắc lẻm và đĩa có một chiều, chưa đủ để thành một
+cái bóng dán lên.
+
 ### 12.2 · Bật ở đâu
 
 **Trang tĩnh** (`content/pages/*.md`) — thêm vào front matter:
@@ -2458,6 +2500,39 @@ khoá chủ trang. Bỏ hẳn. Ba lẽ, nặng dần:
   dùng. Chen hai nút chỉ chủ trang thấy vào đó thì hàng nút đổi hình theo việc
   ai đang xem.
 
+#### Danh sách dài: gấp · phân trang · chặn chiều cao
+
+Ba cái chặn, mỗi cái lo một kiểu dài khác nhau — và cả ba phải có, vì cái này
+không thay được cái kia:
+
+| | ngưỡng | lo chuyện gì |
+|---|---|---|
+| gấp trả lời | từ cái thứ **5** | một nhánh nuốt cả khu bình luận |
+| phân trang | **10** bình luận gốc | khu dài hơn cả bài |
+| chặn chiều cao | **50svh** | ô gõ bị đẩy khỏi tầm với |
+
+**Gấp từ cái thứ năm, không phải thứ ba.** Bốn trả lời là một mạch trò chuyện
+bình thường; gấp nó lại là bắt người đọc bấm để xem thứ lẽ ra nên thấy luôn. Từ
+cái thứ năm thì nhánh đã dài hơn phần bình luận còn lại.
+
+**Phân trang chỉ đếm bình luận GỐC.** Trả lời đi theo gốc của nó, không tách
+sang trang khác được — không thì một mạch trò chuyện bị cắt làm đôi giữa hai
+trang. Số trang giữ trong biến, KHÔNG nằm ở địa chỉ: người ta tới đây từ một
+link chia sẻ, mà một link chở số trang bình luận là thứ không ai muốn gửi đi.
+
+**Chặn chiều cao là cái quan trọng nhất ở điện thoại.** Mười bình luận mà mỗi
+cái ba bốn dòng thì khu ấy vẫn dài hơn màn hình — và ở điện thoại, nơi khu bình
+luận là một tấm trượt, nó đẩy chính nó dài ra khỏi tầm với: ô gõ nằm dưới đáy,
+muốn tới phải cuộn qua hết. Nên danh sách tự cuộn trong lòng nó, cao tối đa nửa
+màn; ô gõ và thanh `‹ ›` vì thế luôn trong tầm mắt.
+
+`50svh` chứ không `50vh`: trên trình duyệt điện thoại `vh` tính theo màn hình
+lúc thanh địa chỉ đã ẩn, nên khi thanh ấy còn hiện thì `50vh` đã tràn. `svh` là
+khổ **nhỏ nhất** — chỗ chắc chắn luôn thấy được. Đo ở 375×812: đúng 0,50.
+
+Nhánh trả lời KHÔNG tự cuộn thêm một tầng nữa (`.bl-ds--con{overflow:visible}`)
+— hai thanh cuộn lồng nhau là thứ không ai gỡ được bằng ngón tay.
+
 #### Gửi xong phải THẤY lời mình, và sửa được
 
 Trước bản này: gửi xong hiện một dòng "đang chờ duyệt" rồi hết. Lời vừa gõ
@@ -2701,6 +2776,13 @@ Mỗi nhóm bọc trong một `.sz-nhom`, nên nhóm xuống hàng nguyên cụm
 xé đôi, và vạch ngăn là viền trái của nhóm chứ không phải một thẻ riêng — nhờ
 vậy không bao giờ có vạch đứng lạc một mình ở đầu hàng.
 
+**Mọi ngăn bung ra nằm NGAY DƯỚI thanh nút** — ngăn Media, bảng màu, khung đặt
+cỡ bảng, bảng chọn ngôn ngữ khối mã, ô xem thử, ô Markdown. Bản đầu dựng chúng
+ở cuối khối theo đúng thứ tự viết mã, nên ngăn Media rơi xuống **259px** bên
+dưới ô soạn: bấm Media xong màn hình không đổi gì trong tầm mắt, phải cuộn
+xuống mới thấy các lựa chọn — mà người ta thì đang nhìn cái nút vừa bấm. Thứ
+tự lắp ráp nay là thanh nút → các ngăn → khung gõ, đo lại còn **0px**.
+
 ### 22.2 · Bảng Blocks đã bỏ — và vì sao
 
 Từng có một bảng "Blocks" gom mười sáu thứ vào một chỗ: ảnh, video, bảng, mã,
@@ -2760,13 +2842,18 @@ Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay d�
 nút, khổ đang dùng sáng lên. Cùng nếp với ô soạn thư (Gmail: *Small · Best fit
 · Original*): chọn nấc, không kéo góc.
 
-| nút | ghi ra file | nghĩa |
-|---|---|---|
-| Cỡ gốc | `{.goc}` | đúng khổ thật, **không bao giờ phóng to** |
-| Hẹp | `{.hep}` | 62% cột chữ, căn giữa |
-| Thường | *(không có)* | bằng cột chữ |
-| Rộng | `{.wide}` | rộng hơn cột chữ một chút |
-| Tràn | `{.full}` | tràn hết bề ngang màn hình |
+| nút | ghi ra file | nghĩa | khổ hẹp |
+|---|---|---|---|
+| Cỡ gốc | `{.goc}` | đúng khổ thật, **không bao giờ phóng to** | như nhau |
+| Nhỏ | `{.rat-hep}` | 31% cột chữ — đúng một NỬA nấc hẹp | 52% |
+| Hẹp | `{.hep}` | 62% cột chữ, căn giữa | 86% |
+| Thường | *(không có)* | bằng cột chữ | như nhau |
+| Tràn | `{.full}` | tràn hết bề ngang màn hình | như nhau |
+
+**Nấc *Rộng* (`{.wide}`) đã bỏ khỏi thanh.** Nó nghĩa là "rộng hơn cột chữ một
+chút", mà một chút ấy không đủ để thấy khác và lại đủ để phá nhịp cột — ảnh
+nào đáng phá nhịp thì đáng tràn hẳn. Lớp `.wide` vẫn còn trong `prose.css` cho
+những bài cũ đã gõ tay; chỉ là không có nút nào sinh ra nó nữa.
 
 Mỗi nút kèm một dòng giải thích trong `title`: "Hẹp" hay "Rộng" không tự nói ra
 nó rộng hơn **cái gì**.
@@ -2790,11 +2877,14 @@ tay cầm kéo được rồi để nó mất tác dụng còn tệ hơn là kh�
 chọn trên màn 27 inch là một tấm ảnh tràn mép trên điện thoại. Medium ·
 Substack · Ghost đều cho nấc, không cho kéo.
 
-**Nấc `nho` là nấc mới, và nó lấp một lỗ thật.** Ba nấc cũ đều đi MỘT CHIỀU:
+**Hai nấc thu nhỏ, vì một nấc không đủ.** Ba nấc đời đầu đều đi MỘT CHIỀU:
 bằng cột chữ, rộng hơn cột chữ, tràn cả trang — không có đường nào cho ảnh
 **nhỏ lại**. Thả một tấm ảnh dọc chụp từ điện thoại vào bài là nó chiếm trọn
-chiều cao màn hình và không có cách nào thu. `62%` cột chữ, căn giữa; ở khổ
-hẹp nới lên `86%`, vì 62% của một cột đã hẹp là một tấm ảnh bé không nhìn ra gì.
+chiều cao màn hình và không có cách nào thu. *Hẹp* `62%` lấp chỗ ấy; rồi hoá ra
+`62%` vẫn to quá cho bìa sách, logo và ảnh chụp màn hình dọc, nên có thêm *Nhỏ*
+`31%` — đúng một nửa, để hai nấc đứng cạnh nhau nhìn ra ngay là hai nấc chứ
+không phải một nấc bị lệch. Ở khổ hẹp cả hai đều nới (86% và 52%), vì 62% của
+một cột đã hẹp là một tấm ảnh bé không nhìn ra gì.
 
 ### 22.5b · Danh sách · thụt vào · ô việc — BA LUẬT, VÀ CHÚNG PHẢI ĐI VỚI NHAU
 
@@ -2855,6 +2945,35 @@ không bắt được gì, và `sangMD` xuất ra hai đoạn dính làm một. 
 `<p><br></p>` lúc mở, và mỗi lần nội dung đổi thì gom mọi nút trần vào một
 `<p>` — gom theo CỤM liền nhau, để một câu có chữ đậm ở giữa không bị xé thành
 ba đoạn.
+
+**Ca 9 · Thụt vào ở mục ĐẦU danh sách.** `execCommand('indent')` không làm gì
+khi mục không có mục nào đứng trước — không có gì để lồng vào. Trước bản này
+nút Thụt vào lại còn một chặn sẵn `if (li && !li.previousElementSibling) return;`
+đứng TRƯỚC cả đường xử lý, nên một danh sách một dòng không sao lồng được, mà
+cũng không báo gì. Google Docs và Word xử ca này bằng cách sinh một mục cha
+**rỗng** bọc lấy — đó là thứ duy nhất đúng được cả về cấu trúc lẫn về Markdown,
+vì `- ` một mình xuất ra rồi đọc lại vẫn là một mục rỗng có con. Nhớ chừa một
+dấu cách sau `-`: bước rửa khoảng trắng cuối dòng ăn mất `-` trơ và nó quay về
+thành một đoạn văn — đã thử năm cách viết, chỉ `"-  "` đi về được nguyên vẹn.
+
+**Ca 10 · Mốc phải được CỨU trước khi khối cũ bị xoá.** `insertUnorderedList`
+dựng `<ul>` mới rồi bỏ cái mốc giữ con trỏ **ở lại** trong `<p>` cũ; bước dọn
+sau đó xoá `<p>` rỗng ấy đi. Con trỏ theo mốc rơi vào một nhánh đã lìa khỏi
+trang: `rangeCount` vẫn là 1, vẫn gõ được, nhưng chữ gõ vào không hiện ở đâu
+cả. Nên trước khi xoá bất cứ khối nào, phải soi trong nó còn mốc không — còn
+thì chuyển sang mục cuối của danh sách vừa dựng.
+
+**Ca 11 · Gõ tắt Markdown phải HOÃN một nhịp.** `# ` · `## ` · `> ` · `- ` ·
+`1. ` · `[] ` ở đầu một khối trống thì đổi khối luôn, như Notion, Bear,
+Obsidian, Linear. Việc này chạy trong sự kiện `input`, mà `execCommand` gọi
+ngay trong một sự kiện `input` thì Chromium **lặng lẽ** bỏ qua: đo được là chữ
+mồi biến mất đúng như mong, nhưng khối không đổi — `# chữ` ra `<p>chữ</p>` chứ
+không ra `<h2>`. Không lỗi, không ném gì, chỉ là không xảy ra. Đẩy lệnh sang
+`setTimeout(…, 0)`. `npm run kiem` canh cái hoãn này.
+
+Và nó chỉ bắt khi cả khối chỉ có mấy ký tự mồi ấy, nên gõ `- ` giữa câu vẫn ra
+dấu gạch. Riêng `- ` và `1. ` thì không bắt khi đang đứng trong một `<li>` —
+ở đó người ta đang gõ nội dung mục, không phải đang xin một danh sách nữa.
 
 **Ca 8 · Mục rỗng lọc lúc XUẤT, không xoá trong DOM.** Đã thử dọn `<li>` rỗng
 ngay trong `donDanhSach`. Sai nặng: hàm ấy chạy sau mỗi lần thụt vào/thụt ra,
@@ -2922,11 +3041,26 @@ người không biết code không có cách nào đoán ra `.giu` nghĩa là g�
 `.hai` và `.ba` vẫn xuống một cột ở khổ hẹp — ép hai cột trên màn 375px là hai
 tấm ảnh rộng 160px, nhỏ hơn cả ngón tay.
 
+**Bấm nút dải ảnh là bảng chọn ảnh mở ra ngay.** Bản đầu chỉ dựng một khung
+rỗng rồi thôi — đúng về cấu trúc, vô dụng về đường đi: không có chỗ nào trong
+khung nói cho người ta biết ảnh vào bằng cách nào, nên phải tự đoán ra là đi
+vòng qua nút Media rồi kéo từng tấm thả vào. Nay một cú bấm làm đủ ba việc:
+dựng khung, đặt con trỏ vào TRONG khung, rồi gọi `oFile.click()`. Thứ tự ấy
+quan trọng — mở bảng chọn trước khi có chỗ đặt thì ảnh về không biết rơi vào
+đâu.
+
 ### 22.6 · Ba luật cứng của mọi thứ trong ô soạn
 
-1. **Chèn bằng `document.execCommand('insertHTML')`**, không dựng DOM rồi nhét
-   vào. `insertHTML` đi qua đúng cỗ máy hoàn tác của trình duyệt nên Ctrl+Z gỡ
-   được; dựng tay thì cú bấm ấy nằm ngoài lịch sử và người ta mất đường lùi.
+1. **Chữ và thẻ trong dòng thì `insertHTML`; KHỐI thì dựng tay.** Luật đời đầu
+   là "mọi thứ đều `insertHTML`", vì lệnh ấy đi qua đúng cỗ máy hoàn tác của
+   trình duyệt nên Ctrl+Z gỡ được. Nhưng với khối thì nó không giữ nổi lời:
+   Chromium **làm sạch** đoạn HTML theo chỗ con trỏ đang đứng, mà con trỏ thì
+   đang ở trong một `<p>` — `<pre>` không được phép nằm trong `<p>`, nên nó bị
+   rút thành một thẻ rỗng và cả phần mã biến mất khỏi Markdown xuất ra. Đo
+   được ở nút khối mã, nút đường kẻ, nút bảng và nút dải ảnh. Nên khối (`pre`,
+   `table`, `hr`, `figure`, `:::`) dựng thẳng bằng DOM rồi chèn sau khối đang
+   đứng; đổi lại phải tự lo chỗ đứng cho con trỏ, và Ctrl+Z gỡ một nhát hết cả
+   khối thay vì gỡ dần.
 2. **`mousedown` + `preventDefault` trên mọi nút**, không phải `click`. Bấm một
    cái nút là trình duyệt bỏ vùng chọn trong khung soạn TRƯỚC khi `click` chạy
    tới; chặn ở `mousedown` thì vùng chọn còn nguyên.

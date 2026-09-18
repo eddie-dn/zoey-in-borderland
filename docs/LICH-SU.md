@@ -58,6 +58,9 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.2 | 2026-09-18 | 02 | ô soạn: thụt vào được ở mục đầu danh sách; con trỏ không nhảy khi đổi khối; gõ tắt Markdown |
+| V3.0.1 | 2026-09-18 | 01 | ô soạn: dải ảnh mở bảng chọn ảnh; ngăn Media lên ngay dưới thanh nút; thêm khổ nhỏ, bỏ khổ rộng |
+| V3.0.0 | 2026-09-18 | 00 | bình luận: ẩn bớt reply · ngăn cao tối đa nửa trang · hơn 10 thì có trang; trăng chạy trọn một kỳ |
 | V2.9.9 | 2026-09-18 | 09 | ô soạn: năm nấc khổ ảnh có cỡ gốc; tooltip cho khổ ảnh và dạng dải ảnh; sửa khối mã |
 | V2.9.8 | 2026-09-18 | 08 | ô soạn có xem thử dựng bằng chính bộ dựng trang; dải ảnh bốn dạng; sửa thứ tự thẻ og:image |
 | V2.9.7 | 2026-09-18 | 07 | ô soạn: sửa danh sách · thụt vào · ô việc dùng cùng nhau; thêm khổ ảnh nhỏ |
@@ -249,6 +252,51 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.2 — 18-Sep-2026
+
+- **Gõ tắt như Notion.** `# ` thành tiêu đề, `## ` thành tiêu đề con, `> `
+  thành trích dẫn, `- ` thành gạch đầu dòng, `1. ` thành danh sách đánh số,
+  `[] ` thành ô việc — chỉ ở đầu một khối trống, nên gõ dấu gạch giữa câu vẫn
+  là dấu gạch. Lệnh phải hoãn một nhịp: gọi thẳng trong sự kiện gõ thì
+  Chromium lặng lẽ bỏ qua, chữ mồi biến mất mà khối không đổi.
+- **Thụt vào được ở mục ĐẦU danh sách.** Trước đây một nút chặn sẵn trả về
+  ngay khi mục không có mục nào đứng trước, nên danh sách một dòng không sao
+  lồng được. Nay nó tự sinh một mục cha rỗng bọc lấy — cùng cách Google Docs
+  và Word làm. Phím Tab cũng đi đúng đường ấy.
+- **Con trỏ hết nhảy khi đổi khối.** Đổi một đoạn thành gạch đầu dòng thì
+  trình duyệt để lại cái mốc giữ con trỏ ở đoạn CŨ, rồi bước dọn dẹp xoá đoạn
+  ấy — con trỏ rơi vào một nhánh đã lìa khỏi trang, gõ tiếp là mất chữ. Nay
+  mốc được cứu sang mục mới trước khi đoạn cũ bị xoá.
+
+## V3.0.1 — 18-Sep-2026
+
+- **Dải ảnh nay cho chọn ảnh.** Bấm nút dải ảnh trước đây chỉ ra một khung
+  rỗng, không có đường nào nạp ảnh vào — phải đi vòng qua nút Media rồi kéo
+  từng tấm. Nay bấm một cái là khung dựng xong, con trỏ vào đúng trong khung,
+  và bảng chọn ảnh của máy mở ngay.
+- **Ngăn Media không còn ở đáy.** Nó vốn dựng ở cuối khối nên rơi xuống 259px
+  dưới ô soạn — bấm Media xong phải cuộn lên mới thấy các lựa chọn. Nay mọi
+  ngăn nằm ngay dưới thanh nút, đo được là 0px.
+- **Khổ ảnh: thêm *nhỏ*, bỏ *rộng*.** *Nhỏ* bằng một nửa *hẹp*, dành cho ảnh
+  chụp màn hình và icon. *Rộng* đi vì nó tràn khỏi cột chữ mà chẳng bao giờ
+  đẹp; còn lại năm nấc gọn: cỡ gốc · nhỏ · vừa · hẹp · tràn.
+
+## V3.0.0 — 18-Sep-2026
+
+- **Khu bình luận thôi dài vô tận.** Quá bốn lời đáp thì gập lại còn một dòng
+  *Xem thêm n lời đáp* — đủ để biết có gì bên dưới mà không phải cuộn qua.
+  Bản thân khu bình luận cũng không cao quá nửa màn hình nữa, phần dư cuộn bên
+  trong; và quá 10 bình luận một trang thì có `‹ ›` để sang trang. Giống hệt
+  nhau ở máy tính và điện thoại — cột bên hẹp 320px là chỗ chật nhất, mà nó
+  lại xuất hiện ở màn hình RỘNG nhất, nên đo bề ngang màn hình là đo nhầm;
+  chỗ này đo bề ngang của chính cột.
+- **Trăng chạy trọn một kỳ.** Trước nó là một đĩa tròn suốt đêm. Nay tròn →
+  khuyết → bán khuyết → lưỡi liềm theo đúng đường đi, dựng bằng nửa hình tròn
+  ghép nửa hình elip — bán trục đúng bằng `r·cos θ`, nên vệt tối cong đúng như
+  trăng thật chứ không phải một nhát cắt thẳng.
+- **Trăng sâu và mềm hơn.** Thêm một lớp sáng nhoè ở rìa và một chút vân đĩa,
+  bớt độ gắt của mép.
 
 ## V2.9.9 — 18-Sep-2026
 
