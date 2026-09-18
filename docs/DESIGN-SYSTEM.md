@@ -949,7 +949,7 @@ lặp lại:
 Ba bao `dem` · `binhMinh` · `hoangHon` đều bằng 0 ở cả `p=0` lẫn `p=1`, nên
 vòng khép kín mà không có một nhịp giật nào ở chỗ nối.
 
-**Bốn luật của bức này** — phá luật nào cũng ra một thứ trông sai mà khó chỉ
+**Bảy luật của bức này** — phá luật nào cũng ra một thứ trông sai mà khó chỉ
 tên:
 
 1. **Trên giấy trắng, SÁNG là chỗ bớt mực đi.** Không có màu nào sáng hơn
@@ -961,29 +961,137 @@ tên:
    ĐÁY khung chứ không dừng ở chân trời — mặt nước phản chiếu bầu trời, và
    chính nhờ nó sẫm mà vệt trăng mới hiện ra. Bản đầu dừng lớp rửa ở chân
    trời, nên bóng trăng xoá vào chỗ trống và không bao giờ thấy.
-3. **Mực rửa trong suốt không che được gì.** Dãy núi GẦN phải tô một lớp giấy
-   đặc trước rồi mới rửa mực lên (`dac = true` trong `veNui`), không thì mặt
-   trời nằm sau nó vẫn xuyên qua. Cùng lý do, mặt nước **phủ giấy** chứ không
-   xoá mực — xoá thì tấm nền thủng và thứ nằm dưới lộ ra qua lỗ.
-4. **Sương xoá mực, nên nó xoá luôn cả bức tranh.** Mỗi dãy vì thế có thêm một
-   **nét sống núi** mảnh (`netVien`): sương dày thì cả tầng núi tan vào giấy,
-   sương mỏng đi thì cái viền hiện ra trước tiên — đúng như núi thật ló khỏi
-   mây. Không có nét ấy thì lúc sương lên, bức tranh mất hẳn khung.
+3. **Mực rửa trong suốt không che được gì — nên DÃY NÀO CŨNG phải có lớp
+   giấy.** `o.dac` là một SỐ: hai dãy gần tô giấy đặc hẳn (`true`), ba dãy xa
+   tô 0,88–0,94. Bản đầu để ba dãy xa trong suốt hoàn toàn, và mất cùng lúc ba
+   thứ: đường sống của dãy sau chạy *xuyên qua* thân dãy trước (mắt đọc ra ba
+   tấm voan, không ra ba dãy núi cách nhau mấy cây số, vì vật thật thì che
+   nhau); **mặt trời và mặt trăng lọt qua núi mà hiện ra**, nên một cái đĩa
+   còn chưa mọc khỏi sống núi đã thấy tròn vành vạnh — và mắt không đọc ra nó
+   tròn, nó đọc ra là *mờ*; và lớp rửa các dãy cộng dồn vào nhau nên thang sắc
+   độ theo chiều sâu bị mấy vùng trùng phá. Phần rất mỏng còn chừa lại (6–12%)
+   đúng là để quầng sáng sau núi rọi qua trong chặng "rạng". Cùng lý do, mặt
+   nước **phủ giấy** chứ không xoá mực — xoá thì tấm nền thủng.
+4. **Chiều sâu đọc bằng SẮC, không chỉ bằng độ đậm.** Hạ độ mờ của cùng một
+   màu mực chỉ cho ra cùng một sắc xám nhạt hơn, nên năm dãy dựng kiểu đó đọc
+   ra là năm lớp của *một* vệt. Mỗi dãy vì thế có mực riêng, nhạt sắc và ngả
+   lạnh dần theo khoảng cách — nhưng cả bảng đều dưới mười điểm bão hoà, cùng
+   mức "điểm chút màu" mà `--bg-tint` của theme này chịu được (tokens.css):
+
+   | | mực rửa | mực nét |
+   |---|---|---|
+   | dãy xa nhất | `118,125,134` | `88,95,104` |
+   | dãy giữa | `118,125,134` | `88,95,104` |
+   | dãy thứ ba | `80,86,94` | `46,51,58` |
+   | **dãy gần** (khối chính) | `30,34,40` | `16,18,22` |
+   | mép bờ sát nước | `22,25,29` | `16,18,22` |
+
+   Đo trên trang thật lúc giữa trưa (giấy trắng, không lớp rửa trời): chỗ tối
+   nhất cả bức nằm ở nét sống **dãy gần** và ăn xuống quãng 33/255 — bức tranh
+   có một chỗ mực thật, chứ không trôi hết trong một khoảng xám nhạt như bản
+   trước (đáy cũ chỉ tới quãng 200).
+
+5. **Núi đậm nhạt theo KHOẢNG CÁCH TỚI ĐƯỜNG SỐNG, không theo độ cao trên
+   khung.** Hai chuyện ấy chỉ trùng nhau khi đường sống nằm ngang — mà sống
+   núi có đỉnh có khe, nên một gradient dọc làm đỉnh nhạt bằng khe và cả dãy
+   xẹp thành một thanh xám. Lượt `o.long` giải chỗ này: đi một nét **bút mềm**
+   rất rộng lên chính đường sống rồi cắt nó trong lòng khối, nên nửa trên bị
+   bỏ và nửa dưới ở lại — ra một dải chuyển *chạy theo đường sống*, thứ canvas
+   không cho dựng trực tiếp. Gradient dọc còn lại chỉ lo khối chung, và nó neo
+   vào đỉnh–khe THẬT của dãy chứ không vào `y0` (neo vào `y0` thì cái đỉnh cao
+   nhất rơi ra ngoài chặng đầu và được tô bằng màu chặng 0, tức là đỉnh nhạt
+   hơn sườn — sai đúng chỗ quan trọng nhất của một hòn núi).
+6. **Nét đi bằng mực ĐẶC HƠN lớp rửa.** Nét nằm ngay trên chỗ lớp rửa đậm
+   nhất (cả hai đều áp vào đường sống), nên nó chỉ đọc ra được khi đậm hơn cái
+   nền ngay cạnh nó. Bản đầu đi nét bằng đúng mực của lớp rửa và một
+   `lineWidth = 1` chạy suốt bề ngang: đo ra nét còn *nhạt hơn* vệt mực nằm
+   dưới — viền tàng hình, mắt chỉ thấy một mép chuyển mềm; mà chỗ nào thấy thì
+   nó là đường kẻ của bản vẽ kỹ thuật, không là nét bút. Nay nét cắt thành
+   từng khúc, bề dày và độ mờ mỗi khúc tính từ ba thứ: sống ở đây **cao** hay
+   thấp, sườn **dốc** hay thoải, và hai nhịp lệch tần cho bút có chỗ thở —
+   luỹ 1,5 chứ không tuyến tính, vì bút thật có chỗ ăn hẳn vào giấy và chỗ bỏ
+   trắng.
+7. **Sương xoá mực, nên nó xoá luôn cả bức tranh** — và nó phải xoá **thành
+   ĐÁM**, không thành thanh. Một `fillRect` phủ trọn bề ngang thì mọi cột
+   pixel bị lấy đi đúng bằng nhau, nên cái hiện ra là ba cái thanh ngang mờ
+   xếp trên nhau. Nay mỗi dải là mấy bệt bầu dục đặt rời, cả cụm lại trôi
+   ngang theo thời gian: chỗ đang bị che thì lát sau hở ra. Đó là cái làm núi
+   với thiên thể **lúc mờ lúc tỏ** thay vì mờ đều — và nét sống núi là thứ
+   hiện ra trước tiên khi một đám sương đi khỏi.
+
+**Ba lượt mực trên mỗi mảng, không phải một gradient.** Một gradient là một
+hàm toán: mỗi dòng pixel một giá trị, không dòng nào lệch. Cái đó không tồn
+tại trong tự nhiên và mắt biết — mảng nào cũng đọc ra là phun sơn. Nên mỗi dãy
+còn thêm: **vệt rửa** (`o.vet`, mấy đường chạy *song song với sống*, cách sống
+một quãng — người vẽ mực rửa một lượt tới ngang đâu thì dừng, chờ ráo, rửa
+tiếp lượt nữa, và mỗi chỗ dừng để lại một cái mép) và **vẩy** (`o.vay`, mấy
+bệt rất lớn rất mỏng làm lớp rửa thôi phẳng đều). Từng thử tả thớ đá bằng nét
+buông thẳng đứng từ sống xuống: ở 2× nó đọc ra một hàng vạch dọc cách nhau đều
+đều, y như lỗi màn hình, vì cả bức không có một đường thẳng đứng nào khác.
+
+**Chân dãy nào cũng tan vào sương trước khi dãy trước nó dựng lên** (`o.suong`
+— một dải giấy mỏng rắc dọc đường sống, vẽ *trước* cả lớp giấy đặc). Không có
+nó thì mỗi đường sống là một chỗ cắt: mực dãy sau đang đậm, tới sống dãy trước
+thì đứt phựt. Chỉ hai dãy gần dùng cách tô giấy này; dãy xa thì phải **xoá**,
+vì thứ nằm dưới chúng là nền trời — còn xoá trên tấm `gan` thì chọc lỗ xuống
+dãy xa.
+
+**Quầng và đĩa là hai thứ, không phải một.** Bản đầu dựng cả mặt trời lẫn mặt
+trăng bằng *một* dải chuyển tám chặng. Một gradient chỉ có một mức đậm ở tâm,
+mà quầng với đĩa cần hai mức cách nhau rất xa: quầng rộng gấp sáu lần đĩa nên
+phải mỏng tới mức gần như không thấy, còn đĩa phải **đặc** để đọc ra là một
+vật. Nhét cả hai vào một gradient thì mức đậm phải chọn theo cái rộng hơn —
+nên đĩa bị kéo mờ xuống theo quầng, và đó là nửa còn lại của chuyện "hai
+object chính hơi mờ" (nửa kia ở luật 3). Nay `veDia` đi hai lượt: quầng rộng
+và mỏng, rồi đĩa nhỏ và đặc, mép đĩa tan trong 7% bán kính cuối — đủ để không
+thấy răng cưa, không đủ để thành quầng.
+
+**Đêm xuống là xuống cho mọi thứ cùng lúc.** Núi có lớp giấy đặc nên lớp rửa
+đêm ở bước 1 nằm hẳn *sau* núi và không tới được nó; để vậy thì nửa đêm trời
+sẫm mà năm dãy núi vẫn trắng như giữa trưa. Nên có bước **6b**: lớp trời phủ
+lần thứ hai, mỏng hơn, lên trên tất cả — mỏng hơn chứ không bằng, vì núi vốn
+sáng hơn trời đêm thật, và giữ chúng sáng hơn một bậc là cách duy nhất để đêm
+không bôi cả bức thành một mảng xám phẳng. Chiều thì ngược lại: một vệt ấm rất
+mỏng rọi từ phía mặt trời sang, đủ để sườn núi bên ấy hồng lên một chút.
+
+**Lớp trời ấm phải có HƯỚNG.** Bản đầu là một gradient phủ đều suốt bề ngang
+từ `H*0.14` xuống chân trời — phủ đều nghĩa là góc trời bên kia ửng hồng đúng
+bằng góc có mặt trời, nên cả bức bị nhuộm một lớp hồng phẳng và không ai đọc
+ra ánh sáng đang tới từ phía nào. Nay dải ngang hạ xuống còn hơn một nửa (chỉ
+làm việc thật của nó: ửng ở sát chân trời), phần còn lại dồn vào một bệt loang
+quanh chính mặt trời.
 
 **Thứ tự vẽ quyết định chiều sâu**, và đây là toàn bộ trật tự: nền trời →
-trăng → sao → mặt trời → dãy xa → dãy gần và mặt nước → vệt sáng trên nước →
-sương → chim. Mặt trời nằm TRƯỚC cả dãy xa nhất, nên lúc mọc thì thứ hiện ra
-đầu tiên là quầng sáng dâng lên từ sau cụm núi cao; đổi chỗ nó xuống sau dãy
-xa là mất luôn chặng "rạng".
+trăng → sao → mặt trời → dãy xa → dãy gần và mặt nước → **trời phủ lần hai** →
+vệt sáng trên nước → sương → chim. Mặt trời nằm TRƯỚC cả dãy xa nhất, nên lúc
+mọc thì thứ hiện ra đầu tiên là quầng sáng dâng lên từ sau cụm núi cao; đổi
+chỗ nó xuống sau dãy xa là mất luôn chặng "rạng". Đĩa mặt trời còn nhạt dần
+khi tâm hạ xuống dưới sống dãy gần: tới đó núi đã che nó bằng lớp giấy đặc,
+nhưng mặt nước chỉ phủ giấy 74–88% nên một cái đĩa đặc nằm dưới mép nước sẽ
+hắt lên thành một vũng hồng.
 
 **Vệt sáng trên nước là một CỘT VỆT NGANG, không phải một vũng.** Gần bờ thì
 ngắn và khít, ra xa thì dài và thưa, cả cột rung theo sóng (`veVet`). Vẽ một
 khối mờ hình bầu dục thì nó ra một vũng dầu, không ra ánh sáng.
 
+**Mép tan dần dựng bằng CHỒNG NÉT, không bằng `ctx.filter = 'blur()'`.** Đã
+thử `filter` và đã bỏ: Chromium xé vùng lọc thành từng ô rồi lọc riêng từng
+ô, và với một nét rộng vài trăm pixel trải hết bề ngang thì mép các ô không
+khớp — trên màn điện thoại cả sườn núi hiện ra thành một bậc thang những khối
+chữ nhật lệch nhau một hai nấc xám. Không chỉnh được, nên không dùng. Thay
+vào đó là `toMem`: chồng nhiều nét cùng đường mà khác bề rộng, số lớp tính từ
+bề rộng thật sao cho mép hai nét cạnh nhau cách nhau dưới khoảng một điểm ảnh
+(mắt bắt ra chỗ *gãy* độ đậm giỏi hơn bắt ra độ đậm nhiều lần — cách nhau 5px
+thì đọc ra một chùm đường đồng mức, cách nhau 1px thì đọc ra một dải chuyển
+liền). Thêm hai cái được: `filter` trên một nét hẹp hơn bán kính nhoè thì dàn
+mỏng nét ra và **làm mất mực** (nét 3px nhoè 6px không ra nét 3px mềm mép, nó
+ra nét 15px nhạt hơn năm lần), còn chồng nét thì không bao giờ mất; và
+`filter` không có ở Safari trước 16.4. Cả năm dãy nướng xong hết dưới 20ms.
+
 **Không có mây.** Từng có, và đã bỏ: một đám mây vẽ bằng mấy bọng mờ chồng
 nhau thì ở độ đậm nào cũng đọc ra là vệt bẩn trên giấy. Phần chuyển động dồn
 hết vào sương — ba dải, ba nhịp lệch nhau, mỗi dải vừa dày mỏng vừa trôi lên
-xuống.
+xuống vừa trôi ngang.
 
 ### 12.2 · Bật ở đâu
 

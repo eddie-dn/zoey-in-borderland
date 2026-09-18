@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.8.8 | 2026-09-18 | 08 | vẽ lại nền 霜降 — nét, lớp mực, chiều sâu |
 | V2.8.7 | 2026-09-18 | 07 | rà lại toàn bộ tài liệu cho khớp mã: nền động bốn hiệu ứng, ô soạn bài có chương riêng, bàn duyệt bốn ngăn, và mọi con số lạc hậu |
 | V2.8.6 | 2026-09-18 | 06 | ô soạn: bấm vào ảnh là hiện thanh ba khổ; màn hình sau khi đăng gom lại một khối gọn; bảng trên trang có hàng kẻ xen kẽ |
 | V2.8.5 | 2026-09-18 | 05 | ô soạn: bảng nay là bảng thật gõ thẳng vào ô, có khung đặt cỡ và Tab sang ô kế; khối mã và khung nhấn đều có bảng chọn |
@@ -237,6 +238,27 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.8.8 — 18-Sep-2026
+
+- **Vẽ lại nền 霜降.** Năm dãy núi giữ nguyên đường cong, đổi hết cách đi mực:
+  mỗi dãy một sắc mực riêng theo khoảng cách (xa thì nhạt sắc và ngả lạnh, gần
+  thì dồn về mực đen), và mực đậm nay **áp theo đường sống** thay vì theo độ
+  cao trên khung — nên đỉnh núi đậm hơn khe núi, và hai dãy gần thôi đọc ra là
+  hai thanh xám nằm ngang. Mỗi mảng còn thêm vệt rửa và vẩy cho lớp mực thôi
+  phẳng đều, chân dãy nào cũng tan vào sương trước khi dãy trước nó dựng lên.
+- **Nét sống núi đi bằng bút, không bằng thước.** Bề dày và độ mờ thay đổi
+  theo chỗ sống cao hay thấp, sườn dốc hay thoải, cộng hai nhịp lệch tần cho
+  bút có chỗ thở. Nét cũng đi bằng mực đặc hơn lớp rửa — trước đây nó nhạt hơn
+  chính vệt mực nằm dưới nó, nên nhìn không ra.
+- **Mặt trời và mặt trăng hết mờ, sương thì đi thành đám.** Thiên thể mờ vì
+  hai lẽ: dãy núi trước đây trong suốt nên cái đĩa nằm sau núi vẫn lọt qua mà
+  hiện ra, và quầng với đĩa dùng chung một dải chuyển nên đĩa bị kéo mờ theo
+  quầng — nay dãy nào cũng che được (chừa 6–12% cho quầng sáng rọi qua lúc
+  rạng) và quầng với đĩa đi hai lượt riêng. Sương trước là ba thanh ngang phủ
+  đều suốt bề ngang, nay là mấy bệt rời trôi qua, nên núi và mặt trời **lúc mờ
+  lúc tỏ** thay vì mờ đều; lớp trời ấm buổi chiều cũng dồn về quanh mặt trời
+  thay vì nhuộm phẳng cả bức, và đêm nay phủ lên cả núi chứ không chỉ phủ trời.
 
 ## V2.8.7 — 18-Sep-2026
 
