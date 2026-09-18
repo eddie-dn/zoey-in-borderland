@@ -738,10 +738,30 @@
    56px là đủ để chân trang tách khỏi nội dung mà không thành một khoảng hẫng.
    Phần "thở" thật sự vẫn do lề dưới của từng trang lo — nó biết nội dung của
    nó kết thúc bằng cái gì, còn chân trang thì không. */
+/* ══════════ CAO BẰNG THANH ĐẦU TRANG ══════════
+   Đo ở khổ 1180×900: thanh đầu trang cao 64px, chân trang cao 95px — gấp
+   1,48 lần, mà nó chở ÍT hơn: một dòng ký tên với bốn đường đi, so với logo
+   cộng cả bộ điều hướng cộng hai nút. Một khối chở ít hơn mà cao hơn thì đọc
+   ra là khối ấy quan trọng hơn, và chân trang thì không.
+
+   95px ấy là 1 + 40 + 22 + 32: hai cái lề chọn bằng tay, mỗi cái một con số
+   khác nhau, và không con số nào liên quan tới thanh đầu trang.
+
+   Nay khai bằng CHÍNH chiều cao ấy: `min-height:var(--header-h)`. Không phải
+   một cặp lề ướm cho ra đúng 64 — ướm thì đổi cỡ chữ một bậc là lệch lại, mà
+   lệch một hai pixel thì không ai thấy để sửa. `--header-h` đổi thì chân
+   trang đổi theo, mãi mãi bằng nhau.
+
+   `grid` + `align-content:center` để dồn ruột vào giữa khoảng ấy. Lề trong
+   16px là lề TỐI THIỂU, chỉ dùng tới ở khổ hẹp — nơi hai nửa chân trang gấp
+   thành hai dòng và khối cao vượt 64px. `box-sizing:border-box` toàn cục nên
+   `min-height` đã gồm cả viền và lề trong. */
 .site-foot{
   margin-top:var(--s9);
   border-top:1px solid var(--line);
-  padding-block:var(--s8) var(--s7);
+  min-height:var(--header-h);
+  padding-block:var(--s4);
+  display:grid;align-content:center;
 }
 .site-foot .container{
   display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);

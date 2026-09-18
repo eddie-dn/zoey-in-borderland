@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V2.9.6 | 2026-09-18 | 06 | bình luận ở cột bên: Reply và Edit về cùng hàng với nội dung |
+| V2.9.5 | 2026-09-18 | 05 | chân trang cao bằng thanh đầu trang; khoảng trên dưới nội dung trang danh sách đều nhau |
 | V2.9.4 | 2026-09-18 | 04 | khu bình luận hai tầng, gửi xong thấy và sửa được; duyệt về hết trong admin; trang danh sách thấy đủ chân trang |
 | V2.9.3 | 2026-09-18 | 03 | nền About hết méo: nền động về .shell, khung vẽ 霜降 có trần; trăng xuống dưới đỉnh núi đo được; sao lấp lánh theo cụm |
 | V2.9.2 | 2026-09-18 | 02 | một design system cho chip · huy hiệu · con số; tick tất cả ở bàn duyệt; bỏ ô chọn mục dư ở ngăn Post |
@@ -244,6 +246,28 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V2.9.6 — 18-Sep-2026
+
+- **Bình luận ở cột bên đọc lại được.** Khối bình luận khi dời sang cột phải
+  chỉ rộng 320px — tên cộng ngày giờ đã hết chỗ, nên Reply và Edit gấp xuống
+  nằm một mình một dòng, thành ba tầng. Nay dưới 460px thì hai nút ấy về cùng
+  hàng với nội dung và bám mép phải; bình luận ngắn hay dài cũng cùng một
+  hình. Bề rộng hỏi từ chính khối bình luận chứ không hỏi màn hình — khổ hẹp
+  nhất lại nằm ở màn rộng nhất.
+
+## V2.9.5 — 18-Sep-2026
+
+- **Chân trang cao bằng thanh đầu trang.** Đo ra 95px so với 64px — gấp 1,48
+  lần, mà nó chở ít hơn hẳn. Nay khai bằng chính `--header-h` chứ không ướm
+  một cặp lề, nên hai thanh bằng nhau mãi mãi. Khoảng trên và dưới nội dung
+  trang danh sách cũng về đều nhau: 56px cả hai, thay vì 56 trên và 40 dưới.
+- **Trăng đi một đường chéo 15°.** Trước đây nó chỉ dâng thẳng 21px suốt hơn
+  nửa vòng — không ai thấy được. Nay đi 134px ngang và 36px lên ở khổ 1169,
+  đúng góc 15° ở mọi khổ màn. Mặt trời cũng hạ nhanh hơn 25%.
+- **Nắng trên mặt nước bớt gắt.** Bóng mặt trời dưới nước từng tô mười ba lớp
+  gradient cam chồng nhau trên một dải nước gần trắng, ra mấy cái đốm đặc.
+  Hạ gần một nửa và thu cột hẹp lại.
 
 ## V2.9.4 — 18-Sep-2026
 

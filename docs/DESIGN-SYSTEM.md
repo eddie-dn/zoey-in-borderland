@@ -1791,20 +1791,54 @@ Và hệ quả đo được, ở đúng khổ ấy:
 Ba trang vừa khít và hai trang thiếu vài chục pixel, trong khi giữa danh sách
 với chân trang có 152px trống — con số ấy chính là chỗ thiếu.
 
-Hai luật, và phải có cả hai:
+Ba luật, và phải có cả ba:
 
-1. `.ds-trang{padding-block:var(--s9) var(--s8)}` — lề dưới 96px → **40px**.
+1. `.ds-trang{padding-block:var(--s9)}` — **56px cả hai đầu**. Nội dung nằm
+   giữa hai thanh cùng cỡ (luật 3), nên hai khoảng hai bên nó phải bằng nhau:
+   56px từ thanh đầu xuống tiêu đề, 56px từ mục cuối xuống chân trang. Lệch
+   một bậc thì cả trang đọc ra là bị đẩy lên — thấy ngay ở một trang danh sách
+   ngắn, nơi chân trang nằm trong tầm mắt.
 2. `main:has(> .ds-trang) + .site-foot{margin-top:0}` — chân trang thôi cộng
    khoảng của nó ở trang danh sách, vì `.ds-trang` đã có lề dưới riêng. (Trang
    chủ đã có đúng luật này từ trước, qua `.shell[data-nen] .site-foot`, chỉ là
    vì một lý do khác: ở đó chân trang phải dính liền mép dưới màn hero.)
+3. **Chân trang cao đúng bằng thanh đầu trang** — xem mục ngay dưới. Chính nó
+   trả lại chỗ cho luật 1.
 
-Tổng còn 40px. Từ mục cuối xuống **chữ** trong chân trang vẫn là 40 + 1 + 40 =
-81px, dư sức thở. Đo lại: cả năm trang danh sách đều gói trong một màn 900px và
-chân trang hiện đủ.
+Đo lại ở 1180×900: cả năm trang danh sách gói trong một màn, chân trang hiện
+đủ (/posts/ 852px, /archive/ 864px).
 
 Máy không hiểu `:has()` thì luật 2 rơi và khoảng cũ trở lại — mất một nhịp
 gọn, không mất gì khác.
+
+#### Chân trang cao bằng thanh đầu trang
+
+Đo ở 1180×900: thanh đầu 64px, chân trang **95px** — gấp 1,48 lần, mà nó chở
+ít hơn hẳn (một dòng ký tên với bốn đường đi, so với logo cộng cả bộ điều hướng
+cộng hai nút). Một khối chở ít hơn mà cao hơn thì đọc ra là khối ấy quan trọng
+hơn, và chân trang thì không.
+
+95px ấy là `1 + 40 + 22 + 32`: hai cái lề chọn bằng tay, mỗi cái một con số,
+và không con số nào liên quan tới thanh đầu trang.
+
+Nay khai bằng **chính chiều cao ấy**:
+
+```css
+.site-foot{
+  min-height:var(--header-h);
+  padding-block:var(--s4);        /* lề TỐI THIỂU, chỉ dùng tới ở khổ hẹp */
+  display:grid;align-content:center;
+}
+```
+
+Không ướm một cặp lề cho ra đúng 64 — ướm thì đổi cỡ chữ một bậc là lệch lại,
+mà lệch một hai pixel thì không ai thấy để sửa. `--header-h` đổi thì chân trang
+đổi theo, mãi mãi bằng nhau. `box-sizing:border-box` toàn cục nên `min-height`
+đã gồm cả viền và lề trong.
+
+Ở khổ hẹp hai nửa chân trang gấp thành hai dòng và khối cao vượt 64px — lúc ấy
+`min-height` nhường cho nội dung và lề 16px mới có tác dụng. Đo ở 375px: 85px,
+đúng cho hai dòng.
 
 > **Đây là một luật có ĐIỀU KIỆN.** Nó không hứa "mọi trang danh sách luôn vừa
 > một màn": thêm bài vào là `/posts/` sẽ dài ra, và lúc ấy kéo là đúng. Luật
@@ -2380,6 +2414,32 @@ cái nút.
 trước cụm nút; `order` chỉ đổi chỗ khi vẽ, không đổi cây a11y. Đổi thứ tự trong
 DOM cho nhanh thì được đúng hình ấy, mà người dùng trình đọc nghe ra "Linh, 3
 giờ trước, Reply, Edit, bài này hay quá" — nút trước cả thứ nó tác động lên.
+
+**Ở khổ hẹp thì nút về cùng hàng với NỘI DUNG.** Hai tầng trên hợp với một cột
+rộng. Khối bình luận sống ở ba khổ rất khác nhau:
+
+| chỗ đứng | bề rộng `.bl-ds` |
+|---|---|
+| cột bên (màn ≥1080px) | **320px** |
+| tấm trượt ở điện thoại | ~343px |
+| chèn giữa bài, màn rộng | ~936px |
+
+Ở 320px thì tầng một chở không nổi: `Zoey AUTHOR 18 Sept 2026 · 15:01` đã hết
+chỗ, nên cụm nút gấp xuống và nằm **một mình** trên một dòng — thành ba tầng,
+đúng cái bố cục vừa bỏ, chỉ khác thứ tự. Dưới 460px vì thế đổi cách chia: tên
+và giờ chiếm trọn tầng một, nội dung với cụm nút chia nhau tầng hai.
+
+**Hỏi bề rộng của KHỐI, không hỏi màn hình.** Khổ hẹp nhất (cột bên, 320px) lại
+nằm ở màn **rộng** nhất, nên một `@media` theo bề ngang màn hình nói ngược hẳn
+sự thật. `.bl-ds{container-type:inline-size}` rồi `@container (max-width:460px)`
+mới hỏi đúng thứ cần hỏi.
+
+**Và ô nội dung phải `flex:1 1 0`, không phải `1 1 auto`.** Với `auto` thì bề
+rộng giả định của nó là bề rộng chữ trong nó, mà flex xếp item lên dòng theo
+con số ấy **trước khi co** — nên một bình luận dài đẩy cụm nút xuống dòng riêng
+và `Reply` lại trôi mỗi hàng một chỗ. Với `0` thì ô nội dung không đòi chỗ
+trước: nó nhận phần còn lại sau khi cụm nút đã lấy đủ, rồi chữ tự xuống dòng
+bên trong. Ngắn hay dài cũng cùng một hình.
 
 #### Duyệt thì vào /z-admin/, không duyệt ở trang công khai
 

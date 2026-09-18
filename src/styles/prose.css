@@ -1162,7 +1162,15 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    · Đồng bộ. Mọi danh sách khác — bảng bài, bảng chuyên mục, bàn duyệt — đều
      là hàng-có-kẻ-ngăn. Chỉ riêng chỗ này là cọc thẻ. */
 .bl-ds{list-style:none;padding:0;margin:var(--s6) 0 0;
-  display:flex;flex-direction:column}
+  display:flex;flex-direction:column;
+  /* ── HỎI BỀ RỘNG CỦA CHÍNH KHỐI NÀY, KHÔNG HỎI MÀN HÌNH ──
+     Khối bình luận sống ở ba khổ rất khác nhau: cột bên ở màn ≥1080px đo ra
+     320px, tấm trượt ở điện thoại chừng 343px, còn chèn giữa bài thì rộng
+     gấp đôi. Và khổ hẹp nhất lại nằm ở màn RỘNG nhất — nên một `@media` theo
+     bề ngang màn hình nói ngược hẳn sự thật.
+     `container-type:inline-size` cho mấy hàng bên trong hỏi thẳng bề rộng
+     của danh sách chứa chúng. */
+  container-type:inline-size;}
 .bl-ds:empty{margin:0}
 /* ── HAI TẦNG, VÀ MÉP PHẢI KHÔNG ĐƯỢC DI ĐỘNG ──
    Đời trước: tên · nội dung · (ngày và Reply dồn phải) — cả ba trên MỘT hàng
@@ -1213,6 +1221,30 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    Khai `order` ở chính chỗ khai gốc của từng cái (`.bl-osua`, `.bl-nhanh`,
    `.bl-item > .bl-form`) — một tên chỉ được khai trần đúng một lần, `npm run
    kiem` có phép canh chuyện ấy. */
+/* ── KHỔ HẸP: NÚT VỀ CÙNG HÀNG VỚI NỘI DUNG ──
+   Hai tầng ở trên hợp với một cột rộng. Ở cột bên (320px) thì tầng một chở
+   không nổi: "Zoey AUTHOR 18 Sept 2026 · 15:01" đã hết chỗ, nên cụm nút gấp
+   xuống và nằm MỘT MÌNH trên một dòng — thành ba tầng, tức đúng cái bố cục
+   vừa bỏ, chỉ khác thứ tự.
+
+   Ở khổ ấy đổi cách chia: tên và giờ chiếm trọn tầng một, còn nội dung với
+   cụm nút chia nhau tầng hai. Nội dung `flex:1 1 auto` nên nó co lại vừa chỗ
+   còn thừa và tự xuống dòng bên trong ô của mình; cụm nút vẫn bám mép phải.
+   Không có dòng nào chỉ chở hai cái nút.
+
+   460px là chỗ cắt: dưới nó thì một cái tên thật cộng ngày giờ đầy đủ
+   (~250px) cộng `REPLY EDIT · 3` (~120px) không còn vừa một dòng. */
+@container (max-width: 460px){
+  .bl-dau{flex:1 0 100%}
+  /* `flex:1 1 0` chứ không phải `1 1 auto`. Với `auto` thì bề rộng GIẢ ĐỊNH
+     của ô nội dung là bề rộng chữ trong nó — flex đặt item lên dòng theo con
+     số ấy TRƯỚC khi co, nên một bình luận dài đẩy cụm nút xuống dòng riêng,
+     và `Reply` lại trôi mỗi hàng một chỗ. Với `0` thì ô nội dung không bao
+     giờ đòi chỗ trước: nó nhận phần còn lại sau khi cụm nút đã lấy đủ, rồi
+     chữ tự xuống dòng bên trong. Ngắn hay dài cũng cùng một hình. */
+  .bl-nd{flex:1 1 0;order:2}
+  .bl-cuoi{order:3}
+}
 /* Tên nhỏ hơn thân chữ một bậc và không in đậm hẳn: nó là NHÃN của đoạn chữ
    dưới nó, không phải một tiêu đề. Đậm bằng cỡ tiêu đề thì mắt đọc tên trước,
    rồi mới tới thứ người ta thật sự muốn đọc. */

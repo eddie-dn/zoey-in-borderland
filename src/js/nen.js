@@ -1780,7 +1780,12 @@
         /* Hạ dần theo cú zoom: 0,140 lúc còn xa → 0,255 lúc đã tới gần. Càng
            gần càng thấp, và càng thấp thì càng đỏ — màu với độ cao nói cùng
            một chuyện. */
-        var sy = HK * (0.140 + 0.115 * tien + 0.012 * Math.sin(p * Math.PI * 2));
+        /* Quãng hạ 0,115 → 0,144 khung: nhanh hơn đúng 1,25 lần trong cùng
+           khoảng thời gian, tức tốc độ tăng 25%. Đĩa vào khung ở 0,140 và hạ
+           tới 0,284 — vẫn cao hơn chân trời 0,700 rất nhiều, và mép dưới đĩa
+           lúc thấp nhất (0,284 + 0,058) mới tới 0,342, nên nó chỉ bắt đầu
+           chạm vào ngọn núi ở mấy khổ hẹp. Chạm là đúng: đó là lúc lặn. */
+        var sy = HK * (0.140 + 0.144 * tien + 0.012 * Math.sin(p * Math.PI * 2));
         /* Bán kính đo theo cạnh NGẮN của khung. 0,058 lúc rạng/tà → đĩa rộng
            chừng 11% chiều cao, đúng cỡ trong tranh gốc; giữa trưa nhỏ lại còn
            0,042. Từng để 0,078: đĩa rộng 15% khung và ở lối "đứng một chỗ" thì
@@ -1806,12 +1811,32 @@
            mươi giây. Chậm tới mức không ai bắt được lúc nó đang đi, mà nhìn
            lại thì nó đã ở chỗ khác. */
         var tienTrang = muot(p, 0.40, 0.92);
-        /* ── LỆCH SANG TRÁI MỘT QUÃNG ──
-           0,655 → 0,600 W. Mặt trời vẫn ở 0,655; trăng lệch ra thì cú chuyển
-           cảnh vẫn trùng chỗ lúc giao nhau (trăng vừa hiện thì `tienTrang`
-           còn bằng 0 nên nó ở 0,600 — hơi lệch, đủ để không thành một cái đèn
-           bật tắt tại chỗ, chưa đủ để đọc ra hai vật khác nhau). */
-        var mx = W * (0.585 + 0.015 * tienTrang);
+        /* ══════════════════════════════════════════════════════════════════
+           TRĂNG ĐI MỘT ĐƯỜNG CHÉO 15°
+
+           Bản trước trăng chỉ dâng thẳng đứng 0,022 khung — chừng 21px trên
+           một khung cao 955, trải suốt hơn nửa vòng. Không ai thấy được, và
+           người dùng nói thẳng: "hiện tại ko cảm nhận đc mặt trăng moving rõ
+           ràng". Con số ấy chọn hồi trăng còn kẹt trong một dải trời rất hẹp;
+           nay chỗ đứng đo từ đường bao núi nên dải ấy rộng ra nhiều.
+
+           Nay một đường CHÉO: 0,115 W đi ngang, nâng lên đúng
+           0,115 × tan15° = 0,0308 W. Hai cạnh cùng đo bằng W nên góc trên màn
+           đúng 15° ở mọi khổ — lấy chiều cao đo cạnh đứng thì góc đổi theo tỉ
+           lệ khung, và ở khổ dọc nó thành gần 40°.
+
+           Quãng đi thật: 139px ở khổ 1169 (134 ngang + 36 lên), so với 21px
+           của bản trước. Vẫn chậm — trải trên hơn nửa vòng, chừng 36 giây —
+           nên nó không kéo mắt khỏi dòng chữ đang đọc; nhưng nhìn lại sau một
+           lúc thì thấy rõ trăng đã ở chỗ khác.
+
+           Xuất phát ở 0,600 W, ngay cạnh chỗ mặt trời đứng (0,655): lúc giao
+           cảnh hai đĩa vẫn gần nhau, đủ để đọc ra là một vật đang đổi. Rồi đi
+           về bên PHẢI và lên — rời xa chỗ mặt trời vừa lặn.
+           ══════════════════════════════════════════════════════════════════ */
+        var TRANG_NGANG = 0.115;
+        var TRANG_LEN = TRANG_NGANG * Math.tan(15 * Math.PI / 180);
+        var mx = W * (0.600 + TRANG_NGANG * tienTrang);
         /* ── ĐIỂM BẮT ĐẦU THẤP HƠN, VÀ DÂNG ÍT HƠN ──
            Từng là 0,215 → 0,095. Hai chỗ sai với một con số ấy:
 
@@ -1880,10 +1905,15 @@
            chỗ núi cao hơn ở bên trái, nên đĩa bị đẩy lên 0,18 H trong khi núi
            NGAY DƯỚI nó chỉ cao 0,28 H — mất đứt 90px trời không dùng tới.
            Hỏi đúng chỗ đĩa đứng thì nó xuống tới 0,215 H. */
-        var dinhTr = dinhDai(0.55, 0.63);
+        /* Dải hỏi phải phủ CẢ đường đi của đĩa, không chỉ chỗ nó đứng lúc
+           đầu: từ `0,600 − mr/W` tới `0,715 + mr/W`, làm tròn ra 0,574 → 0,741.
+           Đo lại đường bao núi trên dải ấy qua mọi bề ngang 340–1900px: trần
+           gần như không đổi so với dải cũ, và ở khổ 1180 còn rộng hơn (0,300
+           so với 0,278) — đường chéo dài ra mà không phải trả bằng độ cao. */
+        var dinhTr = dinhDai(0.574, 0.741);
         var myThap = Math.max(HK * 0.105,
                      Math.min(HK * 0.420, dinhTr - mr - HK * 0.016));
-        var my = myThap - HK * 0.022 * tienTrang + HK * 0.008 * Math.sin(p * Math.PI * 2);
+        var my = myThap - W * TRANG_LEN * tienTrang + HK * 0.008 * Math.sin(p * Math.PI * 2);
         var mTroi = mau(206 + 14 * cung, 98 + 74 * cung, 54 + 68 * cung);
         /* Tắt hẳn trong quãng 0,46–0,58 để nhường chỗ cho trăng — không dùng
            `dem` nữa, vì `dem` lên muộn hơn và hai thiên thể sẽ chồng nhau. */
@@ -2155,7 +2185,13 @@
 
         /* ── 8 · VỆT SÁNG TRÊN NƯỚC ── */
         var choiTroi = hienS * (1 - muot(sy + sr, HK * 0.60, HK * 0.70));
-        veVet(ctx, sx, sr * 1.5, mTroi, 0.13 * choiTroi, t, false);
+        /* ── BÓNG MẶT TRỜI: 0,13 → 0,072 ──
+           Vệt trăng tô GIẤY nên nó chỉ kéo mặt nước về phía sáng; vệt mặt
+           trời thì tô MÀU ẤM chồng lên, mà mười ba lớp gradient cam chồng
+           nhau trên một dải nước gần trắng thì ra mấy cái đốm đặc — đúng chỗ
+           người dùng nói "bị dư". Hạ gần một nửa, và thu cột hẹp lại một bậc:
+           nó trở lại là nắng loang trên nước, không phải mấy vũng dầu. */
+        veVet(ctx, sx, sr * 1.25, mTroi, 0.072 * choiTroi, t, false);
         /* ── VỆT TRĂNG TÔ GIẤY, KHÔNG LẤY MỰC ĐI ──
            `destination-out` chỉ lấy đi được đúng lượng mực đang có ở đó. Sau
            lượt rửa nước ở bước 7c thì mặt nước có chừng 9–12 nấc mực, nên dù

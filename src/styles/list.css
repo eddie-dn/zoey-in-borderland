@@ -42,11 +42,24 @@
    trang DANH SÁCH ngắn thì không có lý do gì bắt kéo thêm một nhịp chỉ để
    gặp dòng bản quyền.
 
-   Nay 40px, và chân trang thôi cộng khoảng của nó ở trang danh sách (luật
-   ngay dưới) — tổng còn 40px. Từ mục cuối xuống CHỮ trong chân trang vẫn là
-   40 + 1 + 40 = 81px, dư sức thở. Đo lại: /posts/ 867px, /archive/ 879px,
-   cả hai vừa trong một màn 900px. */
-.ds-trang{padding-block:var(--s9) var(--s8)}
+   ── HAI KHOẢNG PHẢI BẰNG NHAU ──
+   Lề trên là 56px: đó là khoảng từ thanh đầu trang xuống nội dung. Lề dưới
+   từng để 40px — nhỏ hơn một bậc, không vì lý do gì ngoài việc nó vừa đủ để
+   trang gói trong một màn.
+
+   Nhưng nội dung nằm GIỮA hai thanh cùng cỡ (nay chân trang cao đúng bằng
+   thanh đầu, xem `.site-foot` trong layout.css), nên hai khoảng hai bên nó
+   phải bằng nhau. Lệch một bậc thì cả trang đọc ra là bị đẩy lên, và ở một
+   trang danh sách ngắn — nơi chân trang nằm ngay trong tầm mắt — mắt thấy
+   ngay mà không gọi được tên.
+
+   56px cả hai, và chân trang thôi cộng khoảng của nó ở trang danh sách (luật
+   ngay dưới). Tổng từ mục cuối xuống mép trên chân trang: 56px, bằng đúng
+   khoảng từ thanh đầu xuống tiêu đề.
+
+   Vẫn vừa một màn, vì chân trang vừa thấp đi 31px: đo lại ở 1180×900 —
+   /posts/ 852px, /archive/ 864px. */
+.ds-trang{padding-block:var(--s9)}
 /* ── CHÂN TRANG THÔI CỘNG THÊM KHOẢNG Ở TRANG DANH SÁCH ──
    `.site-foot{margin-top:var(--s9)}` là khoảng thở CHUNG, đúng cho trang bài:
    ở đó khối cuối cùng là chữ hoặc khung bình luận, không có lề dưới riêng.
