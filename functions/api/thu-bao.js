@@ -524,6 +524,17 @@ export async function tuKiem(env) {
    có bước nào để quên — và Sheet còn hơn .xlsx ở chỗ nó CỘNG DỒN: mở ra thấy cả
    lịch sử, không phải đi tìm file của tuần nào.
 
+   ── PHÍA SHEET LÀ SỔ CÁI, KHÔNG PHẢI ẢNH CHỤP ─────────────────────────
+   Hàm này chỉ gửi TOÀN BỘ bảng mỗi lượt, không tính phần chênh lệch — việc so
+   sánh nằm ở Apps Script, nơi có sẵn dữ liệu lượt trước để so.
+
+   Bên đó hợp nhất theo khoá chính: dòng mới thêm vào, dòng đổi ghi đè, dòng
+   không đổi để yên, và dòng BIẾN MẤT khỏi D1 thì **không xoá** mà đánh dấu
+   `đã xoá khỏi DB`. Vế cuối là thứ làm bản sao lưu chống được sai sót của
+   chính chủ trang, chứ không chỉ chống sự cố của Cloudflare.
+
+   Vì vậy gói phải chở thêm cờ `cat` — xem chú thích ở chỗ khai nó bên dưới.
+
    ── EMAIL NGƯỜI BÌNH LUẬN: MẶC ĐỊNH KHÔNG CHÉP ────────────────────────
    `SAO_LUU_EMAIL` mặc định tắt. Bật thì bản sao lưu khôi phục được đầy đủ, nhưng
    địa chỉ của người đọc sẽ nằm trong Google Drive — đúng thứ lời hứa đầu
@@ -549,6 +560,18 @@ export async function chaySaoLuu(env) {
   const goi = {};
   const dem = {};
 
+  /* ── CỜ "GÓI NÀY BỊ CẮT" ──
+     Apps Script hợp nhất theo khoá chính, và một dòng có trong sổ mà KHÔNG có
+     trong gói thì nó hiểu là đã bị xoá khỏi D1 rồi đánh dấu lại.
+
+     Suy luận ấy chỉ đúng khi gói chở TOÀN BỘ bảng. Chạm trần TOI_DA_DONG_SAO_LUU
+     mà không báo thì mọi dòng ngoài trần bị ghi là "đã xoá khỏi DB" — một bản
+     sao lưu tự bôi bẩn chính nó, và bôi lặng lẽ.
+
+     Nên cờ này đi kèm gói: chạm trần thì Apps Script BỎ HẲN bước đánh dấu xoá
+     cho bảng ấy. Thà thiếu một cột thông tin còn hơn có một cột nói sai. */
+  const cat = {};
+
   for (const bang of BANG_SAO_LUU) {
     try {
       const kq = await env.DB.prepare(`SELECT * FROM ${bang} LIMIT ?`)
@@ -563,6 +586,7 @@ export async function chaySaoLuu(env) {
 
       goi[bang] = ds;
       dem[bang] = ds.length;
+      cat[bang] = ds.length >= TOI_DA_DONG_SAO_LUU;
     } catch (e) {
       /* Bảng chưa có = tính năng ấy chưa ai dùng. Không phải lỗi, và KHÔNG được
          làm hỏng bản sao lưu của mấy bảng còn lại. */
@@ -570,6 +594,10 @@ export async function chaySaoLuu(env) {
       if (!/no such table/i.test(loi)) return { ok: false, loi: `${bang}: ${loi}` };
       goi[bang] = [];
       dem[bang] = 0;
+      /* Bảng chưa có ≠ bảng rỗng vì bị cắt. Để `false` thì Apps Script vẫn
+         đánh dấu xoá đúng — mà một bảng chưa tồn tại thì cũng chưa có dòng nào
+         trong sổ để đánh dấu. */
+      cat[bang] = false;
     }
   }
 
@@ -582,6 +610,7 @@ export async function chaySaoLuu(env) {
         khoa: env.SAO_LUU_KHOA,
         luc: new Date().toISOString(),
         coEmail: chepEmail,
+        cat: cat,
         bang: goi
       })
     });

@@ -1,8 +1,9 @@
 # SAO LƯU
 
 > Mỗi Chủ nhật 21:00 giờ Việt Nam, trang gom `binh_luan` + `ghi_chu` + `xem`
-> trong D1 rồi ghi vào một Google Sheet trong Drive của chủ trang. Giữ 8 bản
-> gần nhất, bản cũ hơn tự xoá.
+> trong D1 rồi **hợp nhất** vào một Google Sheet trong Drive của chủ trang:
+> dòng mới thêm vào, dòng đổi ghi đè, dòng không đổi để yên, dòng biến mất
+> khỏi D1 thì đánh dấu chứ **không xoá**.
 >
 > Hai nửa: `functions/api/thu-bao.js` (hàm `chaySaoLuu`) và `tools/sao-luu.gs`
 > (mã Apps Script). Hai nửa phải khớp nhau về hình dạng gói JSON.
@@ -124,22 +125,56 @@ với trang **Mục lục** và ba tab dữ liệu theo ngày.
 
 ---
 
-## 3. Bên trong file Sheet
+## 3. Bên trong file Sheet — sổ cái, không phải ảnh chụp
+
+**Bốn tab, mãi mãi bốn tab.** Không sinh thêm tab theo ngày.
 
 | Tab | Nội dung |
 |---|---|
-| **Mục lục** | Mỗi lượt sao lưu một dòng: lúc nào, được bao nhiêu dòng mỗi bảng |
-| `binh_luan 2026-09-20` | Bình luận tại thời điểm ấy |
-| `ghi_chu 2026-09-20` | Ghi chú đăng thẳng lên `/notes/` |
-| `xem 2026-09-20` | Bộ đếm lượt xem |
+| **Mục lục** | Mỗi lượt sao lưu ghi **một dòng cho mỗi bảng**: động vào bao nhiêu dòng, đổi mấy dòng |
+| `binh_luan` | Toàn bộ bình luận từng tồn tại |
+| `ghi_chu` | Ghi chú đăng thẳng lên `/notes/` |
+| `xem` | Bộ đếm lượt xem |
 
-Chạy lại trong **cùng một ngày** thì ghi đè lên tab của ngày đó, không đẻ thêm
-tab mới — thử nhiều lần cũng không làm phình file.
+Mỗi lượt **hợp nhất** theo khoá chính (`ma` cho bình luận và ghi chú, `u` cho
+lượt xem):
 
-Quá **8 bộ** thì bộ cũ nhất bị xoá, xoá theo **cả ngày** chứ không lẻ từng tab.
-Có trần vì Google Sheets giới hạn 10 triệu ô cho cả file; không dọn thì một
-ngày nào đó lượt sao lưu hỏng vì file đầy, đúng lúc bạn không nhìn. Đổi số ở
-`GIU_BAO_NHIEU` trong `tools/sao-luu.gs`.
+| Tình huống | Sổ làm gì |
+|---|---|
+| Dòng **mới** | Thêm vào cuối, `_trangThai = mới` |
+| Dòng **đổi nội dung** | Ghi đè đúng dòng ấy, `_trangThai = đổi`, `_capNhat` cập nhật |
+| Dòng **không đổi** | **Không đụng tới** — `_capNhat` giữ nguyên mốc cũ |
+| Dòng **biến mất khỏi D1** | **KHÔNG xoá.** Đánh dấu `đã xoá khỏi DB`, một lần duy nhất |
+
+### Ba cột sổ, đứng đầu mỗi tab
+
+| Cột | Nghĩa |
+|---|---|
+| `_trangThai` | `mới` · `đổi` · `nguyên` · `đã xoá khỏi DB` |
+| `_capNhat` | Lượt gần nhất **thật sự làm gì đó** với dòng này |
+| `_lanDau` | Lượt đầu tiên thấy dòng này |
+
+`_capNhat` **chỉ đổi khi dòng thật sự đổi**. Đóng dấu lại mỗi lượt thì nó thành
+cột "ngày chạy gần nhất" — cùng một giá trị ở mọi dòng, và không trả lời được
+câu duy nhất nó sinh ra để trả lời: *dòng này đổi lần cuối khi nào?*
+
+### Vì sao không xoá dòng đã mất
+
+Đây là lý do cả cách này đáng làm. Sổ giữ lại thứ cơ sở dữ liệu đã bỏ, nên nó
+chống được **sai sót của chính bạn** — xoá nhầm một bình luận, chạy nhầm một
+câu `DELETE` trong Console — chứ không chỉ chống sự cố của Cloudflare. Mà sai
+sót của chính mình mới là thứ hay xảy ra.
+
+Một bản soi gương thuần (ghi đè sạch mỗi lượt) mất đúng khả năng ấy: xoá nhầm
+hôm nay, Chủ nhật tới bản sao lưu xoá theo, không còn chỗ nào giữ dòng đó nữa.
+
+> **Một lưới an toàn nữa:** nếu một bảng chạm trần 5000 dòng thì gói gửi đi bị
+> cắt, và Worker báo cờ `cat` để Apps Script **bỏ hẳn** bước đánh dấu xoá cho
+> bảng ấy. Thiếu cờ này thì mọi dòng ngoài trần bị ghi là "đã xoá khỏi DB" —
+> bản sao lưu tự bôi bẩn chính nó, và bôi lặng lẽ.
+
+Chạy lại nhiều lần trong ngày cũng không sao: lượt thứ hai thấy mọi dòng
+`nguyên`, không đổi gì, chỉ thêm một dòng vào Mục lục.
 
 ---
 
@@ -192,8 +227,17 @@ nằm ở khoá. Thấy trang đăng nhập Google nghĩa là `Who has access` s
 Chưa có công cụ tự động, và cố ý chưa làm: khôi phục là việc hiếm, làm tay thì
 còn nhìn thấy mình đang ghi đè cái gì.
 
-Cách làm: mở tab cần lấy trong Sheet → **File → Download → CSV** → vào
-Cloudflare → D1 → cơ sở dữ liệu `zoey-blog` → tab **Import** → tải CSV lên.
+**Lấy lại một dòng lỡ xoá** — trường hợp hay gặp nhất:
 
-Nhớ kiểm bảng đích đang có gì trước khi nhập — import không tự xoá dòng cũ, và
-`ma` trùng thì câu lệnh hỏng giữa chừng.
+1. Mở tab `binh_luan`, lọc cột `_trangThai` = `đã xoá khỏi DB`
+2. Cột `_capNhat` cho biết nó biến mất ở lượt sao lưu nào — dùng để nhận ra
+   đúng dòng cần, nhất là khi có nhiều dòng cùng trạng thái
+3. Chép các ô dữ liệu (bỏ ba cột `_`) rồi vào Cloudflare → D1 → `zoey-blog` →
+   **Console**, gõ một câu `INSERT` với đúng những giá trị đó
+
+**Lấy lại cả bảng:** mở tab → **File → Download → CSV** → D1 → tab **Import**.
+Nhớ **xoá ba cột `_trangThai` · `_capNhat` · `_lanDau`** trước khi nhập — chúng
+là cột của sổ, không có trong lược đồ D1, và để nguyên thì import hỏng.
+
+Kiểm bảng đích đang có gì trước khi nhập: import không tự xoá dòng cũ, và `ma`
+trùng thì câu lệnh hỏng giữa chừng.

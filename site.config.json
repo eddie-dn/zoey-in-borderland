@@ -68,7 +68,7 @@
     "khung": 3
   },
   "phanTich": {
-    "bat": true,
+    "bat": false,
     "token": ""
   },
   "doanTruoc": true,
