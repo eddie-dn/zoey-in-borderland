@@ -59,7 +59,7 @@
     // Người GỬI của mọi thư máy gửi đi. Phải là địa chỉ thuộc tên miền đã xác
     // minh ở Resend, không thì Resend từ chối ngay chứ không phải rơi vào spam.
     // Để trong repo được vì nó vốn công khai — chính là địa chỉ in trên trang.
-    "THU_TU": "Zoey <hi@z-in-borderland.com>",
+    "THU_TU": "Zoey <contact@z-in-borderland.com>",
 
     // Gốc địa chỉ, để thư báo dựng được đường dẫn bấm sang bàn duyệt. Lúc cron
     // chạy thì KHÔNG có request nào để suy ra tên miền — phải khai sẵn.
