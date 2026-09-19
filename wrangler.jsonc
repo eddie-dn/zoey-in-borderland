@@ -90,11 +90,21 @@
   // Nam — "0 13" là 13:00 UTC, tức 20:00 ở Hà Nội. Quên đổi múi giờ là thư
   // báo tới lúc rạng sáng, và không có gì báo cho biết mình đã quên.
   //
-  //   0 13 * * *   mỗi ngày 20:00 giờ VN  → bình luận chờ duyệt + tự kiểm
-  //   0 14 * * 0   Chủ nhật 21:00 giờ VN  → sao lưu sang Google Sheet
+  //   0 13 * * *     mỗi ngày 20:00 giờ VN  → bình luận chờ duyệt + tự kiểm
+  //   0 14 * * SUN   Chủ nhật 21:00 giờ VN  → sao lưu sang Google Sheet
   //
-  // Trong cron, 0 là CHỦ NHẬT (không phải thứ Hai). Sao lưu đặt sau lượt hằng
-  // ngày một tiếng để hai việc không cùng gọi Resend một lúc.
+  // ── VIẾT "SUN" CHỨ ĐỪNG VIẾT SỐ ──
+  // Cloudflare đánh số thứ trong tuần là 1-7 với **1 = Chủ nhật**, và KHÔNG
+  // nhận số 0. Cron Unix thì ngược lại: 0-6 với 0 = Chủ nhật. Nghĩa là "0" bị
+  // từ chối thẳng, còn "1" thì được nhận nhưng có nghĩa khác hẳn nơi khác.
+  //
+  // Đã vấp thật: "0 14 * * 0" làm lượt deploy hỏng với
+  // `invalid cron string [code: 10100]`, và hỏng SAU khi mã đã lên — Worker
+  // chạy bản mới nhưng thiếu hẳn lịch tuần, mà nhìn trang thì không thấy gì lạ.
+  //
+  // Ghi bằng chữ (SUN, MON…) thì không có cách nào hiểu nhầm.
+  //
+  // Sao lưu đặt sau lượt hằng ngày một tiếng để hai việc không cùng gọi Resend.
   //
   // Mỗi ngày một lượt là cố ý. Dày hơn thì cái chuông thành tiếng ồn; xem
   // chú thích đầu functions/api/thu-bao.js.
@@ -105,7 +115,7 @@
   //
   // CRON CHỈ CHẠY Ở WORKER, không chạy ở Pages.
   "triggers": {
-    "crons": ["0 13 * * *", "0 14 * * 0"]
+    "crons": ["0 13 * * *", "0 14 * * SUN"]
   },
 
   "observability": { "enabled": true },

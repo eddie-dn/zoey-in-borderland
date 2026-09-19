@@ -168,7 +168,7 @@ Lỗi của phần sao lưu ở `docs/SAO-LUU.md` §5.
 Sửa `wrangler.jsonc`:
 
 ```jsonc
-"triggers": { "crons": ["0 13 * * *", "0 14 * * 0"] }
+"triggers": { "crons": ["0 13 * * *", "0 14 * * SUN"] }
 ```
 
 **Giờ là UTC, không phải giờ Việt Nam.** Lấy giờ Hà Nội trừ đi 7:
@@ -179,10 +179,23 @@ Sửa `wrangler.jsonc`:
 | 12:00 trưa | `0 5 * * *` |
 | 20:00 tối *(đang dùng)* | `0 13 * * *` |
 | 22:00 tối | `0 15 * * *` |
-| Chủ nhật 21:00 *(sao lưu)* | `0 14 * * 0` |
+| Chủ nhật 21:00 *(sao lưu)* | `0 14 * * SUN` |
 
 Quên đổi múi giờ thì thư tới lúc rạng sáng, và không có gì báo cho biết mình
-đã quên. Trong cron, **0 là Chủ nhật**, không phải thứ Hai.
+đã quên.
+
+> ### ⚠ Thứ trong tuần: viết chữ, đừng viết số
+>
+> Cloudflare đánh số thứ **1–7 với `1` = Chủ nhật**, và **không nhận `0`**.
+> Cron Unix thì ngược lại: `0`–`6` với `0` = Chủ nhật.
+>
+> Hậu quả khi viết nhầm rất khó chịu: `0 14 * * 0` làm lượt deploy **hỏng ở
+> bước cuối** với `invalid cron string [code: 10100]` — mà hỏng *sau khi* mã
+> đã lên. Worker chạy bản mới, trang nhìn bình thường, chỉ thiếu hẳn một lịch.
+> Còn `1` thì được nhận nhưng nghĩa là Chủ nhật chứ không phải thứ Hai như mọi
+> nơi khác.
+>
+> Ghi `SUN`, `MON`, `MON-FRI` thì không có cách nào hiểu nhầm.
 
 > **Sửa ở đây thì phải sửa cả `worker.js`.** Hàm `scheduled` phân việc bằng
 > `switch (cron)` so **khớp từng chữ** với mấy chuỗi này. Đổi một bên mà quên

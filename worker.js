@@ -103,7 +103,10 @@ export default {
           await lam('tu-kiem', thuBao.tuKiem);
           break;
 
-        case '0 14 * * 0':
+        /* "SUN" chứ không phải "0": Cloudflare đánh thứ 1-7 với 1 = Chủ nhật và
+           từ chối thẳng số 0 — xem chú thích dài ở khối `triggers` trong
+           wrangler.jsonc. Chuỗi ở đây phải khớp TỪNG CHỮ với chuỗi bên đó. */
+        case '0 14 * * SUN':
           await lam('sao-luu', thuBao.chaySaoLuu);
           break;
 
