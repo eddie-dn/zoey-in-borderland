@@ -320,9 +320,10 @@
         '<div class="gc-nut">' +
           '<button type="button" class="btn" data-dang>' +
             tho(N.post || 'Post') + '</button>' +
-          /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ nút ấy đã nằm ở cột
-             trái nên chỗ này để rỗng; chỉ /notes/#viet mới cần một lối ra
-             ngay tại đây. */
+          /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ — chỗ DUY NHẤT ô viết
+             mọc ra từ V1.8.8 — nút ấy đã nằm ở cột trái, nên chỗ này để rỗng.
+             Giữ lại cái móc vì khoa.js vẫn tìm `[data-khoa-ra-nho]`, và vì
+             một chỗ cắm khác không có cột trái thì cần một lối ra ngay đây. */
           '<span class="gc-ra" data-khoa-ra-nho></span>' +
         '</div>' +
         '<p class="bao gc-noi"></p>';

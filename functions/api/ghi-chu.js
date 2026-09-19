@@ -5,8 +5,12 @@
    Ghi chú là thứ bắt gặp giữa đường: một quyển sách, một bản nhạc, một ý
    thoáng qua. Bắt nó đi qua `content/ghi-chu.md` nghĩa là phải mở máy, sửa
    file, chạy build, đẩy lên — bốn bước cho ba dòng chữ. Bốn bước ấy đủ để
-   lần sau người ta không ghi nữa. Đây là đường tắt: mở /notes/#viet trên
-   điện thoại, gõ, xong.
+   lần sau người ta không ghi nữa. Đây là đường tắt: mở /z-admin/ trên điện
+   thoại, gõ, xong.
+
+   (Đời trước cửa này nằm sau `/notes/#viet`. Đã gỡ ở V1.8.8 — lý do ở phần
+   "ĐÃ BỎ: CỬA SAU #viet" trong src/js/ghi-chu.js. Nay `/notes/` chỉ còn hai
+   việc của người đọc: lọc, và xin ghi chú mới.)
 
    ── HAI NGUỒN, VÀ CÁI GIÁ CỦA NÓ ──────────────────────────────────────
    Từ đây blog có HAI chỗ chứa ghi chú: file Markdown (dựng sẵn, bot đọc

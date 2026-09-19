@@ -9,11 +9,13 @@
 /* ══════════════════════════════════════════════════════════════
    KHUNG ĐĂNG NHẬP DÙNG CHUNG (src/js/khoa.js)
 
-   Một cửa cho cả ba ngăn của /z-admin/, và cũng là cửa mà /notes/#viet với
-   /notes/#duyet mượn về cắm vào chỗ của chúng. Nên nó phải đứng được ở hai
-   nơi rất khác nhau: giữa một trang trống, và lọt thỏm trong một khối có nền
-   sẵn. Cách xử: khối này KHÔNG tự vẽ nền, chỉ tự giới hạn bề ngang và tự canh
+   Một cửa cho cả ba ngăn của /z-admin/, và cũng là cửa mà bàn duyệt `#duyet`
+   trên trang bài mượn về cắm vào chỗ của nó. Nên nó phải đứng được ở hai nơi
+   rất khác nhau: giữa một trang trống, và lọt thỏm trong một khối có nền sẵn.
+   Cách xử: khối này KHÔNG tự vẽ nền, chỉ tự giới hạn bề ngang và tự canh
    giữa — nền là việc của chỗ cắm.
+
+   (Hai lối `/notes/#viet` và `/notes/#duyet` đã gỡ ở V1.8.8.)
    ══════════════════════════════════════════════════════════════ */
 .ad-cong{padding:var(--s8) 0 var(--s10)}
 .kh-cong{

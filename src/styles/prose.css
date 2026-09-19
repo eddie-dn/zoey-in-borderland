@@ -950,7 +950,7 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* ── BÀN DUYỆT (/#duyet) ──
    Chỉ chủ trang mở tới, nên nó KHÔNG cố hoà vào trang: nền chìm, viền đứt,
    đọc ra ngay là "chỗ làm việc" chứ không phải nội dung. Cùng khuôn với ô viết
-   ghi chú ở /notes/#viet — hai chỗ làm cùng một loại việc thì nên trông giống
+   ghi chú ở /z-admin/ — hai chỗ làm cùng một loại việc thì nên trông giống
    nhau, để nhận ra ngay mình đang ở chế độ chủ trang. */
 /* ── KHÔNG CÒN KHUNG HỘP NÉT ĐỨT ──
    Nét đứt và nền chìm là để khối này đọc ra "chỗ làm việc" hồi nó còn mọc

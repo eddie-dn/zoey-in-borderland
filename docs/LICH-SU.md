@@ -58,10 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
-| V3.0.9 | 2026-09-19 | 09 | sửa chuỗi cron Chủ nhật — Cloudflare không nhận số 0 |
-| V3.0.8 | 2026-09-19 | 08 | đổi địa chỉ gửi sang contact@ |
-| V3.0.7 | 2026-09-19 | 07 | tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
-| V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · lịch cron + Resend |
+| V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
 | V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
 | V3.0.4 | 2026-09-18 | 04 | bỏ dấu trang chìm ở trang bài; dải sang trang ăn màu nền; gấp trả lời giữ 2 cái và gấp lại được |
 | V3.0.3 | 2026-09-18 | 03 | ô soạn: căn dòng cho ảnh; ảnh giữ khổ khi mở lại bài; bỏ cửa thứ hai đổi bề ngang ảnh |
@@ -259,6 +256,24 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.6 — 19-Sep-2026
+
+- **Thư báo, ba việc chạy khi không có ai ngồi đó.** Mỗi ngày 20:00: bình luận
+  nào đang chờ duyệt thì gom vào một lá; và một lượt tự kiểm soi D1, khoá chủ
+  trang, Resend, token GitHub, khoá Gemini. Mỗi Chủ nhật: sao lưu bình luận,
+  ghi chú và lượt xem sang một Google Sheet trong Drive. Cả ba **im lặng khi
+  không có tin** — cái chuông chỉ đáng tin khi nó chỉ kêu lúc có chuyện.
+- **Vì sao đáng làm.** Bình luận vào D1 rồi nằm im tới khi chủ trang tình cờ mở
+  `#duyet`; người đọc gõ một câu hỏi rồi đợi một người chưa biết mình có gì để
+  đọc. Và trang này có nhiều đường hỏng cố ý không kêu — khoá Gemini mất thì ô
+  trích dẫn vẫn chạy, token GitHub hết hạn thì ô đăng bài im. Đúng với người
+  đọc, nhưng đẩy cái giá sang chủ trang.
+- **Hai chỗ đã vấp.** Cloudflare đánh thứ trong tuần `1`–`7` với `1` = Chủ
+  nhật và từ chối `0`, ngược hẳn cron Unix — lượt deploy hỏng ở bước cuối, sau
+  khi mã đã lên, nên trang nhìn bình thường mà thiếu hẳn một lịch; nay ghi
+  `SUN` cho khỏi hiểu nhầm. Và `THU_TU` nằm trong `vars` nên sửa trên dashboard
+  là vô ích: mỗi lượt deploy Wrangler lấy file làm nguồn đúng rồi ghi đè.
 
 ## V3.0.5 — 18-Sep-2026
 

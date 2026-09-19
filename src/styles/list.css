@@ -1101,11 +1101,12 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
   .gc-dau{flex-direction:row;align-items:baseline;gap:var(--s3)}
 }
 
-/* ── Ô VIẾT GHI CHÚ (/notes/#viet) ──
+/* ── Ô VIẾT GHI CHÚ (/z-admin/) ──
    Chỉ chủ trang mở tới, nên nó KHÔNG cố hoà vào trang: một tấm nền chìm có
    viền đứt, đọc ra ngay là "chỗ làm việc", không phải nội dung. Người đọc
-   thường không bao giờ gặp khối này (ghi-chu.js chỉ dựng nó khi địa chỉ có
-   #viet), nên nó được phép trông khác. */
+   thường không bao giờ gặp khối này (ghi-chu.js chỉ cắm nó vào ô
+   `[data-viet-host]`, mà ô ấy chỉ có ở /z-admin/), nên nó được phép trông
+   khác. Lối cũ `/notes/#viet` đã gỡ ở V1.8.8. */
 .gc-viet{
   margin-bottom:var(--s8);
   padding:var(--s5) var(--s5) var(--s6);
