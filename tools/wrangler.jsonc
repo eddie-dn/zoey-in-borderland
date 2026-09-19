@@ -1,0 +1,171 @@
+{
+  // ══════════════════════════════════════════════════════════════════════
+  // Cấu hình Cloudflare Worker.
+  //
+  // Chỉ cần file này khi trang chạy dưới dạng WORKER (tên miền …workers.dev).
+  // Chạy dưới dạng PAGES (…pages.dev) thì Cloudflare tự đọc thư mục
+  // `functions/` và file này nằm im, không ảnh hưởng gì.
+  //
+  // Vì sao cần: Worker chỉ có MỘT cửa vào và phải tự định tuyến — lý do đầy
+  // đủ ở đầu `worker.js`.
+  // ══════════════════════════════════════════════════════════════════════
+
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Phải TRÙNG tên dự án trên Cloudflare, không thì lượt deploy tạo ra một
+  // Worker thứ hai thay vì cập nhật cái đang chạy.
+  "name": "zoey-in-borderland",
+
+  "main": "worker.js",
+
+  // Ngày tương thích: khoá hành vi của runtime lại một mốc, để Cloudflare nâng
+  // cấp không đổi cách mã này chạy. Mã ở đây chỉ dùng fetch, URL, Response và
+  // crypto.randomUUID — có từ rất lâu — nên mốc nào cũng được; đặt mốc cũ hơn
+  // là cách an toàn nhất.
+  "compatibility_date": "2025-04-01",
+
+  // Trang tĩnh. `dist/` là thư mục `npm run build` sinh ra.
+  "assets": {
+    "directory": "./dist",
+    // Tên binding này phải khớp `env.ASSETS` trong worker.js.
+    "binding": "ASSETS",
+    // Trang dựng ra ở dạng `/posts/ten-bai/index.html`, nên người đọc gõ
+    // `/posts/ten-bai` (không dấu gạch cuối) vẫn phải ra đúng bài.
+    "html_handling": "auto-trailing-slash",
+    // `dist/404.html` do build sinh ra từ V16.00 — một trang thật, có ô tìm
+    // kiếm và đường quay về, thay cho trang TRẮNG mà "none" vẫn trả.
+    //
+    // Chuyện này thôi hiếm từ V15.00: chủ trang sửa được đường dẫn của bài đã
+    // đăng ngay ở /z-admin/, và mỗi lần sửa là mọi link cũ dẫn tới đây.
+    "not_found_handling": "404-page"
+  },
+
+  // ── BIẾN THƯỜNG (KHÔNG PHẢI BÍ MẬT) ────────────────────────────────
+  // Hai dòng này để ô viết bài ở /z-admin/ biết ghi file vào kho mã nào.
+  // Chúng KHÔNG phải bí mật — tên kho mã công khai ai cũng đọc được — nên để
+  // trong file này là đúng chỗ, và đi theo repo thì không lo quên.
+  //
+  // GH_NHANH phải là nhánh
+  // mà Cloudflare đang dựng; ghi vào nhánh khác thì commit vào được nhưng
+  // không có gì dựng lại cả, và trang đứng im không báo gì.
+  //
+  // Token thì NGƯỢC LẠI: GH_TOKEN là Secret, đặt ở Cloudflare →
+  // Settings → Runtime → Variables and Secrets. Đừng bao giờ đưa vào file này.
+  "vars": {
+    "GC_ID": "zoey",
+    "GH_REPO": "eddie-dn/zoey-in-borderland",
+    "GH_NHANH": "main",
+
+    // Người GỬI của mọi thư máy gửi đi. Phải là địa chỉ thuộc tên miền đã xác
+    // minh ở Resend, không thì Resend từ chối ngay chứ không phải rơi vào spam.
+    // Để trong repo được vì nó vốn công khai — chính là địa chỉ in trên trang.
+    "THU_TU": "Zoey <contact@z-in-borderland.com>",
+
+    // Gốc địa chỉ, để thư báo dựng được đường dẫn bấm sang bàn duyệt. Lúc cron
+    // chạy thì KHÔNG có request nào để suy ra tên miền — phải khai sẵn.
+    "TRANG_GOC": "https://z-in-borderland.com",
+
+    // Chép cột `email` của người bình luận vào bản sao lưu hay không.
+    //
+    // "1" = CÓ. Chủ trang chọn vậy vì một bản sao lưu mà khôi phục xong vẫn
+    // thiếu một cột thì chưa phải bản sao lưu đầy đủ: mất cột này là mất luôn
+    // đường liên hệ lại với người đã viết.
+    //
+    // Đánh đổi, ghi ra đây để đừng ai quên: người đọc đưa địa chỉ cho CHỦ
+    // TRANG, không cho Google. Từ khi bật, nó nằm trong Drive và trong mọi bản
+    // sao lưu của Drive. Đổi về "0" là dừng chép ngay lượt sau, nhưng KHÔNG tự
+    // xoá cột đã có trong Sheet — phải xoá tay.
+    //
+    // Lưu ý: lời hứa ở đầu functions/api/binh-luan.js vẫn nguyên vẹn. Nó nói
+    // email không đi qua API xuống trình duyệt người đọc, và không vào thư báo.
+    // Cả hai vẫn đúng — đây là đường thứ ba, đi thẳng sang bản sao lưu riêng
+    // của chủ trang.
+    //
+    // Để ở đây (Var) chứ không phải Secret vì nó là một LỰA CHỌN, không phải bí
+    // mật — và một lựa chọn về quyền riêng tư thì nên nhìn thấy được trong repo,
+    // không phải giấu trên dashboard.
+    "SAO_LUU_EMAIL": "1"
+
+    // KHÔNG khai ở đây, cả bốn đều là Secret trên dashboard:
+    //   RESEND_KEY     khoá API Resend
+    //   THU_DEN        địa chỉ nhận thư báo
+    //   SAO_LUU_URL    địa chỉ web app của Apps Script
+    //   SAO_LUU_KHOA   chuỗi bí mật dùng chung với Apps Script
+    //
+    // SAO_LUU_URL để Secret vì ai biết nó là gửi được dữ liệu rác vào Sheet của
+    // bạn — nó là một cửa mở, không phải một cái tên. Xem docs/SAO-LUU.md.
+  },
+
+  // ── LỊCH CHẠY ───────────────────────────────────────────────────────
+  // Gọi `scheduled` trong worker.js. Giờ ở đây là UTC, KHÔNG phải giờ Việt
+  // Nam — "0 13" là 13:00 UTC, tức 20:00 ở Hà Nội. Quên đổi múi giờ là thư
+  // báo tới lúc rạng sáng, và không có gì báo cho biết mình đã quên.
+  //
+  //   0 13 * * *     mỗi ngày 20:00 giờ VN  → bình luận chờ duyệt + tự kiểm
+  //   0 14 * * SUN   Chủ nhật 21:00 giờ VN  → sao lưu sang Google Sheet
+  //
+  // ── VIẾT "SUN" CHỨ ĐỪNG VIẾT SỐ ──
+  // Cloudflare đánh số thứ trong tuần là 1-7 với **1 = Chủ nhật**, và KHÔNG
+  // nhận số 0. Cron Unix thì ngược lại: 0-6 với 0 = Chủ nhật. Nghĩa là "0" bị
+  // từ chối thẳng, còn "1" thì được nhận nhưng có nghĩa khác hẳn nơi khác.
+  //
+  // Đã vấp thật: "0 14 * * 0" làm lượt deploy hỏng với
+  // `invalid cron string [code: 10100]`, và hỏng SAU khi mã đã lên — Worker
+  // chạy bản mới nhưng thiếu hẳn lịch tuần, mà nhìn trang thì không thấy gì lạ.
+  //
+  // Ghi bằng chữ (SUN, MON…) thì không có cách nào hiểu nhầm.
+  //
+  // Sao lưu đặt sau lượt hằng ngày một tiếng để hai việc không cùng gọi Resend.
+  //
+  // Mỗi ngày một lượt là cố ý. Dày hơn thì cái chuông thành tiếng ồn; xem
+  // chú thích đầu functions/api/thu-bao.js.
+  //
+  // MẤY CHUỖI NÀY PHẢI KHỚP TỪNG CHỮ với `switch (cron)` trong worker.js. Sửa
+  // một bên mà quên bên kia thì việc ấy rơi xuống nhánh `default` — vẫn chạy,
+  // nhưng chạy sai việc và kêu lên trong log.
+  //
+  // CRON CHỈ CHẠY Ở WORKER, không chạy ở Pages.
+  "triggers": {
+    "crons": ["0 13 * * *", "0 14 * * SUN"]
+  },
+
+  "observability": { "enabled": true },
+
+  // ── CƠ SỞ DỮ LIỆU D1 ────────────────────────────────────────────────
+  // Bỏ dấu chú thích khối dưới đây SAU KHI tạo D1, và dán `database_id` lấy
+  // từ trang cơ sở dữ liệu trên Cloudflare vào.
+  //
+  // VÌ SAO KHAI Ở ĐÂY CHỨ KHÔNG CHỈ BẤM TRONG DASHBOARD: lượt deploy bằng
+  // wrangler lấy file này làm nguồn đúng và GỠ mọi binding không có trong đó.
+  // Gắn D1 bằng tay trên dashboard rồi đẩy một commit mới là nó biến mất —
+  // lặng lẽ, và triệu chứng y hệt lúc chưa gắn bao giờ.
+  //
+  // Hai khoá GC_ID và GC_KEY thì NGƯỢC LẠI: chúng phải là **Secret**, đặt
+  // trên dashboard. Đừng đưa chúng vào file này — file này đi theo repo.
+  //
+  // ── ĐỌC KỸ CHỖ NÀY NẾU BIẾN CỨ BIẾN MẤT SAU MỖI LƯỢT DEPLOY ──
+  // Trong bảng "Variables and Secrets" của Cloudflare, mỗi dòng có một ô
+  // **Type** với hai lựa chọn — và hai lựa chọn ấy hành xử NGƯỢC NHAU khi
+  // deploy:
+  //
+  //   Type = Secret  → được giữ lại. Wrangler không đụng tới secret.
+  //   Type = Text    → BỊ XOÁ. Wrangler coi khối `vars` trong file này là
+  //                    nguồn đúng duy nhất, nên mọi biến dạng Text không có
+  //                    tên trong đó đều bị gỡ khỏi Worker sau mỗi lượt deploy.
+  //
+  // Nên: thêm GC_ID mà chọn nhầm **Text** thì cứ mỗi lần đẩy commit là phải
+  // thêm lại — và triệu chứng đúng y như lúc chưa từng thêm. Chọn **Secret**
+  // là xong hẳn.
+  //
+  // (Không muốn dùng Secret cho GC_ID cũng được — nó vốn không phải bí mật,
+  // chỉ là "mã chủ". Nhưng lúc ấy phải khai nó vào khối `vars` bên trên chứ
+  // không phải trên dashboard, và khai ở đó nghĩa là nó nằm trong repo.)
+  //
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "zoey-blog",
+      "database_id": "f14f79f7-3876-41e3-9756-7b69745fdb86"
+    }
+  ]
+}
