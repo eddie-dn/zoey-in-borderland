@@ -40,9 +40,18 @@
    địa chỉ người ta đưa cho MÌNH không có lý do gì phải đi qua bấy nhiêu chặng.
    Cần liên hệ lại thì mở Console của D1 mà tra — một lần, đúng dòng cần.
 
-   ── HAI ĐƯỜNG VÀO, MỘT THÂN HÀM ───────────────────────────────────────
-     · `chayThuBao(env)` — lịch gọi, mỗi ngày một lượt (xem `scheduled` trong
-       worker.js và khối `triggers` trong wrangler.jsonc).
+   ── BA VIỆC CHẠY THEO LỊCH, MỘT MÁY GỬI ───────────────────────────────
+     · `chayThuBao(env)`  mỗi ngày · bình luận đang chờ duyệt
+     · `tuKiem(env)`      mỗi ngày · soi xem có thứ gì đang hỏng lặng lẽ
+     · `chaySaoLuu(env)`  mỗi tuần · đẩy dữ liệu sang Google Sheet
+
+   Cả ba ở chung một file vì chúng là CÙNG MỘT VIỆC nhìn từ xa: thứ chạy khi
+   không có ai ngồi đó, và nói ra khi có chuyện. Chúng dùng chung `guiThu()`,
+   chung cách bỏ qua khi thiếu cấu hình, chung nếp ghi log. Tách ra ba file thì
+   ba bản sao của cùng một hàm gửi, và sớm muộn ba bản ấy trôi lệch nhau.
+
+   ── HAI ĐƯỜNG VÀO ─────────────────────────────────────────────────────
+     · `scheduled` trong worker.js — lịch gọi (khối `triggers` ở wrangler.jsonc)
      · `onRequestPost` — chủ trang gọi tay để THỬ, không phải đợi tới mai.
 
    Không có đường thứ hai thì mỗi lần sửa một dòng chữ trong thư là chờ 24 giờ
@@ -271,13 +280,351 @@ export async function chayThuBao(env) {
   return { ...kq, moi: moi.length, hangCho: tong };
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   ② TỰ KIỂM — soi những thứ hỏng mà KHÔNG kêu
+
+   ── VÌ SAO CẦN ────────────────────────────────────────────────────────
+   Trang này có rất nhiều đường hỏng lặng lẽ, và đó là CỐ Ý: mỗi hàm đều chọn
+   "trang vẫn chạy, chỉ thiếu một mục" thay vì "nổ 500 vào mặt người đọc". Đọc
+   qua `functions/` thấy ngay mấy chỗ:
+
+     · GEMINI_KEY mất   → /api/quote lặng lẽ quay về kho câu sẵn
+     · GH_TOKEN hết hạn → ô đăng bài ở /z-admin/ im, bài không bao giờ lên
+     · DB rớt binding   → lượt xem về 0, bình luận không gửi được
+     · GC_KEY chưa đặt  → mọi cửa chủ trang đóng lại
+
+   Lựa chọn ấy đúng với NGƯỜI ĐỌC. Nhưng nó đẩy cái giá sang chủ trang: không
+   có gì đỏ, không có gì kêu, và một thứ hỏng có thể nằm im hàng tuần cho tới
+   lúc tình cờ đụng vào. Hàm này là cái còn thiếu — nó đi soi đúng mấy chỗ ấy.
+
+   ── CHỈ BÁO KHI TRẠNG THÁI ĐỔI ────────────────────────────────────────
+   Gửi thư mỗi lần thấy hỏng thì một thứ hỏng lâu ngày đẻ ra một lá thư y hệt
+   mỗi sáng — cách nhanh nhất biến cảnh báo thành thứ bị bỏ qua.
+
+   Nên ở đây lưu "lần trước thấy gì" vào bảng `he_thong`, và chỉ gửi khi bức
+   tranh KHÁC lần trước. Hỏng thì báo một lần. Sửa xong thì báo một lần nữa
+   ("đã ổn lại") — vế thứ hai quan trọng ngang vế đầu: không có nó thì sau khi
+   sửa, chẳng gì xác nhận là mình đã sửa đúng.
+
+   ── KHÔNG KIỂM THỨ KHÔNG DÙNG ─────────────────────────────────────────
+   GH_TOKEN và GEMINI_KEY chỉ soi khi chúng đã được đặt. Chủ trang không dùng ô
+   đăng bài thì thiếu token là chuyện bình thường — mà báo lỗi cho một thứ cố ý
+   không bật là dạy người ta bỏ qua thư của mình.
+   ══════════════════════════════════════════════════════════════════════ */
+
+const TAO_HE_THONG = `CREATE TABLE IF NOT EXISTS he_thong (
+  khoa TEXT PRIMARY KEY,
+  gia  TEXT NOT NULL DEFAULT '',
+  sua  TEXT NOT NULL DEFAULT ''
+)`;
+
+async function docHeThong(env, khoa) {
+  try {
+    await env.DB.prepare(TAO_HE_THONG).run();
+    const d = await env.DB.prepare('SELECT gia FROM he_thong WHERE khoa = ?')
+      .bind(khoa).first();
+    return d ? String(d.gia || '') : '';
+  } catch (e) { return ''; }
+}
+
+async function ghiHeThong(env, khoa, gia) {
+  try {
+    await env.DB.prepare(TAO_HE_THONG).run();
+    await env.DB.prepare(
+      `INSERT INTO he_thong (khoa, gia, sua) VALUES (?, ?, ?)
+       ON CONFLICT(khoa) DO UPDATE SET gia = excluded.gia, sua = excluded.sua`
+    ).bind(khoa, String(gia), new Date().toISOString()).run();
+  } catch (e) { /* mất một mốc trạng thái không đáng làm hỏng cả lượt chạy */ }
+}
+
+export async function tuKiem(env) {
+  const phep = [];
+
+  /* ── D1 ──
+     Không chỉ hỏi "có binding không" mà CHẠY THẬT một câu. Binding còn nguyên
+     mà cơ sở dữ liệu bị xoá hay đổi tên thì `env.DB` vẫn tồn tại — chỉ tới lúc
+     truy vấn mới lộ. Hỏi cái rẻ nhất, nhưng vẫn phải đi tới nơi. */
+  if (!env.DB) {
+    phep.push({ ten: 'D1', ok: false, noi: 'chưa gắn binding DB' });
+  } else {
+    try {
+      await env.DB.prepare('SELECT 1').first();
+      phep.push({ ten: 'D1', ok: true, noi: 'chạy' });
+    } catch (e) {
+      phep.push({ ten: 'D1', ok: false,
+                  noi: String((e && e.message) || e).slice(0, 120) });
+    }
+  }
+
+  /* ── Khoá chủ trang ──
+     Thiếu là MỌI cửa của chủ trang đóng: duyệt bình luận, viết ghi chú, đăng
+     bài. Mà triệu chứng phía ngoài chỉ là "gõ khoá vào không vào được" — rất
+     dễ tưởng mình gõ sai khoá. */
+  const coKhoa = !!(env.GC_ID && env.GC_KEY);
+  phep.push({
+    ten: 'Khoá chủ trang',
+    ok: coKhoa,
+    noi: coKhoa ? 'đã đặt'
+       : 'thiếu GC_ID hoặc GC_KEY — mọi cửa chủ trang đang đóng'
+  });
+
+  /* ── Đường gửi thư ──
+     Nghịch lý phải nói thẳng: thiếu khoá Resend thì chính lá thư báo này cũng
+     không gửi được. Vẫn kiểm, vì lượt gọi tay `POST /api/thu-bao` trả JSON đọc
+     được ngay — đó mới là chỗ dòng này có ích. */
+  phep.push({
+    ten: 'Resend',
+    ok: !!(env.RESEND_KEY && env.THU_DEN),
+    noi: env.RESEND_KEY ? (env.THU_DEN ? 'đã đặt' : 'thiếu THU_DEN')
+                        : 'thiếu RESEND_KEY'
+  });
+
+  /* ── Token GitHub ──
+     Token fine-grained của GitHub có HẠN, và lúc hết hạn thì ô đăng bài ở
+     /z-admin/ im lặng: bấm Đăng, không báo gì, bài không bao giờ xuất hiện.
+     Đúng thứ cần một cái chuông.
+
+     Gọi API thật chứ không chỉ xem chuỗi có tồn tại — một token hết hạn vẫn là
+     một chuỗi trông y như token còn hạn. */
+  if (env.GH_TOKEN && env.GH_REPO) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${env.GH_REPO}`, {
+        headers: {
+          Authorization: `Bearer ${env.GH_TOKEN}`,
+          'User-Agent': 'zoey-in-borderland-tukiem',
+          Accept: 'application/vnd.github+json'
+        }
+      });
+      phep.push({
+        ten: 'GitHub token',
+        ok: r.ok,
+        noi: r.ok ? 'còn hạn'
+           : r.status === 401 ? 'hết hạn hoặc bị thu hồi (401)'
+           : r.status === 404 ? 'không thấy kho mã, hoặc token thiếu quyền (404)'
+           : `GitHub trả ${r.status}`
+      });
+    } catch (e) {
+      phep.push({ ten: 'GitHub token', ok: false,
+                  noi: 'không gọi được API: '
+                     + String((e && e.message) || e).slice(0, 80) });
+    }
+  }
+
+  /* ── Khoá Gemini ──
+     Mức nhẹ nhất: thiếu thì ô trích dẫn vẫn chạy bằng kho câu sẵn và không ai
+     thấy gì bất thường. Vẫn đáng báo MỘT lần, vì "vẫn chạy" ở đây nghĩa là một
+     tính năng đã tắt mà không ai biết.
+
+     Chỉ soi khi khoá từng được đặt — `undefined` nghĩa là chủ trang chưa bao
+     giờ bật lớp này, chuỗi rỗng nghĩa là đã bật rồi mất. */
+  if (env.GEMINI_KEY !== undefined) {
+    phep.push({
+      ten: 'Gemini',
+      ok: !!env.GEMINI_KEY,
+      noi: env.GEMINI_KEY ? 'đã đặt'
+         : 'thiếu GEMINI_KEY — ô trích dẫn đang dùng kho câu sẵn'
+    });
+  }
+
+  const hong = phep.filter((p) => !p.ok);
+
+  /* Chữ ký gọn của bức tranh hiện tại. So CHỮ KÝ chứ không so số lỗi: hai thứ
+     hỏng khác nhau mà cùng đếm ra "1" thì vẫn là hai chuyện khác nhau. */
+  const chuKy = phep.map((p) => `${p.ten}:${p.ok ? 1 : 0}`).join('|');
+  const truoc = env.DB ? await docHeThong(env, 'tukiem') : '';
+
+  if (chuKy === truoc) return { ok: true, boQua: 'khong-doi', hong: hong.length };
+
+  const tieuDe = hong.length
+    ? `⚠ ${hong.length} thứ đang hỏng · z-in-borderland`
+    : '✓ Đã ổn lại · z-in-borderland';
+
+  const moDau = hong.length
+    ? 'Tự kiểm thấy có thay đổi. Mấy mục dấu ✗ đang hỏng:'
+    : 'Mọi thứ đã trở lại bình thường.';
+
+  const chuThuong = `${moDau}\n\n`
+    + phep.map((p) => `${p.ok ? '✓' : '✗'} ${p.ten} — ${p.noi}`).join('\n')
+    + `\n\n—\nSửa ở Cloudflare → Worker → Settings → Runtime → Variables and`
+    + ` Secrets.\nNhớ chọn Type = Secret, không phải Text.`;
+
+  const chuHTML =
+    `<div style="max-width:560px;margin:0 auto;padding:24px 16px">
+       <div style="font:600 17px/1.3 system-ui,sans-serif;margin-bottom:12px;color:${hong.length ? '#b91c1c' : '#15803d'}">
+         ${thoat(tieuDe)}
+       </div>
+       <div style="font:400 14px/1.6 system-ui,sans-serif;color:#444;margin-bottom:14px">
+         ${thoat(moDau)}
+       </div>
+       <table style="width:100%;border-collapse:collapse;font:400 14px/1.6 system-ui,sans-serif">
+         ${phep.map((p) => `<tr>
+             <td style="padding:6px 8px 6px 0;width:1em;color:${p.ok ? '#15803d' : '#b91c1c'}">${p.ok ? '✓' : '✗'}</td>
+             <td style="padding:6px 8px 6px 0;color:#111;white-space:nowrap">${thoat(p.ten)}</td>
+             <td style="padding:6px 0;color:#666">${thoat(p.noi)}</td>
+           </tr>`).join('')}
+       </table>
+       <div style="font:400 13px/1.6 system-ui,sans-serif;color:#888;margin-top:18px">
+         Sửa ở Cloudflare → Worker → Settings → Runtime → Variables and Secrets.<br>
+         Nhớ chọn <b>Type = Secret</b>, không phải Text.
+       </div>
+     </div>`;
+
+  const kq = await guiThu(env, { tieuDe, chuThuong, chuHTML });
+
+  /* Chỉ ghi mốc KHI GỬI ĐƯỢC. Ghi trước rồi gửi hỏng thì lần sau chữ ký đã
+     trùng, và cái tin ấy mất luôn — im lặng, đúng thứ hàm này sinh ra để chống. */
+  if (kq.ok && env.DB) await ghiHeThong(env, 'tukiem', chuKy);
+
+  return { ...kq, hong: hong.length, doi: true };
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   ④ SAO LƯU sang Google Sheet
+
+   ── VÌ SAO KHÔNG GỌI THẲNG DRIVE API ──────────────────────────────────
+   Gọi thẳng thì Worker phải tự ký JWT RS256 bằng khoá của một service account,
+   đổi lấy access token, rồi mới đẩy được file. Khoảng ba lần lượng mã của cả
+   khối này, cộng một GCP project, một khoá JSON, và một thư mục Drive phải chia
+   sẻ đúng cho email service account — bốn chỗ để vấp lúc cài, mỗi chỗ hỏng một
+   kiểu khác nhau.
+
+   Apps Script gánh hết phần ấy: script CHẠY DƯỚI DANH NGHĨA CHỦ TRANG, nên nó
+   vốn đã có quyền ghi vào Drive của chính mình. Không OAuth, không khoá máy,
+   không chia sẻ thư mục. Worker chỉ việc POST một gói JSON kèm một chuỗi bí mật
+   dùng chung.
+
+   ── ĐÂY KHÔNG PHẢI LẦN QUAY LẠI CỦA APPS SCRIPT CŨ ────────────────────
+   `binh-luan.js` có một đoạn dài kể vì sao bỏ Apps Script: nó ĐỨNG TRÊN ĐƯỜNG
+   ĐỌC — mỗi người mở một bài đều phải đợi một lượt gọi sang Google.
+
+   Chỗ này khác hẳn về bản chất. Nó chạy MỖI TUẦN MỘT LẦN, lúc không có ai ngồi
+   đó, và không người đọc nào chờ nó. Apps Script chậm hay nguội cũng không ai
+   biết. Lý do bỏ hồi đó không áp vào đây.
+
+   ── VÌ SAO KHÔNG PHẢI FILE .xlsx ĐÍNH KÈM MAIL ────────────────────────
+   Vì file đính kèm vẫn bắt phải NHỚ: nhớ kéo từ Gmail sang Drive, mỗi tuần. Cái
+   gì cần nhớ hằng tuần thì tuần thứ ba là quên. Ghi thẳng vào Sheet thì không
+   có bước nào để quên — và Sheet còn hơn .xlsx ở chỗ nó CỘNG DỒN: mở ra thấy cả
+   lịch sử, không phải đi tìm file của tuần nào.
+
+   ── EMAIL NGƯỜI BÌNH LUẬN: MẶC ĐỊNH KHÔNG CHÉP ────────────────────────
+   `SAO_LUU_EMAIL` mặc định tắt. Bật thì bản sao lưu khôi phục được đầy đủ, nhưng
+   địa chỉ của người đọc sẽ nằm trong Google Drive — đúng thứ lời hứa đầu
+   `binh-luan.js` nói là không nên. Tắt thì mất phần liên hệ khi khôi phục.
+
+   Không có lựa chọn nào đúng cho mọi người, nên nó là một cái CÔNG TẮC chứ không
+   phải một quyết định chôn trong mã. Mặc định chọn vế an toàn.
+   ══════════════════════════════════════════════════════════════════════ */
+
+const BANG_SAO_LUU = ['binh_luan', 'ghi_chu', 'xem'];
+const TOI_DA_DONG_SAO_LUU = 5000;
+
+export async function chaySaoLuu(env) {
+  if (!env.DB) return { ok: false, loi: 'chua-gan-D1' };
+  /* Chưa khai URL = chủ trang chưa bật tính năng này. Bỏ qua, không phải lỗi —
+     xem lý do ở `boQua` của tuKiem: báo lỗi cho thứ cố ý không bật là dạy người
+     ta bỏ qua thư của mình. */
+  if (!env.SAO_LUU_URL) return { ok: true, boQua: 'thieu-SAO_LUU_URL' };
+  /* Có URL mà thiếu khoá thì KHÁC: đã bật rồi nhưng cài dở. Cái này phải kêu. */
+  if (!env.SAO_LUU_KHOA) return { ok: false, loi: 'thieu-SAO_LUU_KHOA' };
+
+  const chepEmail = String(env.SAO_LUU_EMAIL || '') === '1';
+  const goi = {};
+  const dem = {};
+
+  for (const bang of BANG_SAO_LUU) {
+    try {
+      const kq = await env.DB.prepare(`SELECT * FROM ${bang} LIMIT ?`)
+        .bind(TOI_DA_DONG_SAO_LUU).all();
+      let ds = kq.results || [];
+
+      /* Gỡ cột email NGAY Ở ĐÂY, trước khi gói rời khỏi Worker. Lọc ở phía Apps
+         Script thì dữ liệu đã đi qua mạng rồi — muộn. */
+      if (bang === 'binh_luan' && !chepEmail) {
+        ds = ds.map((d) => { const { email, ...con } = d; return con; });
+      }
+
+      goi[bang] = ds;
+      dem[bang] = ds.length;
+    } catch (e) {
+      /* Bảng chưa có = tính năng ấy chưa ai dùng. Không phải lỗi, và KHÔNG được
+         làm hỏng bản sao lưu của mấy bảng còn lại. */
+      const loi = String((e && e.message) || e);
+      if (!/no such table/i.test(loi)) return { ok: false, loi: `${bang}: ${loi}` };
+      goi[bang] = [];
+      dem[bang] = 0;
+    }
+  }
+
+  let ra;
+  try {
+    ra = await fetch(env.SAO_LUU_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        khoa: env.SAO_LUU_KHOA,
+        luc: new Date().toISOString(),
+        coEmail: chepEmail,
+        bang: goi
+      })
+    });
+  } catch (e) {
+    return { ok: false, loi: 'mang: ' + String((e && e.message) || e) };
+  }
+
+  /* ── APPS SCRIPT TRẢ 200 CHO CẢ LÚC HỎNG ──
+     Web app của Apps Script chuyển hướng qua `script.googleusercontent.com` rồi
+     trả 200 kèm một trang HTML lỗi. Chỉ xem mã trạng thái thì một lượt sao lưu
+     hỏng trông y như một lượt thành công.
+
+     Mà sao lưu hỏng nhưng tưởng là chạy là kiểu hỏng TỆ NHẤT: nó chỉ lộ ra đúng
+     lúc cần khôi phục, tức là lúc đã mất dữ liệu rồi. Nên phải ĐỌC thân trả về
+     và đòi đúng `{"ok":true}`. */
+  const chu = await ra.text().catch(() => '');
+  let json = null;
+  try { json = JSON.parse(chu); } catch (e) { /* không phải JSON — coi như hỏng */ }
+
+  if (!ra.ok || !json || json.ok !== true) {
+    /* Sao lưu hỏng là đúng thứ phải kêu lên, không phải chỉ nằm im trong log. */
+    await guiThu(env, {
+      tieuDe: '⚠ Sao lưu tuần này HỎNG · z-in-borderland',
+      chuThuong: `Lượt sao lưu sang Google Sheet không thành công.\n\n`
+               + `Mã: ${ra.status}\nTrả về: ${chu.slice(0, 300)}\n\n`
+               + `Kiểm hai chỗ: Apps Script còn deploy không, và SAO_LUU_KHOA `
+               + `hai bên có khớp nhau không.`,
+      chuHTML: `<div style="font:400 14px/1.7 system-ui,sans-serif;padding:24px;max-width:560px">
+          <b style="color:#b91c1c">Sao lưu tuần này hỏng.</b><br><br>
+          Mã: <code>${thoat(String(ra.status))}</code><br>
+          Trả về: <code>${thoat(chu.slice(0, 300))}</code><br><br>
+          <span style="color:#666">Kiểm hai chỗ: Apps Script còn deploy không,
+          và <code>SAO_LUU_KHOA</code> hai bên có khớp nhau không.</span>
+        </div>`
+    });
+    return { ok: false, loi: `sao-luu ${ra.status}`, chiTiet: chu.slice(0, 300) };
+  }
+
+  return { ok: true, dem, coEmail: chepEmail, sheet: json.sheet || '' };
+}
+
 /* ══════════ CHỦ TRANG GỌI TAY ĐỂ THỬ ══════════
    POST /api/thu-bao với hai header khoá. Chạy đúng thân hàm mà lịch chạy, nên
    thử ở đây đúng nghĩa là thử cái sẽ chạy thật — không phải một bản mô phỏng.
 
-   Nhận `?ep=1` để gửi KỂ CẢ khi không có gì mới. Cần nó vì lúc dựng xong tính
-   năng thì hàng chờ thường rỗng, mà một cái chuông chưa bao giờ nghe kêu thì
-   chưa biết nó có kêu không. */
+   Chọn việc bằng `?viec=`:
+
+     (không có)     bình luận đang chờ duyệt — mặc định, vì đây là việc chạy
+                    hằng ngày và cũng là việc hay phải soi nhất
+     ?viec=kiem     tự kiểm
+     ?viec=saoluu   sao lưu sang Google Sheet
+     ?ep=1          gửi một lá thư THỬ, kể cả khi chẳng có tin gì
+
+   `?ep=1` cần thiết vì lúc vừa dựng xong thì hàng chờ thường rỗng và mọi thứ
+   đều đang chạy tốt — cả ba việc đều im lặng, đúng như thiết kế. Mà một cái
+   chuông chưa bao giờ nghe kêu thì chưa biết nó có kêu không.
+
+   `?viec=kiem` KHÔNG bỏ qua mốc trạng thái: gọi lần đầu thì gửi thư, gọi lại
+   ngay thì trả `boQua:"khong-doi"`. Cố ý — thử phải thử đúng cái sẽ chạy thật,
+   kể cả phần nín. Muốn thấy thư thì dùng `?ep=1`. */
 export async function onRequestPost({ request, env }) {
   if (!laChuTrang(request, env)) {
     return new Response(JSON.stringify({ ok: false, loi: 'sai khoá' }), {
@@ -286,17 +633,22 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  const ep = new URL(request.url).searchParams.get('ep') === '1';
+  const tham = new URL(request.url).searchParams;
+  const viec = tham.get('viec') || '';
 
   let kq;
-  if (ep) {
+  if (tham.get('ep') === '1') {
     kq = await guiThu(env, {
       tieuDe: 'Thử thư báo · z-in-borderland',
-      chuThuong: 'Đường gửi thư chạy được. Đây là thư thử, không có bình luận nào.',
+      chuThuong: 'Đường gửi thư chạy được. Đây là thư thử, không có tin gì cả.',
       chuHTML: '<div style="font:400 15px/1.6 system-ui,sans-serif;padding:24px">'
              + 'Đường gửi thư chạy được.<br>'
-             + '<span style="color:#888">Đây là thư thử, không có bình luận nào.</span></div>'
+             + '<span style="color:#888">Đây là thư thử, không có tin gì cả.</span></div>'
     });
+  } else if (viec === 'kiem') {
+    kq = await tuKiem(env);
+  } else if (viec === 'saoluu') {
+    kq = await chaySaoLuu(env);
   } else {
     kq = await chayThuBao(env);
   }

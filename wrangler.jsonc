@@ -63,10 +63,26 @@
 
     // Gốc địa chỉ, để thư báo dựng được đường dẫn bấm sang bàn duyệt. Lúc cron
     // chạy thì KHÔNG có request nào để suy ra tên miền — phải khai sẵn.
-    "TRANG_GOC": "https://z-in-borderland.com"
+    "TRANG_GOC": "https://z-in-borderland.com",
 
-    // NGƯỜI NHẬN (THU_DEN) và khoá Resend (RESEND_KEY) thì KHÔNG khai ở đây:
-    // cả hai là Secret, đặt trên dashboard. Xem docs/THU-BAO.md.
+    // Chép cột `email` của người bình luận vào bản sao lưu hay không. "0" là
+    // KHÔNG — mặc định an toàn, giữ đúng lời hứa ở đầu functions/api/binh-luan.js
+    // rằng địa chỉ người đọc không rời cơ sở dữ liệu. Đổi thành "1" thì bản sao
+    // lưu khôi phục được đầy đủ, đánh đổi là địa chỉ ấy nằm trong Google Drive.
+    //
+    // Để ở đây (Var) chứ không phải Secret vì nó là một LỰA CHỌN, không phải bí
+    // mật — và một lựa chọn về quyền riêng tư thì nên nhìn thấy được trong repo,
+    // không phải giấu trên dashboard.
+    "SAO_LUU_EMAIL": "0"
+
+    // KHÔNG khai ở đây, cả bốn đều là Secret trên dashboard:
+    //   RESEND_KEY     khoá API Resend
+    //   THU_DEN        địa chỉ nhận thư báo
+    //   SAO_LUU_URL    địa chỉ web app của Apps Script
+    //   SAO_LUU_KHOA   chuỗi bí mật dùng chung với Apps Script
+    //
+    // SAO_LUU_URL để Secret vì ai biết nó là gửi được dữ liệu rác vào Sheet của
+    // bạn — nó là một cửa mở, không phải một cái tên. Xem docs/SAO-LUU.md.
   },
 
   // ── LỊCH CHẠY ───────────────────────────────────────────────────────
@@ -74,12 +90,22 @@
   // Nam — "0 13" là 13:00 UTC, tức 20:00 ở Hà Nội. Quên đổi múi giờ là thư
   // báo tới lúc rạng sáng, và không có gì báo cho biết mình đã quên.
   //
+  //   0 13 * * *   mỗi ngày 20:00 giờ VN  → bình luận chờ duyệt + tự kiểm
+  //   0 14 * * 0   Chủ nhật 21:00 giờ VN  → sao lưu sang Google Sheet
+  //
+  // Trong cron, 0 là CHỦ NHẬT (không phải thứ Hai). Sao lưu đặt sau lượt hằng
+  // ngày một tiếng để hai việc không cùng gọi Resend một lúc.
+  //
   // Mỗi ngày một lượt là cố ý. Dày hơn thì cái chuông thành tiếng ồn; xem
   // chú thích đầu functions/api/thu-bao.js.
   //
+  // MẤY CHUỖI NÀY PHẢI KHỚP TỪNG CHỮ với `switch (cron)` trong worker.js. Sửa
+  // một bên mà quên bên kia thì việc ấy rơi xuống nhánh `default` — vẫn chạy,
+  // nhưng chạy sai việc và kêu lên trong log.
+  //
   // CRON CHỈ CHẠY Ở WORKER, không chạy ở Pages.
   "triggers": {
-    "crons": ["0 13 * * *"]
+    "crons": ["0 13 * * *", "0 14 * * 0"]
   },
 
   "observability": { "enabled": true },

@@ -69,19 +69,49 @@ export default {
      ngang giữa chừng thì thư đi được một nửa.
 
      ── KHÔNG ĐỂ MỘT VIỆC HỎNG KÉO THEO VIỆC KHÁC ──
-     Mỗi việc bọc try/catch riêng. Sau này thêm thư báo thống kê tuần vào đây
-     thì một lỗi ở nó không được phép làm im luôn thư báo bình luận. */
+     Mỗi việc một try/catch RIÊNG, không gộp. Tự kiểm mà nổ thì thư báo bình
+     luận vẫn phải đi — và trớ trêu là đúng lúc tự kiểm nổ mới càng cần mọi thứ
+     khác còn chạy.
+
+     ── PHÂN VIỆC THEO `controller.cron` ──
+     Cloudflare truyền vào đúng chuỗi cron đã kích hoạt lượt này, khớp từng chữ
+     với dòng trong wrangler.jsonc. So chuỗi chứ không đoán theo thứ hay giờ:
+     đổi lịch trong wrangler mà quên sửa ở đây thì một việc lặng lẽ thôi chạy,
+     còn so chuỗi thì nó rơi xuống `default` và kêu lên ngay. */
   async scheduled(controller, env, ctx) {
-    ctx.waitUntil((async () => {
+    const cron = String((controller && controller.cron) || '');
+
+    /* Gói một việc lại: chạy, in log, nuốt lỗi. In CẢ lượt bỏ qua —
+       `observability` đang bật, nên dòng log này là chỗ DUY NHẤT trả lời được
+       câu "hôm qua nó có chạy không, hay chỉ là không có gì để báo". Hai chuyện
+       ấy nhìn từ hộp thư thì giống hệt nhau: cùng là không có thư. */
+    const lam = async (ten, ham) => {
       try {
-        const kq = await thuBao.chayThuBao(env);
-        /* In cả lượt bỏ qua. `observability` đang bật trong wrangler.jsonc, nên
-           dòng này là chỗ DUY NHẤT trả lời được câu "hôm qua nó có chạy không,
-           hay chỉ là không có gì để báo". Hai chuyện ấy nhìn từ hộp thư thì
-           giống hệt nhau — cùng là không có thư. */
-        console.log('[thu-bao]', JSON.stringify(kq));
+        console.log(`[${ten}]`, JSON.stringify(await ham(env)));
       } catch (e) {
-        console.error('[thu-bao] nổ:', (e && e.stack) || e);
+        console.error(`[${ten}] nổ:`, (e && e.stack) || e);
+      }
+    };
+
+    ctx.waitUntil((async () => {
+      switch (cron) {
+        /* Mỗi ngày: hai việc, chạy TUẦN TỰ chứ không song song. Cả hai đều gọi
+           Resend, và gửi hai lá cùng lúc thì thứ tự chúng rơi vào hộp thư thành
+           ngẫu nhiên — đọc "đã ổn lại" trước "đang hỏng" thì hiểu ngược. */
+        case '0 13 * * *':
+          await lam('thu-bao', thuBao.chayThuBao);
+          await lam('tu-kiem', thuBao.tuKiem);
+          break;
+
+        case '0 14 * * 0':
+          await lam('sao-luu', thuBao.chaySaoLuu);
+          break;
+
+        /* Lịch lạ = wrangler.jsonc và file này đã lệch nhau. Chạy việc hằng
+           ngày để không mất hẳn một lượt, nhưng kêu to trong log. */
+        default:
+          console.error('[lich] cron lạ, chưa có việc nào nhận:', cron);
+          await lam('thu-bao', thuBao.chayThuBao);
       }
     })());
   },

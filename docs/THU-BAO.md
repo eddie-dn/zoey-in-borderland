@@ -1,7 +1,14 @@
 # THƯ BÁO
 
-> Mỗi ngày một lượt, nếu có bình luận mới đang chờ duyệt thì trang gửi cho chủ
-> trang **một** lá thư gom tất cả. Không có gì mới thì không gửi gì.
+> Ba việc chạy khi không có ai ngồi đó, và nói ra khi có chuyện.
+>
+> | Việc | Lịch | Gửi thư khi |
+> |---|---|---|
+> | **Bình luận chờ duyệt** | mỗi ngày 20:00 | có bình luận mới trong 25 giờ |
+> | **Tự kiểm** | mỗi ngày 20:00 | trạng thái hệ thống ĐỔI so với lần trước |
+> | **Sao lưu** *(xem `docs/SAO-LUU.md`)* | Chủ nhật 21:00 | chỉ khi HỎNG |
+>
+> Cả ba đều **im lặng khi không có tin** — đó là thiết kế, không phải trục trặc.
 >
 > Mã: `functions/api/thu-bao.js` · lịch: khối `triggers` trong `wrangler.jsonc`
 > · cửa gọi tay: `POST /api/thu-bao`
@@ -84,46 +91,84 @@ thấy dòng `0 13 * * *`.
 
 ---
 
-## 3. Thử ngay, không đợi tới mai
+## 3. Tự kiểm — cái chuông cho những thứ hỏng lặng lẽ
 
-Cron chạy mỗi ngày một lượt, nên sửa một dòng chữ trong thư mà phải chờ 24 giờ
-mới biết đúng sai thì không ai sửa nữa. Có một cửa gọi tay:
+Trang này có nhiều đường hỏng **không kêu**, và đó là cố ý: mỗi hàm đều chọn
+"trang vẫn chạy, chỉ thiếu một mục" thay vì nổ 500 vào mặt người đọc.
 
-**Thử đường gửi** — gửi một lá thư thử kể cả khi hàng chờ rỗng:
+| Hỏng | Người đọc thấy | Chủ trang thấy |
+|---|---|---|
+| `GEMINI_KEY` mất | ô trích dẫn vẫn có câu | không gì cả |
+| `GH_TOKEN` hết hạn | không gì cả | bấm Đăng, bài không lên, không báo lỗi |
+| `DB` rớt binding | lượt xem về 0 | không gì cả |
+| `GC_KEY` chưa đặt | không gì cả | gõ khoá vào không vào được |
 
-```bash
-curl -X POST "https://z-in-borderland.com/api/thu-bao?ep=1" \
-  -H "x-gc-id: zoey" \
-  -H "x-gc-key: KHOÁ-BÍ-MẬT-CỦA-BẠN"
-```
+Lựa chọn ấy đúng với người đọc, nhưng đẩy cái giá sang chủ trang: một thứ hỏng
+có thể nằm im hàng tuần. Tự kiểm soi đúng năm chỗ ấy mỗi ngày.
 
-**Chạy đúng thân hàm mà lịch chạy** — dựng thư từ hàng chờ thật:
+**Chỉ gửi khi trạng thái ĐỔI.** Hỏng → báo một lần. Sửa xong → báo `✓ Đã ổn
+lại` một lần nữa. Vế thứ hai quan trọng ngang vế đầu: không có nó thì sau khi
+sửa, chẳng gì xác nhận là mình đã sửa đúng. Mốc trạng thái lưu trong bảng
+`he_thong` của D1, tự tạo.
 
-```bash
-curl -X POST "https://z-in-borderland.com/api/thu-bao" \
-  -H "x-gc-id: zoey" \
-  -H "x-gc-key: KHOÁ-BÍ-MẬT-CỦA-BẠN"
-```
+Gửi mỗi ngày một lá y hệt cho tới khi sửa xong là cách nhanh nhất biến cảnh
+báo thành thứ bị bỏ qua — nên không làm vậy.
 
-Trả về JSON, đọc được ngay:
-
-| Trả về | Nghĩa |
-|---|---|
-| `{"ok":true,"id":"...","moi":3,"hangCho":5}` | Đã gửi, 3 dòng mới trên tổng 5 |
-| `{"ok":true,"boQua":"khong-co-gi-moi"}` | Chạy đúng, nhưng không có gì để báo |
-| `{"ok":true,"boQua":"hang-cho-rong"}` | Không còn dòng nào chưa duyệt |
-| `{"ok":true,"boQua":"chua-co-bang"}` | Chưa ai bình luận bao giờ |
-| `{"ok":false,"loi":"thieu-RESEND_KEY"}` | Chưa đặt Secret, hoặc đặt nhầm Type |
-| `{"ok":false,"loi":"resend 403", ...}` | Khoá sai, hết hạn mức, hoặc domain chưa xác minh |
+`GH_TOKEN` và `GEMINI_KEY` chỉ soi **khi đã được đặt**: không dùng ô đăng bài
+thì thiếu token là bình thường, mà báo lỗi cho thứ cố ý không bật là dạy người
+ta bỏ qua thư của mình.
 
 ---
 
-## 4. Đổi giờ gửi
+## 4. Thử ngay, không đợi tới mai
+
+Cron chạy mỗi ngày một lượt, nên sửa một dòng chữ trong thư mà phải chờ 24 giờ
+mới biết đúng sai thì không ai sửa nữa. Cửa gọi tay chạy **đúng thân hàm mà
+lịch chạy**:
+
+```bash
+K='-H "x-gc-id: zoey" -H "x-gc-key: KHOÁ-BÍ-MẬT-CỦA-BẠN"'
+U=https://z-in-borderland.com/api/thu-bao
+
+curl -X POST "$U?ep=1"          # thư THỬ — gửi kể cả khi chẳng có tin gì
+curl -X POST "$U"               # bình luận chờ duyệt
+curl -X POST "$U?viec=kiem"     # tự kiểm
+curl -X POST "$U?viec=saoluu"   # sao lưu sang Google Sheet
+```
+
+*(thêm hai header khoá vào mỗi lệnh)*
+
+Dùng `?ep=1` trước tiên: lúc vừa dựng xong thì hàng chờ thường rỗng và mọi thứ
+đều đang chạy tốt, nên cả ba việc đều im lặng — đúng như thiết kế. Mà một cái
+chuông chưa bao giờ nghe kêu thì chưa biết nó có kêu không.
+
+`?viec=kiem` **không** bỏ qua mốc trạng thái: gọi lần đầu thì gửi thư, gọi lại
+ngay thì trả `boQua:"khong-doi"`. Cố ý — thử phải thử đúng cái sẽ chạy thật,
+kể cả phần nín.
+
+### Đọc kết quả
+
+| Trả về | Nghĩa |
+|---|---|
+| `{"ok":true,"id":"…","moi":3,"hangCho":5}` | Đã gửi, 3 dòng mới trên tổng 5 |
+| `{"ok":true,"boQua":"khong-co-gi-moi"}` | Chạy đúng, không có gì để báo |
+| `{"ok":true,"boQua":"hang-cho-rong"}` | Không còn dòng nào chưa duyệt |
+| `{"ok":true,"boQua":"chua-co-bang"}` | Chưa ai bình luận bao giờ |
+| `{"ok":true,"boQua":"khong-doi","hong":0}` | Tự kiểm: giống hệt lần trước |
+| `{"ok":true,"doi":true,"hong":2}` | Tự kiểm: 2 thứ hỏng, đã gửi thư |
+| `{"ok":false,"loi":"thieu-RESEND_KEY"}` | Chưa đặt Secret, hoặc đặt nhầm Type |
+| `{"ok":false,"loi":"resend 403",…}` | Khoá sai, hết hạn mức, hoặc domain chưa xác minh |
+
+Lỗi của phần sao lưu ở `docs/SAO-LUU.md` §5.
+
+---
+
+## 5. Đổi giờ gửi
 
 Sửa `wrangler.jsonc`:
 
 ```jsonc
-"triggers": { "crons": ["0 13 * * *"] }
+"triggers": { "crons": ["0 13 * * *", "0 14 * * 0"] }
 ```
 
 **Giờ là UTC, không phải giờ Việt Nam.** Lấy giờ Hà Nội trừ đi 7:
@@ -134,25 +179,36 @@ Sửa `wrangler.jsonc`:
 | 12:00 trưa | `0 5 * * *` |
 | 20:00 tối *(đang dùng)* | `0 13 * * *` |
 | 22:00 tối | `0 15 * * *` |
+| Chủ nhật 21:00 *(sao lưu)* | `0 14 * * 0` |
 
 Quên đổi múi giờ thì thư tới lúc rạng sáng, và không có gì báo cho biết mình
-đã quên.
+đã quên. Trong cron, **0 là Chủ nhật**, không phải thứ Hai.
+
+> **Sửa ở đây thì phải sửa cả `worker.js`.** Hàm `scheduled` phân việc bằng
+> `switch (cron)` so **khớp từng chữ** với mấy chuỗi này. Đổi một bên mà quên
+> bên kia thì lượt chạy rơi xuống nhánh `default`: nó vẫn chạy việc hằng ngày
+> nên nhìn từ hộp thư thì y như bình thường, chỉ có sao lưu lặng lẽ thôi chạy.
+> Nhánh `default` in một dòng `[lich] cron lạ` vào log để còn tìm ra.
 
 ---
 
-## 5. Khi không thấy thư
+## 6. Khi không thấy thư
 
 Theo thứ tự, dừng ở chỗ đầu tiên sai:
 
-1. **Có gì để báo không?** Không có bình luận mới trong 25 giờ thì im lặng là
-   ĐÚNG. Gọi tay bằng `?ep=1` để tách bạch "không có tin" với "hỏng".
-2. **Lịch đã gắn chưa?** Worker → Settings → **Trigger Events** phải có dòng
-   cron. Trống nghĩa là lượt deploy chưa mang khối `triggers` lên.
+1. **Có gì để báo không?** Không có bình luận mới trong 25 giờ, hoặc trạng thái
+   tự kiểm giống hệt hôm qua, thì im lặng là ĐÚNG. Gọi tay bằng `?ep=1` để
+   tách bạch "không có tin" với "hỏng".
+2. **Lịch đã gắn chưa?** Worker → Settings → **Trigger Events** phải có **cả
+   hai** dòng cron. Trống nghĩa là lượt deploy chưa mang khối `triggers` lên;
+   thiếu một dòng nghĩa là `wrangler.jsonc` chưa lên tới nơi.
 3. **Secret còn không?** Settings → Variables and Secrets. Thấy `RESEND_KEY`
    và `THU_DEN` với Type = `Secret`. Mất, hoặc Type = `Text`, thì xem §2.2.
-4. **Worker có chạy không?** Worker → **Logs**. Mỗi lượt cron in một dòng
-   `[thu-bao] {...}`, kể cả lượt bỏ qua — cố ý, vì "không có tin" và "không
-   chạy" nhìn từ hộp thư thì giống hệt nhau.
+4. **Worker có chạy không?** Worker → **Logs**. Mỗi việc in một dòng
+   (`[thu-bao]`, `[tu-kiem]`, `[sao-luu]`), **kể cả lượt bỏ qua** — cố ý, vì
+   "không có tin" và "không chạy" nhìn từ hộp thư thì giống hệt nhau. Thấy
+   `[lich] cron lạ` nghĩa là `wrangler.jsonc` và `worker.js` đã lệch nhau
+   (xem §5).
 5. **Resend có nhận không?** Resend → **Emails**. Mỗi lá đi qua đều hiện ở đó
    kèm `Delivered` / `Bounced`. Có `Delivered` mà hộp thư không thấy thì thư
    đang nằm trong nhãn do bộ lọc Gmail archive — tìm ở đó trước khi nghi hỏng.
@@ -161,7 +217,7 @@ Theo thứ tự, dừng ở chỗ đầu tiên sai:
 
 ---
 
-## 6. Thêm một thư báo khác
+## 7. Thêm một thư báo khác
 
 `guiThu(env, { tieuDe, chuThuong, chuHTML })` trong `functions/api/thu-bao.js`
 dùng lại được cho mọi loại thư. Thêm một việc vào lịch:
