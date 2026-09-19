@@ -54,7 +54,32 @@
   "vars": {
     "GC_ID": "zoey",
     "GH_REPO": "eddie-dn/zoey-in-borderland",
-    "GH_NHANH": "main"
+    "GH_NHANH": "main",
+
+    // Người GỬI của mọi thư máy gửi đi. Phải là địa chỉ thuộc tên miền đã xác
+    // minh ở Resend, không thì Resend từ chối ngay chứ không phải rơi vào spam.
+    // Để trong repo được vì nó vốn công khai — chính là địa chỉ in trên trang.
+    "THU_TU": "Zoey <hi@z-in-borderland.com>",
+
+    // Gốc địa chỉ, để thư báo dựng được đường dẫn bấm sang bàn duyệt. Lúc cron
+    // chạy thì KHÔNG có request nào để suy ra tên miền — phải khai sẵn.
+    "TRANG_GOC": "https://z-in-borderland.com"
+
+    // NGƯỜI NHẬN (THU_DEN) và khoá Resend (RESEND_KEY) thì KHÔNG khai ở đây:
+    // cả hai là Secret, đặt trên dashboard. Xem docs/THU-BAO.md.
+  },
+
+  // ── LỊCH CHẠY ───────────────────────────────────────────────────────
+  // Gọi `scheduled` trong worker.js. Giờ ở đây là UTC, KHÔNG phải giờ Việt
+  // Nam — "0 13" là 13:00 UTC, tức 20:00 ở Hà Nội. Quên đổi múi giờ là thư
+  // báo tới lúc rạng sáng, và không có gì báo cho biết mình đã quên.
+  //
+  // Mỗi ngày một lượt là cố ý. Dày hơn thì cái chuông thành tiếng ồn; xem
+  // chú thích đầu functions/api/thu-bao.js.
+  //
+  // CRON CHỈ CHẠY Ở WORKER, không chạy ở Pages.
+  "triggers": {
+    "crons": ["0 13 * * *"]
   },
 
   "observability": { "enabled": true },

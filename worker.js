@@ -37,6 +37,7 @@ import * as quote    from './functions/api/quote.js';
 import * as bai      from './functions/api/bai.js';
 import * as thich    from './functions/api/thich.js';
 import * as anh      from './functions/api/anh.js';
+import * as thuBao   from './functions/api/thu-bao.js';
 
 /* Bảng tra, không phải chuỗi if: thêm một hàm là thêm một dòng ở đây, và tên
    đường dẫn nằm ngay cạnh module lo nó — đọc một chỗ là biết trang có những
@@ -48,10 +49,43 @@ const CUA = {
   '/api/quote':     quote,
   '/api/bai':       bai,
   '/api/thich':     thich,
-  '/api/anh':       anh
+  '/api/anh':       anh,
+  '/api/thu-bao':   thuBao
 };
 
 export default {
+  /* ══════════ LỊCH CHẠY ══════════
+     Cloudflare gọi hàm này theo khối `triggers.crons` trong wrangler.jsonc.
+
+     ── CHỈ CÓ Ở WORKER ──
+     Cron trigger là thứ của Worker. Chạy dưới dạng Pages thì hàm này KHÔNG bao
+     giờ được gọi và thư báo im lặng không bao giờ tới — không có lỗi nào cả,
+     vì với Pages thì cái lịch ấy chưa từng tồn tại. Đây là lý do thực tế để
+     trang này ở lại dạng Worker.
+
+     ── `waitUntil` CHỨ KHÔNG PHẢI `await` TRẦN ──
+     Trả về sớm rồi để công việc chạy tiếp ở nền. Không có nó thì một lượt gọi
+     Resend chậm sẽ tính vào thời gian chạy của lượt cron, và Cloudflare cắt
+     ngang giữa chừng thì thư đi được một nửa.
+
+     ── KHÔNG ĐỂ MỘT VIỆC HỎNG KÉO THEO VIỆC KHÁC ──
+     Mỗi việc bọc try/catch riêng. Sau này thêm thư báo thống kê tuần vào đây
+     thì một lỗi ở nó không được phép làm im luôn thư báo bình luận. */
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil((async () => {
+      try {
+        const kq = await thuBao.chayThuBao(env);
+        /* In cả lượt bỏ qua. `observability` đang bật trong wrangler.jsonc, nên
+           dòng này là chỗ DUY NHẤT trả lời được câu "hôm qua nó có chạy không,
+           hay chỉ là không có gì để báo". Hai chuyện ấy nhìn từ hộp thư thì
+           giống hệt nhau — cùng là không có thư. */
+        console.log('[thu-bao]', JSON.stringify(kq));
+      } catch (e) {
+        console.error('[thu-bao] nổ:', (e && e.stack) || e);
+      }
+    })());
+  },
+
   async fetch(request, env, ctx) {
     /* Bỏ dấu `/` cuối để `/api/xem` và `/api/xem/` cùng vào một cửa. Đường `/`
        rút thành chuỗi rỗng — không khớp cửa nào, nên nó rơi xuống ASSETS,

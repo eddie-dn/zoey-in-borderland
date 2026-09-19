@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · lịch cron + Resend |
 | V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
 | V3.0.4 | 2026-09-18 | 04 | bỏ dấu trang chìm ở trang bài; dải sang trang ăn màu nền; gấp trả lời giữ 2 cái và gấp lại được |
 | V3.0.3 | 2026-09-18 | 03 | ô soạn: căn dòng cho ảnh; ảnh giữ khổ khi mở lại bài; bỏ cửa thứ hai đổi bề ngang ảnh |

@@ -43,8 +43,17 @@ Postmark, SendGrid…). Nghĩa là:
    HUỶ ĐĂNG KÝ thật sự hoạt động trong mọi lá mail — thiếu nó thì đây là thư
    rác, không phải tính năng.
 
-Chưa làm vì ba việc trên là việc của chủ trang, không phải của mã. Khi nào
-quyết thì phần mã gồm: ô tích trong khung soạn · bảng `theo_doi` trong D1 ·
+> **CẬP NHẬT — ba việc chặn ở trên ĐÃ XONG.** Tài khoản Resend đã mở, tên miền
+> `z-in-borderland.com` đã xác minh (DKIM `resend._domainkey`, đường về `send.`
+> — xem `docs/THU-BAO.md`), và đường gửi đã chạy thật: thư báo bình luận hằng
+> ngày đang dùng chính nó. `guiThu()` trong `functions/api/thu-bao.js` dùng lại
+> được ngay, không phải dựng lại gì.
+>
+> Còn lại đúng **việc số 3**: quyết định có để trang gửi mail thay mình cho
+> NGƯỜI ĐỌC hay không. Đó vẫn là một quyết định, không phải một dòng mã — và
+> đường huỷ đăng ký vẫn là điều kiện bắt buộc, không phải phần thêm.
+
+Khi nào quyết thì phần mã gồm: ô tích trong khung soạn · bảng `theo_doi` trong D1 ·
 một tuyến `/api/huy-theo-doi?ma=…` · và một móc ở lượt DUYỆT bình luận (gửi
 lúc duyệt chứ không lúc gửi, không thì spam cũng kích hoạt mail).
 
