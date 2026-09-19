@@ -90,8 +90,13 @@ Chi tiết trang đã được tối ưu SEO những gì: `docs/DUA-LEN-MANG.md`
 
 - **Mã, mật khẩu, khoá API.** Repo private hôm nay có thể thành public ngày mai,
   và lịch sử commit thì giữ mãi mọi thứ từng có mặt.
-- **Địa chỉ Apps Script của khung bình luận** thì để trong `site.config.json`
-  bình thường — nó vốn đã công khai trong HTML rồi, giấu cũng vô nghĩa.
+- **Đường dẫn các hàm** (`/api/binh-luan`, `/api/xem`…) thì để trong
+  `site.config.json` bình thường — chúng vốn đã công khai trong HTML rồi, giấu
+  cũng vô nghĩa. Cặp khoá chủ trang `GC_ID`/`GC_KEY` thì ngược lại: Secret trên
+  Cloudflare, không bao giờ vào repo.
+- **Địa chỉ web app Apps Script của bản sao lưu** (`SAO_LUU_URL`) là Secret,
+  KHÔNG phải ngoại lệ như hai dòng trên: ai biết địa chỉ là gửi được dữ liệu
+  rác vào Google Sheet của bạn. Nó là một cửa mở, không phải một cái tên.
 - **File `.env`.** Dự án này không dùng, nhưng nếu sau có thì thêm vào
   `.gitignore` ngay từ đầu.
 

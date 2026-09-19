@@ -458,8 +458,16 @@ Muốn dọn hẳn thì vào Console của D1 mà `DELETE`.
 
 ### 6.2 · Đặt hai vế khoá
 
-Pages project → **Settings** → **Variables and Secrets** → **Add**, kiểu
-**Secret** (không phải Plaintext — Plaintext hiện nguyên văn trên dashboard):
+Cloudflare → dự án của bạn → **Settings** → **Variables and Secrets** →
+**Add**, kiểu **Secret** (không phải Text/Plaintext — Text hiện nguyên văn
+trên dashboard, **và bị xoá sau mỗi lượt deploy** nếu tên ấy không có trong
+khối `vars` của `wrangler.jsonc`):
+
+> Chạy dạng **Worker** thì đường đi là **Workers & Pages → Worker của bạn →
+> Settings → Variables and Secrets**; ở đó còn có mục cùng tên trong phần
+> **Builds** — mục ấy là biến lúc DỰNG, hàm không thấy. Chọn nhầm thì khoá
+> trông như đã đặt mà mọi cửa chủ trang vẫn đóng. Xem §3.1 để biết mình đang
+> ở kiểu dự án nào.
 
 | Variable name | Điền |
 |---|---|
@@ -687,6 +695,10 @@ này không nên xảy ra; xảy ra thì xem log build trên Cloudflare.
 | Chưa khai `GH_TOKEN` | Người đọc không thấy gì. Ngăn Post báo thiếu đúng tên biến. |
 | `GH_NHANH` sai nhánh | Bài vào được kho mã nhưng **không có gì dựng lại** — đăng xong đợi mãi không thấy bài. |
 | Token GitHub hết hạn | Ngăn Post báo GitHub từ chối. Bài vừa gõ vẫn còn nguyên trong ô. |
+| Chưa khai `RESEND_KEY` / `THU_DEN` | Không có gì thay đổi với người đọc. Chủ trang thôi nhận thư báo bình luận chờ duyệt và thư tự kiểm — **im lặng y như lúc không có tin**, nên xem `docs/THU-BAO.md` §6. |
+| Chưa khai `SAO_LUU_URL` | Không có gì thay đổi. Sao lưu tuần lặng lẽ bỏ qua (cố ý: chưa bật thì không phải lỗi). |
+| Có `SAO_LUU_URL` mà thiếu `SAO_LUU_KHOA` | Không có gì thay đổi với người đọc. Sao lưu hỏng và **tự gửi thư báo** — cài dở thì phải kêu, khác với chưa bật. |
+| Chạy dạng Pages thay vì Worker | Trang đọc bình thường. Nhưng **cron không chạy ở Pages**, nên cả ba việc theo lịch im hẳn mà không có lỗi nào. |
 | Mất mạng hoàn toàn | Cả trang vẫn đọc được, trừ bình luận. Ô trích dẫn vẫn chạy. |
 
 Đây là chủ ý xuyên suốt: **không dịch vụ bên ngoài nào được phép làm hỏng việc

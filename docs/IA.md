@@ -186,9 +186,10 @@ có chủ ý — blog cá nhân cần chạy được sau năm năm không ai b�
 
 | Nơi | Cách |
 |---|---|
-| **Cloudflare Pages** | build `npm run build`, thư mục xuất `dist`, hàm ở `functions/` |
-| **GitHub Pages** | đẩy `dist/` lên nhánh `gh-pages` |
-| **Máy chủ riêng** | `rsync -a dist/ may-chu:/var/www/blog/` |
+| **Cloudflare Workers** ← đang dùng | build `npm run build`, deploy `npx wrangler deploy`, hàm ở `functions/` định tuyến qua `worker.js` |
+| **Cloudflare Pages** | build `npm run build`, thư mục xuất `dist`, hàm ở `functions/` — nhưng **cron không chạy ở Pages**, nên ba việc theo lịch sẽ im |
+| **GitHub Pages** | đẩy `dist/` lên nhánh `gh-pages` — chỉ phần tĩnh, mọi `/api/*` mất |
+| **Máy chủ riêng** | `rsync -a dist/ may-chu:/var/www/blog/` — cũng chỉ phần tĩnh |
 
 :::warn Deploy lên GitHub Pages dạng user.github.io/ten-repo
 Phải đặt `"base": "/ten-repo"` trong `site.config.json`. Để rỗng thì mọi đường
@@ -204,7 +205,9 @@ dẫn CSS và ảnh đều trỏ về gốc tên miền — trang ra trắng tr�
 | `base` | tiền tố mọi đường dẫn (xem khối cảnh báo trên) |
 | `nav` | các mục trên thanh điều hướng |
 | `chuaDung` | danh sách đường dẫn CHƯA DỰNG — mọi chỗ trỏ tới chúng hiện mờ thay vì thành link chết |
-| `binhLuan` | `bat` bật/tắt khung bình luận · `url` địa chỉ Apps Script · `loiMoi` câu mời |
+| `binhLuan` | `bat` bật/tắt khung bình luận · `api` đường dẫn hàm nhận bình luận (mặc định `/api/binh-luan`, cùng tên miền — KHÔNG còn là địa chỉ Apps Script) · `loiMoi` câu mời |
+| `luotXem` `ghiChu` `dangBai` `quoteAI` | mỗi khoá một tính năng chạy trên máy chủ, đều có `bat`/`online` và `api` riêng |
+| `phanTich` `doanTruoc` `baoVeChu` `soLuong` `logo` `nhan` | xem chú thích trong chính `site.config.json` — mỗi khoá có một dòng `_ghichu` kể vì sao nó tồn tại |
 
 Phiên bản **không** khai ở đây. Nguồn duy nhất là dòng đầu bảng trong
 `docs/LICH-SU.md`.
@@ -259,6 +262,25 @@ rời máy chủ** — câu truy vấn công khai không chọn cột ấy.
 
 > Đời đầu (V1.1.1) dùng Google Apps Script và một Google Sheet. Vì sao đổi:
 > `docs/BINH-LUAN.md`, mục "Vì sao KHÔNG còn Google Apps Script".
+
+### 6.1b · Ba việc chạy theo lịch
+
+Không có trang nào cả — chúng chạy lúc không có ai ngồi đó, và chỉ nói ra khi
+có chuyện. Tất cả nằm trong `functions/api/thu-bao.js`, gọi từ `scheduled` của
+`worker.js`.
+
+```
+mỗi ngày 20:00 ─┬─► bình luận đang chờ duyệt ──► một lá thư gom
+                └─► tự kiểm 5 chỗ hay hỏng lặng lẽ
+Chủ nhật 21:00 ───► D1 ──POST──► Apps Script ──► Google Sheet trong Drive
+```
+
+Luật chung của cả ba: **im lặng khi không có tin**. Thư báo chỉ gửi khi có bình
+luận mới trong 25 giờ; tự kiểm chỉ gửi khi bức tranh khác lần trước; sao lưu
+chỉ gửi khi HỎNG. Cái chuông chỉ đáng tin khi nó chỉ kêu lúc có chuyện.
+
+Cron **chỉ chạy ở Worker**, không chạy ở Pages — xem §5. Từng bước:
+[`docs/THU-BAO.md`](THU-BAO.md) và [`docs/SAO-LUU.md`](SAO-LUU.md).
 
 ### 6.2 · Cố ý chưa làm
 

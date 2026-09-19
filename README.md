@@ -30,8 +30,11 @@ Không phải chạy `npm install` — `package.json` không có `dependencies`.
 | Giấu mã nguồn · chặn chép nội dung | [`docs/RIENG-TU.md`](docs/RIENG-TU.md) |
 | **Cài Cloudflare · D1 · Gemini — từng bước** | [`docs/CAI-DAT.md`](docs/CAI-DAT.md) |
 | Khung bình luận chạy thế nào, cách trả lời | [`docs/BINH-LUAN.md`](docs/BINH-LUAN.md) |
+| **Thư báo bình luận · tự kiểm hệ thống** | [`docs/THU-BAO.md`](docs/THU-BAO.md) |
+| Sao lưu D1 sang Google Sheet hằng tuần | [`docs/SAO-LUU.md`](docs/SAO-LUU.md) |
 | Bản lưu từng trạng thái của logo | [`docs/logo/README.md`](docs/logo/README.md) |
 | Ô trích dẫn mỗi ngày | [`docs/QUOTE.md`](docs/QUOTE.md) |
+| Thẻ chia sẻ, sitemap, dữ liệu có cấu trúc | [`docs/SEO.md`](docs/SEO.md) |
 | Xem lịch sử phiên bản | [`docs/LICH-SU.md`](docs/LICH-SU.md) |
 
 ---
@@ -54,8 +57,10 @@ src/js/         theme · nen · logo-nhip · man-dau · menu · toc · reveal
 src/templates/  shell.html · post.html · page.html
 tools/          build · dev · new-post · nhap · anh · bia · og · nen
                 phong · version · kiem-dinh · ghi-chu-keo · og-font/ · lib/
-worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/*
-wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1
+                sao-luu.gs — mã Apps Script, dán vào script.google.com
+worker.js       cửa vào khi trang chạy dạng Worker — định tuyến /api/* và
+                chạy lịch (thư báo · tự kiểm · sao lưu)
+wrangler.jsonc  cấu hình Worker: tệp tĩnh, binding D1, lịch cron
 docs/logo/      14 chặng của vòng kể + một file chạy trọn vòng + tấm lát cắt
 functions/api/  anh.js — nhận ảnh thả vào ô soạn thảo, ghi vào public/media/
                 binh-luan.js — nhận · đọc · duyệt bình luận, chạy trên D1
@@ -64,6 +69,8 @@ functions/api/  anh.js — nhận ảnh thả vào ô soạn thảo, ghi vào pu
                 thich.js — đếm lượt thích, cùng kiểu với xem.js
                 bai.js — đăng BÀI từ /z-admin/, ghi thẳng vào kho mã GitHub
                 quote.js — xin câu trích dẫn từ Gemini (tuỳ chọn)
+                thu-bao.js — ba việc chạy theo lịch: thư báo bình luận chờ
+                  duyệt, tự kiểm hệ thống, sao lưu D1 sang Google Sheet
                 _nguon.js — SINH TỰ ĐỘNG lúc build, đừng sửa tay
 docs/           tài liệu — xem bảng trên; VIEC-DANG-CHO.md là hàng đợi việc
 site.config.json
@@ -209,11 +216,15 @@ Bản hiện tại: xem tem `Vxx.yy` ở chân mọi trang, hoặc dòng đầu 
 danh sách), `/posts/` với thư mục con theo chuyên mục, `/tags/`, `/archive/`,
 `/search/` tìm ngay trên máy người đọc, `/about/` khung bento.
 
-**Chạy trên máy chủ:** bảy hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
-`/api/xem`, `/api/thich`, `/api/anh`, `/api/bai` và `/api/quote`. Trừ `quote`,
-tất cả dùng chung một cơ sở dữ liệu D1 và chung một cặp khoá chủ trang; `anh`
-và `bai` thì ghi thẳng vào kho mã trên GitHub. Ngoài chúng ra, trang là file
-tĩnh thuần.
+**Chạy trên máy chủ:** tám hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
+`/api/xem`, `/api/thich`, `/api/anh`, `/api/bai`, `/api/quote` và
+`/api/thu-bao`. Trừ `quote`, tất cả dùng chung một cơ sở dữ liệu D1 và chung
+một cặp khoá chủ trang; `anh` và `bai` thì ghi thẳng vào kho mã trên GitHub.
+Ngoài chúng ra, trang là file tĩnh thuần.
+
+**Chạy theo lịch:** mỗi ngày 20:00 gom bình luận đang chờ duyệt vào một lá thư
+và soi xem có thứ gì đang hỏng lặng lẽ; mỗi Chủ nhật sao lưu D1 sang một Google
+Sheet. Cả ba im lặng khi không có tin (`docs/THU-BAO.md`, `docs/SAO-LUU.md`).
 
 **Còn treo:** danh sách việc nằm ở `docs/VIEC-DANG-CHO.md` — sổ hàng đợi thật,
 làm xong thì xoá khỏi đó và ghi một dòng vào `docs/LICH-SU.md`.

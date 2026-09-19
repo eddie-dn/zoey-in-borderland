@@ -257,26 +257,35 @@ dưới đây là câu trả lời riêng cho nó.
 
 | Dịch vụ | Dùng ở đây? | Vì sao |
 |---|---|---|
-| **Pages** | **Có, đang dùng** | Đây là chỗ trang ở |
-| **Workers / Pages Functions** | **Có, một hàm** | `/api/quote`. Không có gì khác cần máy chủ |
+| **Workers** | **Có, đang dùng** | Đây là chỗ trang ở. Trước chạy dạng Pages; đổi sang Worker vì **cron chỉ có ở Worker** — xem `docs/CAI-DAT.md` §3.1 |
+| **Workers Functions** | **Có, tám hàm** | `binh-luan` · `ghi-chu` · `xem` · `thich` · `anh` · `bai` · `quote` · `thu-bao` |
+| **Cron Triggers** | **Có, hai lịch** | Thư báo bình luận + tự kiểm hằng ngày; sao lưu hằng tuần. Xem `docs/THU-BAO.md` |
+| **D1** (cơ sở dữ liệu) | **Có, đang dùng** | Cơ sở `zoey-blog` chở bình luận, ghi chú, lượt xem, lượt thích và mốc tự kiểm. Xem §8.1 |
 | **R2** (lưu ảnh) | **Chưa cần** | Toàn bộ ảnh của trang chưa tới 1 MB. R2 miễn phí 10 GB — dư hơn mười nghìn lần. Đổi sang R2 là thêm một hệ thống, thêm một đường deploy, và mất tính chất "clone repo về là có đủ mọi thứ" |
-| **D1** (cơ sở dữ liệu) | **Chưa, nhưng có lý** | Xem §8.1 |
-| **KV** (kho khoá–giá trị) | **Không** | Người ta khuyên dùng KV để cache danh sách bài. Trang tĩnh đã nướng sẵn danh sách vào HTML và CDN trả từ máy gần nhất — đọc KV còn CHẬM HƠN đọc file tĩnh. Lời khuyên ấy viết cho trang động |
+| **KV** (kho khoá–giá trị) | **Không** | Người ta khuyên dùng KV để cache danh sách bài. Trang tĩnh đã nướng sẵn danh sách vào HTML và CDN trả từ máy gần nhất — đọc KV còn CHẬM HƠN đọc file tĩnh. Còn bộ đếm lượt xem thì KV sai ngay từ hình dạng: mỗi khoá chỉ ghi được một lần mỗi giây |
 | **Images** | **Không** | Ảnh bìa tự sinh bằng `npm run bia`, đã nén bằng `npm run nen` |
+| **Email Routing** | **Có, ngoài repo** | Nhận thư gửi tới tên miền, chuyển tiếp về Gmail. Không đụng gì tới mã |
 
-### 8.1 · D1 cho bình luận — đúng mà chưa tới lúc
+### 8.1 · D1 cho bình luận — đã chuyển xong
 
-Bình luận đang chạy Google Apps Script + Google Sheet. D1 sẽ nhanh hơn thật:
-Apps Script khởi động nguội mất một tới ba giây, D1 đọc trong vài mili-giây, và
-chuyển sang D1 thì bỏ được luôn cái mẹo gửi bằng `text/plain` để né kiểm tra
-CORS.
+Bình luận **từng** chạy Google Apps Script + Google Sheet. Nay chạy thẳng trên
+D1 (`functions/api/binh-luan.js`).
 
-Nhưng **cái Sheet không phải điểm yếu, nó là màn hình kiểm duyệt**. Muốn xoá
-một bình luận rác thì mở Sheet, xoá dòng, xong. D1 không có màn hình nào cả —
-chuyển sang D1 là phải viết thêm một trang quản trị, hoặc gõ lệnh mỗi lần.
+Cái sai của bản cũ không nằm ở Apps Script, mà ở chỗ nó **đứng trên đường
+đọc**: mỗi người mở một bài đều phải đợi một lượt gọi sang Google — khởi động
+nguội một tới ba giây, và không cache được ở biên. Đổi lại được đúng một thứ:
+chủ trang duyệt bằng cách tick một ô trong bảng tính.
 
-**Mốc để đổi:** khi bình luận đủ nhiều để độ trễ Apps Script thành phiền, hoặc
-khi chạm hạn ngạch của nó. Chưa tới thì giữ nguyên.
+Cái Sheet quả thật từng là **màn hình kiểm duyệt**, và đó là lý do việc chuyển
+bị hoãn lâu. Giải được bằng cách dời việc duyệt lên chính trang web: mở bất kỳ
+bài nào rồi thêm `#duyet`, hoặc vào ngăn Comment ở `/z-admin/`. Bớt một dịch
+vụ, bớt một chiều đồng bộ, và duyệt được từ điện thoại mà không phải mở bảng
+tính nào.
+
+> **Apps Script nay chỉ còn một việc**, và là việc ngược lại hẳn: nhận bản sao
+> lưu hằng tuần rồi ghi vào một Google Sheet trong Drive. Nó chạy mỗi tuần một
+> lần lúc không có ai chờ, tức là **ngoài đường đọc** — lý do bỏ nó khỏi khung
+> bình luận không áp vào đây. Xem `docs/SAO-LUU.md`.
 
 ### 8.2 · Nút ở bảng điều khiển: nên và không nên
 
