@@ -141,7 +141,11 @@ export async function guiThu(env, { tieuDe, chuThuong, chuHTML }) {
   if (!env.RESEND_KEY) return { ok: false, loi: 'thieu-RESEND_KEY' };
   if (!env.THU_DEN)    return { ok: false, loi: 'thieu-THU_DEN' };
 
-  const tu = env.THU_TU || 'hi@z-in-borderland.com';
+  /* Cái `||` này là lưới chứ không phải cấu hình. Nguồn đúng của địa chỉ gửi là
+     `THU_TU` trong wrangler.jsonc; đổi ở ĐÓ, không phải ở đây. Để một địa chỉ
+     trần ở đây phòng lượt deploy nào đó làm rơi mất biến — thà gửi từ một địa
+     chỉ cũ còn hơn không gửi được lá thư báo nào. */
+  const tu = env.THU_TU || 'contact@z-in-borderland.com';
 
   let ra;
   try {

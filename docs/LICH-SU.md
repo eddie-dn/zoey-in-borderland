@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.8 | 2026-09-19 | 08 | đổi địa chỉ gửi sang contact@ |
 | V3.0.7 | 2026-09-19 | 07 | tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
 | V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · lịch cron + Resend |
 | V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
