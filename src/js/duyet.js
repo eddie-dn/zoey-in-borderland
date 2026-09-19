@@ -78,7 +78,7 @@
   /* ── CHƯA VÀO ĐƯỢC ──
      Ở /z-admin/ thì không vẽ gì: cửa chung của trang đã hỏi khoá rồi, và hỏi
      lần nữa ngay trong ngăn là một màn hình có hai ô đăng nhập.
-     Ở trang bài hoặc /notes/#duyet thì mượn đúng khung đăng nhập chung — cùng
+     Chỗ nào không có cột trái riêng thì mượn đúng khung đăng nhập chung — cùng
      một khung, cùng một phép thử khoá, cùng một câu báo lỗi. */
   /* Chưa vào được thì KHÔNG vẽ khung xin khoá ở đây: cửa chung của /z-admin/
      đã hỏi rồi, và chưa vào thì cả ngăn này còn chưa được bày ra. Chỉ giữ chỗ

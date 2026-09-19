@@ -3,8 +3,9 @@
 
    ── VÌ SAO CẦN ────────────────────────────────────────────────────────
    Bình luận vào D1 với `duyet = 0` và NẰM IM ở đó cho tới khi chủ trang mở
-   `#duyet` ra bấm. Không có gì nhắc. Người đọc gõ một câu hỏi tử tế rồi đợi —
-   họ không biết là đang đợi một người chưa biết mình có gì để đọc.
+   ngăn Comment ở `/z-admin/` ra bấm. Không có gì nhắc. Người đọc gõ một câu
+   hỏi tử tế rồi đợi — họ không biết là đang đợi một người chưa biết mình có gì
+   để đọc.
 
    Cái thiếu không phải chỗ chứa, mà là MỘT CÚ HUÝCH. File này lo đúng việc ấy:
    mỗi ngày một lượt, nếu có gì mới thì gửi một lá thư.
@@ -236,7 +237,15 @@ export async function chayThuBao(env) {
     const ten   = String(d.ten || '').trim() || '(không tên)';
     const noi   = catChu(d.chu, CAT_CHU);
     const luc   = gioVN(d.luc);
-    const link  = `${goc}${d.trang}#duyet`;
+    /* Trỏ tới chính BÀI, không phải bàn duyệt. Bàn duyệt sống ở đúng một chỗ
+       là ngăn Comment của /z-admin/ (xem đầu src/js/duyet.js) — lối tắt
+       `#duyet` gắn vào địa chỉ bài đã bỏ, nên link kèm nó dẫn tới một trang
+       bài bình thường với một dấu thăng vô nghĩa.
+
+       Trỏ vào bài vẫn đúng việc: đọc một bình luận rời khỏi ngữ cảnh thì không
+       quyết được nên duyệt hay không. Đường sang chỗ bấm nút nằm ở cuối thư,
+       đúng một lần, vì nó là MỘT chỗ chứ không phải mỗi dòng một chỗ. */
+    const link  = `${goc}${d.trang}`;
 
     dongChu.push(`${dau}${ten} · ${luc} · ${d.trang}\n  ${noi}\n  ${link}`);
 
@@ -262,7 +271,7 @@ export async function chayThuBao(env) {
     `Tổng cộng ${tong} dòng đang chờ duyệt.\n\n` +
     `● = mới   ○ = đã chờ từ trước\n\n` +
     dongChu.join('\n\n') +
-    `\n\n—\nDuyệt: mở bất kỳ bài nào rồi thêm #duyet vào địa chỉ.\n${goc}`;
+    `\n\n—\nDuyệt ở ngăn Comment: ${goc}/z-admin/`;
 
   const chuHTML =
     `<div style="max-width:560px;margin:0 auto;padding:24px 16px">
@@ -274,9 +283,13 @@ export async function chayThuBao(env) {
          <span style="color:#c2410c">●</span> mới &nbsp; ○ đã chờ từ trước
        </div>
        <table style="width:100%;border-collapse:collapse">${dongHTML.join('')}</table>
-       <div style="font:400 13px/1.6 system-ui,sans-serif;color:#888;margin-top:20px">
-         Duyệt bằng cách mở bất kỳ bài nào rồi thêm <code>#duyet</code> vào địa chỉ.<br>
-         <a href="${thoat(goc)}" style="color:#0369a1">${thoat(goc)}</a>
+       <div style="margin-top:22px">
+         <a href="${thoat(goc)}/z-admin/"
+            style="display:inline-block;padding:10px 18px;border-radius:6px;
+                   background:#111;color:#fff;text-decoration:none;
+                   font:600 14px/1 system-ui,sans-serif">
+           Duyệt ở ngăn Comment →
+         </a>
        </div>
      </div>`;
 

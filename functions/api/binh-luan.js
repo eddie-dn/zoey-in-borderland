@@ -10,8 +10,8 @@
    bằng cách tick một ô trong bảng tính.
 
    Nay D1 lo phần chạy trang — cùng nhà với hosting, đọc nhanh, cache 30 giây ở
-   biên — còn việc duyệt chuyển hẳn lên chính trang web (xem `#duyet` trong
-   src/js/comments.js). Bớt một dịch vụ, bớt một chiều đồng bộ, và chủ trang
+   biên — còn việc duyệt chuyển hẳn lên chính trang web — ngăn Comment của `/z-admin/`
+   (xem src/js/duyet.js; lối tắt `#duyet` cũ đã bỏ). Bớt một dịch vụ, bớt một chiều đồng bộ, và chủ trang
    duyệt được từ điện thoại mà không phải mở bảng tính nào.
 
    ── BA ĐIỀU GIỮ NGUYÊN TỪ BẢN CŨ ──────────────────────────────────────

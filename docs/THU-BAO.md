@@ -17,8 +17,8 @@
 
 ## 1. Nó làm gì
 
-Bình luận vào D1 với `duyet = 0` và nằm im tới khi chủ trang mở `#duyet` ra
-bấm. Trước đây không có gì nhắc — người đọc gõ một câu hỏi rồi đợi một người
+Bình luận vào D1 với `duyet = 0` và nằm im tới khi chủ trang mở ngăn
+**Comment** ở `/z-admin/` ra bấm. Trước đây không có gì nhắc — người đọc gõ một câu hỏi rồi đợi một người
 chưa biết mình có gì để đọc.
 
 Mỗi ngày **20:00 giờ Việt Nam**, trang đếm hàng chờ:
@@ -27,7 +27,8 @@ Mỗi ngày **20:00 giờ Việt Nam**, trang đếm hàng chờ:
 - Không có gì mới → **im lặng**, kể cả khi hàng chờ vẫn còn dòng cũ.
 
 Lá thư in **toàn bộ** hàng chờ, đánh dấu `●` cho phần mới và `○` cho phần đã
-đợi từ trước, mỗi dòng kèm một đường bấm thẳng sang bàn duyệt của bài đó.
+đợi từ trước, mỗi dòng kèm một đường bấm sang chính bài đó, và một nút sang ngăn Comment
+của `/z-admin/` ở cuối thư.
 
 **Vì sao im khi không có gì mới.** Một lá thư nói đúng một chuyện mỗi ngày là
 thứ người ta học cách không đọc — rồi lá thư có tin thật cũng chịu chung số

@@ -87,7 +87,7 @@
      mở được cả hai quyền — một cặp khoá để nhớ, không phải hai.
 
      Có khoá thì bình luận của chủ trang vào thẳng, có huy hiệu, khỏi chờ duyệt;
-     và mở /#duyet là ra bàn duyệt. Không có khoá thì mọi thứ ở đây chạy đúng
+     và ngăn Comment của /z-admin/ là bàn duyệt. Không có khoá thì mọi thứ ở đây chạy đúng
      như với một người ghé ngang. */
   /* Khoá do src/js/khoa.js giữ. Tra window.ZIB MỖI LẦN GỌI chứ không giữ lại
      một tham chiếu lúc nạp: file này còn chạy ở trang không có khoa.js, và

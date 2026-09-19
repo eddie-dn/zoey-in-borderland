@@ -278,7 +278,7 @@ chủ trang duyệt bằng cách tick một ô trong bảng tính.
 
 Cái Sheet quả thật từng là **màn hình kiểm duyệt**, và đó là lý do việc chuyển
 bị hoãn lâu. Giải được bằng cách dời việc duyệt lên chính trang web: mở bất kỳ
-bài nào rồi thêm `#duyet`, hoặc vào ngăn Comment ở `/z-admin/`. Bớt một dịch
+ngăn **Comment** ở `/z-admin/` — đúng một cửa. Bớt một dịch
 vụ, bớt một chiều đồng bộ, và duyệt được từ điện thoại mà không phải mở bảng
 tính nào.
 
