@@ -261,14 +261,16 @@
 
 ## V3.0.8 — 21-Sep-2026
 
-- **Hết vệt đen dưới khung bình luận ở theme tối.** Dải sang trang tô bằng
-  `--bg`, mà nền trang thật là quầng `--bg-tint` phủ lên `--bg` và neo theo
-  màn hình — ở Galaxy hai thứ chênh nhau cả một quãng nên dải hiện ra một vệt
-  đen giữa khoảng tím. Nay nó dùng kính như `.site-head`: nhoè lấy mẫu cái
-  đang ở sau lưng, nên đúng ở mọi theme và mọi chỗ cuộn.
-- **Kiểm kê cả bộ.** Bốn thanh dính trên trang, hai cái tô sai: dải sang trang
-  và ô chọn số bài mỗi trang (nay là `--surface-sunken`, token vốn dựng cho
-  nền lõm). Luật chọn nền cho thanh dính ghi thành bảng ở DESIGN-SYSTEM §2b.6.
+- **Thanh sang trang của khung bình luận ra khỏi hộp cuộn.** Nó từng dính đáy
+  danh sách, nên lúc nào cũng nằm đè lên một bình luận và phải có nền để che —
+  mà cái nền ấy tô kiểu gì cũng hỏng một chỗ: `--bg` ra vệt đen ở theme tối
+  (nền trang thật là quầng `--bg-tint` neo theo màn hình, không phải `--bg`),
+  kính thì thành mảng sáng ở theme sáng, nhoè không tô thì chữ dưới nó thành
+  vệt mờ. Nay thanh đứng NGAY DƯỚI danh sách, một đường kẻ trên, không nền —
+  đúng chỗ bộ số `.pt` của mọi trang danh sách khác vẫn đứng.
+- **Kiểm kê cả bộ.** Bốn thanh dính trên trang; ô chọn số bài mỗi trang cũng
+  tô `--bg`, nay là `--surface-sunken` — token vốn dựng cho nền lõm. Luật chọn
+  nền, và câu "có cần dính không" nên hỏi trước, ghi ở DESIGN-SYSTEM §2b.6.
 - **Tấm bình luận trên điện thoại cao tối đa 2/3 màn**, không còn 86vh gần
   phủ kín. Và tấm là hộp cuộn DUY NHẤT — trước đó danh sách bên trong còn
   trần 50svh riêng, tức hai thanh cuộn lồng nhau trên một màn 6 inch.

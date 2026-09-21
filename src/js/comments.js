@@ -535,6 +535,12 @@
   function ve(ds) {
     dsHienTai = ds;
     dsEl.textContent = '';
+    /* Thanh sang trang sống NGOÀI `<ul>` (lý do ở `veThanhTrang`), nên xoá
+       ruột danh sách không xoá nó. Dọn tay, và dọn NGAY ĐÂY — phía dưới có
+       hai nhánh `return` sớm (danh sách rỗng, và danh sách ngắn hơn một
+       trang), dọn ở cuối thì đúng hai ca ấy để lại một thanh mồ côi trỏ tới
+       những trang không còn tồn tại. */
+    if (thanhTrangEl) { thanhTrangEl.remove(); thanhTrangEl = null; }
     if (deEl) deEl.textContent = ds.length ? String(ds.length) : '';
     if (demEl) {
       /* Ẩn hẳn khi chưa có bình luận nào — cùng luật với ô lượt thích. Số 0
@@ -575,15 +581,29 @@
     if (trangNay >= soTrang) trangNay = soTrang - 1;
     goc.slice(trangNay * MOI_TRANG, (trangNay + 1) * MOI_TRANG)
        .forEach(function (c) { dsEl.appendChild(veMot(c, false, c)); });
-    dsEl.appendChild(veThanhTrang(soTrang, goc.length));
+    thanhTrangEl = veThanhTrang(soTrang, goc.length);
+    dsEl.parentNode.insertBefore(thanhTrangEl, dsEl.nextSibling);
   }
 
-  /* Thanh `‹ 2/4 ›`. Là một `<li>` vì nó nằm trong `<ul class="bl-ds">` — một
-     `<div>` lạc giữa các `<li>` là HTML sai, và trình đọc màn hình đọc ra một
-     mục danh sách rỗng. */
+  /* Thanh `‹ 2/4 ›`. NẰM NGOÀI `<ul class="bl-ds">`, ngay dưới nó.
+
+     Đời trước nó là một `<li>` cuối danh sách, `position:sticky; bottom:0`,
+     để cuộn tới đâu cũng thấy nút sang trang. Cái giá: nó nằm ĐÈ lên bình
+     luận đang trôi qua dưới nó. Đã thử vá bằng nền đục, rồi bằng kính, rồi
+     bằng nhoè không tô — cả ba đều chỉ là cách chọn xem che chữ bằng gì, vì
+     một thanh dính trong hộp cuộn thì nhất định phải che một cái gì đó.
+
+     Danh sách bài ở mọi trang khác không gặp chuyện này: bộ số `.pt` của
+     chúng nằm DƯỚI danh sách, không dính, không nền. Thanh này nay đi theo
+     đúng nếp ấy — hộp cuộn hết chỗ thì thanh đứng ngay dưới mép, luôn thấy
+     được mà không đè lên ai.
+
+     Và vì đã ra khỏi `<ul>` thì nó thôi phải làm `<li>`: `<nav>` mới đúng
+     việc nó làm, đúng cách `.pt` khai ở src/js/trang-so.js. */
   function veThanhTrang(soTrang, tong) {
-    var li = document.createElement('li');
+    var li = document.createElement('nav');
     li.className = 'bl-trang';
+    li.setAttribute('aria-label', L('pages') || 'Pages');
     function nut(chu, di, tat) {
       var b = document.createElement('button');
       b.type = 'button';
@@ -615,6 +635,11 @@
   var MOI_TRANG = 10;
   var trangNay = 0;
   var dsHienTai = [];
+  /* Thanh sang trang đang gắn trên trang, hoặc null. Giữ tham chiếu thay vì
+     tìm lại bằng querySelector mỗi lượt vẽ: nó là con của `.bl-than`, mà khối
+     ấy còn chứa cả ô gõ và mấy nhánh trả lời — một câu tìm theo lớp là sớm
+     muộn cũng vớ nhầm thứ khác. */
+  var thanhTrangEl = null;
 
   function veMot(c, laCon, goc) {
     var li = document.createElement('li');

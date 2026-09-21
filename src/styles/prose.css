@@ -1032,9 +1032,6 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    và một tấm bám đáy bị đẩy lên nguyên khối — ô gõ luôn nằm ngay trên bàn
    phím. Tấm căn giữa thì bị bàn phím ăn mất nửa dưới. */
 .bl-than--tam{
-  /* Tấm trượt LÀ một mặt thẻ, nên dải sang trang dính đáy phải đục bằng
-     `--surface-solid` chứ không phải nền trang. Xem `.bl-trang`. */
-  --bl-nen:var(--surface-solid);
   position:fixed;z-index:70;left:0;right:0;bottom:0;
   margin:0;
   padding:var(--s3) var(--gutter) calc(var(--s5) + env(safe-area-inset-bottom,0px));
@@ -1747,60 +1744,34 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 .bl-than--tam .bl-ds{max-height:none;overflow:visible;padding-right:0}
 
 /* ── THANH SANG TRANG ──
-   Nằm trong `<ul>` nên nó là một `<li>`; bỏ dấu chấm đầu dòng và đường kẻ
-   ngăn của `.bl-item` vì nó không phải một bình luận. */
+   NẰM NGOÀI `<ul class="bl-ds">`, ngay dưới mép hộp cuộn — không dính, không
+   nền, không nhoè. Cùng khuôn với bộ số `.pt` ở mọi trang danh sách khác:
+   một đường kẻ trên, một hàng nút căn giữa.
+
+   ── VÌ SAO KHÔNG CÒN DÍNH ĐÁY ──
+   Đời trước nó là `<li>` cuối danh sách, `position:sticky; bottom:0`, để cuộn
+   tới đâu cũng thấy nút sang trang. Nhưng một thanh dính TRONG hộp cuộn thì
+   nhất định đè lên nội dung trôi qua dưới nó, nên nó phải có nền — và cái nền
+   ấy đẻ ra ba đời lỗi liên tiếp:
+
+     · `--bg`: nền trang thật là quầng `--bg-tint` neo theo màn hình phủ lên
+       `--bg`, nên ở theme tối dải hiện ra một vệt ĐEN. Ba theme sáng không lộ
+       vì hai lớp chênh nhau vài phần trăm.
+     · `--glass-fill` + `saturate`: hết đen, nhưng thành một mảng SÁNG đặt lên
+       trang — `--glass-fill` ở theme sáng là lớp trắng alpha .42, còn
+       `saturate()` thì đổi màu chính cái nền phía sau.
+     · chỉ `blur()`: hết mảng, nhưng chữ dưới nó thành một vệt nhoè — tức là
+       vẫn đang che một bình luận, chỉ là che bằng thứ khác.
+
+   Cả ba chỉ là cách chọn xem CHE BẰNG GÌ. Bỏ hẳn kiểu dính thì không còn gì
+   để che: hộp cuộn hết chỗ ở đâu, thanh đứng ngay dưới đó, luôn thấy được vì
+   `.bl-ds` có trần chiều cao nên mép dưới của nó luôn nằm trong màn.
+
+   Xem docs/DESIGN-SYSTEM.md §2b.6. */
 .bl-trang{
   display:flex;align-items:center;justify-content:center;gap:var(--s4);
-  padding:var(--s4) 0 var(--s2);
-  position:sticky;bottom:0;
-  /* Dính đáy ô cuộn: cuộn tới đâu cũng thấy nút sang trang. Nền phải ĐỤC vì
-     có chữ trôi qua phía dưới nó — lý do đầy đủ ở `.ad-chon-thanh` trong
-     admin.css.
-
-     ── VÀ NÓ PHẢI ĐỤC BẰNG MÀU CỦA CHỖ NÓ ĐANG NGỒI ──
-     Bản trước ghi cứng `--surface-solid`, tức màu MẶT THẺ. Nhưng khu bình
-     luận ở trang bài không nằm trên một cái thẻ nào: đo từ `.bl-ds` ngược lên
-     thì `.bl-than`, `.binh-luan`, `.post-foot`, `.post-layout`, `main`,
-     `.shell` đều trong suốt — thứ thật sự sơn màu là `<body>`, tức `--bg`.
-     Nên dải này hiện ra một vệt TRẮNG giữa nền tím nhạt, và đổi theme thì nó
-     vẫn trắng.
-
-     Chỗ ngồi lại có HAI: trang bài ngồi trên nền TRANG, còn tấm trượt ở điện
-     thoại (`.bl-than--tam`) thật sự là một mặt thẻ `--surface-solid`. Nên
-     không có MỘT token nào đúng cả hai. Đặt tên màu ấy vào một biến ở chính
-     cái khung chứa, rồi dải này chỉ việc đọc — biến tuỳ chỉnh thì di truyền,
-     nên nó luôn khớp với thứ đang sơn phía sau.
-
-     ── VÀ NỀN TRANG KHÔNG PHẢI MỘT MÀU ──
-     Đường lui `var(--bg)` vẫn sai, chỉ là sai kín ở ba theme sáng. Trang này
-     sơn HAI lớp: `background-color:var(--bg)` trên <body>, rồi `--bg-tint`
-     — một quầng radial NEO THEO MÀN HÌNH — phủ lên ở `body::before`. Thứ mắt
-     thấy là lớp thứ hai, và nó đổi màu theo chỗ đứng trong màn hình.
-
-     Ở theme sáng hai lớp chênh nhau vài phần trăm nên không ai thấy. Ở theme
-     tối, quầng chạy từ #2B1E4C giữa màn xuống #120C22 ngoài rìa, mà `--bg`
-     đúng bằng #120C22 — nên dải này hiện ra một VỆT ĐEN giữa khoảng tím.
-     Đúng cái người dùng chụp lại gửi về.
-
-     Không màu tĩnh nào vá được: quầng neo theo màn hình nên màu sau lưng dải
-     đổi mỗi lúc cuộn. Nên dải dùng đúng công thức kính của cả trang — nền bán
-     trong + nhoè nền, y như `.site-head`, thứ sticky duy nhất khác cũng trôi
-     trên nền TRANG chứ không trên một mặt thẻ. Kính thì tự lấy mẫu cái đang ở
-     sau lưng nó, nên nó đúng ở mọi theme và mọi chỗ cuộn.
-
-     Xem docs/DESIGN-SYSTEM.md §2b.6. */
-  background:var(--bl-nen,var(--glass-fill));
-}
-/* Nhoè nền TÁCH RIÊNG, và chỉ cho chỗ không có `--bl-nen`:
-     · có @supports vì trình duyệt cũ không hiểu — cùng lý do đã ghi ở
-       glass.css: gộp chung thì máy cũ ra một tấm trong suốt hoàn toàn.
-     · tấm trượt điện thoại thì nền sau lưng ĐÃ đục (`--surface-solid`), nhoè
-       thêm là tốn GPU mà không đổi một điểm ảnh nào. */
-@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .bl-than:not(.bl-than--tam) .bl-trang{
-    -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-    backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
-  }
+  margin-top:var(--s4);padding-top:var(--s4);
+  border-top:1px solid var(--line);
 }
 .bl-trang-nut{
   appearance:none;border:0;background:none;cursor:pointer;

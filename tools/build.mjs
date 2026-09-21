@@ -2222,7 +2222,10 @@ function binhLuanHTML(bai) {
        chở thêm mấy trăm byte để không ai dùng. */
     sentOwner: NHAN.sentOwner, laChu: NHAN.blLaChu,
     sentWait: NHAN.blSentWait, stateOff: NHAN.blStateOff,
-    prevPage: NHAN.blPrevPage, nextPage: NHAN.blNextPage
+    prevPage: NHAN.blPrevPage, nextPage: NHAN.blNextPage,
+    /* Nhãn cho `<nav aria-label>` của thanh sang trang — dùng chung chữ với
+       bộ số trang ở các trang danh sách, vì nó làm đúng một việc. */
+    pages: NHAN.pages
   }));
 
   /* `c.api` chứ không còn `c.url`. Địa chỉ nay là một đường dẫn NỘI BỘ
