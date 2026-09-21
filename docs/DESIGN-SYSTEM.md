@@ -385,9 +385,28 @@ Thanh sang trang của khung bình luận từng dính đáy hộp cuộn, và �
 Cả ba chỉ là cách chọn xem **che bằng gì**, vì một thanh dính trong hộp cuộn
 thì nhất định che một cái gì đó. Cách chữa là bỏ kiểu dính: đưa thanh ra NGOÀI
 hộp cuộn, đặt ngay dưới nó — đúng chỗ bộ số `.pt` của mọi trang danh sách khác
-vẫn đứng, với một đường kẻ trên và không nền. Hộp cuộn có trần chiều cao nên
-mép dưới của nó luôn nằm trong màn; thanh ở đó vẫn luôn thấy được, mà không
-đè lên ai.
+vẫn đứng. Hộp cuộn có trần chiều cao nên mép dưới của nó luôn nằm trong màn;
+thanh ở đó vẫn luôn thấy được, mà không đè lên ai.
+
+**Và đường kẻ ngăn phải vẽ TRONG hộp cuộn, không vẽ trên thanh.** `.pt` ở các
+trang danh sách có `border-top` vì dưới nó là mấy tấm thẻ không có đường nào.
+Danh sách bình luận thì đã là một cọc hàng ngăn nhau bằng kẻ ngang — và mọi kẻ
+ấy nằm TRONG hộp cuộn, nên chúng ngắn hơn bề ngang thật đúng bằng
+`padding-right` **cộng** gutter mà trình duyệt chừa cho thanh cuộn.
+
+Bề rộng gutter mỗi trình duyệt một khác và CSS không hỏi ra được, nên một vạch
+vẽ ngoài hộp không có cách nào thẳng mép với mấy vạch vẽ trong hộp: lúc hộp
+cắt ngang một hàng ở mép dưới thì thấy rõ hai vạch song song lệch nhau — đọc
+ra như trang bị lỗi dựng.
+
+Cách chữa: trả vạch ấy về cho **hàng chót** (`.bl-ds > .bl-item:last-child`),
+tức vẽ trong cùng một hệ toạ độ với mọi kẻ khác. Tự khắc thẳng mép ở mọi trình
+duyệt, và nó chỉ hiện đúng lúc cần — cuộn tới cuối thì hàng chót nằm ngay trên
+thanh và vạch ấy là đường ngăn; cuộn dở chừng thì mép hộp là một hàng bị cắt,
+bản thân vết cắt đã nói "còn nữa".
+
+**Luật chung:** cùng một cụm thì dùng MỘT hệ kẻ, và kẻ phải vẽ trong cùng một
+hệ toạ độ. Thứ nằm ngoài hộp cuộn tách ra bằng khoảng trống.
 
 **Khi thật sự phải dính**, thì tô theo chỗ nó ngồi:
 

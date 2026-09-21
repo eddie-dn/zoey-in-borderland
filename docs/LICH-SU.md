@@ -266,8 +266,10 @@
   mà cái nền ấy tô kiểu gì cũng hỏng một chỗ: `--bg` ra vệt đen ở theme tối
   (nền trang thật là quầng `--bg-tint` neo theo màn hình, không phải `--bg`),
   kính thì thành mảng sáng ở theme sáng, nhoè không tô thì chữ dưới nó thành
-  vệt mờ. Nay thanh đứng NGAY DƯỚI danh sách, một đường kẻ trên, không nền —
-  đúng chỗ bộ số `.pt` của mọi trang danh sách khác vẫn đứng.
+  vệt mờ. Nay thanh đứng NGAY DƯỚI danh sách, không nền. Đường ngăn thì trả về
+  cho hàng bình luận chót — vẽ trong hộp cuộn, nên nó thẳng mép với mọi kẻ
+  khác; vẽ trên thanh thì lệch, vì kẻ trong hộp còn lùi thêm một khoảng gutter
+  thanh cuộn mà CSS không hỏi ra được.
 - **Kiểm kê cả bộ.** Bốn thanh dính trên trang; ô chọn số bài mỗi trang cũng
   tô `--bg`, nay là `--surface-sunken` — token vốn dựng cho nền lõm. Luật chọn
   nền, và câu "có cần dính không" nên hỏi trước, ghi ở DESIGN-SYSTEM §2b.6.

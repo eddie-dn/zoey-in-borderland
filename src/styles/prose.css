@@ -1767,12 +1767,36 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
    để che: hộp cuộn hết chỗ ở đâu, thanh đứng ngay dưới đó, luôn thấy được vì
    `.bl-ds` có trần chiều cao nên mép dưới của nó luôn nằm trong màn.
 
+   ── ĐƯỜNG KẺ NGĂN NẰM Ở HÀNG CHÓT, KHÔNG NẰM Ở THANH ──
+   Vẫn cần một vạch ngăn thanh với cọc bình luận: cuộn tới cuối mà không có gì
+   dưới hàng chót thì thanh lửng lơ. Nhưng vạch ấy phải là MỘT, và phải dài
+   đúng bằng mọi kẻ khác trong cụm.
+
+   Đặt `border-top` lên thanh thì không được, và không phải vì thiếu tinh
+   chỉnh: kẻ giữa các hàng bình luận nằm TRONG hộp cuộn, nên nó ngắn hơn bề
+   ngang thật đúng bằng `padding-right` CỘNG với gutter mà trình duyệt chừa
+   cho thanh cuộn (`scrollbar-gutter:stable`). Bề rộng gutter thì mỗi trình
+   duyệt một khác và CSS không hỏi ra được — nên một vạch vẽ ngoài hộp không
+   có cách nào thẳng mép với mấy vạch vẽ trong hộp. Lúc hộp cắt ngang một hàng
+   ở mép dưới thì thấy rõ hai vạch song song lệch nhau.
+
+   Vạch ấy vì thế trả về cho HÀNG CHÓT, tức là vẽ trong cùng một hệ toạ độ
+   với mọi kẻ ngăn khác. Tự khắc thẳng mép, ở mọi trình duyệt.
+
+   Và nó chỉ hiện đúng lúc cần: cuộn tới cuối thì hàng chót nằm ngay trên
+   thanh, vạch ấy là đường ngăn; cuộn dở chừng thì hàng chót còn ở dưới, chỗ
+   mép hộp là một hàng bị cắt — bản thân vết cắt đã nói "còn nữa", không cần
+   thêm vạch nào.
+
+   `:not(.bl-ds--con)` vì nhánh trả lời cũng mang lớp `.bl-ds`: kẻ dưới hàng
+   trả lời cuối là một vạch cắt ngang giữa một mạch trò chuyện.
+
    Xem docs/DESIGN-SYSTEM.md §2b.6. */
 .bl-trang{
   display:flex;align-items:center;justify-content:center;gap:var(--s4);
-  margin-top:var(--s4);padding-top:var(--s4);
-  border-top:1px solid var(--line);
+  margin-top:var(--s5);
 }
+.bl-ds:not(.bl-ds--con) > .bl-item:last-child{border-bottom:1px solid var(--line)}
 .bl-trang-nut{
   appearance:none;border:0;background:none;cursor:pointer;
   width:30px;height:30px;border-radius:var(--r-xs);
