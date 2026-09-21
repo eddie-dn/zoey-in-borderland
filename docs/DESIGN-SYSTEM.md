@@ -367,6 +367,39 @@ nhưng bỏ, vì ba lý do:
 
 Vệt sáng ở mép (tầng 3) đã cho ra đúng cảm giác đó với chi phí bằng không.
 
+### 2b.6 · Thanh DÍNH tô nền bằng gì — và vì sao `--bg` gần như luôn sai
+
+Một thanh `position:sticky` phải có nền ĐỤC (hoặc kính), vì nội dung trôi qua
+phía dưới nó. Câu hỏi là tô bằng màu nào, và ở đây có một cái bẫy chỉ lộ ra ở
+theme tối.
+
+**Trang này sơn HAI lớp nền.** `background-color:var(--bg)` trên `<body>`, rồi
+`--bg-tint` — một quầng radial **neo theo màn hình** — phủ lên ở `body::before`.
+Thứ mắt thấy là lớp thứ hai, và nó đổi màu theo chỗ đứng trong khung nhìn.
+
+Ở ba theme sáng hai lớp chênh nhau vài phần trăm nên không ai phân biệt được.
+Ở Galaxy, quầng chạy từ `#2B1E4C` giữa màn xuống `#120C22` ngoài rìa, mà `--bg`
+đúng bằng `#120C22` — nên bất kỳ mảng nào tô `--bg` ở giữa màn đều hiện ra một
+**vệt đen**. Đã vấp ở hai chỗ: dải sang trang của khung bình luận và ô chọn số
+bài mỗi trang.
+
+Không màu tĩnh nào vá được, vì quầng neo theo màn hình nên màu sau lưng đổi mỗi
+lúc cuộn. Nên luật là:
+
+| Thanh dính ngồi trên | Tô bằng | Ví dụ |
+|---|---|---|
+| nền TRANG | `--glass-fill` + `backdrop-filter` | `.site-head`, `.bl-trang` |
+| một mặt thẻ | `--surface-solid` | `.ad-chon-thanh` |
+| ruột một ô đã đục | `--surface-sunken` | `.sz-thanh` |
+
+Kính thì tự lấy mẫu cái đang ở sau lưng nó, nên nó đúng ở mọi theme và mọi chỗ
+cuộn — đó là lý do nó là đường mặc định chứ không phải một màu.
+
+Chỗ nào có sẵn một mặt đục phía sau thì **đừng** nhoè thêm: tốn GPU mà không
+đổi một điểm ảnh nào. Khung bình luận truyền màu ấy xuống bằng biến `--bl-nen`
+(tấm trượt ở điện thoại đặt nó bằng `--surface-solid`), và dải sang trang chỉ
+bật nhoè khi biến ấy vắng mặt.
+
 ---
 
 ## 3 · BẢNG TRA COMPONENT

@@ -1038,7 +1038,15 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
   position:fixed;z-index:70;left:0;right:0;bottom:0;
   margin:0;
   padding:var(--s3) var(--gutter) calc(var(--s5) + env(safe-area-inset-bottom,0px));
-  max-height:min(86vh,760px);
+  /* ── CAO TỐI ĐA HAI PHẦN BA MÀN ──
+     Bản trước để 86vh: tấm gần như phủ kín màn, nên mở bình luận ra là mất
+     hẳn ngữ cảnh — không còn thấy mình đang ở bài nào, và cái màn mờ phía sau
+     chẳng còn chỗ nào để bấm ra ngoài mà đóng.
+
+     `svh` chứ không phải `vh`: trên điện thoại `vh` tính theo màn hình khi
+     thanh công cụ đã thu lại, nên 86vh có lúc CAO HƠN phần nhìn thấy thật và
+     đáy tấm nằm dưới mép màn. `svh` lấy khổ nhỏ nhất — luôn vừa. */
+  max-height:min(66svh,620px);
   overflow-y:auto;
   /* Vuốt hết tấm thì dừng ở đó, không truyền cú vuốt ra bài đằng sau. */
   overscroll-behavior:contain;
@@ -1730,6 +1738,13 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
 /* Nhánh trả lời cuộn theo danh sách cha, không tự cuộn thêm một tầng nữa —
    hai thanh cuộn lồng nhau là thứ không ai gỡ được bằng ngón tay. */
 .bl-ds--con{max-height:none;overflow:visible;padding-right:0}
+/* Cùng luật ấy cho tấm trượt điện thoại, và nó còn cần hơn: tấm đã tự cuộn
+   (`max-height` + `overflow-y:auto`), nên để `.bl-ds` giữ trần 50svh là có
+   đúng hai hộp cuộn lồng nhau trên một màn 6 inch — vuốt vào danh sách thì
+   chạy danh sách, vuốt vào ô gõ thì chạy tấm, và không ngón tay nào đoán được
+   ranh giới ấy nằm ở đâu. Tấm là hộp cuộn DUY NHẤT; dải sang trang vẫn dính
+   đáy vì sticky bám hộp cuộn gần nhất, nay là chính cái tấm. */
+.bl-than--tam .bl-ds{max-height:none;overflow:visible;padding-right:0}
 
 /* ── THANH SANG TRANG ──
    Nằm trong `<ul>` nên nó là một `<li>`; bỏ dấu chấm đầu dòng và đường kẻ
@@ -1750,12 +1765,42 @@ a.rn-p--lui:hover .rn-p-mui{transform:translateX(-2px)}
      Nên dải này hiện ra một vệt TRẮNG giữa nền tím nhạt, và đổi theme thì nó
      vẫn trắng.
 
-     Chỗ ngồi lại có HAI: trang bài ngồi trên `--bg`, còn tấm trượt ở điện
+     Chỗ ngồi lại có HAI: trang bài ngồi trên nền TRANG, còn tấm trượt ở điện
      thoại (`.bl-than--tam`) thật sự là một mặt thẻ `--surface-solid`. Nên
      không có MỘT token nào đúng cả hai. Đặt tên màu ấy vào một biến ở chính
      cái khung chứa, rồi dải này chỉ việc đọc — biến tuỳ chỉnh thì di truyền,
-     nên nó luôn khớp với thứ đang sơn phía sau, ở mọi theme. */
-  background:var(--bl-nen,var(--bg));
+     nên nó luôn khớp với thứ đang sơn phía sau.
+
+     ── VÀ NỀN TRANG KHÔNG PHẢI MỘT MÀU ──
+     Đường lui `var(--bg)` vẫn sai, chỉ là sai kín ở ba theme sáng. Trang này
+     sơn HAI lớp: `background-color:var(--bg)` trên <body>, rồi `--bg-tint`
+     — một quầng radial NEO THEO MÀN HÌNH — phủ lên ở `body::before`. Thứ mắt
+     thấy là lớp thứ hai, và nó đổi màu theo chỗ đứng trong màn hình.
+
+     Ở theme sáng hai lớp chênh nhau vài phần trăm nên không ai thấy. Ở theme
+     tối, quầng chạy từ #2B1E4C giữa màn xuống #120C22 ngoài rìa, mà `--bg`
+     đúng bằng #120C22 — nên dải này hiện ra một VỆT ĐEN giữa khoảng tím.
+     Đúng cái người dùng chụp lại gửi về.
+
+     Không màu tĩnh nào vá được: quầng neo theo màn hình nên màu sau lưng dải
+     đổi mỗi lúc cuộn. Nên dải dùng đúng công thức kính của cả trang — nền bán
+     trong + nhoè nền, y như `.site-head`, thứ sticky duy nhất khác cũng trôi
+     trên nền TRANG chứ không trên một mặt thẻ. Kính thì tự lấy mẫu cái đang ở
+     sau lưng nó, nên nó đúng ở mọi theme và mọi chỗ cuộn.
+
+     Xem docs/DESIGN-SYSTEM.md §2b.6. */
+  background:var(--bl-nen,var(--glass-fill));
+}
+/* Nhoè nền TÁCH RIÊNG, và chỉ cho chỗ không có `--bl-nen`:
+     · có @supports vì trình duyệt cũ không hiểu — cùng lý do đã ghi ở
+       glass.css: gộp chung thì máy cũ ra một tấm trong suốt hoàn toàn.
+     · tấm trượt điện thoại thì nền sau lưng ĐÃ đục (`--surface-solid`), nhoè
+       thêm là tốn GPU mà không đổi một điểm ảnh nào. */
+@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
+  .bl-than:not(.bl-than--tam) .bl-trang{
+    -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 .bl-trang-nut{
   appearance:none;border:0;background:none;cursor:pointer;

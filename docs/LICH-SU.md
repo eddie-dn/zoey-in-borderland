@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.8 | 2026-09-21 | 08 | dải sang trang dùng kính · tấm bình luận cao tối đa 2/3 màn |
 | V3.0.7 | 2026-09-21 | 07 | ô About rộng hơn · cột ảnh + số bên trái · ô mời cà phê |
 | V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
 | V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
@@ -257,6 +258,20 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.8 — 21-Sep-2026
+
+- **Hết vệt đen dưới khung bình luận ở theme tối.** Dải sang trang tô bằng
+  `--bg`, mà nền trang thật là quầng `--bg-tint` phủ lên `--bg` và neo theo
+  màn hình — ở Galaxy hai thứ chênh nhau cả một quãng nên dải hiện ra một vệt
+  đen giữa khoảng tím. Nay nó dùng kính như `.site-head`: nhoè lấy mẫu cái
+  đang ở sau lưng, nên đúng ở mọi theme và mọi chỗ cuộn.
+- **Kiểm kê cả bộ.** Bốn thanh dính trên trang, hai cái tô sai: dải sang trang
+  và ô chọn số bài mỗi trang (nay là `--surface-sunken`, token vốn dựng cho
+  nền lõm). Luật chọn nền cho thanh dính ghi thành bảng ở DESIGN-SYSTEM §2b.6.
+- **Tấm bình luận trên điện thoại cao tối đa 2/3 màn**, không còn 86vh gần
+  phủ kín. Và tấm là hộp cuộn DUY NHẤT — trước đó danh sách bên trong còn
+  trần 50svh riêng, tức hai thanh cuộn lồng nhau trên một màn 6 inch.
 
 ## V3.0.7 — 21-Sep-2026
 
