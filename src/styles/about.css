@@ -25,11 +25,15 @@
   min-width:0;                    /* cho phép chữ dài co lại thay vì đẩy ô rộng ra */
 }
 
-.bo--intro{grid-column:1 / 7;grid-row:1 / 3;justify-content:center;gap:var(--s4)}
+.bo--intro{grid-column:1 / 7;justify-content:flex-start;gap:var(--s4)}
 .bo-dai   {grid-column:1 / 7;display:grid;gap:var(--s4);
   grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
-.bo--nay  {grid-column:1 / 4}
-.bo--lienhe{grid-column:4 / 7}
+/* Hàng "dạo này · liên hệ · cà phê". Cùng cách chữa như dải số: một dải trọn
+   6 cột, bên trong auto-fit. Ba ô ấy đều có thể vắng tuỳ front matter, mà một
+   lưới bento thủng lỗ thì đọc ra là trang bị hỏng. 240px là chỗ danh sách
+   `Nhãn · Nội dung` còn giữ được nhãn và nội dung trên cùng một dòng. */
+.bo-hang  {grid-column:1 / 7;display:grid;gap:var(--s4);
+  grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr))}
 .bo--chu  {grid-column:1 / 7;padding:0;background:none;box-shadow:none}
 
 .bo--intro h1{
@@ -38,14 +42,46 @@
 }
 
 /* ── CÓ ẢNH CHÂN DUNG ──
-   Hàng đầu chia ba phần bằng nhau thay vì 4+2. Ô giới thiệu hẹp đi một nửa
-   nên tiêu đề và câu mở phải nhỏ lại theo — giữ nguyên cỡ 44px trên cột 2 ô
-   thì "Về tôi" chiếm trọn hai dòng và câu mở bị ép thành cột chữ 18 ký tự. */
-.bento--anh .bo--anh  {grid-column:1 / 3;grid-row:1 / 3}
-.bento--anh .bo--intro{grid-column:3 / 7;grid-row:1 / 3}
+   Hàng đầu chia hai: cột trái 2 cột (ảnh trên, dải số dưới) · giới thiệu 4 cột.
 
-.bento--anh .bo--intro h1{font-size:clamp(25px,1.25rem + 1.1vw,34px)}
-.bento--anh .bo-lead{font-size:var(--fs-base);max-width:none}
+   Ô giới thiệu giữ 4 cột chứ không phải 2 vì nó là chỗ chứa cả đoạn tự giới
+   thiệu — dăm đoạn văn, không phải một câu. Nhét vào 2 cột thì mỗi dòng còn
+   khoảng 30 ký tự và khối chữ dài gấp đôi cột ảnh bên cạnh.
+
+   Cột trái là MỘT ô lưới xếp dọc bằng flex, không phải hai hàng lưới riêng —
+   lý do ở tools/build.mjs, hàm khungBento. */
+.bento--anh .bo--cot  {grid-column:1 / 3;grid-row:1 / 2;
+  display:flex;flex-direction:column;gap:var(--s4);min-width:0}
+.bento--anh .bo--intro{grid-column:3 / 7;grid-row:1 / 2}
+
+/* Ảnh nuốt hết phần cao dư của cột trái, mấy ô số giữ đúng chiều cao nội dung.
+   `min-height:0` để flex được phép co ảnh lại khi đoạn giới thiệu ngắn. */
+.bo--cot .bo--anh{flex:1 1 auto;min-height:240px}
+/* Hai hàng hai cột thay vì một dải ngang: cột trái chỉ rộng 2 cột lưới, xếp
+   bốn ô số nằm ngang ở đó thì mỗi ô còn chưa tới 90px. */
+.bo--cot .bo-dai{flex:0 0 auto;grid-template-columns:repeat(2,1fr)}
+
+.bento--anh .bo--intro h1{font-size:clamp(26px,1.3rem + 1.6vw,40px)}
+.bento--anh .bo-lead{font-size:var(--fs-base)}
+
+/* ── ĐOẠN TỰ GIỚI THIỆU TRÌNH BÀY NHƯ VĂN XUÔI ──
+   Thụt đầu dòng 2em, các đoạn nối liền nhau, KHÔNG chừa khoảng trắng ở giữa —
+   lối trình bày quen thuộc trên giấy, và ở đây nó gom dăm đoạn văn thành MỘT
+   khối chữ để đọc thay vì mấy mẩu rời nằm cạnh nhau.
+
+   Hai thứ phải đi cùng nhau, thiếu một là hỏng: chỉ thụt đầu dòng mà vẫn chừa
+   khoảng trắng thì chỗ thụt thành một vết lõm vô cớ; chỉ bỏ khoảng trắng mà
+   không thụt thì các đoạn dính thành một khối không thấy chỗ ngắt.
+
+   Vì sao phải có ô bọc `.bo-doan`: ô giới thiệu là flex column có `gap`, mà
+   gap chen vào giữa MỌI con — kể cả hai đoạn liền nhau, và `margin:0` trên
+   thẻ <p> không gỡ được gap. Bọc lại thì gap chỉ còn ngăn tiêu đề với khối
+   chữ, bên trong khối các đoạn tự xếp theo luật của chính nó.
+
+   Làn chữ 64ch đặt ở ô bọc: ô giới thiệu rộng ~700px ở khổ 1440, để chữ chạy
+   hết bề ngang thì mỗi dòng gần 90 ký tự — mắt trượt dòng khi nhảy xuống. */
+.bo-doan{display:flow-root;max-width:64ch}
+.bo-doan .bo-lead{margin:0;max-width:none;text-indent:2em}
 
 /* Ô ảnh: không lề trong, ảnh phủ kín. `position:relative` + ảnh trải tuyệt
    đối để ô cao đúng bằng hàng lưới, không phải bằng tỉ lệ tấm ảnh. */
@@ -116,6 +152,18 @@
   font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
 }
 
+/* Ô mời cà phê. Câu mời đọc như lời nói, nên cỡ chữ bằng thân ô `LATELY` chứ
+   không to hơn — ô này là một lời mời nhỏ, không phải một băng quảng cáo. */
+.bo-caphe-chu{
+  margin:0;font-size:calc(var(--fs-base) * .95);line-height:1.55;
+  color:var(--text-muted);text-wrap:pretty;max-width:34ch;
+}
+/* Danh sách phương thức đẩy xuống đáy ô, để ba ô cùng hàng có chân thẳng nhau
+   dù câu mời dài ngắn khác nhau. Dòng "Coming soon" thì KHÔNG đẩy: lúc chưa có
+   phương thức nào, đẩy nó xuống đáy là để một dòng chữ mồ côi cách câu mời cả
+   một khoảng trống — trông như ô bị lỗi chứ không như ô đang chờ. */
+.bo--caphe .bo-ds{margin-top:auto}
+
 /* Dưới 860px: bỏ hẳn lưới 6 cột, xếp dọc một cột. Ép lưới xuống màn hẹp mà
    vẫn giữ 6 cột thì mỗi ô còn vài chục pixel, không đọc được gì. */
 @media (max-width:860px){
@@ -132,8 +180,9 @@
 
      Và phải kể tên ĐỦ mọi ô: thiếu `.bo--anh` thì đúng một ô đó ở lại cột cũ,
      kéo theo cả lưới. Có phép kiểm tự động cho chuyện này — xem kiem-dinh.mjs. */
-  .bento .bo--anh,.bento .bo--intro,.bento .bo-dai,
-  .bento .bo--nay,.bento .bo--lienhe,.bento .bo--chu{
+  .bento .bo--anh,.bento .bo--cot,.bento .bo--intro,.bento .bo-dai,
+  .bento .bo-hang,.bento .bo--nay,.bento .bo--lienhe,.bento .bo--caphe,
+  .bento .bo--chu{
     grid-column:1 / 2;grid-row:auto;
   }
   /* :not(.bo--chu) — ô thân bài không phải tấm kính nên không có lề trong.
@@ -146,7 +195,7 @@
   /* Xếp dọc rồi thì ô ảnh không còn hàng lưới nào quyết chiều cao cho nó nữa.
      Thả tự do thì tấm ảnh dọc 3:4 cao gần hết màn hình điện thoại, người đọc
      phải cuộn một lượt mới tới được chữ. Kẹp lại thành băng ngang 5:3. */
-  .bento--anh .bo--anh{aspect-ratio:5 / 3;min-height:0}
+  .bento--anh .bo--anh{aspect-ratio:5 / 3;min-height:0;flex:none}
   .bento--anh .bo--intro h1{font-size:clamp(28px,1.4rem + 2vw,44px)}
 }
 
@@ -176,6 +225,9 @@
 .ch .prose{--measure:100%;--gutter:0}
 .ch--lienhe{padding-top:var(--s7);border-top:1px solid var(--line)}
 .ch--lienhe .label{margin:0 0 var(--s4)}
+.ch--caphe{padding-top:var(--s7);border-top:1px solid var(--line)}
+.ch--caphe .label{margin:0 0 var(--s4)}
+.ch--caphe .ch-lead{margin:0 0 var(--s4);font-size:var(--fs-base)}
 
 /* Hiện dần khi cuộn tới. Trạng thái đầu đặt ở CSS chứ không ở JS: JS chạy sau
    khi trang vẽ xong, nên đặt bằng JS thì khối loé lên một nhịp rồi mới mờ đi. */

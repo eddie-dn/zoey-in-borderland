@@ -617,6 +617,8 @@ const NHAN = {
   writingSince: 'Writing since',
   lately      : 'Lately',
   findMe      : 'Find me',
+  /* Ô mời cà phê. Nhãn tiếng Anh như mọi nhãn khác — xem đầu bảng NHAN. */
+  buyCoffee   : 'Buy me a coffee',
   quoteToday  : 'Quote of the day',
   quoteMore   : 'Another one',
   /* ── HAI NHÃN CHO MỘT CÁI NÚT ──
@@ -1066,6 +1068,13 @@ function docTrang(file) {
     nghe       : String(fm.nghe || ''),
     dangLam    : cap('dangLam'),
     lienHe     : cap('lienHe'),
+    /* Ô mời cà phê. `caPhe` là câu mời — bỏ trống thì KHÔNG dựng ô, lưới tự
+       khép lại (hàng cuối dùng auto-fit, xem `.bo-hang` trong about.css).
+       `caPheCach` là các phương thức nhận, cùng khuôn `Nhãn · Nội dung` với
+       lienHe. Chưa gắn phương thức nào thì ô vẫn hiện, kèm một dòng mờ
+       "Coming soon" — chỗ để sẵn, dán số tài khoản vào là xong. */
+    caPhe      : String(fm.caPhe || ''),
+    caPheCach  : cap('caPheCach'),
     anh        : fm.anh ? String(fm.anh) : null,
     anhAlt     : String(fm.anhAlt || ''),
     cover      : fm.cover ? String(fm.cover) : null,
@@ -2817,31 +2826,61 @@ function oQuote(nhan, { nhip = 0 } = {}) {
 function khungBento(t, soBai, soTag) {
   /* CẤU TRÚC KHOÁ CỨNG, không để lưới tự xếp:
 
-       hàng 1–2   [ giới thiệu  4 cột × 2 hàng ] [ trích dẫn 2 cột × 2 hàng ]
-       hàng 3     [ dải số  6 cột — bên trong tự chia đều ]
-       hàng 4     [ dạo này  3 cột ]             [ liên hệ  3 cột ]
-       hàng 5     [ thân bài  6 cột ]
+       CÓ ẢNH
+       hàng 1   [ cột trái 2 cột: ảnh ở trên, dải số ở dưới ]
+                [ giới thiệu 4 cột — cao bằng cả cột trái ]
+       hàng 2   [ dạo này · liên hệ · cà phê — một dải 6 cột, trong tự chia ]
+       hàng 3   [ thân bài 6 cột ]
 
-     Bản đầu để mỗi ô một span rồi thả cho lưới tự lấp. Hỏng: số ô SỐ thay đổi
-     theo việc tác giả khai bao nhiêu field, nên hàng nào cũng có thể thừa 2
-     cột trống — và một lưới bento có lỗ hổng đọc ra là trang bị lỗi, không
-     phải trang gọn gàng.
+       KHÔNG ẢNH
+       hàng 1   [ giới thiệu 6 cột ]
+       hàng 2   [ dải số 6 cột ]
+       hàng 3   [ dạo này · liên hệ · cà phê ]
+       hàng 4   [ thân bài 6 cột ]
 
-     Cách chữa: nhét mọi ô số vào MỘT dải chiếm trọn 6 cột, bên trong dải đó
-     mới chia đều. Khai 2 field hay 4 field thì lưới ngoài vẫn kín như nhau.
+     ── VÌ SAO CỘT TRÁI LÀ MỘT KHỐI, KHÔNG PHẢI HAI Ô RỜI ─────────────────────
+     Bản trước xếp ảnh và dải số thành hai hàng lưới riêng, rồi cho ô giới
+     thiệu span qua cả hai. Lưới chia phần cao dư ĐỀU cho mọi hàng bị span,
+     nên đoạn giới thiệu càng dài thì mấy ô số càng bị kéo cao ra — bốn con số
+     nằm lọt thỏm giữa một khoảng trống 300px.
 
-     ── CÓ ẢNH THÌ HÀNG ĐẦU CHIA BA ─────────────────────────────────────────
-     Khai `anh:` trong front matter thì hàng đầu thành  ảnh 2 · giới thiệu 2 ·
-     trích dẫn 2, vẫn trọn 6 cột. Không khai thì về khuôn cũ  giới thiệu 4 ·
-     trích dẫn 2. Hai đường đều KÍN LƯỚI — đó là lý do phải đổi cả ô giới
-     thiệu chứ không chỉ chèn thêm một ô ảnh vào. */
+     Gom ảnh + dải số vào MỘT ô lưới rồi xếp dọc bằng flex thì phần cao dư dồn
+     hết vào tấm ảnh (`flex:1`, ảnh `object-fit:cover` nên cao thêm bao nhiêu
+     cũng không méo), còn mấy ô số giữ đúng chiều cao nội dung.
+
+     ── VÌ SAO HÀNG CUỐI CŨNG LÀ MỘT DẢI ──────────────────────────────────────
+     Ba ô "dạo này / liên hệ / cà phê" đều có thể vắng mặt tuỳ người viết khai
+     gì trong front matter. Khoá cứng mỗi ô 2 cột thì thiếu một ô là lưới thủng
+     một lỗ. Nhét cả ba vào một dải auto-fit như dải số: khai hai ô hay ba ô
+     thì hàng vẫn kín. */
   const o = [];
   /* Gọi MỘT lần rồi dùng lại: hàm này đẩy cảnh báo vào CANH_BAO, nên gọi hai
      lượt là mỗi cảnh báo in ra hai bản. */
   const oAnh = anhBento(t);
   const coAnh = !!oAnh;
 
-  if (coAnh) o.push(oAnh);
+  const soLieu = [
+    t.viTri && { nhan: NHAN.based, chu: t.viTri },
+    t.tuNam && { nhan: NHAN.writingSince, chu: t.tuNam },
+    soBai   && { nhan: NHAN.posts, chu: String(soBai) },
+    soTag   && { nhan: NHAN.topics, chu: String(soTag) }
+  ].filter(Boolean);
+
+  /* Ô số vốn dựng cho giá trị NGẮN: "2016", "12", "Hà Nội". Gặp chuỗi dài
+     như "TP. Hồ Chí Minh" thì cỡ 32px vỡ thành hai dòng và đẩy lệch cả dải.
+     Không ép người viết phải viết tắt — hạ cỡ chữ theo độ dài thay vì vậy.
+     Ngưỡng 11 ký tự là chỗ chuỗi bắt đầu không vừa một dòng ở ô hẹp nhất
+     (150px) trong dải. */
+  const dai = soLieu.length
+    ? `<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
+      <span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>
+      <span class="label label--muted">${escapeHtml(x.nhan)}</span>
+    </div>`).join('')}</div>`
+    : '';
+
+  /* Cột trái. Có ảnh thì ảnh và dải số đi chung một ô lưới; không ảnh thì dải
+     số tự đứng thành một hàng riêng dưới ô giới thiệu (đẩy vào `o` bên dưới). */
+  if (coAnh) o.push(`<div class="bo--cot">${oAnh}${dai}</div>`);
 
   /* `data-cua-ql` — bấm 5 nhịp vào tiêu đề là tới bàn làm việc của chủ trang.
      Chỉ gắn ở trang giới thiệu: đó là trang chủ trang hay mở nhất mà không
@@ -2851,7 +2890,8 @@ function khungBento(t, soBai, soTag) {
     <div class="eyebrow"><i></i></div>
     <h1${t.url === '/about/' ? ` data-cua-ql="${attr(BASE + '/z-admin/')}"` : ''}>${
       noiChu(escapeHtml(t.title))}</h1>
-    ${t.gioiThieuDoan.map((d) => `<p class="bo-lead">${escapeHtml(d)}</p>`).join('')}
+    ${t.gioiThieuDoan.length ? `<div class="bo-doan">${
+      t.gioiThieuDoan.map((d) => `<p class="bo-lead">${escapeHtml(d)}</p>`).join('')}</div>` : ''}
   </div>`);
 
   /* Ô trích dẫn từng nằm ở đây, chiếm hai cột bên phải hàng đầu. Chuyển ra màn
@@ -2860,26 +2900,12 @@ function khungBento(t, soBai, soTag) {
      đang đọc về CHỦ TRANG thì lại chêm lời của người khác. Ô giới thiệu lấy
      luôn hai cột đó. */
 
-  const soLieu = [
-    t.viTri && { nhan: NHAN.based, chu: t.viTri },
-    t.tuNam && { nhan: NHAN.writingSince, chu: t.tuNam },
-    soBai   && { nhan: NHAN.posts, chu: String(soBai) },
-    soTag   && { nhan: NHAN.topics, chu: String(soTag) }
-  ].filter(Boolean);
-  if (soLieu.length) {
-    /* Ô số vốn dựng cho giá trị NGẮN: "2016", "12", "Hà Nội". Gặp chuỗi dài
-       như "TP. Hồ Chí Minh" thì cỡ 32px vỡ thành hai dòng và đẩy lệch cả dải.
-       Không ép người viết phải viết tắt — hạ cỡ chữ theo độ dài thay vì vậy.
-       Ngưỡng 11 ký tự là chỗ chuỗi bắt đầu không vừa một dòng ở ô hẹp nhất
-       (150px) trong dải. */
-    o.push(`<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
-      <span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>
-      <span class="label label--muted">${escapeHtml(x.nhan)}</span>
-    </div>`).join('')}</div>`);
-  }
+  if (!coAnh && dai) o.push(dai);
+
+  const hang = [];
 
   if (t.dangLam.length) {
-    o.push(`<div class="bo bo--nay card">
+    hang.push(`<div class="bo bo--nay card">
       <p class="label label--muted">${NHAN.lately}</p>
       <ul class="bo-ds">${t.dangLam.map((d) =>
         `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>${escapeHtml(d.chu)}</span></li>`
@@ -2889,7 +2915,7 @@ function khungBento(t, soBai, soTag) {
   }
 
   if (t.lienHe.length) {
-    o.push(`<div class="bo bo--lienhe card">
+    hang.push(`<div class="bo bo--lienhe card">
       <p class="label label--muted">${NHAN.findMe}</p>
       <ul class="bo-ds">${t.lienHe.map((d) => {
         const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu) &&
@@ -2902,10 +2928,45 @@ function khungBento(t, soBai, soTag) {
     </div>`);
   }
 
-  o.push(`<div class="bo bo--chu"><div class="prose">${t.html}</div></div>`);
+  const oCaPhe = oCaPheBento(t);
+  if (oCaPhe) hang.push(oCaPhe);
+
+  if (hang.length) o.push(`<div class="bo-hang">${hang.join('')}</div>`);
+
+  /* Thân bài RỖNG thì không dựng ô chữ. Một `.bo--chu` trống vẫn chiếm chỗ:
+     nó mang `margin-top:var(--s7)` ở `.prose`, nên trang kết thúc bằng một
+     khoảng trắng 56px không ai giải thích được. Trang giới thiệu hoàn toàn có
+     thể chỉ gồm lưới bento — mọi thứ cần nói đã nằm trong ô giới thiệu. */
+  if (t.tho.trim()) o.push(`<div class="bo bo--chu"><div class="prose">${t.html}</div></div>`);
 
   return `<div class="bento${coAnh ? ' bento--anh' : ''}">${o.filter(Boolean).join('\n')}</div>`;
 }
+
+/* Ô MỜI CÀ PHÊ. Trả '' nếu không khai `caPhe:` — hàng cuối tự khép lại.
+
+   Chưa khai phương thức nào thì vẫn dựng ô, chỉ thay danh sách bằng một dòng
+   mờ "Coming soon". Cố ý: đây là chỗ đặt sẵn để sau này dán số tài khoản hay
+   link donate vào, và một ô đã có mặt trên trang thì lúc gắn chỉ còn là thêm
+   một dòng YAML — không phải mở lại CSS để tìm chỗ cho nó. */
+function oCaPheBento(t) {
+  if (!t.caPhe) return '';
+  const cach = t.caPheCach.map((d) => {
+    /* Cùng luật link với ô liên hệ: http → thẻ <a>, còn lại để nguyên chữ
+       (số tài khoản, mã ví — mấy thứ người ta copy chứ không bấm). */
+    const url = /^https?:/.test(d.chu) ? d.chu : null;
+    const chu = escapeHtml(d.chu);
+    return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
+           `${url ? `<a href="${attr(url)}" rel="noopener">${chu}</a>` : chu}</span></li>`;
+  }).join('');
+
+  return `<div class="bo bo--caphe card">
+    <p class="label label--muted">${NHAN.buyCoffee}</p>
+    <p class="bo-caphe-chu">${escapeHtml(t.caPhe)}</p>
+    ${cach ? `<ul class="bo-ds">${cach}</ul>`
+           : `<p class="bo-nghe">${NHAN.soon}</p>`}
+  </div>`;
+}
+
 
 /* Ô ẢNH CHÂN DUNG. Trả '' nếu không khai `anh:` — lưới tự về khuôn cũ.
 
@@ -2993,6 +3054,17 @@ function khungChuong(t, soBai, soTag) {
       <ul class="bo-ds">${t.lienHe.map((d) =>
         `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}${escapeHtml(d.chu)}</li>`
       ).join('')}</ul>
+    </section>` : ''}
+
+    ${/* Ô mời cà phê có mặt ở CẢ HAI khung. Đổi `khung:` là đổi cách bày
+          trang, không phải đổi nội dung có trên trang — thiếu khối này thì
+          chuyển sang khung chương là mất luôn chỗ donate mà không ai báo. */
+      t.caPhe ? `<section class="ch ch--caphe" data-hien>
+      <p class="label label--muted">${NHAN.buyCoffee}</p>
+      <p class="ch-lead">${escapeHtml(t.caPhe)}</p>
+      ${t.caPheCach.length ? `<ul class="bo-ds">${t.caPheCach.map((d) =>
+        `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>${escapeHtml(d.chu)}</span></li>`
+      ).join('')}</ul>` : `<p class="bo-nghe">${NHAN.soon}</p>`}
     </section>` : ''}
   </div>`;
 }
@@ -3176,8 +3248,13 @@ const GOI_CSS = {
   ds   : ['quote.css', 'list.css'],
   /* Trang bài: khung đọc, ảnh, bảng, khối `:::`, bình luận. */
   bai  : ['prose.css'],
-  /* Trang giới thiệu. */
-  gt   : ['about.css'],
+  /* Trang giới thiệu. `prose.css` đi cùng: phần dưới lưới bento (và mọi chương
+     trong khung `chuong`) là Markdown dựng ra `.prose` y như thân một bài viết.
+     Thiếu nó thì trang vẫn dựng, vẫn xanh — chỉ là đoạn chữ dài ở cuối trang
+     mất hết giãn dòng, các `##` hiện ra cỡ chữ mặc định của trình duyệt kèm
+     dấu neo `#`. Chính hai luật `.bo--chu .prose` và `.ch .prose` trong
+     about.css cũng chỉ có nghĩa khi file này có mặt. */
+  gt   : ['about.css', 'prose.css'],
   /* Khung đăng nhập — /z-admin/ cần, mà /notes/ cũng mượn. */
   khoa : ['khoa.css'],
   /* Bàn làm việc của chủ trang. */

@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.7 | 2026-09-21 | 07 | ô About rộng hơn · cột ảnh + số bên trái · ô mời cà phê |
 | V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
 | V3.0.5 | 2026-09-18 | 05 | nền 霜降: trăng khuyết nghiêng dần theo đêm |
 | V3.0.4 | 2026-09-18 | 04 | bỏ dấu trang chìm ở trang bài; dải sang trang ăn màu nền; gấp trả lời giữ 2 cái và gấp lại được |
@@ -256,6 +257,23 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.7 — 21-Sep-2026
+
+- **Trang About xếp lại.** Ô giới thiệu nay rộng 4 cột và cao theo nội dung —
+  đủ chỗ cho cả đoạn tự giới thiệu chứ không còn là một câu mở. Bên trái là
+  một cột: ảnh chân dung ở trên, bốn ô `BASED IN · WRITING SINCE · POSTS ·
+  TOPICS` xếp 2×2 ở dưới. Ô `LATELY` và phần chữ dài dưới lưới tắt đi — thân
+  bài rỗng nay KHÔNG dựng ô chữ nữa, thay vì chừa lại một khoảng trắng 56px.
+- **Thêm ô `BUY ME A COFFEE`.** Chỗ đặt sẵn cho phương thức donate: khai
+  `caPhe` là có ô, chưa khai `caPheCach` thì ô hiện dòng mờ `Coming soon`.
+  Lúc gắn thật chỉ còn là thêm một dòng YAML, không phải mở lại CSS.
+- **Hai chỗ đã vấp.** Ảnh và dải số từng là hai hàng lưới riêng, ô giới thiệu
+  span qua cả hai — mà lưới chia phần cao dư ĐỀU cho mọi hàng bị span, nên
+  viết dài thêm một đoạn là bốn ô số bị kéo cao ra lọt thỏm; nay hai thứ ấy đi
+  chung một ô lưới, xếp dọc bằng flex, phần dư dồn hết vào tấm ảnh. Và gói CSS
+  `gt` thiếu hẳn `prose.css` dù phần chữ dưới lưới là `.prose` y như thân bài —
+  mọi đoạn văn ở cuối trang mất giãn dòng, các `##` hiện ra cỡ mặc định.
 
 ## V3.0.6 — 19-Sep-2026
 

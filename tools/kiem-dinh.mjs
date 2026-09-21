@@ -2320,15 +2320,18 @@ const KIEM = [
       if (!fs.existsSync(f)) return [];
       const css = fs.readFileSync(f, 'utf8');
 
-      /* Mọi ô có khai grid-column ở phần desktop (ngoài @media) */
+      /* Mọi ô có khai grid-column ở phần desktop (ngoài @media).
+         Mẫu `.bo-*` bắt cả `.bo--cot`, `.bo-dai`, `.bo-hang` — kể tên từng ô
+         thì mỗi lần thêm một dải mới lại phải nhớ sửa chỗ này, mà quên thì
+         phép kiểm im lặng đúng vào lúc nó cần lên tiếng. */
       const ngoai = css.split('@media')[0];
       const o = new Set();
-      for (const m of ngoai.matchAll(/\.(bo--[\w-]+|bo-dai)\s*\{[^}]*grid-column/g)) o.add(m[1]);
+      for (const m of ngoai.matchAll(/\.(bo-[\w-]+)\s*\{[^}]*grid-column/g)) o.add(m[1]);
 
       /* Danh sách được kéo về cột 1 trong khối @media hẹp */
       const kh = css.match(/@media\s*\(max-width:\s*860px\)\s*\{[\s\S]*?grid-column:\s*1\s*\/\s*2/);
       const ten = new Set();
-      if (kh) for (const m of kh[0].matchAll(/\.(bo--[\w-]+|bo-dai)/g)) ten.add(m[1]);
+      if (kh) for (const m of kh[0].matchAll(/\.(bo-[\w-]+)/g)) ten.add(m[1]);
 
       return [...o].filter((x) => !ten.has(x)).map((x) =>
         `src/styles/about.css — ô .${x} có grid-column nhưng không nằm trong luật ` +

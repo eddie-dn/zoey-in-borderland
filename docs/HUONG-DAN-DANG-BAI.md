@@ -476,13 +476,15 @@ thường.
 | Field | Hiện ở đâu trên trang |
 |---|---|
 | `title` | tiêu đề lớn trong ô giới thiệu |
-| `gioiThieu` | câu mở, ngay dưới tiêu đề. Viết một dòng, hoặc một danh sách gạch đầu dòng — mỗi gạch là một đoạn |
-| `anh` · `anhAlt` | ô ảnh chân dung bên trái |
-| `viTri` | ô số `BASED IN` |
+| `gioiThieu` | đoạn tự giới thiệu, ngay dưới tiêu đề — ô rộng nhất trang. Viết một dòng, hoặc một danh sách gạch đầu dòng: **mỗi gạch là một đoạn văn**, bao nhiêu đoạn cũng được |
+| `anh` · `anhAlt` | ô ảnh chân dung, trên cùng cột trái |
+| `viTri` | ô số `BASED IN` (dưới ảnh) |
 | `tuNam` | ô số `WRITING SINCE` |
 | `nghe` | dòng nghiêng ở đáy ô `LATELY` |
 | `dangLam` | danh sách trong ô `LATELY` |
 | `lienHe` | danh sách trong ô `FIND ME` |
+| `caPhe` | câu mời trong ô `BUY ME A COFFEE`. Xoá dòng này thì ô biến mất |
+| `caPheCach` | các phương thức nhận trong ô ấy. Chưa khai dòng nào thì ô hiện chữ mờ `Coming soon` |
 | phần dưới `---` | khối chữ dài bên dưới lưới |
 
 **`POSTS` và `TOPICS` không khai ở đâu cả** — máy tự đếm mỗi lần build: số bài
@@ -490,7 +492,8 @@ công khai, và số tag khác nhau. Viết thêm bài là hai con số đó t�
 
 ### 6.2 · Khuôn `Nhãn · Nội dung`
 
-`dangLam` và `lienHe` dùng dấu chấm giữa `·` để tách nhãn khỏi nội dung:
+`dangLam`, `lienHe` và `caPheCach` dùng dấu chấm giữa `·` để tách nhãn khỏi
+nội dung:
 
 ```yaml
 dangLam:
@@ -498,7 +501,7 @@ dangLam:
   - Học · dựng trang web không cần framework
 
 lienHe:
-  - Email · zoey@borderland.in
+  - Email · contact@z-in-borderland.com
   - Instagram · @zoeyinborderland
 ```
 
@@ -506,6 +509,24 @@ Không có dấu `·` thì cả dòng là nội dung, nhãn để trống — v�
 
 Dòng nào có nhãn chứa chữ "mail" và nội dung có `@` thì tự thành link `mailto:`.
 Dòng nào bắt đầu bằng `http` thì tự thành link.
+
+### 6.2b · Ô mời cà phê
+
+```yaml
+caPhe: Nếu có bài nào ở đây giúp được bạn một chút, mời mình một ly cà phê nhé.
+
+caPheCach:
+  - Momo · 09xx xxx xxx
+  - Ko-fi · https://ko-fi.com/…
+```
+
+`caPhe` là câu mời — **xoá dòng ấy đi thì cả ô biến mất**, hàng cuối tự khép
+lại còn hai ô, không để lỗ hổng.
+
+`caPheCach` là chỗ dán phương thức nhận. Dòng bắt đầu bằng `http` thành link;
+còn lại để nguyên chữ — số tài khoản hay mã ví là thứ người ta copy chứ không
+bấm. **Chưa khai dòng nào thì ô vẫn hiện**, kèm một dòng mờ `Coming soon`: chỗ
+đã có sẵn trên trang, lúc gắn thật chỉ còn là thêm một dòng YAML.
 
 ### 6.3 · Ảnh chân dung
 
@@ -517,8 +538,13 @@ anhAlt: Ảnh chân dung
 Bỏ ảnh vào `public/media/`, đường dẫn tính **từ `public/`** (nên bắt đầu bằng
 `/media/`).
 
-Có ảnh thì hàng đầu chia hai: ảnh 2 cột · giới thiệu 4 cột. Không có ảnh thì
-ô giới thiệu chiếm trọn 6 cột. Cả hai đường đều kín lưới, không để lỗ hổng.
+Có ảnh thì hàng đầu chia hai: **cột trái 2 cột** (ảnh ở trên, bốn ô số xếp 2×2
+ở dưới) · **ô giới thiệu 4 cột** bên phải. Không có ảnh thì ô giới thiệu chiếm
+trọn 6 cột và dải số nằm thành một hàng riêng bên dưới. Cả hai đường đều kín
+lưới, không để lỗ hổng.
+
+Ảnh cao bao nhiêu là do đoạn giới thiệu bên cạnh quyết định: viết dài thêm một
+đoạn thì tấm ảnh tự cao theo cho bằng cột, mấy ô số giữ nguyên.
 
 (Ô trích dẫn mỗi ngày từng nằm ở hàng này, chiếm hai cột bên phải. Nó đã
 chuyển ra màn đầu trang chủ — xem `docs/DESIGN-SYSTEM.md` §16.3.)
@@ -546,7 +572,8 @@ Dòng `khung:` trong front matter đổi cả cách bày trang, cùng một nộ
 
 ### 6.5 · Chữ trên giao diện thì sao
 
-`BASED IN`, `LATELY`, `FIND ME`, `AUTHOR`, `Reply`… — mấy chữ đó **không nằm ở
+`BASED IN`, `LATELY`, `FIND ME`, `BUY ME A COFFEE`, `AUTHOR`, `Reply`… — mấy
+chữ đó **không nằm ở
 đây**. Chúng ở bảng `NHAN` đầu file `tools/build.mjs`, và đều là tiếng Anh.
 
 Cố ý tách như vậy: nội dung tiếng Việt do bạn gõ, phần khung tiếng Anh cho đồng

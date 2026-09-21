@@ -841,10 +841,17 @@ từ **cùng dữ liệu** trong front matter, chỉ khác cách bày.
 ### 11.1 · Lưới bento KHOÁ CỨNG, không để tự xếp
 
 ```
-hàng 1–2   [ giới thiệu  4 cột × 2 hàng ]  [ trích dẫn 2 cột × 2 hàng ]
-hàng 3     [ dải số  6 cột — bên trong tự chia đều ]
-hàng 4     [ dạo này  3 cột ]              [ liên hệ  3 cột ]
-hàng 5     [ thân bài  6 cột ]
+CÓ ẢNH (khai `anh:` trong front matter)
+hàng 1     [ cột trái 2 cột: ảnh ở trên · dải số 2×2 ở dưới ]
+           [ giới thiệu  4 cột — cao bằng cả cột trái ]
+hàng 2     [ dải cuối 6 cột: dạo này · liên hệ · cà phê ]
+hàng 3     [ thân bài  6 cột ]
+
+KHÔNG ẢNH
+hàng 1     [ giới thiệu  6 cột ]
+hàng 2     [ dải số  6 cột ]
+hàng 3     [ dải cuối 6 cột ]
+hàng 4     [ thân bài  6 cột ]
 ```
 
 > **Bẫy đã vấp.** Bản đầu cho mỗi ô một `span` rồi thả cho lưới tự lấp. Hỏng vì
@@ -854,6 +861,18 @@ hàng 5     [ thân bài  6 cột ]
 >
 > Cách chữa: nhét mọi ô số vào **một dải chiếm trọn 6 cột**, bên trong dải đó
 > mới chia đều bằng `auto-fit`. Khai 2 field hay 4 field thì lưới ngoài vẫn kín.
+> Hàng cuối (dạo này · liên hệ · cà phê) dùng đúng cách ấy, vì cả ba ô đều có
+> thể vắng mặt tuỳ front matter.
+
+> **Bẫy thứ hai: span qua nhiều hàng thì phần cao dư chia ĐỀU.** Ô giới thiệu
+> nay chứa cả đoạn tự giới thiệu — dăm đoạn văn chứ không phải một câu. Bản
+> trước xếp ảnh và dải số thành hai hàng lưới riêng rồi cho ô giới thiệu span
+> qua cả hai; đoạn chữ càng dài thì mấy ô số càng bị kéo cao ra, bốn con số
+> nằm lọt thỏm giữa khoảng trống 300px.
+>
+> Cách chữa: gom ảnh + dải số vào **một ô lưới** (`.bo--cot`) rồi xếp dọc bằng
+> flex. Phần cao dư dồn hết vào tấm ảnh (`flex:1`, ảnh `object-fit:cover` nên
+> cao thêm bao nhiêu cũng không méo), mấy ô số giữ đúng chiều cao nội dung.
 
 ### 11.2 · Thân bài phải thẳng mép với các ô kính
 
