@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.2 | 2026-09-24 | 02 | ô soạn thảo: Preview gộp song song · kiểu đoạn H2–H4 · thanh bảng tô hàng cột · xoá khối |
 | V3.1.1 | 2026-09-24 | 01 | ô soạn thảo: danh sách lồng · ô việc bấm được · khổ ảnh theo phần trăm · xem thử tại chỗ |
 | V3.1.0 | 2026-09-24 | 00 | mục Learning đứng trước Archive |
 | V3.0.9 | 2026-09-24 | 09 | tab Learning trên thanh đầu trang · chốt luồng khu học tập |
@@ -261,6 +262,18 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.2 — 24-Sep-2026
+
+- **Khung soạn và bản xem thử khớp nhau.** Khung soạn nay cùng cỡ chữ, cùng
+  bề ngang cột chữ với bài thật, vẽ đoạn sapo và dấu ✦ như trang đã đăng. Bài
+  có Summary thì không có sapo — cả khung soạn lẫn Preview theo đúng luật ấy.
+  Preview gộp làm một nút: màn rộng mở song song, hai cột cuộn theo nhau, có
+  nút phóng ra hết khung; ảnh vừa tải lên thôi hiện ô vỡ.
+- **Chọn kiểu đoạn Normal · H2 · H3 · H4** bằng một nút, bấm lại là về chữ
+  thường. Khối gallery, callout xoá được bằng nút ×; ảnh có nút Remove.
+- **Bảng có thanh riêng:** thêm, bớt hàng cột, căn lề cột, tô màu cả hàng hay
+  cả cột. Căn lề và bề rộng cột thôi mất khi mở rồi lưu lại một bài.
 
 ## V3.1.1 — 24-Sep-2026
 

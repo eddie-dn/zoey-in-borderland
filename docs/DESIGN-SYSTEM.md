@@ -2954,6 +2954,13 @@ Hai chiều đổi nằm ở `khoi()` (TABLE → mấy dòng gạch đứng) và
 (gạch đứng → TABLE). Dấu `|` người viết lỡ gõ trong một ô được thoát, không thì
 nó cắt ô ấy làm đôi ở lượt đọc lại.
 
+**Thanh bảng.** Đặt con trỏ vào một ô là `.sz-bang-thanh` nổi lên ngay trên
+bảng: + / − hàng, + / − cột, căn cột trái · giữa · phải (ghi vào dòng gạch
+ngăn `:---:` · `---:`), tô hàng · tô cột, xoá bảng. Tô màu ghi thành một dòng
+lớp NGAY dưới bảng — `{.to-hang-2 .to-cot-3}`, hàng đếm từ hàng thân đầu tiên
+— và bộ dựng gắn `.to` lên từng ô được tô (nền pha từ `--accent`). Căn lề và
+bề rộng cột (số dấu gạch) đi vòng qua ô soạn nguyên vẹn.
+
 Cỡ bảng hỏi bằng một `<dialog>` có hai cặp nút cộng trừ và một bảng xem trước,
 không phải một chuỗi `3x4` gõ vào `window.prompt`. Trần **5 × 20**: trần cột là
 chuyện bề ngang thật (cột chữ rộng chừng 66 ký tự, chia sáu cột là mỗi cột mười

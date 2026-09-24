@@ -724,6 +724,10 @@
       var o = hop.querySelector('[name=' + t + ']');
       if (o) o.addEventListener('change', hoanSEO);
     });
+    /* Có Summary hay không quyết định đoạn đầu có thành sapo không — khung
+       soạn và ô xem thử phải vẽ lại theo ngay khi ô ấy đổi. */
+    var oTomTat = hop.querySelector('[name=summary]');
+    if (oTomTat && soan && soan.lamMoi) oTomTat.addEventListener('input', soan.lamMoi);
 
     if (!cu) theoTieuDe();
     xemDuong();
