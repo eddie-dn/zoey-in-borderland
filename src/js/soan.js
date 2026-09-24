@@ -364,7 +364,7 @@
          Dấu `|` người viết lỡ gõ TRONG một ô phải được thoát, không thì nó
          cắt ô ấy làm đôi lúc đọc lại. */
       if (the === 'TABLE') {
-        var hangB = [];
+        var hangB = [], toB = [];
         var oHang = c.querySelectorAll('tr');
         for (var hi = 0; hi < oHang.length; hi++) {
           var oO = oHang[hi].children, cot = [];
@@ -373,11 +373,27 @@
           }
           hangB.push('| ' + cot.join(' | ') + ' |');
           /* Dòng gạch ngăn đi ngay sau hàng tiêu đề — đó là thứ nói cho bộ
-             dựng biết bảng bắt đầu từ đâu. */
+             dựng biết bảng bắt đầu từ đâu. Nó còn chở hai thứ của từng cột,
+             và cả hai từng MẤT mỗi lần mở-lưu một bài: căn lề (`:---:` giữa,
+             `---:` phải) và bề rộng (số dấu gạch — xem `bang()` trong
+             tools/lib/markdown.mjs). Cả hai nằm trên ô tiêu đề của cột. */
           if (hi === 0) {
-            hangB.push('|' + new Array(oO.length + 1).join('---|'));
+            var gachB = [];
+            for (var gi = 0; gi < oO.length; gi++) {
+              var th0 = oO[gi], canT = th0.getAttribute('data-can');
+              var soG = Math.max(3, +th0.getAttribute('data-gach') || 3);
+              var g = new Array(soG + 1).join('-');
+              gachB.push(canT === 'giua' ? ':' + g + ':' : canT === 'phai' ? g + ':'
+                         : canT === 'trai' ? ':' + g : g);
+              if (th0.hasAttribute('data-to')) toB.push('.to-cot-' + (gi + 1));
+            }
+            hangB.push('|' + gachB.join('|') + '|');
+          } else if (oHang[hi].hasAttribute('data-to')) {
+            toB.push('.to-hang-' + hi);
           }
         }
+        /* Hàng / cột được tô: một dòng lớp ngay dưới bảng. */
+        if (toB.length) hangB.push('{' + toB.join(' ') + '}');
         ra.push(thut + hangB.join('\n' + thut));
         continue;
       }
@@ -617,15 +633,25 @@
       .map(function (x) { return x.replace(/\\\|/g, '|').trim(); });
   }
 
-  function bangTuMD(ds) {
+  function bangTuMD(ds, lopTo) {
     var dau = oCuaHang(ds[0]);
+    var gach = oCuaHang(ds[1] || '');
+    var to = {};
+    String(lopTo || '').replace(/\.to-(hang|cot)-(\d+)/g, function (_, k, n) { to[k + n] = 1; });
     var than = [];
     for (var i = 2; i < ds.length; i++) than.push(oCuaHang(ds[i]));
     var h = '<table class="sz-bang-o"><thead><tr>';
-    for (var k = 0; k < dau.length; k++) h += '<th>' + nhoMD(dau[k]) + '</th>';
+    for (var k = 0; k < dau.length; k++) {
+      var g = String(gach[k] || '');
+      var can = /^:.*:$/.test(g) ? 'giua' : /:$/.test(g) ? 'phai' : /^:/.test(g) ? 'trai' : '';
+      var soG = (g.match(/-/g) || []).length;
+      h += '<th' + (can ? ' data-can="' + can + '"' : '') +
+           (soG > 3 ? ' data-gach="' + soG + '"' : '') +
+           (to['cot' + (k + 1)] ? ' data-to="1"' : '') + '>' + nhoMD(dau[k]) + '</th>';
+    }
     h += '</tr></thead><tbody>';
     for (var r = 0; r < than.length; r++) {
-      h += '<tr>';
+      h += to['hang' + (r + 1)] ? '<tr data-to="1">' : '<tr>';
       for (var c2 = 0; c2 < dau.length; c2++) {
         h += '<td>' + nhoMD(than[r][c2] || '') + '</td>';
       }
@@ -802,7 +828,11 @@
       if (/^\s*\|/.test(d) && dong[i + 1] && /^\s*\|[\s:|-]*-[\s:|-]*\|\s*$/.test(dong[i + 1])) {
         var oBang = [];
         while (i < dong.length && /^\s*\|/.test(dong[i])) { oBang.push(dong[i]); i++; }
-        ra.push(bangTuMD(oBang));
+        var lopTo = '';
+        if (i < dong.length && /^\s*\{((?:\s*\.to-(?:hang|cot)-\d+)+)\s*\}\s*$/.test(dong[i])) {
+          lopTo = dong[i]; i++;
+        }
+        ra.push(bangTuMD(oBang, lopTo));
         continue;
       }
 
@@ -1449,8 +1479,20 @@
     vach(2);
 
     /* ── CHÍNH 3: dàn bài ── */
-    nut('H2', L('h2', 'Heading'), function () { lenh('formatBlock', 'h2'); }, 'sz-nut--h');
-    nut('H3', L('h3', 'Subheading'), function () { lenh('formatBlock', 'h3'); }, 'sz-nut--h');
+    /* ── KIỂU ĐOẠN: MỘT NÚT CHỌN, KHÔNG PHẢI HAI NÚT H2 · H3 ──
+       Bản trước có H2 và H3 đứng riêng, còn đường về chữ thường là một nút
+       `¶` ở tận hàng dưới — không ai nhận ra nó là "Normal text". Không có
+       H4, và bấm H2 lần nữa trên một tiêu đề H2 thì không có gì xảy ra.
+       Người dùng: "có H2, H3 mà ko có cho chọn normal text · không có toggle
+       H3, H4".
+
+       Nay một nút ghi đúng kiểu của đoạn đang đứng (Normal · H2 · H3 · H4),
+       bấm mở bảng bốn dòng. Chọn đúng kiểu đang có thì về chữ thường. Phím
+       tắt ⌘⌥0 · ⌘⌥2 · ⌘⌥3 · ⌘⌥4 cho người quen tay. */
+    var nutKieu = nut(L('kieuThuong', 'Normal') + ' ▾', L('kieu', 'Text style'),
+                      function () { moBangKieu(); }, 'sz-nut--kieu');
+    nutKieu.setAttribute('aria-expanded', 'false');
+    var bangKieu = veBangKieu();
     nut(svg('M10 7H6a2 2 0 0 0-2 2v3h4l-2 5M20 7h-4a2 2 0 0 0-2 2v3h4l-2 5'),
         L('quote', 'Quote'), function () { lenh('formatBlock', 'blockquote'); });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M4.5 6h.01M4.5 12h.01M4.5 18h.01']),
@@ -1593,9 +1635,6 @@
     });
     nut(svg(['M9 6h11M9 12h11M9 18h11', 'M6 9l-3 3 3 3']),
         L('outdent', 'Outdent'), function () { lamDanhSach('thutRa'); });
-    nut('¶', L('para', 'Back to a normal paragraph'), function () {
-      lenh('formatBlock', 'p');
-    }, 'sz-nut--h');
     /* Hai lớp đoạn còn lại — trước nằm trong bảng Blocks dưới đề "Whole
        paragraph". Chúng là phép đổi trên đoạn đang đứng, cùng họ với `¶`. */
     nut(svg(['M4 18 8 7l4 11', 'M5.5 14h5', 'M15 18l2-6 2 6', 'M15.8 16h2.4']),
@@ -1622,7 +1661,7 @@
     nut(svg(['M3 5h18v14H3z', 'M3 10h18', 'M9 5v14', 'M15 5v14']),
         L('bTable', 'Table'), chenBang);
     var bangNgon = veBangNgon();
-    nut(svg(['M4 4h16v16H4z', 'M10 9l-3 3 3 3', 'M14 9l3 3-3 3']),
+    var nutNgon = nut(svg(['M4 4h16v16H4z', 'M10 9l-3 3 3 3', 'M14 9l3 3-3 3']),
         L('bCode', 'Code block'), function () { moBangNgon(); });
     nut(svg(['M4 5h5v5H4z', 'M12 7.5h8', 'M4 14h5v5H4z', 'M12 16.5h8', 'M5.3 7.5l1.2 1.2 2.2-2.4']),
         L('bTask', 'Checklist'), function () { lamDanhSach('viec'); });
@@ -2202,27 +2241,62 @@
       return b;
     }
 
-    function moBangNhan() {
-      bangMau.hidden = true; bangMedia.hidden = true; bangNgon.hidden = true;
-      nutMedia.setAttribute('aria-expanded', 'false');
-      bangNhan.hidden = !bangNhan.hidden;
-      nutNhan.setAttribute('aria-expanded', bangNhan.hidden ? 'false' : 'true');
+    /* ── MỘT CHỖ ĐỨNG CHO MỌI BẢNG BẬT RA ──
+       Mở cái này thì mọi cái khác đóng: chồng lên nhau thì bảng dưới vẫn ăn
+       được cú bấm mà không ai thấy nó ở đó. Trước đây mỗi bảng có một hàm mở
+       riêng tự kể tên mọi bảng kia — thêm bảng thứ năm là phải sửa cả năm chỗ,
+       và quên một chỗ là hai bảng mở cùng lúc. */
+    function cacBang() {
+      return [[bangMau, nutMau], [bangMedia, nutMedia], [bangNhan, nutNhan],
+              [bangNgon, nutNgon], [bangKieu, nutKieu]];
     }
-
-    function moBangNgon() {
-      bangMau.hidden = true; bangMedia.hidden = true; bangNhan.hidden = true;
-      nutMedia.setAttribute('aria-expanded', 'false');
-      nutNhan.setAttribute('aria-expanded', 'false');
-      bangNgon.hidden = !bangNgon.hidden;
+    function moBang(b) {
+      var dangDong = b.hidden;
+      dongBang();
+      b.hidden = !dangDong;
+      cacBang().forEach(function (x) {
+        if (x[0] === b && x[1]) x[1].setAttribute('aria-expanded', dangDong ? 'true' : 'false');
+      });
     }
+    function moBangNhan()  { moBang(bangNhan); }
 
-    function moBangMedia() {
-      bangMau.hidden = true; bangNhan.hidden = true; bangNgon.hidden = true;
-      nutNhan.setAttribute('aria-expanded', 'false');
-      bangMedia.hidden = !bangMedia.hidden;
-      nutMedia.setAttribute('aria-expanded', bangMedia.hidden ? 'false' : 'true');
+    function kieuDangDung() {
+      var s2 = window.getSelection();
+      if (!s2 || !s2.rangeCount) return 'p';
+      var n = s2.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var h = o && o.closest ? o.closest('h1, h2, h3, h4') : null;
+      if (!h || !khung.contains(h)) return 'p';
+      return h.nodeName === 'H1' ? 'h2' : h.nodeName.toLowerCase();
     }
+    function datKieu(t) {
+      if (t !== 'p' && kieuDangDung() === t) t = 'p';
+      lenh('formatBlock', t);
+    }
+    function veBangKieu() {
+      var b = el('div', 'sz-bang sz-bang--khoi sz-bang--kieu');
+      b.hidden = true;
+      [['p',  L('para', 'Normal text'),     '',     'sz-kieu--p'],
+       ['h2', L('h2', 'Heading'),           '## ',  'sz-kieu--h2'],
+       ['h3', L('h3', 'Subheading'),        '### ', 'sz-kieu--h3'],
+       ['h4', L('h4', 'Small heading'),     '#### ', 'sz-kieu--h4']
+      ].forEach(function (x) {
+        var o = dongChon(b, '', x[1], '', x[2], function () { datKieu(x[0]); });
+        o.classList.add(x[3]);
+      });
+      return b;
+    }
+    function moBangNgon()  { moBang(bangNgon); }
+    function moBangMedia() { moBang(bangMedia); }
+    function moBangMau()   { moBang(bangMau); }
+    function moBangKieu()  { moBang(bangKieu); }
 
+    function dongBang() {
+      cacBang().forEach(function (x) {
+        if (x[0]) x[0].hidden = true;
+        if (x[1]) x[1].setAttribute('aria-expanded', 'false');
+      });
+    }
 
     /* ══════════ BẢNG MÀU ══════════ */
     function veBangMau() {
@@ -2274,22 +2348,6 @@
       });
       b.appendChild(xoa);
       return b;
-    }
-
-    /* Hai bảng, một chỗ đứng: mở cái này thì cái kia đóng. Chồng lên nhau thì
-       bảng dưới vẫn ăn được cú bấm mà không ai thấy nó ở đó. */
-    function moBangMau() {
-      bangMedia.hidden = true; bangNhan.hidden = true; bangNgon.hidden = true;
-      nutMedia.setAttribute('aria-expanded', 'false');
-      nutNhan.setAttribute('aria-expanded', 'false');
-      bangMau.hidden = !bangMau.hidden;
-    }
-
-    function dongBang() {
-      bangMau.hidden = true; bangMedia.hidden = true;
-      bangNhan.hidden = true; bangNgon.hidden = true;
-      nutMedia.setAttribute('aria-expanded', 'false');
-      nutNhan.setAttribute('aria-expanded', 'false');
     }
 
     function chenLink() {
@@ -3444,15 +3502,24 @@
     oXem.hidden = true;
     var coDung = !!(window.ZIB && window.ZIB.md);
 
+    /* ── BA NÚT, KHÔNG PHẢI BỐN ──
+       Bản đầu bày Write · Split · Preview · </> — hai nút Split và Preview
+       cùng là "xem bài", chỉ khác chỗ đứng, và người dùng thấy thừa: "khung
+       split mở rộng ra thành preview được luôn ko? đỡ quản lý quá nhiều thẻ".
+
+       Nay một nút Preview. Màn đủ rộng thì nó mở SONG SONG (gõ bên trái, bài
+       bên phải); trên đầu cột bài có nút phóng ra hết khung, và ở khổ ấy có
+       nút thu về song song. Màn hẹp thì Preview chiếm cả khung như cũ. Bên
+       trong vẫn là bốn trạng thái `viet · song · xem · md`. */
     var CHE = [
       ['viet', L('modeWrite', 'Write'),    L('modeWriteTip', 'Write and format')],
-      ['song', L('modeSplit', 'Split'),    L('modeSplitTip', 'Write on the left, see the post on the right')],
       ['xem',  L('preview', 'Preview'),    L('previewTip', 'See it as a published post')],
       ['md',   '</>',                      L('seeMd', 'See the Markdown')]
     ];
     var cheDo = 'viet';
     try { cheDo = localStorage.getItem('zib-soan-che') || 'viet'; } catch (e) {}
-    if (!CHE.some(function (x) { return x[0] === cheDo; })) cheDo = 'viet';
+    if (['viet', 'song', 'xem', 'md'].indexOf(cheDo) < 0) cheDo = 'viet';
+    function rong() { return khoiSoan.classList.contains('sz--rong'); }
 
     var nhomChe = el('span', 'sz-che');
     nhomChe.setAttribute('role', 'group');
@@ -3463,14 +3530,16 @@
       b.type = 'button';
       b.title = x[2];
       b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-      b.addEventListener('click', function () { doiCheDo(x[0]); });
+      b.addEventListener('click', function () {
+        doiCheDo(x[0] === 'xem' && rong() ? 'song' : x[0]);
+      });
       nutChe[x[0]] = b;
       nhomChe.appendChild(b);
     });
     /* Chưa có bộ dựng (mạng hỏng, hoặc ô soạn nhúng ở trang khác) thì hai nấc
        cần nó ẩn đi, chứ không bày ra nút bấm không ra gì. */
     function coBoDung() {
-      nutChe.song.hidden = nutChe.xem.hidden = !coDung;
+      nutChe.xem.hidden = !coDung;
       if (!coDung && (cheDo === 'song' || cheDo === 'xem')) cheDo = 'viet';
     }
     window.addEventListener('zib-md-san', function () { coDung = true; coBoDung(); doiCheDo(cheDo, true); });
@@ -3482,14 +3551,18 @@
       try { localStorage.setItem('zib-soan-che', moi); } catch (e) {}
       ['viet', 'song', 'xem', 'md'].forEach(function (k) {
         khoiSoan.classList.toggle('sz--' + k, k === moi);
-        nutChe[k].classList.toggle('sz-che-nut--bat', k === moi);
-        nutChe[k].setAttribute('aria-pressed', k === moi ? 'true' : 'false');
+      });
+      CHE.forEach(function (x) {
+        var bat = x[0] === moi || (x[0] === 'xem' && moi === 'song');
+        nutChe[x[0]].classList.toggle('sz-che-nut--bat', bat);
+        nutChe[x[0]].setAttribute('aria-pressed', bat ? 'true' : 'false');
       });
       khung.hidden = (moi === 'xem' || moi === 'md');
       oXem.hidden = !(moi === 'xem' || moi === 'song');
       oMD.hidden = moi !== 'md';
       dongBang();
       datThanhAnh(null);
+      if (thanhBang) thanhBang.hidden = true;
       veCheDo(true);
       if (!imLang && (moi === 'viet' || moi === 'song') && cu !== moi) khung.focus();
     }
@@ -3501,9 +3574,31 @@
       if (cheDo === 'md') oMD.textContent = sangMD(khung) || L('empty', '(nothing yet)');
       if (cheDo !== 'xem' && cheDo !== 'song') return;
       if (henXem) { clearTimeout(henXem); henXem = null; }
-      if (ngay) { veXemThu(oXem); return; }
+      if (ngay) { veXemThu(oXem); dongBoCuon(); return; }
       henXem = setTimeout(function () { henXem = null; veXemThu(oXem); }, 250);
     }
+
+    /* ── HAI CỘT CUỘN THEO NHAU ──
+       Ở chế độ song song, khung gõ cuộn cùng trang còn cột bài tự cuộn riêng
+       (nó dính ở đầu màn). Không nối hai thứ ấy thì gõ ở cuối một bài dài mà
+       cột phải vẫn đứng ở đầu bài — hai bên lệch nhau cả chục đoạn. Nối theo
+       TỈ LỆ: đi được bao nhiêu phần của khung gõ thì cột bài đi bấy nhiêu phần
+       của nó. Không khớp từng dòng (ảnh, bảng cao thấp khác nhau ở hai bên),
+       nhưng đủ để đoạn đang gõ luôn nằm trong tầm mắt ở bên phải. */
+    function dongBoCuon() {
+      if (cheDo !== 'song' || !rong()) return;
+      var r = khung.getBoundingClientRect();
+      var dinh = parseFloat(getComputedStyle(oXem).top) || 0;
+      var chay = r.height - (window.innerHeight - dinh);
+      var ti = chay > 0 ? Math.min(1, Math.max(0, (dinh - r.top) / chay)) : 0;
+      oXem.scrollTop = ti * (oXem.scrollHeight - oXem.clientHeight);
+    }
+    var henCuon = false;
+    addEventListener('scroll', function () {
+      if (henCuon || cheDo !== 'song') return;
+      henCuon = true;
+      requestAnimationFrame(function () { henCuon = false; dongBoCuon(); });
+    }, { passive: true });
 
     /* Bài xem thử là bài THẬT, nên nó có liên kết thật — bấm vào là rời trang
        quản trị giữa lúc đang viết. Chặn ở đây; muốn mở liên kết thì mở từ bài
@@ -3512,7 +3607,8 @@
       var a = e.target && e.target.closest ? e.target.closest('a') : null;
       if (a) e.preventDefault();
     });
-    oXem.addEventListener('dblclick', function () {
+    oXem.addEventListener('dblclick', function (e) {
+      if (e.target && e.target.closest && e.target.closest('button')) return;
       if (cheDo === 'xem') doiCheDo('viet');
     });
 
@@ -3521,6 +3617,22 @@
          không, gõ một chữ ở cuối bài là ô bên phải nhảy về đầu. */
       var cuon = o.scrollTop;
       o.innerHTML = '';
+      /* Thanh đầu cột: phóng to ⇄ song song, và dòng nhắc bấm đúp. Dính ở
+         đỉnh cột (xem `.sz-xem-dau`) nên cuộn xa vẫn bấm được. */
+      var dau = el('div', 'sz-xem-dau');
+      if (cheDo === 'xem') {
+        dau.appendChild(el('span', 'sz-xem-mach', L('previewBack', 'Double-click the post to go back to writing.')));
+      }
+      if (cheDo === 'song' || rong()) {
+        var nutTo = el('button', 'sz-xem-to', cheDo === 'song'
+          ? '⤢ ' + L('previewFull', 'Full width')
+          : '⤡ ' + L('previewSide', 'Side by side'));
+        nutTo.type = 'button';
+        nutTo.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        nutTo.addEventListener('click', function () { doiCheDo(cheDo === 'song' ? 'xem' : 'song'); });
+        dau.appendChild(nutTo);
+      }
+      if (dau.firstChild) o.appendChild(dau);
       veXemThu1(o);
       o.scrollTop = cuon;
     }
@@ -3532,7 +3644,7 @@
       }
       var kq;
       try {
-        kq = window.ZIB.md.render(md, { base: '' });
+        kq = window.ZIB.md.render(md, { base: '', khongSapo: coTomTat() });
       } catch (e) {
         o.appendChild(el('p', 'sz-xem-trong',
           L('previewFail', 'Could not build the preview') + ' — ' + e.message));
@@ -3547,9 +3659,6 @@
       /* Chỉ ở chế độ Preview: ở chế độ song song, cột bên phải là để nhìn
          BÀI trong lúc gõ, và thẻ chia sẻ đứng đầu thì đẩy bài xuống nửa màn. */
       var tin = (cheDo === 'xem' && typeof tuyChon.thongTin === 'function') ? tuyChon.thongTin() : null;
-      if (cheDo === 'xem') {
-        o.appendChild(el('p', 'sz-xem-mach', L('previewBack', 'Double-click the post to go back to writing.')));
-      }
       if (tin) {
         var the = el('div', 'sz-xem-the');
         if (tin.bia) {
@@ -3569,6 +3678,21 @@
       if (tin) o.appendChild(el('p', 'sz-xem-nhan', L('previewPost', 'The post')));
       var bai = el('div', 'prose sz-xem-bai');
       bai.innerHTML = kq.html;
+      /* ── ẢNH VỪA TẢI LÊN: XEM BẰNG BẢN TẠI CHỖ ──
+         Bài ghi đường thật `/media/…`, nhưng ở đó CHƯA có ảnh — Cloudflare
+         còn đang dựng, khoảng một phút. Xem thử theo đường ấy là một ô ảnh vỡ,
+         và dải ảnh thành một ô xám to (đúng cảnh người dùng chụp gửi). Khung
+         gõ vẫn giữ bản tại chỗ (`blob:`) của từng tấm, nên mượn lại nó. */
+      var taiCho = {};
+      var anhKhung = khung.querySelectorAll('img[data-that]');
+      for (var ai = 0; ai < anhKhung.length; ai++) {
+        taiCho[anhKhung[ai].getAttribute('data-that')] = anhKhung[ai].getAttribute('src');
+      }
+      var anhBai = bai.querySelectorAll('img');
+      for (var bi = 0; bi < anhBai.length; bi++) {
+        var thay = taiCho[anhBai[bi].getAttribute('src')];
+        if (thay) anhBai[bi].setAttribute('src', thay);
+      }
       o.appendChild(bai);
     }
 
@@ -3600,10 +3724,50 @@
         n.title = L('bLoaiDoi', 'Click to change: note → tip → warn → stop');
       });
       if (anhDangChon && !khung.contains(anhDangChon)) datThanhAnh(null);
+      danhDauSapo();
+      ganNutXoaKhoi();
+      veBang();
+      datThanhBang();
+      var kNay = kieuDangDung();
+      nutKieu.textContent = (kNay === 'p' ? L('kieuThuong', 'Normal') : kNay.toUpperCase()) + ' ▾';
+      [].forEach.call(bangKieu.children, function (o) {
+        o.classList.toggle('sz-khoi-nut--bat', o.classList.contains('sz-kieu--' + kNay));
+      });
       veCheDo();
       henGhi();
       luuNhap();
       if (khiDoi) { try { khiDoi(); } catch (e) {} }
+    }
+
+    /* ── ĐOẠN NÀO SẼ THÀNH SAPO ──
+       Đúng luật của bộ dựng (`laSapo` trong tools/lib/markdown.mjs): đoạn văn
+       ĐẦU TIÊN ở bậc ngoài cùng — dòng ảnh hay dòng video đứng riêng không
+       tính, vì bộ dựng đọc chúng thành <figure> chứ không thành đoạn. Đoạn
+       ấy mang lớp nào (`{.thuong}`, `{.giua}`…) thì không thành sapo, nhưng
+       vẫn là đoạn đầu — đoạn sau nó không thế chỗ. */
+    /* Bài có Summary thì bộ dựng KHÔNG làm sapo (`khongSapo: !!fm.summary` ở
+       tools/build.mjs) — ô xem thử và khung gõ phải theo đúng luật ấy, không
+       thì hai chỗ này hứa một đoạn nghiêng mà bài đăng lên không có. */
+    function coTomTat() {
+      var tin = (typeof tuyChon.thongTin === 'function') ? tuyChon.thongTin() : null;
+      return !!(tin && tin.tomTat);
+    }
+    function danhDauSapo() {
+      var moi = null;
+      for (var n = coTomTat() ? null : khung.firstElementChild; n; n = n.nextElementSibling) {
+        if (n.nodeName !== 'P') continue;
+        var t = n.textContent.trim();
+        if (!t || /^@[a-z]+\[/i.test(t)) continue;
+        if (!n.hasAttribute('data-lop')) moi = n;
+        break;
+      }
+      var cu = khung.querySelectorAll('p.sz-sapo');
+      for (var i = 0; i < cu.length; i++) {
+        if (cu[i] === moi) continue;
+        cu[i].classList.remove('sz-sapo');
+        if (!cu[i].classList.length) cu[i].removeAttribute('class');
+      }
+      if (moi && !moi.classList.contains('sz-sapo')) moi.classList.add('sz-sapo');
     }
 
     /* ══════════ THANH KHỔ ẢNH — BẤM VÀO ẢNH LÀ HIỆN RA ══════════
@@ -3772,6 +3936,34 @@
       return b;
     });
 
+    /* ── XOÁ TẤM ẢNH ──
+       Trong một vùng soạn thảo, bấm vào ảnh KHÔNG chọn được nó như chọn chữ,
+       nên xoá một tấm ảnh bằng phím là chuyện đoán mò (đặt con trỏ đúng sau
+       nó rồi Backspace). Nút này ở ngay trên thanh ảnh vừa hiện ra. Đoạn chỉ
+       còn lại khoảng trắng thì đi luôn cùng tấm ảnh. */
+    thanhAnh.appendChild(el('span', 'sz-anh-vach'));
+    var nutXoaAnh = el('button', 'sz-anh-nut sz-anh-nut--xoa', L('anhXoa', 'Remove'));
+    nutXoaAnh.type = 'button';
+    nutXoaAnh.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    nutXoaAnh.addEventListener('click', function () {
+      var a = anhDangChon;
+      if (!a) return;
+      ghiNgay();
+      var p = a.parentNode;
+      a.remove();
+      datThanhAnh(null);
+      if (p && p.nodeName === 'P' && !p.textContent.trim() && !p.querySelector('img')) {
+        var ke = p.nextElementSibling || p.previousElementSibling;
+        p.remove();
+        if (ke) datConTroVao(ke);
+      }
+      if (!khung.firstChild) baoDamKhoi();
+      capNhat();
+      nhacMoTa();
+      ghiNgay();
+    });
+    thanhAnh.appendChild(nutXoaAnh);
+
     var anhDangChon = null;
 
     function datThanhAnh(a) {
@@ -3817,6 +4009,250 @@
        kịp bấm. Toạ độ của thanh tính theo KHUNG SOẠN chứ không theo màn hình,
        nên cuộn trang không làm nó lệch; đổi cỡ cửa sổ thì đo lại. */
     addEventListener('resize', function () { if (anhDangChon) datThanhAnh(anhDangChon); }, { passive: true });
+
+    /* ══════════════════════════════════════════════════════════════════════
+       THANH BẢNG — HIỆN KHI CON TRỎ ĐỨNG TRONG MỘT Ô
+
+       Trước bản này, một bảng đã chèn chỉ sửa được CHỮ: thêm hàng thì chỉ có
+       Tab ở ô cuối, thêm cột hay bớt hàng thì không có đường nào ngoài xoá cả
+       bảng dựng lại. Căn lề cột không làm được, và tô màu một hàng hay một cột
+       thì cú pháp Markdown không có.
+
+       Nay đặt con trỏ vào ô nào là thanh này nổi lên ngay trên bảng:
+         + hàng · + cột · − hàng · − cột   (tính theo ô đang đứng)
+         căn cột trái · giữa · phải        (ghi vào dòng gạch ngăn `:---:`)
+         tô hàng · tô cột                  (ghi `{.to-hang-2 .to-cot-3}`)
+         xoá bảng
+
+       Đánh dấu nằm ngay trên phần tử của nó — tô HÀNG trên `<tr>`, tô CỘT và
+       căn lề trên ô tiêu đề `<th>` của cột — nên thêm bớt hàng cột thì dấu đi
+       theo đúng hàng cột ấy, không phải đánh số lại. */
+    var thanhBang = el('div', 'sz-anh-thanh sz-bang-thanh');
+    thanhBang.hidden = true;
+    var oNay = null;
+
+    function nutBang(nhan, tip, lam, lop) {
+      var b = el('button', 'sz-anh-nut' + (lop ? ' ' + lop : ''));
+      b.type = 'button';
+      b.title = tip;
+      b.setAttribute('aria-label', tip);
+      if (typeof nhan === 'string') b.textContent = nhan; else b.appendChild(nhan);
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      b.addEventListener('click', function () {
+        if (!oNay || !khung.contains(oNay)) return;
+        ghiNgay();
+        var den = lam(oNay);
+        veBang();
+        if (den && khung.contains(den)) datConTroVao(den);
+        capNhat();
+        ghiNgay();
+      });
+      thanhBang.appendChild(b);
+      return b;
+    }
+    function viTriO(o) {
+      var tr = o.parentNode, bang = o.closest('table');
+      var ci = [].indexOf.call(tr.children, o);
+      var dau = bang.querySelector('tr');
+      return { tr: tr, bang: bang, ci: ci, th: dau ? dau.children[ci] : null,
+               laDau: tr === dau };
+    }
+    function oMoi(the) {
+      var o = document.createElement(the);
+      o.appendChild(document.createElement('br'));
+      return o;
+    }
+    nutBang('+ ' + L('bangHang', 'Row'), L('bangHangThem', 'Add a row below'), function (o) {
+      var v = viTriO(o);
+      var tr = document.createElement('tr');
+      for (var i = 0; i < v.tr.children.length; i++) tr.appendChild(oMoi('td'));
+      var than = v.bang.querySelector('tbody') || v.bang.appendChild(document.createElement('tbody'));
+      if (v.laDau) than.insertBefore(tr, than.firstChild);
+      else v.tr.parentNode.insertBefore(tr, v.tr.nextSibling);
+      return tr.children[v.ci];
+    });
+    nutBang('+ ' + L('bangCot', 'Column'), L('bangCotThem', 'Add a column to the right'), function (o) {
+      var v = viTriO(o);
+      var hang = v.bang.querySelectorAll('tr');
+      var den = null;
+      for (var i = 0; i < hang.length; i++) {
+        var moi = oMoi(hang[i] === hang[0] ? 'th' : 'td');
+        var cu = hang[i].children[v.ci];
+        hang[i].insertBefore(moi, cu ? cu.nextSibling : null);
+        if (hang[i] === v.tr) den = moi;
+      }
+      return den;
+    });
+    nutBang('− ' + L('bangHang', 'Row'), L('bangHangBo', 'Delete this row'), function (o) {
+      var v = viTriO(o);
+      var than = v.bang.querySelectorAll('tbody tr');
+      if (v.laDau || than.length < 2) return o;
+      var ke = v.tr.nextElementSibling || v.tr.previousElementSibling;
+      v.tr.remove();
+      return ke ? ke.children[Math.min(v.ci, ke.children.length - 1)] : null;
+    });
+    nutBang('− ' + L('bangCot', 'Column'), L('bangCotBo', 'Delete this column'), function (o) {
+      var v = viTriO(o);
+      if (v.tr.children.length < 2) return o;
+      var hang = v.bang.querySelectorAll('tr');
+      for (var i = 0; i < hang.length; i++) {
+        var x = hang[i].children[v.ci];
+        if (x) x.remove();
+      }
+      return v.tr.children[Math.min(v.ci, v.tr.children.length - 1)];
+    });
+    thanhBang.appendChild(el('span', 'sz-anh-vach'));
+    var nutCanBang = {};
+    [['trai', L('canTrai', 'Left'),   ['M4 6h16', 'M4 12h10', 'M4 18h14']],
+     ['giua', L('canGiua', 'Centre'), ['M4 6h16', 'M7 12h10', 'M5 18h14']],
+     ['phai', L('canPhai', 'Right'),  ['M4 6h16', 'M10 12h10', 'M6 18h14']]
+    ].forEach(function (x) {
+      nutCanBang[x[0]] = nutBang(svg(x[2]), x[1] + ' — ' + L('bangCanMo', 'align this column'), function (o) {
+        var v = viTriO(o);
+        if (!v.th) return o;
+        if (x[0] === 'trai') v.th.removeAttribute('data-can');
+        else v.th.setAttribute('data-can', x[0]);
+        return o;
+      }, 'sz-anh-nut--can');
+    });
+    thanhBang.appendChild(el('span', 'sz-anh-vach'));
+    var nutToHang = nutBang(L('bangToHang', 'Shade row'), L('bangToHangMo', 'Tint this whole row'), function (o) {
+      var v = viTriO(o);
+      if (v.laDau) return o;
+      if (v.tr.hasAttribute('data-to')) v.tr.removeAttribute('data-to'); else v.tr.setAttribute('data-to', '1');
+      return o;
+    });
+    var nutToCot = nutBang(L('bangToCot', 'Shade column'), L('bangToCotMo', 'Tint this whole column'), function (o) {
+      var v = viTriO(o);
+      if (!v.th) return o;
+      if (v.th.hasAttribute('data-to')) v.th.removeAttribute('data-to'); else v.th.setAttribute('data-to', '1');
+      return o;
+    });
+    thanhBang.appendChild(el('span', 'sz-anh-vach'));
+    nutBang(L('bangXoa', 'Delete table'), L('bangXoa', 'Delete table'), function (o) {
+      var bang = o.closest('table');
+      var ke = bang.nextElementSibling || bang.previousElementSibling;
+      bang.remove();
+      if (!khung.firstChild) baoDamKhoi();
+      return ke || khung.firstElementChild;
+    }, 'sz-anh-nut--xoa');
+
+    /* Vẽ dấu tô và căn lề xuống TỪNG Ô để nhìn thấy trong khung gõ. Dấu thật
+       nằm ở `<tr>` / `<th>` — lớp trên ô chỉ để nhìn, `sangMD` không đọc. */
+    function veBang() {
+      var ds = khung.querySelectorAll('table.sz-bang-o');
+      for (var b = 0; b < ds.length; b++) {
+        var hang = ds[b].querySelectorAll('tr');
+        var dau = hang[0] ? hang[0].children : [];
+        /* Bề rộng cột theo số dấu gạch — đúng luật `<colgroup>` của bộ dựng:
+           chỉ khi các cột khai KHÁC nhau, còn đều nhau thì để trình duyệt tự
+           cân theo chữ. */
+        var gach = [].map.call(dau, function (th) { return Math.max(3, +th.getAttribute('data-gach') || 3); });
+        var tong = gach.reduce(function (x, y) { return x + y; }, 0);
+        var deu = gach.every(function (n) { return n === gach[0]; });
+        for (var w = 0; w < dau.length; w++) {
+          dau[w].style.width = deu ? '' : (gach[w] / tong * 100).toFixed(2) + '%';
+          if (!dau[w].getAttribute('style')) dau[w].removeAttribute('style');
+        }
+        for (var r = 0; r < hang.length; r++) {
+          var toHang = r > 0 && hang[r].hasAttribute('data-to');
+          for (var c = 0; c < hang[r].children.length; c++) {
+            var o = hang[r].children[c], th = dau[c];
+            var can = th ? th.getAttribute('data-can') : '';
+            o.classList.toggle('sz-o-to', !!(toHang || (th && th.hasAttribute('data-to'))));
+            o.classList.toggle('sz-o-giua', can === 'giua');
+            o.classList.toggle('sz-o-phai', can === 'phai');
+            if (!o.classList.length) o.removeAttribute('class');
+          }
+        }
+      }
+    }
+
+    function oDangDung() {
+      var s2 = window.getSelection();
+      if (!s2 || !s2.rangeCount) return null;
+      var n = s2.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var c = o && o.closest ? o.closest('td, th') : null;
+      return (c && khung.contains(c) && c.closest('table.sz-bang-o')) ? c : null;
+    }
+    function datThanhBang() {
+      var o = (cheDo === 'viet' || cheDo === 'song') ? oDangDung() : null;
+      oNay = o;
+      if (!o) { thanhBang.hidden = true; return; }
+      var v = viTriO(o);
+      var can = v.th ? (v.th.getAttribute('data-can') || 'trai') : 'trai';
+      for (var k in nutCanBang) nutCanBang[k].classList.toggle('sz-anh-nut--bat', k === can);
+      nutToHang.disabled = v.laDau;
+      nutToHang.classList.toggle('sz-anh-nut--bat', !v.laDau && v.tr.hasAttribute('data-to'));
+      nutToCot.classList.toggle('sz-anh-nut--bat', !!(v.th && v.th.hasAttribute('data-to')));
+      thanhBang.hidden = false;
+      var rB = v.bang.getBoundingClientRect(), rK = khoiSoan.getBoundingClientRect();
+      var trai = Math.max(0, Math.min(rB.left - rK.left, rK.width - thanhBang.offsetWidth));
+      thanhBang.style.left = Math.round(trai) + 'px';
+      thanhBang.style.top = Math.round(rB.top - rK.top - thanhBang.offsetHeight - 6) + 'px';
+    }
+
+    /* ══════════ XOÁ CẢ MỘT KHỐI ::: ══════════
+       Nhãn khối khoá không cho gõ, nên Backspace không xoá được khối: người
+       dùng xoá hết ảnh trong một dải ảnh rồi mà cái khung vẫn nằm lì đó. Hai
+       đường ra:
+         · nút × ở cuối nhãn — xoá cả khối, kể cả những gì còn bên trong;
+         · Backspace / Delete trong một khối đã RỖNG (không chữ, không ảnh).
+       Nút × gắn vào mọi nhãn mỗi lần `capNhat` chạy, nên khối mở từ bài cũ
+       hay bản nháp cũ cũng có. `sangMD` bỏ qua cả nhãn, nên nó không lọt ra
+       Markdown. */
+    function ganNutXoaKhoi() {
+      var ds = khung.querySelectorAll('.sz-khoi-nhan');
+      for (var i = 0; i < ds.length; i++) {
+        if (ds[i].querySelector(':scope > .sz-khoi-xoa')) continue;
+        var x = document.createElement('span');
+        x.className = 'sz-khoi-xoa';
+        x.contentEditable = 'false';
+        x.setAttribute('role', 'button');
+        x.title = L('bXoaKhoi', 'Remove this block');
+        x.textContent = '×';
+        ds[i].appendChild(x);
+      }
+    }
+    function xoaKhoi(kh) {
+      ghiNgay();
+      var ke = kh.nextElementSibling || kh.previousElementSibling;
+      var cha = kh.parentNode;
+      kh.remove();
+      if (!khung.firstChild) baoDamKhoi();
+      var dich = (ke && cha.contains(ke)) ? ke : (cha === khung ? khung.lastElementChild : cha);
+      if (dich) datConTroVao(dich);
+      capNhat();
+      ghiNgay();
+    }
+    khung.addEventListener('mousedown', function (e) {
+      var x = e.target && e.target.closest ? e.target.closest('.sz-khoi-xoa') : null;
+      if (!x || !khung.contains(x)) return;
+      e.preventDefault();
+      var kh = x.closest('.sz-khoi');
+      if (kh) xoaKhoi(kh);
+    });
+    function khoiRong(kh) {
+      for (var c = kh.firstElementChild; c; c = c.nextElementSibling) {
+        if (c.classList.contains('sz-khoi-nhan')) continue;
+        if (c.textContent.trim() || c.querySelector('img, hr, table, pre') ||
+            /^(IMG|HR|TABLE|PRE)$/.test(c.nodeName)) return false;
+      }
+      return true;
+    }
+    khung.addEventListener('keydown', function (e) {
+      if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+      var s = window.getSelection();
+      if (!s || !s.rangeCount || !s.isCollapsed) return;
+      var n = s.getRangeAt(0).startContainer;
+      var o = n.nodeType === 1 ? n : n.parentNode;
+      var kh = o && o.closest ? o.closest('.sz-khoi') : null;
+      if (!kh || !khung.contains(kh) || (o.closest('.sz-khoi-nhan'))) return;
+      if (!khoiRong(kh)) return;
+      e.preventDefault();
+      xoaKhoi(kh);
+    });
 
     /* ══════════ ĐỔI LOẠI KHUNG NHẤN NGAY TRÊN NHÃN ══════════
        Bốn khung nhấn chỉ khác nhau ở MÀU, và màu ấy nay hiện ngay trong khung
@@ -3889,6 +4325,13 @@
            `ghiNgay`. */
         if (p === 'z') { e.preventDefault(); if (e.shiftKey) lamLai(); else hoanTac(); return; }
         if (p === 'y') { e.preventDefault(); lamLai(); return; }
+      }
+      if (pt && e.altKey && /^Digit[0234]$/.test(e.code)) {
+        e.preventDefault();
+        ghiNgay();
+        datKieu(e.code === 'Digit0' ? 'p' : 'h' + e.code.slice(5));
+        ghiNgay();
+        return;
       }
       /* Enter trong một trích dẫn hoặc tiêu đề thì nên nhả về đoạn thường —
          không thì gõ tiếp là vẫn nằm trong khối cũ, và cả bài thành một khối
@@ -4117,9 +4560,11 @@
     khoiSoan.appendChild(bangNhan);
     khoiSoan.appendChild(bangNgon);
     khoiSoan.appendChild(bangMau);
+    khoiSoan.appendChild(bangKieu);
     khoiSoan.appendChild(oBao);
     khoiSoan.appendChild(oFile);
     khoiSoan.appendChild(thanhAnh);
+    khoiSoan.appendChild(thanhBang);
     /* Khung gõ, bài xem thử và Markdown chung MỘT chỗ đứng — xem `doiCheDo`.
        Ở chế độ song song chỗ ấy chia hai cột. */
     var than = el('div', 'sz-than');
@@ -4132,7 +4577,13 @@
     /* Song song chỉ có nghĩa khi mỗi nửa còn đủ một cột chữ đọc được. Đo
        chính khối soạn chứ không đo cửa sổ: cùng một màn hình, ngăn Post có
        menu bên trái còn hẹp hơn cả cửa sổ. */
-    function doRong() { khoiSoan.classList.toggle('sz--rong', khoiSoan.clientWidth >= 880); }
+    function doRong() {
+      var truoc = rong();
+      khoiSoan.classList.toggle('sz--rong', khoiSoan.clientWidth >= 880);
+      /* Hẹp lại giữa chừng thì song song không còn chỗ — về xem cả khung. */
+      if (cheDo === 'song' && !rong()) doiCheDo('xem', true);
+      else if (truoc !== rong() && cheDo === 'xem') veCheDo(true);
+    }
     if (window.ResizeObserver) new ResizeObserver(doRong).observe(khoiSoan);
     doRong();
     coBoDung();
@@ -4141,7 +4592,7 @@
     /* Bấm ra ngoài thì đóng bảng đang mở. Nghe trên `document` chứ không trên
        khối: bấm vào ô Tiêu đề phía trên cũng phải đóng nó. */
     document.addEventListener('mousedown', function (e) {
-      if (!khoiSoan.contains(e.target)) { dongBang(); datThanhAnh(null); }
+      if (!khoiSoan.contains(e.target)) { dongBang(); datThanhAnh(null); thanhBang.hidden = true; }
     });
 
     try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
@@ -4160,7 +4611,10 @@
       datHTML : function (h) { khung.innerHTML = h || ''; donAnh(); baoDamKhoi(); donDanhSach(); capNhat(); batDauLS(); },
       xoa     : function () { khung.innerHTML = ''; boNhap(); baoDamKhoi(); capNhat(); batDauLS(); },
       boNhap  : boNhap,
-      tapTrung: function () { khung.focus(); }
+      tapTrung: function () { khung.focus(); },
+      /* Trang chủ quản gọi khi thứ NGOÀI khung đổi mà khung phải vẽ theo —
+         hôm nay là ô Summary (xem `danhDauSapo`). */
+      lamMoi  : function () { danhDauSapo(); veCheDo(); }
     };
   }
 

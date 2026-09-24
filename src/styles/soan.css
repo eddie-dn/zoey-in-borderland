@@ -76,6 +76,21 @@
 .sz-nut--h{font-family:var(--font-label);font-size:11px;
   font-weight:600;letter-spacing:.04em}
 .sz-nut--md{font-family:var(--font-mono);font-size:11px;letter-spacing:-.02em}
+/* Nút kiểu đoạn chở CHỮ (Normal · H2 · H3 · H4), nên rộng theo chữ, không
+   ép vào ô 28px. Bề rộng tối thiểu giữ nó không nhảy qua lại khi đổi từ
+   "Normal" sang "H2". */
+.sz-nut--kieu{
+  width:auto;min-width:5.4em;padding:0 8px;justify-content:space-between;gap:4px;
+  font-family:var(--font-label);font-size:11px;font-weight:600;letter-spacing:.04em;
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+/* Mỗi dòng trong bảng kiểu đoạn vẽ đúng cỡ của kiểu ấy — chọn bằng mắt. */
+.sz-bang--kieu{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.sz-bang--kieu .sz-kieu--h2 .sz-khoi-ten{font-family:var(--font-display);font-size:1.35em;text-transform:none;letter-spacing:0}
+.sz-bang--kieu .sz-kieu--h3 .sz-khoi-ten{font-family:var(--font-display);font-size:1.15em;text-transform:none;letter-spacing:0}
+.sz-bang--kieu .sz-kieu--h4 .sz-khoi-ten{font-size:1em;text-transform:none;letter-spacing:0}
+.sz-bang--kieu .sz-kieu--p .sz-khoi-ten{font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:0}
+.sz-khoi-nut--bat{background:var(--accent-wash)}
 /* ── NHÓM NÚT ──
    Mỗi nhóm là MỘT ô của hàng flex, nên nó xuống hàng nguyên cụm chứ không bị
    xé đôi. Vạch ngăn nay là viền trái của nhóm, không còn là một thẻ riêng —
@@ -106,16 +121,52 @@
    prose.css vào đây rồi giữ hai bản cho khớp mãi mãi. */
 .sz-khung{
   min-height:20rem;max-height:none;
-  padding:var(--s5) var(--s5) var(--s7);
-  font-family:var(--font-body);font-size:var(--fs-sm);
+  /* ── CÙNG CỘT CHỮ VỚI BÀI THẬT ──
+     Bản trước để chữ nhỏ hơn một nấc (`--fs-sm`) và chạy hết bề ngang khung,
+     nên một dòng trong khung soạn dài gần gấp rưỡi một dòng trên trang: gõ
+     xong bấm Preview thì chỗ xuống dòng khác hẳn, và người viết thấy hai
+     bản "không đồng bộ". Nay cùng cỡ chữ `--fs-base`, cùng nét `--w-doc`,
+     và lề hai bên co lại vừa đúng làn `--measure` của `.prose` — `ch` tính
+     theo cỡ chữ của chính khung, mà cỡ ấy nay bằng cỡ của bài. Khung hẹp
+     hơn làn chữ (điện thoại, chế độ Split) thì lề về `--s5`. */
+  padding-block:var(--s5) var(--s7);
+  padding-inline:max(var(--s5), calc((100% - var(--measure)) / 2));
+  font-family:var(--font-body);font-size:var(--fs-base);font-weight:var(--w-doc);
   line-height:var(--lh-body);color:var(--text);
   outline:none;overflow-wrap:break-word;
 }
+/* Căn đều hai bên như `.prose p`. `:where` giữ độ đặc hiệu ở mức một lớp để
+   mấy lớp căn dòng `.sz-doan--*` khai phía sau vẫn đè được. */
+.sz-khung :where(p){text-align:justify;text-justify:inter-word;hyphens:none}
+/* ── ĐOẠN MỞ ĐẦU (SAPO) ──
+   Bộ dựng biến đoạn văn ĐẦU TIÊN của bài thành sapo: nghiêng, nhạt, có vạch
+   trái. Trong khung soạn nó từng là một đoạn thường — nên bấm Preview thấy
+   một đoạn khác hẳn. soan.js đánh dấu đúng đoạn bộ dựng sẽ chọn
+   (`danhDauSapo`), ở đây vẽ nó y như `.prose .lead`. */
+.sz-khung p.sz-sapo{
+  font-style:italic;color:var(--text-muted);text-align:left;
+  padding-left:var(--s4);border-left:2px solid var(--line);
+}
+.sz-khung p.sz-sapo strong{color:var(--text)}
+.sz-khung p.sz-sapo::after{
+  content:"sapo — đoạn mở đầu · tắt bằng nút “Not a lead-in”";
+  display:block;margin-top:2px;font-style:normal;
+  font-family:var(--font-label);font-size:var(--fs-3xs);letter-spacing:.04em;
+  color:var(--text-faint);
+}
+/* Dấu đầu dòng như trang thật: ✦ ở bậc ngoài, · ở bậc trong. Trừ mục việc
+   (ô vuông của nó đã là dấu) và mục vỏ. */
+.sz-khung ul > li:not([data-viec]):not(.sz-li-vo)::marker{
+  content:"✦  ";font-size:.85em;color:var(--accent-ink);
+}
+.sz-khung :is(ul,ol) ul > li:not([data-viec]):not(.sz-li-vo)::marker{content:"·  "}
+.sz-khung ol > li::marker{color:var(--accent-ink)}
 .sz-khung:focus-visible{outline:none}
 .sz:focus-within{border-color:var(--accent)}
 .sz-khung > * + *{margin-top:.85em}
 .sz-khung h2{font-family:var(--font-display);font-size:1.5em;font-weight:600;margin-top:1.3em}
 .sz-khung h3{font-family:var(--font-display);font-size:1.25em;font-weight:600;margin-top:1.2em}
+.sz-khung h4{font-size:1.05em;font-weight:600;margin-top:1.1em}
 .sz-khung blockquote{
   margin-inline:0;padding-left:var(--s4);
   border-left:2px solid var(--accent);
@@ -261,6 +312,7 @@
 }
 /* Tắt ở nấc Thường và Tràn: ảnh rộng bằng cột chữ thì không còn chỗ mà dạt. */
 .sz-anh-nut--can:disabled{opacity:.3;cursor:default}
+.sz-anh-nut--xoa:hover{color:var(--bad)}
 .sz-anh-nut--can:disabled:hover{color:var(--text-muted);background:none}
 .sz-anh-vach{
   flex:none;width:1px;margin-inline:3px;align-self:stretch;
@@ -268,30 +320,44 @@
 }
 
 /* ══════════ BẢNG TRONG Ô SOẠN ══════════
-   Một `<table>` thật, gõ thẳng vào ô. Vẽ gần giống bảng trên trang đã dựng —
-   hàng tiêu đề có nền, hàng chẵn nhạt hơn — vì ô soạn phải bày ra đúng thứ
-   trang sẽ hiện. Khác một điểm: ở đây MỌI ô đều có đường kẻ bao quanh, kể cả
-   đường dọc. Trên trang đã dựng thì không, nhưng lúc đang gõ thì phải nhìn ra
-   ranh giới ô mới biết mình đang đứng ở ô nào. */
+   Một `<table>` thật, gõ thẳng vào ô. Vẽ GIỐNG bảng trên trang đã dựng (xem
+   "BẢNG" trong prose.css): viền ngoài bo tròn, hàng tiêu đề chữ in hoa nhỏ
+   trên nền nhạt, đường ngang giữa các hàng, hàng chẵn nhạt hơn. Bản trước kẻ
+   lưới xám đủ bốn phía nên bấm Preview ra một bảng khác hẳn.
+
+   Chỉ thêm MỘT thứ trang thật không có: vạch dọc đứt nét rất mờ giữa các
+   cột — lúc đang gõ phải nhìn ra ranh giới ô mới biết mình đang ở ô nào. */
 .sz-khung table.sz-bang-o{
-  border-collapse:collapse;width:100%;margin:1em 0;
+  border-collapse:separate;border-spacing:0;width:100%;margin:1em 0;
+  border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;
   font-size:var(--fs-sm);line-height:1.6;
 }
 .sz-khung .sz-bang-o :is(th,td){
-  border:1px solid var(--line);
-  padding:8px var(--s3);text-align:left;vertical-align:top;
-  min-width:3em;
+  padding:10px var(--s4);text-align:left;vertical-align:top;min-width:3em;
+  border-bottom:1px solid var(--line);
+  border-right:1px dashed color-mix(in srgb, var(--line) 70%, transparent);
 }
+.sz-khung .sz-bang-o tr > :last-child{border-right:0}
+.sz-khung .sz-bang-o tbody tr:last-child > *{border-bottom:0}
 .sz-khung .sz-bang-o th{
   background:var(--accent-wash);
   font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
   letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);
 }
 .sz-khung .sz-bang-o tbody tr:nth-child(even){background:var(--surface-sunken)}
+/* Căn lề cột và tô màu — lớp do `veBang()` vẽ xuống từng ô. Cùng màu với
+   `.prose .to` để hai bên trông như nhau. */
+.sz-khung .sz-bang-o .sz-o-giua{text-align:center}
+.sz-khung .sz-bang-o .sz-o-phai{text-align:right}
+.sz-khung .sz-bang-o td.sz-o-to{background:color-mix(in srgb, var(--accent) 13%, transparent)}
+.sz-khung .sz-bang-o th.sz-o-to{background:color-mix(in srgb, var(--accent) 26%, transparent);color:var(--text)}
 /* Ô đang gõ sáng lên: trong một lưới ô trống giống hệt nhau, con trỏ nhấp nháy
    một mình không đủ để nói mình đang ở đâu. */
 .sz-khung .sz-bang-o :is(th,td):focus{outline:none}
 .sz-khung .sz-bang-o :is(th,td):focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+/* Thanh bảng mượn dáng thanh ảnh, nhưng neo theo MÉP TRÁI bảng chứ không
+   theo tâm — nên bỏ phép dịch nửa bề ngang. */
+.sz-bang-thanh{transform:none;justify-content:flex-start}
 
 /* ══════════ KHUNG ĐẶT CỠ BẢNG ══════════
    Dùng chung khuôn `.sz-cat` (khung cắt ảnh) cho phần nền và cách canh giữa. */
@@ -431,6 +497,18 @@
 .sz-khung .sz-khoi-loai:hover{text-decoration:underline;text-underline-offset:2px;opacity:1}
 /* Vạch phân cách giữa loại và tiêu đề — cùng dấu `·` mà nhãn cũ vẫn dùng. */
 .sz-khung .sz-khoi-loai::after{content:" ·";opacity:.5}
+/* ── NÚT XOÁ CẢ KHỐI ──
+   Nhãn khối khoá (`contenteditable=false`) để tên loại không bị gõ đè — mà
+   chính cái khoá ấy làm Backspace không xoá được khối: xoá hết ảnh trong dải
+   ảnh rồi, cái khung vẫn nằm đó. Nút × ở cuối nhãn là đường ra rõ ràng. */
+.sz-khung .sz-khoi-xoa{
+  flex:none;margin-left:auto;cursor:pointer;user-select:none;
+  width:20px;height:20px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);font-size:15px;font-weight:400;line-height:1;
+  letter-spacing:0;color:var(--text-faint);
+}
+.sz-khung .sz-khoi-xoa:hover{color:var(--bad);background:var(--surface-sunken)}
 .sz-khung .sz-khoi-de{
   flex:1 1 auto;min-width:0;
   outline:none;cursor:text;
@@ -680,8 +758,6 @@
 .sz-che-nut:hover{color:var(--text)}
 .sz-che-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .sz-che-nut--bat,.sz-che-nut--bat:hover{color:var(--accent-ink);background:var(--accent-wash)}
-/* Song song chỉ bày ra khi khối soạn đủ rộng — xem `doRong` trong soan.js. */
-.sz:not(.sz--rong) .sz-che-nut--song{display:none}
 /* Ở hai chế độ chỉ-xem, nút định dạng không có chỗ nào để đổi — mờ đi và
    không nhận cú bấm, thay vì bấm mà không thấy gì xảy ra. */
 :is(.sz--xem,.sz--md) .sz-hang .sz-nhom{opacity:.35;pointer-events:none}
@@ -694,10 +770,24 @@
   padding:var(--s5);min-height:20rem;
   background:var(--surface);
 }
-.sz-xem-mach{
-  margin:0 0 var(--s4);
-  font-size:var(--fs-3xs);color:var(--text-faint);
+/* Thanh đầu cột xem: dòng nhắc bên trái, nút phóng to ⇄ song song bên phải.
+   Dính ở đỉnh cột để cuộn xa vẫn bấm được. */
+.sz-xem-dau{
+  position:sticky;top:calc(var(--s5) * -1);z-index:2;
+  display:flex;align-items:center;gap:var(--s3);
+  margin:calc(var(--s5) * -1) calc(var(--s5) * -1) var(--s4);
+  padding:var(--s2) var(--s5);
+  background:var(--surface);border-bottom:1px solid var(--line);
 }
+.sz-xem-mach{margin:0;font-size:var(--fs-3xs);color:var(--text-faint)}
+.sz-xem-to{
+  appearance:none;border:0;background:none;cursor:pointer;margin-left:auto;
+  padding:4px 8px;border-radius:var(--r-xs);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);
+}
+.sz-xem-to:hover{color:var(--accent-ink);background:var(--accent-wash)}
+.sz-xem-to:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 /* SONG SONG: hai cột, bài xem thử dính theo khi cuộn — gõ ở cuối một bài dài
    thì cột phải vẫn ở trong tầm mắt, và nó tự cuộn riêng. */
 .sz--song.sz--rong .sz-than{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -706,7 +796,6 @@
   max-height:calc(100dvh - var(--header-h) - 100px);overflow:auto;
   border-left:1px solid var(--line);
 }
-.sz--song:not(.sz--rong) .sz-xem{border-top:1px dashed var(--line-strong)}
 /* Cột xem thử ở chế độ song song chỉ rộng nửa khung: bỏ khung lưới của bài
    (lề hai bên dành cho ảnh tràn), cho chữ chiếm trọn cột. */
 .sz--song .sz-xem-bai.prose{display:block}

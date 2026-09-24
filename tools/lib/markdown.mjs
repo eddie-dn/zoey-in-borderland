@@ -416,7 +416,9 @@ function docKhoi(dong, ctx, sau) {
     if (RE_TABLE.test(d) && i + 1 < dong.length && RE_ALIGN.test(dong[i + 1])) {
       const hang = [];
       while (i < dong.length && RE_TABLE.test(dong[i])) { hang.push(dong[i]); i++; }
-      ra.push(bang(hang, ctx));
+      let lopTo = '';
+      if (i < dong.length && RE_TO_BANG.test(dong[i])) { lopTo = dong[i]; i++; }
+      ra.push(bang(hang, ctx, lopTo));
       continue;
     }
 
@@ -484,13 +486,24 @@ function boc(loai, nhan, than, ctx, sau) {
   return docKhoi(than, ctx, sau);
 }
 
-function bang(hang, ctx) {
+/* ── TÔ MÀU HÀNG / CỘT ──
+   Dòng `{.to-hang-2 .to-cot-3}` đứng NGAY dưới bảng tô nền hàng thân thứ 2 và
+   cột thứ 3. Vẫn là một dòng đọc được bằng mắt trong file .md — cùng họ với
+   `{.wide}` ở đuôi ảnh — và bảng không có dòng ấy thì y như cũ. Ô soạn thảo
+   ghi dòng này qua nút "Shade row / column" trên thanh bảng. */
+const RE_TO_BANG = /^\s*\{((?:\s*\.to-(?:hang|cot)-\d+)+)\s*\}\s*$/;
+
+function bang(hang, ctx, lopTo) {
+  const to = new Set();
+  for (const m of String(lopTo || '').matchAll(/\.to-(hang|cot)-(\d+)/g)) to.add(m[1] + m[2]);
+  const oTo = (r, j) => (to.has('cot' + (j + 1)) || (r > 0 && to.has('hang' + r)));
   const oCua = (d) => d.trim().replace(/^\||\|$/g, '').split('|').map((x) => x.trim());
   const dau = oCua(hang[0]);
   const canh = oCua(hang[1]).map((s) =>
     s.startsWith(':') && s.endsWith(':') ? 'center' : s.endsWith(':') ? 'right' : '');
   const than = hang.slice(2).map(oCua);
   const st = (j) => (canh[j] ? ' style="text-align:' + canh[j] + '"' : '');
+  const lp = (r, j) => (oTo(r, j) ? ' class="to"' : '');
 
   /* ── BỀ RỘNG CỘT ĐỌC TỪ SỐ DẤU GẠCH ──
      `|---|----------|` thì cột hai rộng gấp hơn ba lần cột một. Không phải
@@ -511,10 +524,10 @@ function bang(hang, ctx) {
 
   ctx.tho.push(tran(hang.join(' ')));
   return '<div class="table-wrap"><table>' + cot + '<thead><tr>' +
-    dau.map((c, j) => '<th' + st(j) + '>' + inline(c, ctx) + '</th>').join('') +
+    dau.map((c, j) => '<th' + lp(0, j) + st(j) + '>' + inline(c, ctx) + '</th>').join('') +
     '</tr></thead><tbody>' +
-    than.map((r) => '<tr>' +
-      r.map((c, j) => '<td' + st(j) + '>' + inline(c, ctx) + '</td>').join('') +
+    than.map((r, ri) => '<tr>' +
+      r.map((c, j) => '<td' + lp(ri + 1, j) + st(j) + '>' + inline(c, ctx) + '</td>').join('') +
       '</tr>').join('') +
     '</tbody></table></div>';
 }

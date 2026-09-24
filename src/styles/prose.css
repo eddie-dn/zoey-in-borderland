@@ -547,6 +547,13 @@
    "hàng này khác hàng kia". */
 .prose tbody tr:nth-child(even){background:var(--surface-sunken)}
 .prose tbody tr:last-child :is(th,td){border-bottom:none}
+/* ── HÀNG / CỘT ĐƯỢC TÔ ──
+   Dòng `{.to-hang-2 .to-cot-3}` ngay dưới bảng (xem `bang()` trong
+   tools/lib/markdown.mjs) gắn `.to` lên từng ô. Tô trên Ô chứ không trên
+   hàng, nên nó nằm đè lên nền hàng xen kẽ và giao của hàng với cột không
+   đậm gấp đôi. Pha từ `--accent` nên đổi theme là màu tô đổi theo. */
+.prose td.to{background:color-mix(in srgb, var(--accent) 13%, transparent)}
+.prose th.to{background:color-mix(in srgb, var(--accent) 26%, transparent);color:var(--text)}
 
 /* ── LINH TINH ── */
 .prose hr{
