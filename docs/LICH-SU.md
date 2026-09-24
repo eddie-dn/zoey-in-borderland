@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.0 | 2026-09-24 | 00 | mục Learning đứng trước Archive |
 | V3.0.9 | 2026-09-24 | 09 | tab Learning trên thanh đầu trang · chốt luồng khu học tập |
 | V3.0.8 | 2026-09-21 | 08 | dải sang trang dùng kính · tấm bình luận cao tối đa 2/3 màn |
 | V3.0.7 | 2026-09-21 | 07 | ô About rộng hơn · cột ảnh + số bên trái · ô mời cà phê |
@@ -259,6 +260,13 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.0 — 24-Sep-2026
+
+- **Mục `Learning` chuyển lên đứng trước `Archive`.** Thanh đầu trang nay đọc
+  là `Posts · Notes · Learning · Archive · About` — ba mục đầu là chỗ ĐANG
+  sống, hai mục sau là chỗ tra lại. Archive và About vốn là hai mục ít bấm
+  nhất, để chúng chắn trước một mục mới thì mục ấy chìm ngay từ ngày đầu.
 
 ## V3.0.9 — 24-Sep-2026
 
