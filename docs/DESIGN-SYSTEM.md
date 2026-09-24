@@ -2959,22 +2959,30 @@ không phải một chuỗi `3x4` gõ vào `window.prompt`. Trần **5 × 20**: 
 chuyện bề ngang thật (cột chữ rộng chừng 66 ký tự, chia sáu cột là mỗi cột mười
 ký tự), trần hàng chỉ để chặn gõ nhầm.
 
-### 22.5 · Ảnh: năm NẤC khổ, và không có tay kéo
+### 22.5 · Ảnh: bảy NẤC khổ, và không có tay kéo
 
-Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay dưới nó với năm
+Bấm vào một tấm ảnh trong ô soạn thì `.sz-anh-thanh` hiện ngay dưới nó với bảy
 nút, khổ đang dùng sáng lên. Cùng nếp với ô soạn thư (Gmail: *Small · Best fit
-· Original*): chọn nấc, không kéo góc.
+· Original*): chọn nấc, không kéo góc. Cuộn trang thì thanh đi theo tấm ảnh,
+không biến mất.
 
-| nút | ghi ra file | nghĩa | khổ hẹp |
+| nút | ghi ra file | nghĩa | khổ hẹp (≤ 640px) |
 |---|---|---|---|
-| Cỡ gốc | `{.goc}` | đúng khổ thật, **không bao giờ phóng to** | như nhau |
-| Nhỏ | `{.rat-hep}` | 31% cột chữ — đúng một NỬA nấc hẹp | 52% |
-| Hẹp | `{.hep}` | 62% cột chữ, căn giữa | 86% |
-| Thường | *(không có)* | bằng cột chữ | như nhau |
-| Tràn | `{.full}` | tràn hết bề ngang màn hình | như nhau |
+| Original | `{.goc}` | đúng khổ thật, **không bao giờ phóng to** | như nhau |
+| 25% | `{.w25}` | một phần tư cột chữ | 45% |
+| 33% | `{.w33}` | một phần ba cột chữ | 55% |
+| 50% | `{.w50}` | nửa cột chữ | 70% |
+| 75% | `{.w75}` | ba phần tư cột chữ | 88% |
+| 100% | *(không có)* | bằng cột chữ | như nhau |
+| Full | `{.full}` | tràn hết bề ngang màn hình | như nhau |
+
+Nấc gọi bằng chính con số vì hai nấc trước — *Nhỏ* `{.rat-hep}` 31% và *Hẹp*
+`{.hep}` 62% — không trả lời được câu người viết thật sự hỏi ("cho nó bằng một
+nửa"), và không có gì nhỏ hơn 31%. Hai lớp cũ vẫn chạy ở bộ dựng lẫn ô soạn
+cho bài cũ, chỉ thôi bày nút.
 
 **Và ảnh hẹp hơn cột chữ thì CĂN DÒNG được.** Ba nút icon ở nửa sau thanh nổi:
-trái · giữa · phải, ghi ra `{.hep .trai}` — cùng tên lớp với căn dòng của đoạn
+trái · giữa · phải, ghi ra `{.w50 .trai}` — cùng tên lớp với căn dòng của đoạn
 văn, vì cùng một ý thì cùng một tên, và bộ dựng đã đọc được chúng sẵn.
 
 Ba nút ấy **tắt** ở nấc *Thường* và *Tràn*: một tấm rộng bằng đúng cột chữ hay

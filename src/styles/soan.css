@@ -157,17 +157,27 @@
 .sz-khung img.sz-anh--goc{width:auto;max-width:100%;margin-inline:auto;display:block}
 .sz-khung img.sz-anh--rat-hep{width:31%;margin-inline:auto;display:block}
 .sz-khung img.sz-anh--hep{width:62%;margin-inline:auto;display:block}
+.sz-khung img:is(.sz-anh--w25,.sz-anh--w33,.sz-anh--w50,.sz-anh--w75){margin-inline:auto;display:block}
+.sz-khung img.sz-anh--w25{width:25%}
+.sz-khung img.sz-anh--w33{width:33.333%}
+.sz-khung img.sz-anh--w50{width:50%}
+.sz-khung img.sz-anh--w75{width:75%}
 /* Căn dòng: đứng SAU ba dòng trên để ghi đè `margin-inline:auto` của chúng. */
 .sz-khung img.sz-anh--trai{margin-inline:0 auto}
 .sz-khung img.sz-anh--phai{margin-inline:auto 0}
 .sz-khung p:has(> img.sz-anh--goc)::after{content:"cỡ gốc — không phóng to"}
 .sz-khung p:has(> img.sz-anh--rat-hep)::after{content:"nhỏ — một phần ba cột chữ"}
 .sz-khung p:has(> img.sz-anh--hep)::after{content:"hẹp — hai phần ba cột chữ"}
+.sz-khung p:has(> img.sz-anh--w25)::after{content:"25% cột chữ"}
+.sz-khung p:has(> img.sz-anh--w33)::after{content:"33% cột chữ"}
+.sz-khung p:has(> img.sz-anh--w50)::after{content:"50% cột chữ"}
+.sz-khung p:has(> img.sz-anh--w75)::after{content:"75% cột chữ"}
 .sz-khung p:has(> img.sz-anh--wide)::after{content:"wide — rộng hơn cột chữ"}
 .sz-khung p:has(> img.sz-anh--full)::after{content:"full — tràn hết bề ngang"}
 .sz-khung p:has(> img.sz-anh--goc)::after,
 .sz-khung p:has(> img.sz-anh--rat-hep)::after,
 .sz-khung p:has(> img.sz-anh--hep)::after,
+.sz-khung p:has(> img:is(.sz-anh--w25,.sz-anh--w33,.sz-anh--w50,.sz-anh--w75))::after,
 .sz-khung p:has(> img.sz-anh--wide)::after,
 .sz-khung p:has(> img.sz-anh--full)::after{
   display:block;margin-top:4px;
@@ -216,6 +226,11 @@
 .sz{position:relative}
 .sz-anh-thanh{
   position:absolute;z-index:6;transform:translateX(-50%);
+  /* `max-content`: bề rộng là của NỘI DUNG, không phải của khoảng trống còn
+     lại bên phải chỗ neo. Thiếu nó thì lúc đo (để kẹp thanh vào trong khung)
+     thanh đang đứng sát mép và bị co lại, số đo sai, và bảy nấc khổ cộng ba
+     nút căn tràn ra ngoài mép phải khung. */
+  width:max-content;max-width:100%;flex-wrap:wrap;justify-content:center;
   display:flex;gap:2px;padding:3px;
   border-radius:var(--r-pill);
   background:var(--surface-solid);
@@ -441,14 +456,26 @@
    một <input> — input trong contenteditable thì bấm vào là con trỏ nhảy vào
    trong nó, và nó cũng không đi ra Markdown được. */
 .sz-khung li[data-viec]{list-style:none;position:relative}
+/* Ô vuông nằm ở LỀ TRÁI, ngoài hộp chữ của mục — bấm trúng lề ấy là đánh dấu
+   (xem trình nghe `mousedown` cạnh `lamDanhSach` trong soan.js), bấm vào chữ
+   vẫn là đặt con trỏ. Nên nó phải trông bấm được: con trỏ tay, viền đậm lên
+   khi rê vào, và có dấu tích thật khi xong chứ không chỉ một ô tô màu. */
 .sz-khung li[data-viec]::before{
-  content:"";position:absolute;left:-1.4em;top:.32em;
-  width:12px;height:12px;border-radius:3px;
+  content:"";position:absolute;left:-1.45em;top:.3em;
+  width:14px;height:14px;border-radius:4px;cursor:pointer;
   box-shadow:inset 0 0 0 1.5px var(--line-strong);
 }
+.sz-khung li[data-viec]:hover::before{box-shadow:inset 0 0 0 1.5px var(--accent)}
 .sz-khung li[data-viec="1"]::before{
-  background:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);
+  box-shadow:none;
+  background:var(--accent) var(--tick-trang) center/10px no-repeat;
 }
+.sz-khung li[data-viec="1"]{color:var(--text-muted)}
+/* Mục vỏ: chỉ bọc một danh sách con, không có chữ của riêng nó (thụt vào ở
+   mục đầu dựng ra thế) — không vẽ dấu chấm cho nó. */
+.sz-khung li.sz-li-vo{list-style:none}
+.sz-khung li.sz-li-vo::before{content:none}
+.sz{--tick-trang:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.5 8.5l3.6 3.6 7.4-9' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .sz-mau{
   appearance:none;border:1px solid transparent;background:none;cursor:pointer;
   display:inline-flex;align-items:center;gap:6px;
@@ -470,13 +497,12 @@
    Chỉ ĐỌC, không sửa. Sửa được thì phải có bộ đọc Markdown ngược về DOM, tức
    là một bộ dựng thứ ba phải giữ cho khớp — lý do đầy đủ ở đầu src/js/soan.js. */
 .sz-md{
-  margin:0;padding:var(--s4) var(--s5);
-  border-top:1px dashed var(--line-strong);
+  margin:0;padding:var(--s5);
+  min-height:20rem;
   background:var(--surface-sunken);
-  font-family:var(--font-mono);font-size:var(--fs-3xs);line-height:1.65;
+  font-family:var(--font-mono);font-size:var(--fs-2xs);line-height:1.65;
   color:var(--text-muted);
   white-space:pre-wrap;overflow-wrap:break-word;
-  max-height:18rem;overflow:auto;
 }
 
 @media (max-width:640px){
@@ -634,25 +660,57 @@
    §18 trong docs/DESIGN-SYSTEM.md). Để nó co theo ô soạn thì chỗ chữ ngắt
    dòng khác bài thật, mà một trong những lý do có ô xem thử là để nhìn đúng
    chỗ ngắt dòng ấy. */
-/* ── NÚT "XEM THỬ" LÀ NÚT CHỮ GIỮA MỘT HÀNG NÚT HÌNH ──
-   Mọi nút khác trên thanh rộng đúng 28px và chở một hình. Nút này chở CHỮ, nên
-   để nguyên 28px là chữ tràn ra ngoài và đè lên nút kế bên — đo được trên màn:
-   "Preview" dính liền vào "</>".
-
-   Cho nó tự rộng theo chữ, thêm lề trong hai bên và một quãng cách với nút
-   sau. Vẫn cùng chiều cao 28px nên hàng nút không gãy nhịp. */
-.sz-nut--xem{
-  width:auto;padding:0 9px;margin-right:var(--s2);
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.08em;text-transform:uppercase;
+/* ── CÔNG TẮC CHẾ ĐỘ: Write · Split · Preview · </> ──
+   Một khối nút liền nhau như một công tắc nhiều nấc — nhìn là biết chỉ một
+   nấc được bật một lúc, khác hẳn mấy nút định dạng bật/tắt từng cái. Lý do
+   đầy đủ ở `doiCheDo` trong soan.js. */
+.sz-che{
+  display:inline-flex;align-items:center;gap:1px;padding:2px;
+  border-radius:var(--r-sm);background:var(--surface);
+  box-shadow:inset 0 0 0 1px var(--line);
 }
+.sz-che-nut{
+  appearance:none;border:0;background:none;cursor:pointer;
+  height:24px;padding:0 9px;border-radius:calc(var(--r-sm) - 2px);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;line-height:1;color:var(--text-muted);
+  transition:color var(--dur-fast),background var(--dur-fast);
+}
+.sz-che-nut--md{font-family:var(--font-mono);text-transform:none;letter-spacing:-.02em}
+.sz-che-nut:hover{color:var(--text)}
+.sz-che-nut:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sz-che-nut--bat,.sz-che-nut--bat:hover{color:var(--accent-ink);background:var(--accent-wash)}
+/* Song song chỉ bày ra khi khối soạn đủ rộng — xem `doRong` trong soan.js. */
+.sz:not(.sz--rong) .sz-che-nut--song{display:none}
+/* Ở hai chế độ chỉ-xem, nút định dạng không có chỗ nào để đổi — mờ đi và
+   không nhận cú bấm, thay vì bấm mà không thấy gì xảy ra. */
+:is(.sz--xem,.sz--md) .sz-hang .sz-nhom{opacity:.35;pointer-events:none}
+
+/* ── CHỖ ĐỨNG CHUNG CỦA KHUNG GÕ, BÀI XEM THỬ VÀ MARKDOWN ── */
+.sz-than{display:grid;grid-template-columns:minmax(0,1fr)}
+.sz-than > [hidden]{display:none}
 
 .sz-xem{
-  margin-top:var(--s5);padding:var(--s5);
-  border-radius:var(--r-sm);
-  box-shadow:inset 0 0 0 1px var(--line);
+  padding:var(--s5);min-height:20rem;
   background:var(--surface);
 }
+.sz-xem-mach{
+  margin:0 0 var(--s4);
+  font-size:var(--fs-3xs);color:var(--text-faint);
+}
+/* SONG SONG: hai cột, bài xem thử dính theo khi cuộn — gõ ở cuối một bài dài
+   thì cột phải vẫn ở trong tầm mắt, và nó tự cuộn riêng. */
+.sz--song.sz--rong .sz-than{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.sz--song.sz--rong .sz-xem{
+  position:sticky;top:calc(var(--header-h) + 84px);align-self:start;
+  max-height:calc(100dvh - var(--header-h) - 100px);overflow:auto;
+  border-left:1px solid var(--line);
+}
+.sz--song:not(.sz--rong) .sz-xem{border-top:1px dashed var(--line-strong)}
+/* Cột xem thử ở chế độ song song chỉ rộng nửa khung: bỏ khung lưới của bài
+   (lề hai bên dành cho ảnh tràn), cho chữ chiếm trọn cột. */
+.sz--song .sz-xem-bai.prose{display:block}
+.sz--song .sz-xem-bai.prose > *{max-width:none}
 .sz-xem-nhan{
   margin:0 0 var(--s3);
   font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;

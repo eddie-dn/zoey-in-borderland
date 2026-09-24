@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.1 | 2026-09-24 | 01 | ô soạn thảo: danh sách lồng · ô việc bấm được · khổ ảnh theo phần trăm · xem thử tại chỗ |
 | V3.1.0 | 2026-09-24 | 00 | mục Learning đứng trước Archive |
 | V3.0.9 | 2026-09-24 | 09 | tab Learning trên thanh đầu trang · chốt luồng khu học tập |
 | V3.0.8 | 2026-09-21 | 08 | dải sang trang dùng kính · tấm bình luận cao tối đa 2/3 màn |
@@ -260,6 +261,21 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.1 — 24-Sep-2026
+
+- **Danh sách lồng trong ô soạn thảo thôi hỏng.** Chấm, số và ô việc nay lồng
+  vào nhau tuỳ ý: đổi loại một mục con không kéo theo mục cha, không còn dòng
+  nào dính vào dòng khác. Tab thụt vào, Shift+Tab thụt ra, Enter hai lần trên
+  dòng trống để thoát; hoàn tác lùi đúng từng bước.
+- **Ô việc bấm được.** Bấm vào ô vuông là đánh dấu xong, có dấu tích thật. Trên
+  trang đã đăng, mục việc có danh sách con hay có chữ đậm ở giữa thôi vỡ dòng.
+- **Ảnh thu nhỏ được theo phần trăm:** 25 · 33 · 50 · 75 · 100% cột chữ, cạnh
+  Original và Full.
+- **Xem thử ngay tại chỗ.** Công tắc Write · Split · Preview · `</>` ở góc thanh
+  nút: gõ bên trái và thấy bài thật bên phải, hoặc xem bài thay chỗ khung gõ —
+  không còn hộp mọc ra dưới đáy. Nút Table và nút YouTube/Video cũng chèn đúng
+  trở lại.
 
 ## V3.1.0 — 24-Sep-2026
 

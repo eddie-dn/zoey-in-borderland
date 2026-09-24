@@ -65,6 +65,23 @@
   width:62%;margin-inline:auto;display:block;
 }
 .prose figure.hep figcaption{text-align:center}
+
+/* ── NẤC THEO PHẦN TRĂM: 25 · 33 · 50 · 75 ──
+   Tên lớp là chính con số, nên đọc file .md là biết tấm ảnh rộng bao nhiêu.
+   Ở khổ điện thoại mỗi nấc nở ra một chút — 25% của một cột 340px là một con
+   tem không nhìn ra gì — nhưng vẫn giữ đúng thứ tự to nhỏ giữa các nấc. */
+.prose figure:is(.w25,.w33,.w50,.w75) :is(img,video){margin-inline:auto;display:block}
+.prose figure:is(.w25,.w33,.w50,.w75) figcaption{text-align:center}
+.prose figure.w25 :is(img,video){width:25%}
+.prose figure.w33 :is(img,video){width:33.333%}
+.prose figure.w50 :is(img,video){width:50%}
+.prose figure.w75 :is(img,video){width:75%}
+@media (max-width:640px){
+  .prose figure.w25 :is(img,video){width:45%}
+  .prose figure.w33 :is(img,video){width:55%}
+  .prose figure.w50 :is(img,video){width:70%}
+  .prose figure.w75 :is(img,video){width:88%}
+}
 @media (max-width:640px){
   /* Ở khổ hẹp, 62% của một cột đã hẹp là một tấm ảnh bé tí không nhìn ra gì. */
   .prose figure.hep img,.prose figure.hep video{width:86%}
@@ -83,13 +100,13 @@
 
    `margin-inline` chứ không `margin-left/right`: viết một lần, chạy đúng cả ở
    chiều đọc phải-sang-trái. */
-.prose figure:is(.goc,.rat-hep,.hep).trai :is(img,video){margin-inline:0 auto}
-.prose figure:is(.goc,.rat-hep,.hep).phai :is(img,video){margin-inline:auto 0}
+.prose figure:is(.goc,.rat-hep,.hep,.w25,.w33,.w50,.w75).trai :is(img,video){margin-inline:0 auto}
+.prose figure:is(.goc,.rat-hep,.hep,.w25,.w33,.w50,.w75).phai :is(img,video){margin-inline:auto 0}
 /* Chú thích đi theo tấm ảnh — `.prose .trai` bên dưới đã đặt `text-align`,
    nhưng nó là bộ chọn hậu duệ nên `figcaption` của khổ hẹp (vốn căn giữa)
    thắng nó. Ghi lại ở đây cho đúng thứ tự. */
-.prose figure:is(.goc,.rat-hep,.hep).trai figcaption{text-align:left}
-.prose figure:is(.goc,.rat-hep,.hep).phai figcaption{text-align:right}
+.prose figure:is(.goc,.rat-hep,.hep,.w25,.w33,.w50,.w75).trai figcaption{text-align:left}
+.prose figure:is(.goc,.rat-hep,.hep,.w25,.w33,.w50,.w75).phai figcaption{text-align:right}
 .prose > .wide{grid-column:wide}
 .prose > .full{grid-column:full}
 
@@ -274,17 +291,32 @@
 .prose :is(ul,ol){padding-left:1.35em}
 .prose li + li{margin-top:var(--s2)}
 .prose li::marker{color:var(--accent-ink)}
-.prose ul li::marker{content:"✦  ";font-size:.85em}
+/* `>` chứ không phải khoảng trắng: bộ chọn hậu duệ `ul li` ăn cả vào mục của
+   một danh sách SỐ lồng trong danh sách chấm — "1. 2. 3." ở bậc hai hiện ra
+   thành ba dấu ✦. Lồng số trong chấm là chuyện thường từ khi ô soạn đổi loại
+   được từng bậc. */
+.prose ul > li::marker{content:"✦  ";font-size:.85em}
 .prose :is(ul,ol) :is(ul,ol){margin-top:var(--s2)}
-.prose ul ul li::marker{content:"·  "}
+.prose :is(ul,ol) ul > li::marker{content:"·  "}
 
 /* Danh sách việc cần làm (checklist) — dùng cho bài dạng hướng dẫn.
    Lớp .tick nằm trên TỪNG MỤC, nên một danh sách trộn lẫn mục có ô và mục
-   thường vẫn hiển thị đúng cả hai. .task chỉ bỏ lề khi cả danh sách đều có ô. */
-.prose ul.task{padding-left:0}
-.prose li.tick{list-style:none;display:flex;gap:var(--s3);align-items:flex-start}
+   thường vẫn hiển thị đúng cả hai. Lớp .task trên cả danh sách vẫn được dựng
+   ra nhưng thôi bỏ lề trái: ô vuông nay treo ĐÚNG ở lề ấy, như dấu ✦. */
+/* ── Ô TREO Ở LỀ, KHÔNG PHẢI MỘT HỘP FLEX ──
+   Bản trước đặt `li.tick{display:flex}`. Flex biến MỖI mẩu con của mục thành
+   một ô riêng, nên hai chuyện hỏng mà chỉ thấy ở trang đã dựng:
+     · mục việc có danh sách con → danh sách con đứng NGANG bên phải dòng chữ,
+       thay vì xuống dòng thụt vào;
+     · mục có chữ đậm, nghiêng, link ở giữa → dấu cách hai bên chúng biến
+       mất ("mua **sữa** tươi" ra "muasữatươi").
+   Nay ô vuông treo ở lề trái, đúng chỗ dấu ✦ của mục thường — mục việc và mục
+   thường trong cùng một danh sách thẳng hàng chữ với nhau. */
+.prose li.tick{list-style:none;position:relative}
+.prose li.tick::marker{content:none}
 .prose li.tick::before{
-  content:"";flex:none;width:1.05em;height:1.05em;margin-top:.36em;
+  content:"";position:absolute;left:-1.35em;top:.36em;
+  width:1.05em;height:1.05em;box-sizing:border-box;
   border:1.5px solid var(--line-strong);border-radius:4px;
 }
 .prose li.tick.done::before{
