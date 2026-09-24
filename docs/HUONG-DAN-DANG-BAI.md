@@ -96,7 +96,14 @@ bộ gãy, ảnh mồ côi, tag viết lệch nhau, bản nháp lọt vào RSS, 
 > ngăn **Post**. Ô soạn thảo ở đó gõ như gõ văn bản thường — bôi đen rồi bấm
 > nút, không phải nhớ cú pháp — và lúc bấm Đăng nó tự đổi ra Markdown rồi ghi
 > thẳng một file `.md` vào kho mã. Rê chuột lên nút nào cũng có một dòng
-> nói nó làm gì; bấm `</>` để xem đúng đoạn Markdown sắp gửi đi.
+> nói nó làm gì. Công tắc ở góc phải thanh nút đổi chỗ gõ sang chế độ khác
+> ngay tại chỗ: **Split** (gõ bên trái, bài dựng thật bên phải — màn đủ rộng
+> mới có), **Preview** (xem bài như đã đăng; bấm đúp vào bài để quay lại gõ),
+> và `</>` (đúng đoạn Markdown sắp gửi đi).
+>
+> Danh sách chấm · số · ô việc lồng vào nhau tuỳ ý: Tab thụt vào, Shift+Tab
+> thụt ra, Enter hai lần trên dòng trống để thoát. Bấm vào ô vuông của một mục
+> việc là đánh dấu xong.
 >
 > Bài gõ ở đó **tự lưu nháp trên máy**, nên đóng nhầm tab vẫn còn. Nhưng nó
 > chỉ **tạo bài mới**, không sửa được bài cũ — sửa thì vẫn phải mở file ra.

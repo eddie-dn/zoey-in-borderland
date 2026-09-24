@@ -1171,78 +1171,63 @@ const KIEM = [
     }
   },
   {
-    /* ── LỆNH DANH SÁCH PHẢI ĐI QUA ĐÚNG MỘT CỬA ──
+    /* ── DANH SÁCH KHÔNG ĐI QUA LỆNH CỦA TRÌNH DUYỆT ──
        Bốn lệnh `insertUnorderedList` · `insertOrderedList` · `indent` ·
-       `outdent` của trình duyệt đều để lại hai loại hư hỏng:
-
-       1 · HTML SAI, và mỗi kiểu sai mất một thứ khác nhau khi ra Markdown:
+       `outdent` của trình duyệt được viết cho danh sách PHẲNG. Gặp danh sách
+       lồng là chúng tự chế, và mỗi kiểu tự chế mất một thứ:
 
             <p><ul>…</ul></p>              cả danh sách bị nuốt
             <li>một<li>hai</li></li>       hai mục dính thành một dòng
             <ul><li>…</li><ul>…</ul></ul>  MẤT HẲN mục con khỏi bài
+            bấm "chấm" trên mục con của    mục con dính vào mục ĐẦU của cả
+            một danh sách số               danh sách: "sub" + "one" = "subone"
 
-       2 · CON TRỎ BỊ KÉO ĐI. Đo thật ở Chromium: con trỏ đứng cuối chữ "Việc
-           một" (offset 8), gọi `insertUnorderedList` xong nó nằm ở offset 0.
-           Gõ tiếp là chữ mới chui vào TRƯỚC chữ cũ.
+       Bản trước gọi chúng qua một cửa (`lamDanhSach`) rồi dọn hậu quả; dọn
+       mãi vẫn sót — người dùng báo "lồng giữa bullet point, đánh số thứ tự
+       với checkbox thì bị hỏng". Nay mọi phép danh sách là DOM tự làm, và
+       luật là:
 
-       Cả hai đều im lặng — chữ chỉ lộ ra sai lúc mở file .md, hoặc lúc người
-       dùng thấy mình gõ ngược. `lamDanhSach()` lo cả hai: cắm mốc giữ con trỏ
-       TRƯỚC khi gọi lệnh, gọi lệnh, dọn cấu trúc, rồi trả con trỏ về mốc.
-
-       Nên luật là: bốn lệnh ấy chỉ được gọi từ TRONG `lamDanhSach`, không chỗ
-       nào khác. Gọi thẳng `lenh('indent')` ở một nút mới là đỏ ngay — kể cả
-       khi có nhớ gọi `donDanhSach()` sau, vì như thế vẫn mất con trỏ. */
-    ten: 'Lệnh danh sách trong ô soạn thảo chỉ gọi từ lamDanhSach',
+         · bốn lệnh ấy KHÔNG được gọi ở đâu trong soan.js nữa;
+         · `lamDanhSach()` còn đó, và giữ vùng chọn (giuChon → traChon) quanh
+           việc nó làm, rồi dọn (donDanhSach) — thiếu thì con trỏ nhảy về đầu
+           dòng sau mỗi cú bấm. */
+    ten: 'Ô soạn thảo không gọi lệnh danh sách của trình duyệt',
     muc: 'loi',
     chay: ({ goc }) => {
       const f = path.join(goc, 'src', 'js', 'soan.js');
       if (!fs.existsSync(f)) return [];
       const ma = fs.readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ');
-      const LENH = ['insertUnorderedList', 'insertOrderedList', 'indent', 'outdent'];
       const ra = [];
-
-      /* Thân của `lamDanhSach` — chỗ DUY NHẤT được phép gọi bốn lệnh ấy. */
       const iCua = ma.indexOf('function lamDanhSach');
       if (iCua < 0) {
-        ra.push('src/js/soan.js: không còn `lamDanhSach()` — mọi lệnh danh sách ' +
-                'đang gọi thẳng, con trỏ sẽ nhảy về đầu dòng sau mỗi cú bấm');
-        return ra;
-      }
-      const cua = ma.slice(iCua, iCua + 260);
-      if (!cua.includes('camMoc') || !cua.includes('donDanhSach')) {
-        ra.push('src/js/soan.js: `lamDanhSach()` phải cắm mốc (camMoc) TRƯỚC khi ' +
-                'gọi lệnh và dọn (donDanhSach) sau — thiếu một trong hai là mất ' +
-                'con trỏ hoặc mất mục danh sách');
-      }
-
-      /* Tìm bằng chuỗi thẳng, KHÔNG bằng regex: mẫu cần tìm có sẵn dấu ngoặc
-         và dấu nháy, mà mỗi lớp thoát là một dịp thoát hụt — bản đầu viết
-         bằng regex và nó không khớp được dòng nào, tức là một phép kiểm luôn
-         xanh vì lý do sai. */
-      let soCho = 0;
-      for (const l of LENH) {
-        for (const mau of [`lenh('${l}')`, `execCommand('${l}')`,
-                           `lamDanhSach('${l}')`]) {
-          let i2 = ma.indexOf(mau);
-          while (i2 >= 0) {
-            soCho++;
-            /* Qua cửa: hợp lệ, không cần xét gì thêm. */
-            if (mau.startsWith('lamDanhSach')) { i2 = ma.indexOf(mau, i2 + 1); continue; }
-            /* Gọi thẳng thì phải TỰ cắm mốc ngay trước — `chenViec` đi đường
-               này, vì nó còn phải đánh dấu `data-viec` giữa lệnh và lúc trả
-               con trỏ về. */
-            const truoc = ma.slice(Math.max(0, i2 - 200), i2);
-            if (!truoc.includes('camMoc')) {
-              ra.push(`src/js/soan.js: \`${mau}\` gọi ngoài lamDanhSach và ` +
-                      'không tự cắm mốc — con trỏ sẽ nhảy về đầu dòng sau cú bấm');
-            }
-            i2 = ma.indexOf(mau, i2 + 1);
+        ra.push('src/js/soan.js: không còn `lamDanhSach()` — các nút danh sách ' +
+                'mất cửa chung giữ con trỏ và dọn cấu trúc');
+      } else {
+        /* Cắt đúng thân hàm bằng đếm ngoặc — cùng lý do với phép kiểm gõ tắt
+           ngay dưới: một cửa sổ bao nhiêu ký tự thì tràn sang hàm bên cạnh. */
+        let sau = 0, het = ma.indexOf('{', iCua);
+        while (het < ma.length) {
+          if (ma[het] === '{') sau++;
+          else if (ma[het] === '}' && --sau === 0) break;
+          het++;
+        }
+        const than = ma.slice(iCua, het);
+        for (const can of ['giuChon', 'traChon', 'donDanhSach']) {
+          if (!than.includes(can)) {
+            ra.push(`src/js/soan.js: \`lamDanhSach()\` không gọi \`${can}\` — ` +
+                    'thiếu nó là mất con trỏ hoặc để lại danh sách hỏng sau cú bấm');
           }
         }
       }
-      if (!soCho) {
-        ra.push('src/js/soan.js: không còn chỗ nào gọi bốn lệnh danh sách — ' +
-                'phép kiểm này đã lạc hậu, sửa lại danh sách LENH');
+      /* Tìm bằng chuỗi thẳng, KHÔNG bằng regex: mẫu có sẵn dấu ngoặc và dấu
+         nháy, mỗi lớp thoát là một dịp thoát hụt. */
+      for (const l of ['insertUnorderedList', 'insertOrderedList', 'indent', 'outdent']) {
+        for (const mau of [`lenh('${l}'`, `execCommand('${l}'`]) {
+          if (ma.includes(mau)) {
+            ra.push(`src/js/soan.js: \`${mau})\` — lệnh danh sách của trình duyệt ` +
+                    'làm hỏng danh sách lồng; dùng lamDanhSach()');
+          }
+        }
       }
       return ra;
     }

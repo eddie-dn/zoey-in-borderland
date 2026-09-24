@@ -516,17 +516,24 @@ const NHAN = {
   szGDangBa   : 'Exactly three columns',
   szPreview   : 'Preview',
   szPreviewTip: 'See it as a published post',
+  /* Công tắc chế độ xem ở góc thanh nút — xem `doiCheDo` trong soan.js. */
+  szModeGroup : 'View',
+  szModeWrite : 'Write',
+  szModeWriteTip: 'Write and format',
+  szModeSplit : 'Split',
+  szModeSplitTip: 'Write on the left, see the post on the right',
+  szPreviewBack: 'Double-click the post to go back to writing.',
   szPreviewCard: 'Share card',
   szPreviewPost: 'The post',
   szPreviewFail: 'Could not build the preview',
   szNoTitle   : '(no title)',
   szAnhGoc    : 'Original',
   szAnhGocMo  : 'true size — never blown up',
-  szAnhRatHep : 'Small',
-  szAnhRatHepMo: 'a third of the text column',
-  szAnhHep    : 'Narrow',
-  szAnhHepMo  : 'about two thirds of the text column',
-  szAnhThuong : 'Normal',
+  /* Bốn nấc phần trăm — tên nút là chính con số, nên chỉ cần dòng giải thích. */
+  szAnhW25Mo  : 'a quarter of the text column',
+  szAnhW33Mo  : 'a third of the text column',
+  szAnhW50Mo  : 'half the text column',
+  szAnhW75Mo  : 'three quarters of the text column',
   szAnhThuongMo: 'the width of the text column',
   szAnhTranMo : 'edge to edge of the screen',
   szAnhTran   : 'Full',
@@ -1313,15 +1320,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         gDangLuoi: NHAN.szGDangLuoi, gDangGiu: NHAN.szGDangGiu,
                         gDangHai: NHAN.szGDangHai, gDangBa: NHAN.szGDangBa,
                         preview: NHAN.szPreview, previewTip: NHAN.szPreviewTip,
+                        modeGroup: NHAN.szModeGroup,
+                        modeWrite: NHAN.szModeWrite, modeWriteTip: NHAN.szModeWriteTip,
+                        modeSplit: NHAN.szModeSplit, modeSplitTip: NHAN.szModeSplitTip,
+                        previewBack: NHAN.szPreviewBack,
                         previewCard: NHAN.szPreviewCard,
                         previewPost: NHAN.szPreviewPost,
                         previewFail: NHAN.szPreviewFail, noTitle: NHAN.szNoTitle,
                         anhGoc: NHAN.szAnhGoc, anhGocMo: NHAN.szAnhGocMo,
-                        anhRatHep: NHAN.szAnhRatHep, anhRatHepMo: NHAN.szAnhRatHepMo,
-                        anhHep: NHAN.szAnhHep, anhHepMo: NHAN.szAnhHepMo,
+                        anhW25Mo: NHAN.szAnhW25Mo, anhW33Mo: NHAN.szAnhW33Mo,
+                        anhW50Mo: NHAN.szAnhW50Mo, anhW75Mo: NHAN.szAnhW75Mo,
                         anhThuongMo: NHAN.szAnhThuongMo,
                         anhTranMo: NHAN.szAnhTranMo,
-                        anhThuong: NHAN.szAnhThuong,
                         anhTran: NHAN.szAnhTran,
                         bCodeMach: NHAN.szBCodeMach, bCodeTron: NHAN.szBCodeTron,
                         bCodeTronMo: NHAN.szBCodeTronMo,
@@ -3278,8 +3288,10 @@ const GOI_CSS = {
   gt   : ['about.css', 'prose.css'],
   /* Khung đăng nhập — /z-admin/ cần, mà /notes/ cũng mượn. */
   khoa : ['khoa.css'],
-  /* Bàn làm việc của chủ trang. */
-  ql   : ['admin.css', 'soan.css']
+  /* Bàn làm việc của chủ trang. `prose.css` đi cùng vì ô soạn có chế độ XEM
+     THỬ dựng đúng bài thật — thiếu nó thì bài xem thử ra chữ trần, tiêu đề cỡ
+     mặc định, ảnh tràn khung: đúng cảnh "preview bấm ra lộn xộn". */
+  ql   : ['admin.css', 'prose.css', 'soan.css']
 };
 
 /* ── LOẠI TRANG KHAI THẲNG, KHÔNG ĐOÁN TỪ ĐƯỜNG DẪN ──
