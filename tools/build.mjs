@@ -1121,6 +1121,24 @@ function navHTML(duongHienTai) {
     if (!coTrang(n.href)) {
       return `<span class="nav-text nav-cho tip" data-tip="${NHAN.soon}">${escapeHtml(n.label)}</span>`;
     }
+    /* ── MỤC TRỎ RA NGOÀI TÊN MIỀN ──
+       Khu học tập sống ở learning.z-in-borderland.com — một Worker riêng, kho
+       mã riêng, cơ sở dữ liệu riêng (xem docs/KHU-HOC-TAP.md). Trên thanh đầu
+       trang nó vẫn là một mục như mọi mục khác, nhưng đường dẫn thì tuyệt đối.
+
+       Ba chỗ phải chừa ra, thiếu chỗ nào cũng hỏng lặng lẽ:
+         · KHÔNG ghép `BASE` — ghép vào thành `/https://…`, link chết.
+         · KHÔNG so với đường đang mở để gắn `aria-current` — nó là một trang
+           web khác, không bao giờ là "trang hiện tại" của trang này.
+         · Mở ngay trong tab đang dùng, KHÔNG `target="_blank"`. Đây là nhà
+           mình đi sang buồng bên, không phải dẫn người đọc ra chỗ lạ; mà một
+           tab mới cho mỗi lần bấm thì sau buổi học là chục tab cùng tên miền.
+           `rel="noopener"` vẫn giữ — nó rẻ, và phòng lúc sau này có ai đổi ý
+           thêm `target`. */
+    if (/^https?:/i.test(n.href)) {
+      return `<a class="nav-text" href="${attr(n.href)}" rel="noopener">` +
+             `${escapeHtml(n.label)}</a>`;
+    }
     const day = duongHienTai.startsWith(n.href) && n.href !== '/';
     return `<a class="nav-text" href="${BASE}${n.href}"${day ? ' aria-current="page"' : ''}>` +
            `${escapeHtml(n.label)}</a>`;

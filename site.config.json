@@ -29,6 +29,10 @@
     {
       "label": "About",
       "href": "/about/"
+    },
+    {
+      "label": "Learning",
+      "href": "https://learning.z-in-borderland.com/"
     }
   ],
   "_ghichu": {
@@ -50,7 +54,9 @@
     "logo": "vongKe = trọn một vòng kể của logo chạy trong bao lâu. Nhỏ lại thì nhanh hơn. PHẢI có đơn vị (\"27s\", \"800ms\") — viết trần \"27\" thì CSS bỏ qua còn SVG hiểu là 27 giây, hai nửa hoạt hình chạy lệch nhau mà không ai báo. Đây là nguồn DUY NHẤT: build đưa số này vào cả thẻ <animate> lẫn biến --lg-ck. soHat = lúc logo vỡ ra thì có bao nhiêu hạt bụi bay. 18 chọn vì nó nguyên tố cùng nhau với ba nhịp 5·7·3 dùng để rải bán kính, cỡ hạt và quãng bay — đổi số khác thì mấy hạt bắt đầu trùng nhau, hết cảm giác ngẫu nhiên.",
     "dangBai": "Ô viết BÀI ở /z-admin/ (ngăn Post). Khác ghi chú: bài không sống trong cơ sở dữ liệu mà được ghi thành một file .md trong kho mã trên GitHub, rồi Cloudflare tự dựng lại — khoảng một phút sau bài mới lên. Phải vậy vì một bài cần đường dẫn riêng, cần có mặt trong feed.xml, sitemap.xml, ô tìm kiếm và thẻ chia sẻ; tất cả những thứ đó do bộ dựng sinh ra. Cần ba biến ở Cloudflare: GH_TOKEN (Secret — token GitHub quyền Contents: Read and write), GH_REPO và GH_NHANH (Var). Dùng chung cặp khoá chủ trang GC_ID + GC_KEY. Từng bước: docs/CAI-DAT.md. Đặt bat:false để tắt hẳn ngăn Post."
   },
-  "chuaDung": [],
+  "chuaDung": [
+    "https://learning.z-in-borderland.com/"
+  ],
   "binhLuan": {
     "bat": true,
     "api": "/api/binh-luan",

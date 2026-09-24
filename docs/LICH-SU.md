@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.0.9 | 2026-09-24 | 09 | tab Learning trên thanh đầu trang · chốt luồng khu học tập |
 | V3.0.8 | 2026-09-21 | 08 | dải sang trang dùng kính · tấm bình luận cao tối đa 2/3 màn |
 | V3.0.7 | 2026-09-21 | 07 | ô About rộng hơn · cột ảnh + số bên trái · ô mời cà phê |
 | V3.0.6 | 2026-09-19 | 06 | thư báo bình luận gom trong ngày · tự kiểm hệ thống · sao lưu D1 sang Google Sheet |
@@ -258,6 +259,19 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.0.9 — 24-Sep-2026
+
+- **Thanh đầu trang có mục `Learning`.** Nó trỏ sang khu học tập ở
+  `learning.z-in-borderland.com` — một trang web riêng, kho mã riêng, cơ sở dữ
+  liệu riêng. Đang để "Coming soon"; dựng xong khu ấy thì xoá địa chỉ khỏi
+  `chuaDung` trong site.config.json là mục tự thành link, không phải sửa mã.
+- **`navHTML` hiểu đường dẫn tuyệt đối.** Mục trỏ ra ngoài thì không ghép
+  `base` (ghép vào là `/https://…`, link chết) và không gắn `aria-current` —
+  một trang web khác thì không bao giờ là "trang hiện tại" của trang này.
+- **Chốt ranh giới khu học tập ở `docs/KHU-HOC-TAP.md`:** năm việc nó làm, hai
+  Worker dưới một tên miền, ba thứ tuyệt đối không dùng chung (secret, cơ sở
+  dữ liệu, cookie phiên), và luồng mua–thanh toán–nhận tài liệu.
 
 ## V3.0.8 — 21-Sep-2026
 
