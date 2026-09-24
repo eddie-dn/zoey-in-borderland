@@ -267,9 +267,9 @@
 - **Danh sách lồng trong ô soạn thảo thôi hỏng.** Chấm, số và ô việc nay lồng
   vào nhau tuỳ ý: đổi loại một mục con không kéo theo mục cha, không còn dòng
   nào dính vào dòng khác. Tab thụt vào, Shift+Tab thụt ra, Enter hai lần trên
-  dòng trống để thoát; hoàn tác lùi đúng từng bước.
-- **Ô việc bấm được.** Bấm vào ô vuông là đánh dấu xong, có dấu tích thật. Trên
-  trang đã đăng, mục việc có danh sách con hay có chữ đậm ở giữa thôi vỡ dòng.
+  dòng trống để thoát; hoàn tác lùi đúng từng bước. **Ô việc bấm được** — bấm
+  vào ô vuông là đánh dấu xong — và trên trang đã đăng, mục việc có danh sách
+  con hay có chữ đậm ở giữa thôi vỡ dòng.
 - **Ảnh thu nhỏ được theo phần trăm:** 25 · 33 · 50 · 75 · 100% cột chữ, cạnh
   Original và Full.
 - **Xem thử ngay tại chỗ.** Công tắc Write · Split · Preview · `</>` ở góc thanh
