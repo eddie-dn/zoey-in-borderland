@@ -491,7 +491,7 @@ function boc(loai, nhan, than, ctx, sau) {
    cột thứ 3. Vẫn là một dòng đọc được bằng mắt trong file .md — cùng họ với
    `{.wide}` ở đuôi ảnh — và bảng không có dòng ấy thì y như cũ. Ô soạn thảo
    ghi dòng này qua nút "Shade row / column" trên thanh bảng. */
-const RE_TO_BANG = /^\s*\{((?:\s*\.to-(?:hang|cot)-\d+)+)\s*\}\s*$/;
+const RE_TO_BANG = /^\s*\{((?:\s*\.(?:to-(?:hang|cot)-\d+|ke-cot))+)\s*\}\s*$/;
 
 function bang(hang, ctx, lopTo) {
   const to = new Set();
@@ -523,7 +523,9 @@ function bang(hang, ctx, lopTo) {
       `<col style="width:${(n / tong * 100).toFixed(2)}%">`).join('') + '</colgroup>';
 
   ctx.tho.push(tran(hang.join(' ')));
-  return '<div class="table-wrap"><table>' + cot + '<thead><tr>' +
+  /* `.ke-cot` trong dòng lớp dưới bảng: vạch dọc rõ giữa các cột. */
+  const ke = /\.ke-cot\b/.test(String(lopTo || '')) ? ' ke-cot' : '';
+  return '<div class="table-wrap' + ke + '"><table>' + cot + '<thead><tr>' +
     dau.map((c, j) => '<th' + lp(0, j) + st(j) + '>' + inline(c, ctx) + '</th>').join('') +
     '</tr></thead><tbody>' +
     than.map((r, ri) => '<tr>' +

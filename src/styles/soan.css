@@ -85,11 +85,16 @@
   box-shadow:inset 0 0 0 1px var(--line);
 }
 /* Mỗi dòng trong bảng kiểu đoạn vẽ đúng cỡ của kiểu ấy — chọn bằng mắt. */
-.sz-bang--kieu{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
 .sz-bang--kieu .sz-kieu--h2 .sz-khoi-ten{font-family:var(--font-display);font-size:1.35em;text-transform:none;letter-spacing:0}
 .sz-bang--kieu .sz-kieu--h3 .sz-khoi-ten{font-family:var(--font-display);font-size:1.15em;text-transform:none;letter-spacing:0}
 .sz-bang--kieu .sz-kieu--h4 .sz-khoi-ten{font-size:1em;text-transform:none;letter-spacing:0}
 .sz-bang--kieu .sz-kieu--p .sz-khoi-ten{font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:0}
+.sz-bang--kieu .sz-kieu--quote .sz-khoi-ten{font-family:var(--font-display);font-style:italic;text-transform:none;letter-spacing:0;font-size:1.1em}
+.sz-bang--kieu .sz-kieu--code .sz-khoi-ten{font-family:var(--font-mono);text-transform:none;letter-spacing:0}
+.sz-bang--kieu :is(.sz-co--nho,.sz-co--,.sz-co--lon,.sz-co--rat-lon) .sz-khoi-ten{font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:0;font-size:1em}
+.sz-bang--kieu .sz-co--nho .sz-khoi-ten{font-size:.85em}
+.sz-bang--kieu .sz-co--lon .sz-khoi-ten{font-size:1.15em}
+.sz-bang--kieu .sz-co--rat-lon .sz-khoi-ten{font-size:1.35em}
 .sz-khoi-nut--bat{background:var(--accent-wash)}
 /* ── NHÓM NÚT ──
    Mỗi nhóm là MỘT ô của hàng flex, nên nó xuống hàng nguyên cụm chứ không bị
@@ -237,6 +242,9 @@
 }
 .sz-doan--giua{text-align:center}
 .sz-doan--nho{font-size:var(--fs-sm);color:var(--text-faint)}
+/* Hai nấc phóng LỚN — cùng số đo với `.prose .lon` / `.rat-lon`. */
+.sz-doan--lon{font-size:var(--fs-md);line-height:1.55}
+.sz-doan--rat-lon{font-size:var(--fs-h3);line-height:1.4}
 /* Ba thẻ mới phải nhìn ra ngay trong khung gõ — nhấn một mẩu chữ mà không thấy
    gì đổi thì cái nút ấy coi như không có. Chép thông số từ prose.css; khung gõ
    hẹp hơn cột chữ thật nên không cố giống hệt, chỉ cần giống về CHẤT. */
@@ -249,7 +257,8 @@
   background:var(--surface-solid);font-size:.82em;color:var(--text-muted);
 }
 .sz-doan--giua::after,.sz-doan--thuong::after,
-.sz-doan--trai::after,.sz-doan--phai::after,.sz-doan--nho::after{
+.sz-doan--trai::after,.sz-doan--phai::after,.sz-doan--nho::after,
+.sz-doan--lon::after,.sz-doan--rat-lon::after{
   content:attr(data-lop);
   display:block;margin-top:2px;
   font-family:var(--font-mono);font-size:var(--fs-3xs);
@@ -358,6 +367,24 @@
 /* Thanh bảng mượn dáng thanh ảnh, nhưng neo theo MÉP TRÁI bảng chứ không
    theo tâm — nên bỏ phép dịch nửa bề ngang. */
 .sz-bang-thanh{transform:none;justify-content:flex-start}
+/* Bảng bật `Column lines`: vạch dọc rõ như trên trang (thay vạch đứt mờ). */
+.sz-khung .sz-bang-o.sz-bang-ke :is(th,td){border-right:1px solid var(--line)}
+.sz-khung .sz-bang-o.sz-bang-ke tr > :last-child{border-right:0}
+/* Menu Insert ▾ / Delete ▾ của thanh bảng. */
+.sz-bang-menu-boc{position:relative;display:inline-flex}
+.sz-bang-menu{
+  position:absolute;top:calc(100% + 4px);left:0;z-index:8;
+  display:flex;flex-direction:column;min-width:10rem;padding:4px;
+  border-radius:var(--r-sm);background:var(--surface-solid);
+  box-shadow:inset 0 0 0 1px var(--line),0 12px 28px rgba(20,10,40,.16);
+}
+.sz-bang-menu[hidden]{display:none}
+.sz-bang-menu-dong{
+  appearance:none;border:0;background:none;cursor:pointer;text-align:left;
+  padding:7px 10px;border-radius:var(--r-xs);
+  font-family:var(--font-body);font-size:var(--fs-2xs);color:var(--text);
+}
+.sz-bang-menu-dong:hover{background:var(--accent-wash);color:var(--accent-ink)}
 
 /* ══════════ KHUNG ĐẶT CỠ BẢNG ══════════
    Dùng chung khuôn `.sz-cat` (khung cắt ảnh) cho phần nền và cách canh giữa. */
@@ -407,6 +434,26 @@
   padding:var(--s3) var(--s4);
 }
 .sz-bang--mau{display:flex;flex-wrap:wrap;gap:var(--s1)}
+/* ── BẢNG BẬT RA LÀ MENU CỦA THANH DÍNH ──
+   Bảng là con của `.sz-thanh` (xem chỗ ráp khung trong soan.js). Thanh dính ở
+   đầu màn khi cuộn, nên bảng thả xuống ĐÈ lên chữ ngay dưới thanh — ở giữa
+   một bài dài vẫn mở ra trong tầm mắt, không phải cuộn ngược lên tìm. Cao
+   tối đa hơn nửa màn, dài hơn thì cuộn trong chính bảng. */
+.sz-thanh > .sz-bang{
+  position:absolute;left:0;right:0;top:100%;z-index:7;
+  max-height:min(62vh,440px);overflow-y:auto;
+  border:1px solid var(--line);border-top:0;
+  border-radius:0 0 var(--r-sm) var(--r-sm);
+  box-shadow:0 14px 32px rgba(20,10,40,.16);
+}
+/* Menu kiểu chữ thả ngay dưới NÚT của nó (JS đặt `left`), hẹp như menu. */
+.sz-thanh > .sz-bang--kieu{
+  right:auto;width:min(320px,100%);display:block;
+  border-top:1px solid var(--line);border-radius:var(--r-sm);
+}
+.sz-bang--kieu .sz-khoi-nut{width:100%;padding:5px var(--s3)}
+.sz-thanh > .sz-bang--kieu{max-height:calc(100dvh - var(--header-h) - 120px)}
+.sz-bang--kieu .sz-bang-mach{margin:var(--s2) var(--s3) var(--s1)}
 
 /* ── BẢNG MEDIA ──
    Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì mười hai ô chip

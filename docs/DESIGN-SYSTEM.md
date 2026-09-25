@@ -2955,10 +2955,12 @@ Hai chiều đổi nằm ở `khoi()` (TABLE → mấy dòng gạch đứng) và
 nó cắt ô ấy làm đôi ở lượt đọc lại.
 
 **Thanh bảng.** Đặt con trỏ vào một ô là `.sz-bang-thanh` nổi lên ngay trên
-bảng: + / − hàng, + / − cột, căn cột trái · giữa · phải (ghi vào dòng gạch
-ngăn `:---:` · `---:`), tô hàng · tô cột, xoá bảng. Tô màu ghi thành một dòng
-lớp NGAY dưới bảng — `{.to-hang-2 .to-cot-3}`, hàng đếm từ hàng thân đầu tiên
-— và bộ dựng gắn `.to` lên từng ô được tô (nền pha từ `--accent`). Căn lề và
+bảng (hoặc dưới, khi phía trên không đủ chỗ): Insert ▾ (hàng trên · dưới, cột
+trái · phải), Delete ▾ (hàng · cột · cả bảng), căn cột trái · giữa · phải (ghi
+vào dòng gạch ngăn `:---:` · `---:`), tô hàng · tô cột, Column lines. Tô màu
+và vạch cột ghi thành một dòng lớp NGAY dưới bảng — `{.to-hang-2 .to-cot-3
+.ke-cot}`, hàng đếm từ hàng thân đầu tiên — bộ dựng gắn `.to` lên từng ô được
+tô (nền pha từ `--accent`) và `.ke-cot` lên `.table-wrap` (vạch dọc giữa cột). Căn lề và
 bề rộng cột (số dấu gạch) đi vòng qua ô soạn nguyên vẹn.
 
 Cỡ bảng hỏi bằng một `<dialog>` có hai cặp nút cộng trừ và một bảng xem trước,

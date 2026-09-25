@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.3 | 2026-09-25 | 03 | ô soạn thảo: danh sách kiểu chữ đầy đủ · chữ lớn · bảng thả xuống theo thanh dính · menu bảng · kẻ ngăn cột |
 | V3.1.2 | 2026-09-24 | 02 | ô soạn thảo: Preview gộp song song · kiểu đoạn H2–H4 · thanh bảng tô hàng cột · xoá khối |
 | V3.1.1 | 2026-09-24 | 01 | ô soạn thảo: danh sách lồng · ô việc bấm được · khổ ảnh theo phần trăm · xem thử tại chỗ |
 | V3.1.0 | 2026-09-24 | 00 | mục Learning đứng trước Archive |
@@ -262,6 +263,21 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.3 — 25-Sep-2026
+
+- **Chọn kiểu chữ thôi hỏng, và có đủ trong một danh sách.** Chọn heading
+  trên một dòng danh sách trước đây ra một thứ lai (khung soạn vẫn vẽ danh
+  sách, bài đăng ra tiêu đề); nay dòng ấy ra khỏi danh sách rồi thành tiêu
+  đề đúng nghĩa. Danh sách kiểu chữ gom Normal · H2 · H3 · H4 · Quote · Code
+  block, cỡ chữ nhỏ · thường · lớn · rất lớn, và "Not a lead-in" có giải
+  thích — thay mấy nút icon không rõ nghĩa. Căn lề và cỡ chữ đi cùng nhau.
+- **Bảng Media và mọi bảng bật ra thả xuống ngay dưới thanh nút**, kể cả khi
+  đang ở giữa một bài dài — không phải cuộn ngược lên tìm. Preview có nút
+  Refresh và tự dựng lại theo mọi thay đổi. Ảnh có thêm nấc Wide.
+- **Thanh bảng gọn hơn:** Insert ▾ (hàng trên / dưới, cột trái / phải) và
+  Delete ▾ (hàng, cột, cả bảng), cùng nút Column lines kẻ vạch dọc rõ giữa
+  các cột — trong khung soạn lẫn trên trang.
 
 ## V3.1.2 — 24-Sep-2026
 

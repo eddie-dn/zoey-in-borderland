@@ -552,6 +552,11 @@
    tools/lib/markdown.mjs) gắn `.to` lên từng ô. Tô trên Ô chứ không trên
    hàng, nên nó nằm đè lên nền hàng xen kẽ và giao của hàng với cột không
    đậm gấp đôi. Pha từ `--accent` nên đổi theme là màu tô đổi theo. */
+/* `.ke-cot` (nút "Column lines" trong ô soạn): vạch dọc rõ giữa các cột. */
+.prose .table-wrap.ke-cot :is(th,td) + :is(th,td){border-left:1px solid var(--line)}
+/* Ô rỗng vẫn cao bằng một dòng chữ — bảng mới chèn chưa gõ gì không bị dẹp
+   thành mấy vạch sát nhau. */
+.prose :is(th,td):empty::before{content:"\a0"}
 .prose td.to{background:color-mix(in srgb, var(--accent) 13%, transparent)}
 .prose th.to{background:color-mix(in srgb, var(--accent) 26%, transparent);color:var(--text)}
 
@@ -600,6 +605,12 @@
 .prose .nho{
   font-size:var(--fs-sm);line-height:1.6;color:var(--text-faint);
 }
+/* ── HAI NẤC CHỮ LỚN ──
+   `{.nho}` có từ lâu mà không có chiều ngược lại: một câu cần nổi lên giữa
+   bài (câu chốt, lời trích một dòng) thì chỉ có đường biến nó thành tiêu đề
+   — sai nghĩa, và nó lọt vào mục lục. Hai nấc này chỉ to chữ, không đổi vai. */
+.prose .lon{font-size:var(--fs-md);line-height:1.55}
+.prose .rat-lon{font-size:var(--fs-h3);line-height:1.4;font-family:var(--font-display)}
 
 /* ── ĐẦU BÀI ──
    Thứ tự đọc:  đường dẫn → TIÊU ĐỀ → ngày · phút đọc → tóm tắt.
