@@ -85,16 +85,48 @@
   box-shadow:inset 0 0 0 1px var(--line);
 }
 /* Mỗi dòng trong bảng kiểu đoạn vẽ đúng cỡ của kiểu ấy — chọn bằng mắt. */
-.sz-bang--kieu .sz-kieu--h2 .sz-khoi-ten{font-family:var(--font-display);font-size:1.35em;text-transform:none;letter-spacing:0}
-.sz-bang--kieu .sz-kieu--h3 .sz-khoi-ten{font-family:var(--font-display);font-size:1.15em;text-transform:none;letter-spacing:0}
-.sz-bang--kieu .sz-kieu--h4 .sz-khoi-ten{font-size:1em;text-transform:none;letter-spacing:0}
-.sz-bang--kieu .sz-kieu--p .sz-khoi-ten{font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:0}
-.sz-bang--kieu .sz-kieu--quote .sz-khoi-ten{font-family:var(--font-display);font-style:italic;text-transform:none;letter-spacing:0;font-size:1.1em}
-.sz-bang--kieu .sz-kieu--code .sz-khoi-ten{font-family:var(--font-mono);text-transform:none;letter-spacing:0}
-.sz-bang--kieu :is(.sz-co--nho,.sz-co--,.sz-co--lon,.sz-co--rat-lon) .sz-khoi-ten{font-family:var(--font-body);font-weight:400;text-transform:none;letter-spacing:0;font-size:1em}
-.sz-bang--kieu .sz-co--nho .sz-khoi-ten{font-size:.85em}
-.sz-bang--kieu .sz-co--lon .sz-khoi-ten{font-size:1.15em}
-.sz-bang--kieu .sz-co--rat-lon .sz-khoi-ten{font-size:1.35em}
+/* Tên từng mục cùng MỘT phông thân chữ; chỉ cỡ và nét đổi theo kiểu — chọn
+   bằng mắt mà không thành một bảng mẫu phông lộn xộn. */
+.sz-bang--kieu .sz-khoi-ten{
+  font-family:var(--font-body);font-size:var(--fs-sm);font-weight:500;
+  letter-spacing:0;text-transform:none;
+}
+.sz-bang--kieu .sz-kieu--h2 .sz-khoi-ten{font-family:var(--font-display);font-size:1.3rem;font-weight:600}
+.sz-bang--kieu .sz-kieu--h3 .sz-khoi-ten{font-family:var(--font-display);font-size:1.1rem;font-weight:600}
+.sz-bang--kieu .sz-kieu--h4 .sz-khoi-ten{font-weight:600}
+.sz-bang--kieu .sz-kieu--quote .sz-khoi-ten{font-family:var(--font-display);font-style:italic;font-size:1.05rem}
+.sz-bang--kieu .sz-kieu--code .sz-khoi-ten{font-family:var(--font-mono);font-size:var(--fs-xs)}
+.sz-bang--kieu .sz-co--nho .sz-khoi-ten{font-size:var(--fs-xs)}
+.sz-bang--kieu .sz-co--lon .sz-khoi-ten{font-size:1.1rem}
+.sz-bang--kieu .sz-co--rat-lon .sz-khoi-ten{font-size:1.3rem}
+/* Nhóm: tiêu đề in hoa nhỏ + vạch ngăn phía trên, các mục thụt vào dưới. */
+.sz-kieu-nhom{padding:var(--s2) 0}
+.sz-kieu-nhom + .sz-kieu-nhom{border-top:1px solid var(--line)}
+.sz-kieu-de{
+  margin:0 var(--s3) 2px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);
+}
+.sz-kieu-ghi{display:none;margin:0 var(--s3) 4px;font-size:var(--fs-3xs);color:var(--text-faint)}
+.sz-kieu-nhom--tat .sz-kieu-ghi{display:block}
+.sz-kieu-nhom--tat .sz-khoi-nut{opacity:.4;cursor:default}
+.sz-kieu-nhom--tat .sz-khoi-nut:hover{background:none}
+/* Dấu ✓ cho mục đang dùng, trong một rãnh trái cố định để tên thẳng hàng. */
+.sz-bang--kieu .sz-khoi-nut{padding-left:calc(var(--s3) + 18px);position:relative}
+.sz-bang--kieu .sz-khoi-nut::before{
+  content:"";position:absolute;left:var(--s3);top:50%;transform:translateY(-50%);
+  width:14px;text-align:center;font-size:12px;font-weight:600;color:var(--accent-ink);
+}
+.sz-bang--kieu .sz-khoi-nut--bat::before{content:"✓"}
+/* "Not a lead-in" bật/tắt, nên vẽ như một ô đánh dấu. */
+.sz-bang--kieu .sz-kieu-hop::before{
+  content:"";width:12px;height:12px;border-radius:3px;
+  box-shadow:inset 0 0 0 1.5px var(--line-strong);
+}
+.sz-bang--kieu .sz-kieu-hop.sz-khoi-nut--bat::before{
+  content:"✓";line-height:12px;font-size:10px;color:var(--text-invert);
+  background:var(--accent);box-shadow:none;
+}
 .sz-khoi-nut--bat{background:var(--accent-wash)}
 /* ── NHÓM NÚT ──
    Mỗi nhóm là MỘT ô của hàng flex, nên nó xuống hàng nguyên cụm chứ không bị
@@ -370,6 +402,7 @@
 /* Bảng bật `Column lines`: vạch dọc rõ như trên trang (thay vạch đứt mờ). */
 .sz-khung .sz-bang-o.sz-bang-ke :is(th,td){border-right:1px solid var(--line)}
 .sz-khung .sz-bang-o.sz-bang-ke tr > :last-child{border-right:0}
+.sz-khung .sz-bang-o.sz-bang-cotdau td:first-child{font-weight:600}
 /* Menu Insert ▾ / Delete ▾ của thanh bảng. */
 .sz-bang-menu-boc{position:relative;display:inline-flex}
 .sz-bang-menu{
@@ -451,9 +484,32 @@
   right:auto;width:min(320px,100%);display:block;
   border-top:1px solid var(--line);border-radius:var(--r-sm);
 }
-.sz-bang--kieu .sz-khoi-nut{width:100%;padding:5px var(--s3)}
+.sz-bang--kieu .sz-khoi-nut{width:100%;padding-block:5px}
+/* ── BẢNG MEDIA: BA NHÓM, MỖI NHÓM MỘT LƯỚI RIÊNG ── (xem `veBangMedia`) */
+.sz-thanh > .sz-bang--media{display:block;padding-block:var(--s1)}
+.sz-media-nhom{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px;
+  padding:var(--s2) 0;
+}
+.sz-media-nhom + .sz-media-nhom{border-top:1px solid var(--line)}
+.sz-media-nhom > .sz-kieu-de{grid-column:1 / -1;margin:0 0 2px}
+.sz-media-ghi{grid-column:1 / -1;margin:0 0 4px;font-size:var(--fs-2xs);color:var(--text-muted)}
+/* Hình vẽ bố cục: nét mảnh trong một ô nền nhạt, đứng bên trái tên mục. */
+.sz-media-nut{justify-content:flex-start;align-items:center;gap:var(--s3)}
+.sz-media-nut .sz-khoi-chu{flex:1 1 auto}
+.sz-media-nut .sz-khoi-ten{font-size:var(--fs-2xs)}
+.sz-media-hinh{
+  flex:none;width:44px;height:34px;border-radius:var(--r-xs);
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--surface-solid);box-shadow:inset 0 0 0 1px var(--line);
+  color:var(--accent-ink);
+}
+.sz-media-hinh svg{
+  width:26px;height:26px;fill:none;stroke:currentColor;
+  stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;
+}
+.sz-media-nut .sz-khoi-cu{align-self:flex-start;font-size:9px}
 .sz-thanh > .sz-bang--kieu{max-height:calc(100dvh - var(--header-h) - 120px)}
-.sz-bang--kieu .sz-bang-mach{margin:var(--s2) var(--s3) var(--s1)}
 
 /* ── BẢNG MEDIA ──
    Mỗi dòng có TÊN và một câu ngắn nói nó làm gì. Bảng màu thì mười hai ô chip

@@ -326,6 +326,19 @@
     return ra;
   }
 
+  /* Đoạn có ảnh làm con trực tiếp mà KHÔNG đứng một mình: có chữ bên cạnh,
+     hoặc từ hai ảnh trở lên. */
+  function anhLan(c) {
+    var soAnh = 0;
+    for (var i = 0; i < c.childNodes.length; i++) if (c.childNodes[i].nodeName === 'IMG') soAnh++;
+    if (!soAnh) return false;
+    if (soAnh > 1) return true;
+    var ban = c.cloneNode(true);
+    var anh = ban.querySelectorAll('img');
+    for (var j = 0; j < anh.length; j++) anh[j].remove();
+    return !!ban.textContent.trim();
+  }
+
   function khoi(n, ra, thut) {
     thut = thut || '';
     for (var i = 0; i < n.childNodes.length; i++) {
@@ -394,6 +407,7 @@
         }
         /* Hàng / cột được tô, và vạch ngăn cột: một dòng lớp ngay dưới bảng. */
         if (c.getAttribute && c.getAttribute('data-ke') === 'cot') toB.push('.ke-cot');
+        if (c.getAttribute && c.hasAttribute('data-cot-dau')) toB.push('.cot-dau');
         if (toB.length) hangB.push('{' + toB.join(' ') + '}');
         ra.push(thut + hangB.join('\n' + thut));
         continue;
@@ -514,6 +528,36 @@
         khoi(c, trongK, '');
         ra.push(thut + ':::' + loai + (nhanK ? ' ' + nhanK : '') + '\n\n' +
                 trongK.join('\n\n') + '\n\n' + thut + ':::');
+        continue;
+      }
+
+      /* ── ẢNH NẰM LẪN TRONG ĐOẠN THÌ TÁCH RA DÒNG RIÊNG ──
+         Bộ dựng chỉ coi một tấm ảnh là <figure> (có khổ 25% · 50% · Wide…)
+         khi nó đứng MỘT MÌNH một dòng. Ảnh nằm chung đoạn với chữ, hay hai
+         ảnh chung một đoạn (chèn bằng bản cũ, kéo thả vào cuối dòng), thì
+         thành ảnh giữa dòng: mất khổ, bung hết cỡ — trong khi khung soạn vẫn
+         vẽ nó như một tấm riêng. Người dùng: "hình scale xong ko thay đổi".
+         Nên ở đây cắt đoạn ra: chữ một đoạn, mỗi ảnh một dòng. */
+      if ((the === 'P' || the === 'DIV') && anhLan(c)) {
+        var tam2 = document.createElement('div'), hien = c.cloneNode(false);
+        var day = function () {
+          while (hien.lastChild && hien.lastChild.nodeName === 'BR') hien.removeChild(hien.lastChild);
+          if (hien.textContent.trim() || hien.querySelector('img')) tam2.appendChild(hien);
+          hien = c.cloneNode(false);
+        };
+        for (var ai2 = 0; ai2 < c.childNodes.length; ai2++) {
+          var ch = c.childNodes[ai2];
+          if (ch.nodeName === 'IMG') {
+            day();
+            var pAnh = document.createElement('p');
+            pAnh.appendChild(ch.cloneNode(true));
+            tam2.appendChild(pAnh);
+          } else if (!(ch.nodeName === 'BR' && !hien.firstChild)) {
+            hien.appendChild(ch.cloneNode(true));
+          }
+        }
+        day();
+        khoi(tam2, ra, thut);
         continue;
       }
 
@@ -641,7 +685,8 @@
     String(lopTo || '').replace(/\.to-(hang|cot)-(\d+)/g, function (_, k, n) { to[k + n] = 1; });
     var than = [];
     for (var i = 2; i < ds.length; i++) than.push(oCuaHang(ds[i]));
-    var h = '<table class="sz-bang-o"' + (/\.ke-cot\b/.test(lopTo || '') ? ' data-ke="cot"' : '') + '><thead><tr>';
+    var h = '<table class="sz-bang-o"' + (/\.ke-cot\b/.test(lopTo || '') ? ' data-ke="cot"' : '') +
+            (/\.cot-dau\b/.test(lopTo || '') ? ' data-cot-dau="1"' : '') + '><thead><tr>';
     for (var k = 0; k < dau.length; k++) {
       var g = String(gach[k] || '');
       var can = /^:.*:$/.test(g) ? 'giua' : /:$/.test(g) ? 'phai' : /^:/.test(g) ? 'trai' : '';
@@ -830,7 +875,7 @@
         var oBang = [];
         while (i < dong.length && /^\s*\|/.test(dong[i])) { oBang.push(dong[i]); i++; }
         var lopTo = '';
-        if (i < dong.length && /^\s*\{((?:\s*\.(?:to-(?:hang|cot)-\d+|ke-cot))+)\s*\}\s*$/.test(dong[i])) {
+        if (i < dong.length && /^\s*\{((?:\s*\.(?:to-(?:hang|cot)-\d+|ke-cot|cot-dau))+)\s*\}\s*$/.test(dong[i])) {
           lopTo = dong[i]; i++;
         }
         ra.push(bangTuMD(oBang, lopTo));
@@ -1786,13 +1831,48 @@
        Chỉ những gì thuộc về HÌNH và VIDEO, mỗi dòng kèm cú pháp nó ghi ra
        file. Bảng Blocks cũ gom mười sáu thứ, và cái giá là không ai tìm được
        thứ mình cần; bảng này bảy dòng, đúng một câu hỏi: "đặt cái gì vào bài?". */
-    function veBangMedia() {
-      var b = el('div', 'sz-bang sz-bang--khoi');
-      b.hidden = true;
+    /* ── BẢNG MEDIA CHIA BA NHÓM, MỖI DÒNG MỘT HÌNH VẼ BỐ CỤC ──
+       Chín dòng xếp lưới, tên kỹ thuật ("Wide block", "Full-bleed block") và
+       một câu mô tả ngắn — người dùng đọc xong vẫn "không hình dung được cách
+       dùng". Thứ thiếu là câu trả lời cho "nó sẽ TRÔNG thế nào trong bài".
 
-      function dong(ten, mo, cu, lam) {
-        var o = el('button', 'sz-khoi-nut');
+       Nay mỗi dòng có một hình vẽ nhỏ đúng bố cục nó tạo ra (một tấm · lưới
+       vuông · hai cột · một khối thò ra ngoài cột chữ…), và ba nhóm theo câu
+       hỏi người viết tự đặt: một thứ · nhiều ảnh cạnh nhau · làm một thứ rộng
+       hơn cột chữ. Nhóm cuối nói thẳng cách dùng: chèn khung, rồi đặt ảnh
+       hay bảng VÀO TRONG nó. */
+    function veBangMedia() {
+      /* Khai báo TRONG hàm: `veBangMedia()` được gọi lúc dựng thanh nút, trước
+         khi mạch chạy tới các dòng `var` phía sau nó. */
+      var HINH_MEDIA = {
+        anh:   ['M3 5h18v14H3z', 'm3 16 5-5 4 4 3-3 6 6', 'M15.5 8.5h.01'],
+        yt:    ['M3 5h18v14H3z', 'M10 9l5 3-5 3z'],
+        video: ['M5 5h14v14H5z', 'M10 9l5 3-5 3z', 'M2 8h2M2 12h2M2 16h2M20 8h2M20 12h2M20 16h2'],
+        luoi:  ['M3 5h5v5H3z', 'M9.5 5h5v5h-5z', 'M16 5h5v5h-5z', 'M3 14h5v5H3z', 'M9.5 14h5v5h-5z'],
+        giu:   ['M3 5h6v14H3z', 'M11 8h10v7H11z'],
+        hai:   ['M3 6h8v12H3z', 'M13 6h8v12h-8z'],
+        ba:    ['M2 7h6v10H2z', 'M9 7h6v10H9z', 'M16 7h6v10h-6z'],
+        rong:  ['M8 3h8', 'M8 6h8', 'M2 9h20v8H2z', 'M8 20h8'],
+        tran:  ['M8 3h8', 'M8 6h8', 'M0 9h24v8H0z', 'M8 20h8']
+      };
+      var b = el('div', 'sz-bang sz-bang--khoi sz-bang--media');
+      b.hidden = true;
+      var dich = b;
+      function nhom(ten, ghi) {
+        dich = el('div', 'sz-media-nhom');
+        dich.appendChild(el('p', 'sz-kieu-de', ten));
+        if (ghi) dich.appendChild(el('p', 'sz-media-ghi', ghi));
+        b.appendChild(dich);
+      }
+
+      function dong(ten, mo, cu, lam, hinh) {
+        var o = el('button', 'sz-khoi-nut sz-media-nut');
         o.type = 'button';
+        if (hinh) {
+          var h = el('span', 'sz-media-hinh');
+          h.appendChild(svg(HINH_MEDIA[hinh]));
+          o.appendChild(h);
+        }
         var trai = el('span', 'sz-khoi-chu');
         trai.appendChild(el('span', 'sz-khoi-ten', ten));
         if (mo) trai.appendChild(el('span', 'sz-khoi-mo', mo));
@@ -1800,10 +1880,11 @@
         if (cu) o.appendChild(el('code', 'sz-khoi-cu', cu));
         o.addEventListener('mousedown', function (e) { e.preventDefault(); });
         o.addEventListener('click', function () { ghiNgay(); lam(); dongBang(); ghiNgay(); });
-        b.appendChild(o);
+        dich.appendChild(o);
       }
 
-      dong(L('img', 'Image'), L('imgMo', 'upload a file, or paste a /media/ path'), '![…](…)', chenAnh);
+      nhom(L('mediaNhomMot', 'One photo or video'));
+      dong(L('img', 'Image'), L('imgMo', 'one photo from your device — resize it afterwards (25% … Full)'), '![…](…)', chenAnh, 'anh');
 
       /* ── KHÔNG CÓ DÒNG "BỀ NGANG ẢNH" Ở ĐÂY NỮA ──
          Từng có một dòng bấm-vòng `thường → rộng → tràn`. Nó đi vì hai lẽ:
@@ -1819,7 +1900,7 @@
 
          Dán cả đường dẫn YouTube cũng được: rút lấy mã ở đây, để người viết
          khỏi phải biết "mã video" là đoạn nào trong cái link dài ấy. */
-      dong(L('bYoutube', 'YouTube'), L('bYoutubeMo', 'loads only when someone presses play'), '@youtube[…]', function () {
+      dong(L('bYoutube', 'YouTube'), L('bYoutubeMo', 'paste a YouTube link — the video loads only when someone presses play'), '@youtube[…]', function () {
         var u = window.prompt(L('bYtAsk', 'YouTube link or video id:'), '') || '';
         u = u.trim();
         if (!u) return;
@@ -1830,9 +1911,9 @@
         khung.focus();
         chenDoanMoi(doanChu('@youtube[' + ma + '](' + chu.replace(/[()]/g, '') + '){.wide}'));
         capNhat();
-      });
+      }, 'yt');
 
-      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm you uploaded'), '@video[…]', function () {
+      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm file already in /media/'), '@video[…]', function () {
         var u = window.prompt(L('bVidAsk', 'Video path (starts with /media/):'), '/media/') || '';
         u = u.trim();
         if (!/^(https?:\/\/|\/)/.test(u)) return;
@@ -1841,7 +1922,7 @@
         chenDoanMoi(doanChu('@video[' + u.replace(/[()\[\]\s]/g, '') + '](' +
                             chu.replace(/[()]/g, '') + '){.wide}'));
         capNhat();
-      });
+      }, 'video');
 
       /* Ba khối bọc: dải ảnh, và hai khổ rộng cho bất kỳ thứ gì nằm trong. */
       /* ── BỐN DẠNG DẢI ẢNH ──
@@ -1855,12 +1936,16 @@
          vẫn là Markdown đọc được, không phải một cú pháp riêng. Bày sẵn bốn
          dòng ở đây thay vì bắt người viết gõ tên lớp: người không biết code
          không có cách nào đoán ra `.giu` nghĩa là gì. */
-      dong(L('bGallery', 'Gallery · grid'), L('bGalleryMo', 'square crops, fills the row'), ':::gallery', function () { chenDaiAnh(''); });
-      dong(L('bGalleryGiu', 'Gallery · keep shape'), L('bGalleryGiuMo', 'no cropping — for book covers, screenshots'), ':::gallery .giu', function () { chenDaiAnh('.giu'); });
-      dong(L('bGalleryHai', 'Gallery · 2 columns'), L('bGalleryHaiMo', 'exactly two — before and after'), ':::gallery .hai', function () { chenDaiAnh('.hai'); });
-      dong(L('bGalleryBa', 'Gallery · 3 columns'), L('bGalleryBaMo', 'exactly three, even on wide screens'), ':::gallery .ba', function () { chenDaiAnh('.ba'); });
-      dong(L('bWide', 'Wide block'), L('bWideMo', 'spills past the text column'), ':::wide', function () { chenKhoi('wide', ''); });
-      dong(L('bFull', 'Full-bleed block'), L('bFullMo', 'edge to edge of the screen'), ':::full', function () { chenKhoi('full', ''); });
+      nhom(L('mediaNhomNhieu', 'Several photos side by side'),
+           L('mediaNhomNhieuGhi', 'Pick the photos in one go — they are laid out for you.'));
+      dong(L('bGallery', 'Grid'), L('bGalleryMo', 'square tiles that fill the row — any number of photos'), ':::gallery', function () { chenDaiAnh(''); }, 'luoi');
+      dong(L('bGalleryGiu', 'Keep shape'), L('bGalleryGiuMo', 'no cropping — for book covers, screenshots'), ':::gallery .giu', function () { chenDaiAnh('.giu'); }, 'giu');
+      dong(L('bGalleryHai', '2 columns'), L('bGalleryHaiMo', 'two per row — before / after'), ':::gallery .hai', function () { chenDaiAnh('.hai'); }, 'hai');
+      dong(L('bGalleryBa', '3 columns'), L('bGalleryBaMo', 'three per row, even on wide screens'), ':::gallery .ba', function () { chenDaiAnh('.ba'); }, 'ba');
+      nhom(L('mediaNhomRong', 'Make something wider than the text'),
+           L('mediaNhomRongGhi', 'Inserts a box. Put a photo, table or anything else INSIDE the box — it is shown wider on the page.'));
+      dong(L('bWide', 'Wide box'), L('bWideMo', 'a little wider than the text column, on both sides'), ':::wide', function () { chenKhoi('wide', ''); }, 'rong');
+      dong(L('bFull', 'Full-width box'), L('bFullMo', 'edge to edge of the screen'), ':::full', function () { chenKhoi('full', ''); }, 'tran');
       return b;
     }
 
@@ -2411,49 +2496,71 @@
       ghiNgay();
     }
 
-    /* ── DANH SÁCH KIỂU CHỮ ĐẦY ĐỦ ──
-       Mọi thứ đổi CẢ MỘT ĐOẠN mà bộ dựng hiểu được, gom vào một chỗ, mỗi
-       dòng có tên và câu giải thích — thay cho mấy nút icon rải rác không ai
-       đoán ra nghĩa:
-         Kiểu đoạn   Normal · Heading · Subheading · Small heading · Quote ·
-                     Code block
-         Cỡ chữ      Small · Normal size · Large · Extra large   {.nho} …
-         Đoạn mở     Not a lead-in                              {.thuong}
-       Cỡ chữ và "not a lead-in" chỉ áp cho đoạn văn (xem `doiLopDoan`). */
+    /* ── DANH SÁCH KIỂU CHỮ, CHIA NHÓM ──
+       Bản đầu xếp mười một dòng một mạch, ba dòng "tiêu đề nhóm" mờ trông y
+       như một mục nữa, mỗi dòng một phông khác nhau — người dùng: "gom nhóm
+       → listing under group > sắp xếp thứ tự dễ hiểu hơn".
+
+       Nay năm nhóm, mỗi nhóm có tiêu đề rõ và một vạch ngăn, xếp theo câu
+       hỏi người viết tự đặt ra — từ phổ biến tới hiếm:
+
+         Text              Normal text
+         Headings          Heading 2 · Heading 3 · Heading 4  (to → nhỏ)
+         Blocks            Quote · Code block
+         Size              Small · Normal · Large · Extra large (nhỏ → to)
+         Opening paragraph Not a lead-in  — một ô đánh dấu, vì nó bật/tắt
+
+       Mục đang dùng có dấu ✓. Hai nhóm cuối chỉ áp cho ĐOẠN VĂN (xem
+       `doiLopDoan`): con trỏ đang ở tiêu đề hay mục danh sách thì chúng mờ đi
+       và không bấm được, kèm một dòng nói vì sao. */
+    var nhomCo, nhomMo;   /* KHÔNG gán `= null`: veBangKieu() chạy TRƯỚC dòng này, gán lại là xoá mất */
     function veBangKieu() {
       var b = el('div', 'sz-bang sz-bang--khoi sz-bang--kieu');
       b.hidden = true;
-      b.appendChild(el('p', 'sz-bang-mach', L('kieuNhomDoan', 'Paragraph style')));
-      [['p',     L('para', 'Normal text'),       '',      'sz-kieu--p'],
-       ['h2',    L('h2', 'Heading'),             '## ',   'sz-kieu--h2'],
-       ['h3',    L('h3', 'Subheading'),          '### ',  'sz-kieu--h3'],
-       ['h4',    L('h4', 'Small heading'),       '#### ', 'sz-kieu--h4'],
-       ['quote', L('quote', 'Quote'),            '> ',    'sz-kieu--quote'],
-       ['code',  L('bCode', 'Code block'),       '```',   'sz-kieu--code']
+      function nhom(ten, ghi) {
+        var n = el('div', 'sz-kieu-nhom');
+        n.appendChild(el('p', 'sz-kieu-de', ten));
+        if (ghi) n.appendChild(el('p', 'sz-kieu-ghi', ghi));
+        b.appendChild(n);
+        return n;
+      }
+      function dong(n, lop, ten, mo, cu, lam) {
+        var o = dongChon(n, '', ten, mo, cu, lam);
+        o.classList.add(lop);
+        return o;
+      }
+      var n1 = nhom(L('kieuNhomChu', 'Text'));
+      dong(n1, 'sz-kieu--p', L('para', 'Normal text'), '', '', function () { datKieu('p'); });
+
+      var n2 = nhom(L('kieuNhomTieuDe', 'Headings'));
+      dong(n2, 'sz-kieu--h2', L('h2', 'Heading 2'), L('kieuH2Mo', 'a main section'), '##', function () { datKieu('h2'); });
+      dong(n2, 'sz-kieu--h3', L('h3', 'Heading 3'), L('kieuH3Mo', 'a part inside a section'), '###', function () { datKieu('h3'); });
+      dong(n2, 'sz-kieu--h4', L('h4', 'Heading 4'), L('kieuH4Mo', 'a small label above a few lines'), '####', function () { datKieu('h4'); });
+
+      var n3 = nhom(L('kieuNhomKhoi', 'Blocks'));
+      dong(n3, 'sz-kieu--quote', L('quote', 'Quote'), L('kieuQuoteMo', 'words from someone else, set apart'), '>', function () { datKieu('quote'); });
+      dong(n3, 'sz-kieu--code', L('bCode', 'Code block'), L('kieuCodeMo', 'keeps every space, no formatting'), '```', function () { datKieu('code'); });
+
+      nhomCo = nhom(L('kieuNhomCo', 'Size'), L('kieuChiDoan', 'Paragraphs only — put the cursor in a normal paragraph.'));
+      [['{.nho}',     'sz-co--nho',     L('bNho', 'Small text')],
+       ['__co__',     'sz-co--',        L('coThuong', 'Normal size')],
+       ['{.lon}',     'sz-co--lon',     L('coLon', 'Large text')],
+       ['{.rat-lon}', 'sz-co--rat-lon', L('coRatLon', 'Extra large text')]
       ].forEach(function (x) {
-        var o = dongChon(b, '', x[1], '', x[2], function () { datKieu(x[0]); });
-        o.classList.add(x[3]);
-      });
-      b.appendChild(el('p', 'sz-bang-mach', L('kieuNhomCo', 'Text size — paragraphs only')));
-      [['{.nho}',     L('bNho', 'Small text'),     '{.nho}',     'sz-co--nho'],
-       ['__co__',     L('coThuong', 'Normal size'), '',          'sz-co--'],
-       ['{.lon}',     L('coLon', 'Large text'),    '{.lon}',     'sz-co--lon'],
-       ['{.rat-lon}', L('coRatLon', 'Extra large text'), '{.rat-lon}', 'sz-co--rat-lon']
-      ].forEach(function (x) {
-        var o = dongChon(b, '', x[1], '', x[2], function () {
+        dong(nhomCo, x[1], x[2], '', x[0] === '__co__' ? '' : x[0], function () {
           if (x[0] === '__co__') {
-            var ds = doanChon();
-            ds.forEach(function (p) { ghiLopDoan(p, tachLopDoan(p).filter(function (t) { return NHOM_LOP[t] !== 'co'; })); });
+            doanChon().forEach(function (p) {
+              ghiLopDoan(p, tachLopDoan(p).filter(function (t) { return NHOM_LOP[t] !== 'co'; }));
+            });
             capNhat();
           } else doiLopDoan(x[0]);
         });
-        o.classList.add(x[3]);
       });
-      b.appendChild(el('p', 'sz-bang-mach', L('kieuNhomMo', 'Opening paragraph')));
-      var oMo = dongChon(b, '', L('bThuong', 'Not a lead-in'),
+
+      nhomMo = nhom(L('kieuNhomMo', 'Opening paragraph'), L('kieuChiDoan', 'Paragraphs only — put the cursor in a normal paragraph.'));
+      dong(nhomMo, 'sz-co--thuong', L('bThuong', 'Not a lead-in'),
         L('bThuongMo', 'the first paragraph normally becomes the big italic intro (sapo) — this keeps it a normal paragraph'),
-        '{.thuong}', function () { doiLopDoan('{.thuong}'); });
-      oMo.classList.add('sz-co--thuong');
+        '{.thuong}', function () { doiLopDoan('{.thuong}'); }).classList.add('sz-kieu-hop');
       return b;
     }
     function moBangNgon()  { moBang(bangNgon); }
@@ -3919,10 +4026,18 @@
       nutKieu.textContent = (TEN_KIEU[kNay] || kNay.toUpperCase()) + ' ▾';
       var lopBat = lopDangBat();
       var coBat = lopBat.filter(function (t) { return NHOM_LOP[t] === 'co'; })[0] || '';
-      [].forEach.call(bangKieu.children, function (o) {
+      /* Đoạn văn thì cỡ chữ "Normal" sáng khi không có lớp cỡ nào; không đứng
+         trong đoạn văn thì cả hai nhóm chỉ-cho-đoạn tắt đi. */
+      var coDoan = doanChon().length > 0;
+      [nhomCo, nhomMo].forEach(function (n) {
+        n.classList.toggle('sz-kieu-nhom--tat', !coDoan);
+        [].forEach.call(n.querySelectorAll('button'), function (x) { x.disabled = !coDoan; });
+      });
+      [].forEach.call(bangKieu.querySelectorAll('.sz-khoi-nut'), function (o) {
         o.classList.toggle('sz-khoi-nut--bat',
-          o.classList.contains('sz-kieu--' + kNay) || o.classList.contains('sz-co--' + coBat) ||
-          (o.classList.contains('sz-co--thuong') && lopBat.indexOf('thuong') >= 0));
+          o.classList.contains('sz-kieu--' + kNay) ||
+          (coDoan && o.classList.contains('sz-co--' + coBat)) ||
+          (coDoan && o.classList.contains('sz-co--thuong') && lopBat.indexOf('thuong') >= 0));
       });
       veCheDo();
       henGhi();
@@ -4366,13 +4481,13 @@
       }, 'sz-anh-nut--can');
     });
     thanhBang.appendChild(el('span', 'sz-anh-vach'));
-    var nutToHang = nutBang(L('bangToHang', 'Shade row'), L('bangToHangMo', 'Tint this whole row'), function (o) {
+    var nutToHang = nutBang(L('bangToHang', 'Highlight row'), L('bangToHangMo', 'Tint the background of this whole row to make it stand out'), function (o) {
       var v = viTriO(o);
       if (v.laDau) return o;
       if (v.tr.hasAttribute('data-to')) v.tr.removeAttribute('data-to'); else v.tr.setAttribute('data-to', '1');
       return o;
     });
-    var nutToCot = nutBang(L('bangToCot', 'Shade column'), L('bangToCotMo', 'Tint this whole column'), function (o) {
+    var nutToCot = nutBang(L('bangToCot', 'Highlight column'), L('bangToCotMo', 'Tint the background of this whole column to make it stand out'), function (o) {
       var v = viTriO(o);
       if (!v.th) return o;
       if (v.th.hasAttribute('data-to')) v.th.removeAttribute('data-to'); else v.th.setAttribute('data-to', '1');
@@ -4382,6 +4497,16 @@
        Bảng trên trang mặc định chỉ có đường ngang giữa các hàng. Bảng nhiều
        cột số hay nhiều cột ngắn thì mắt cần vạch dọc mới dò đúng cột — nút
        này bật vạch dọc rõ cho CẢ bảng, ghi `.ke-cot` vào dòng lớp dưới bảng. */
+    /* ── CỘT ĐẦU IN ĐẬM ──
+       Hàng đầu của bảng Markdown LUÔN là hàng tiêu đề (đã đậm). Cột ngoài
+       cùng bên trái thì không — mà nó thường chính là nhãn của từng hàng
+       ("Người Mẹ", "Cái Bóng"…). Bật nút này là cột ấy in đậm, ghi `.cot-dau`
+       vào dòng lớp dưới bảng. */
+    var nutCotDau = nutBang(L('bangCotDau', 'Bold first column'), L('bangCotDauMo', 'Make the first column bold — use it as a label for each row'), function (o) {
+      var bang = o.closest('table');
+      if (bang.hasAttribute('data-cot-dau')) bang.removeAttribute('data-cot-dau'); else bang.setAttribute('data-cot-dau', '1');
+      return o;
+    });
     var nutKeCot = nutBang(L('bangKeCot', 'Column lines'), L('bangKeCotMo', 'Show a clear line between columns'), function (o) {
       var bang = o.closest('table');
       if (bang.hasAttribute('data-ke')) bang.removeAttribute('data-ke'); else bang.setAttribute('data-ke', 'cot');
@@ -4394,6 +4519,7 @@
       var ds = khung.querySelectorAll('table.sz-bang-o');
       for (var b = 0; b < ds.length; b++) {
         ds[b].classList.toggle('sz-bang-ke', ds[b].hasAttribute('data-ke'));
+        ds[b].classList.toggle('sz-bang-cotdau', ds[b].hasAttribute('data-cot-dau'));
         var hang = ds[b].querySelectorAll('tr');
         var dau = hang[0] ? hang[0].children : [];
         /* Bề rộng cột theo số dấu gạch — đúng luật `<colgroup>` của bộ dựng:
@@ -4439,6 +4565,7 @@
       nutToHang.classList.toggle('sz-anh-nut--bat', !v.laDau && v.tr.hasAttribute('data-to'));
       nutToCot.classList.toggle('sz-anh-nut--bat', !!(v.th && v.th.hasAttribute('data-to')));
       nutKeCot.classList.toggle('sz-anh-nut--bat', v.bang.hasAttribute('data-ke'));
+      nutCotDau.classList.toggle('sz-anh-nut--bat', v.bang.hasAttribute('data-cot-dau'));
       thanhBang.hidden = false;
       var rB = v.bang.getBoundingClientRect(), rK = khoiSoan.getBoundingClientRect();
       var trai = Math.max(0, Math.min(rB.left - rK.left, rK.width - thanhBang.offsetWidth));

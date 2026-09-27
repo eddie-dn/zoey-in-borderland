@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.4 | 2026-09-27 | 04 | ô soạn thảo: menu kiểu chữ chia nhóm · bảng Media có hình minh hoạ · ảnh luôn đứng riêng dòng · cột đầu in đậm |
 | V3.1.3 | 2026-09-25 | 03 | ô soạn thảo: danh sách kiểu chữ đầy đủ · chữ lớn · bảng thả xuống theo thanh dính · menu bảng · kẻ ngăn cột |
 | V3.1.2 | 2026-09-24 | 02 | ô soạn thảo: Preview gộp song song · kiểu đoạn H2–H4 · thanh bảng tô hàng cột · xoá khối |
 | V3.1.1 | 2026-09-24 | 01 | ô soạn thảo: danh sách lồng · ô việc bấm được · khổ ảnh theo phần trăm · xem thử tại chỗ |
@@ -263,6 +264,18 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.4 — 27-Sep-2026
+
+- **Menu kiểu chữ chia nhóm rõ ràng:** Text · Headings (2 · 3 · 4) · Blocks
+  (Quote · Code) · Size · Opening paragraph, mục đang dùng có dấu ✓; hai nhóm
+  chỉ dành cho đoạn văn tự mờ đi khi con trỏ ở tiêu đề hay danh sách.
+- **Bảng Media dễ hình dung hơn:** ba nhóm (một ảnh/video · nhiều ảnh cạnh
+  nhau · làm một thứ rộng hơn cột chữ), mỗi mục có hình vẽ bố cục nó tạo ra.
+  Ảnh nằm lẫn trong đoạn chữ nay luôn được tách ra dòng riêng, nên khổ 25% ·
+  50% · Wide… hiện đúng trên trang thay vì bung hết cỡ.
+- **Bảng:** hai nút tô màu đổi tên thành Highlight row / column, thêm nút
+  Bold first column in đậm cột nhãn ngoài cùng.
 
 ## V3.1.3 — 25-Sep-2026
 

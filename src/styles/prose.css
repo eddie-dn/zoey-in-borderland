@@ -554,6 +554,8 @@
    đậm gấp đôi. Pha từ `--accent` nên đổi theme là màu tô đổi theo. */
 /* `.ke-cot` (nút "Column lines" trong ô soạn): vạch dọc rõ giữa các cột. */
 .prose .table-wrap.ke-cot :is(th,td) + :is(th,td){border-left:1px solid var(--line)}
+/* `.cot-dau` (nút "Bold first column"): cột ngoài cùng là nhãn của từng hàng. */
+.prose .table-wrap.cot-dau td:first-child{font-weight:600;color:var(--text)}
 /* Ô rỗng vẫn cao bằng một dòng chữ — bảng mới chèn chưa gõ gì không bị dẹp
    thành mấy vạch sát nhau. */
 .prose :is(th,td):empty::before{content:"\a0"}
