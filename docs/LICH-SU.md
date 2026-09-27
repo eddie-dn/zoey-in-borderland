@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.5 | 2026-09-27 | 05 | ô soạn thảo: nền đục ở theme tối · ảnh giữ đúng khổ · khối video xem được · tải video · khung Wide rõ nghĩa |
 | V3.1.4 | 2026-09-27 | 04 | ô soạn thảo: menu kiểu chữ chia nhóm · bảng Media có hình minh hoạ · ảnh luôn đứng riêng dòng · cột đầu in đậm |
 | V3.1.3 | 2026-09-25 | 03 | ô soạn thảo: danh sách kiểu chữ đầy đủ · chữ lớn · bảng thả xuống theo thanh dính · menu bảng · kẻ ngăn cột |
 | V3.1.2 | 2026-09-24 | 02 | ô soạn thảo: Preview gộp song song · kiểu đoạn H2–H4 · thanh bảng tô hàng cột · xoá khối |
@@ -264,6 +265,18 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.5 — 27-Sep-2026
+
+- **Khung soạn ở theme tối thôi trong veo.** Thanh nút, menu kiểu chữ, bảng
+  Media và đầu cột Preview trước đây để lộ chữ của bài xuyên qua; nay đều
+  đục ở mọi theme.
+- **Ảnh nằm trong một mục danh sách hay trong một cụm chữ màu nay giữ đúng
+  khổ** (25% · 50% · Wide…) trên trang và trong Preview, thay vì bung hết cỡ.
+- **YouTube và video là một khối xem được ngay trong khung soạn**: ảnh bìa có
+  nút ▶ phát thử, bấm vào khối là chỉnh khổ như ảnh, bấm đúp để sửa chú thích.
+  Video ngắn (.mp4 · .webm, tới 15 MB) nay tải thẳng từ máy lên. Khung Wide ·
+  Full · Gallery bỏ ô tiêu đề vô tác dụng và tự ghi rõ dùng để làm gì.
 
 ## V3.1.4 — 27-Sep-2026
 

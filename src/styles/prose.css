@@ -76,6 +76,12 @@
 .prose figure.w33 :is(img,video){width:33.333%}
 .prose figure.w50 :is(img,video){width:50%}
 .prose figure.w75 :is(img,video){width:75%}
+/* YouTube dựng ra một `.video-frame` (không phải <video>) — cùng nấc khổ. */
+.prose figure:is(.w25,.w33,.w50,.w75) .video-frame{margin-inline:auto}
+.prose figure.w25 .video-frame{width:25%}
+.prose figure.w33 .video-frame{width:33.333%}
+.prose figure.w50 .video-frame{width:50%}
+.prose figure.w75 .video-frame{width:75%}
 @media (max-width:640px){
   .prose figure.w25 :is(img,video){width:45%}
   .prose figure.w33 :is(img,video){width:55%}

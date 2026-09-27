@@ -328,10 +328,26 @@
 
   /* Đoạn có ảnh làm con trực tiếp mà KHÔNG đứng một mình: có chữ bên cạnh,
      hoặc từ hai ảnh trở lên. */
+  /* Ảnh bị bọc trong định dạng (`<span class="c-vang"><img>…</span>`, `<b>`,
+     `<a>`) thì nhấc nó lên làm con trực tiếp của `goc`, cắt đôi lớp bọc quanh
+     nó. Màu hay đậm trên một tấm ẢNH không mang nghĩa gì, mà nó làm tấm ảnh
+     thành ảnh giữa dòng. Chỉ chạy trên BẢN SAO lúc xuất Markdown. */
+  function nhacAnh(goc) {
+    var ds = goc.querySelectorAll('img');
+    for (var i = 0; i < ds.length; i++) {
+      if (ds[i].parentNode === goc) continue;
+      var tren = tachTren(ds[i], goc);
+      if (tren && tren.parentNode === goc) goc.replaceChild(ds[i], tren);
+    }
+    return goc;
+  }
   function anhLan(c) {
-    var soAnh = 0;
-    for (var i = 0; i < c.childNodes.length; i++) if (c.childNodes[i].nodeName === 'IMG') soAnh++;
+    var soAnh = c.querySelectorAll('img').length;
     if (!soAnh) return false;
+    for (var k = 0; k < c.childNodes.length; k++) {
+      if (c.childNodes[k].nodeType === 1 && c.childNodes[k].nodeName !== 'IMG' &&
+          c.childNodes[k].querySelector('img')) return true;   /* ảnh bị bọc */
+    }
     if (soAnh > 1) return true;
     var ban = c.cloneNode(true);
     var anh = ban.querySelectorAll('img');
@@ -458,8 +474,31 @@
           var ban = li.cloneNode(true);
           var bo = ban.querySelectorAll(':scope > ul, :scope > ol');
           for (var q2 = 0; q2 < bo.length; q2++) bo[q2].remove();
+          /* ── ẢNH TRONG MỘT MỤC: XUỐNG DÒNG CON CỦA MỤC ──
+             Ảnh nằm trên dòng chữ của mục là ảnh giữa dòng: mất khổ 25% ·
+             Wide…, bung hết cỡ trên trang. Đưa nó xuống thành một dòng con
+             thụt vào của chính mục ấy — bộ dựng đọc dòng con như một khối
+             riêng, nên tấm ảnh thành <figure> và vẫn thuộc về mục. */
+          var anhMuc = [];
+          if (ban.querySelector('img')) {
+            nhacAnh(ban);
+            var pTrong = ban.querySelectorAll(':scope > p');
+            for (var pt = 0; pt < pTrong.length; pt++) {
+              while (pTrong[pt].firstChild) ban.insertBefore(pTrong[pt].firstChild, pTrong[pt]);
+              pTrong[pt].remove();
+            }
+            nhacAnh(ban);
+            var anhDs = ban.querySelectorAll(':scope > img');
+            for (var ad = 0; ad < anhDs.length; ad++) {
+              var pA = document.createElement('p');
+              pA.appendChild(anhDs[ad]);
+              anhMuc.push(thut + '  ' + trong(pA));
+            }
+            while (ban.firstChild && ban.firstChild.nodeName === 'BR') ban.removeChild(ban.firstChild);
+            while (ban.lastChild && ban.lastChild.nodeName === 'BR') ban.removeChild(ban.lastChild);
+          }
 
-          var con = [];
+          var con = anhMuc.slice();
           var conDS = li.querySelectorAll(':scope > ul, :scope > ol');
           if (conDS.length) {
             var tam = document.createElement('div');
@@ -501,6 +540,17 @@
         continue;
       }
 
+      /* Khối video (xem `nhungHTML`): ghi lại đúng dòng cú pháp, NGUYÊN — không
+         qua `thoat()`. Khối còn đang tải lên (chưa có đường thật) thì bỏ qua. */
+      if (c.getAttribute && c.getAttribute('data-nhung')) {
+        var nguonN = c.getAttribute('data-nguon') || '';
+        if (nguonN) {
+          ra.push(thut + '@' + c.getAttribute('data-nhung') + '[' + nguonN + '](' +
+                  (c.getAttribute('data-cap') || '').replace(/[()]/g, '') + ')' +
+                  (c.getAttribute('data-lop') || ''));
+        }
+        continue;
+      }
       if (the === 'FIGURE') { ra.push(thut + trong(c)); continue; }
 
       /* ── KHỐI ::: (ghi chú, mẹo, lưu ý, đừng làm, dải ảnh, tràn lề) ──
@@ -539,6 +589,7 @@
          vẽ nó như một tấm riêng. Người dùng: "hình scale xong ko thay đổi".
          Nên ở đây cắt đoạn ra: chữ một đoạn, mỗi ảnh một dòng. */
       if ((the === 'P' || the === 'DIV') && anhLan(c)) {
+        c = nhacAnh(c.cloneNode(true));
         var tam2 = document.createElement('div'), hien = c.cloneNode(false);
         var day = function () {
           while (hien.lastChild && hien.lastChild.nodeName === 'BR') hien.removeChild(hien.lastChild);
@@ -746,6 +797,38 @@
     return String(s).replace(/[&<>]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
     });
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     VIDEO TRONG KHUNG SOẠN: MỘT KHỐI XEM ĐƯỢC, KHÔNG PHẢI MỘT DÒNG CÚ PHÁP
+
+     `@youtube[mã](chú thích){.wide}` từng nằm trong khung soạn dưới dạng
+     nguyên dòng chữ ấy: không thấy video nào, không chỉnh khổ được, gõ lỡ một
+     ký tự là hỏng cú pháp. Người dùng: "ko chỉnh đc khung youtube & ko thử xem
+     được từ khung soạn thảo".
+
+     Nay nó là một `<figure>` khoá gõ (`contenteditable=false`): ảnh bìa của
+     video với nút ▶ phát thử ngay tại chỗ (YouTube) hoặc trình phát thật
+     (file .mp4/.webm). Mọi thông tin nằm ở thuộc tính — `data-nhung` (loại),
+     `data-nguon` (mã / đường dẫn), `data-cap`, `data-lop` — và `sangMD` ghi
+     lại đúng dòng cú pháp cũ từ đó. Bấm vào khối là hiện thanh khổ như ảnh.
+     ══════════════════════════════════════════════════════════════════════ */
+  var RE_NHUNG = /^\s*@(youtube|video)\\?\[([^\]\\]+)\\?\]\(([^)]*)\)(\{[^}]*\})?\s*$/i;
+  function thuocTinh(x) {
+    return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+  function nhungHTML(loai, nguon, cap, lop) {
+    loai = String(loai).toLowerCase();
+    var ruot = loai === 'youtube'
+      ? '<div class="sz-nhung-khung" style="background-image:url(https://i.ytimg.com/vi/' +
+          encodeURIComponent(nguon) + '/hqdefault.jpg)">' +
+          '<span class="sz-nhung-chay" role="button" aria-label="Play">▶</span></div>'
+      : '<div class="sz-nhung-khung sz-nhung-khung--video">' +
+          '<video src="' + thuocTinh(nguon) + '" controls preload="metadata" playsinline></video></div>';
+    return '<figure class="sz-nhung" contenteditable="false" data-nhung="' + loai + '"' +
+           ' data-nguon="' + thuocTinh(nguon) + '" data-cap="' + thuocTinh(cap) + '"' +
+           (lop ? ' data-lop="' + thuocTinh(lop) + '"' : '') + '>' + ruot +
+           '<figcaption class="sz-nhung-chu">' + thoatHTML(cap || '') + '</figcaption></figure>';
   }
 
   /* Ký tự giữ chỗ cho mấy mẩu phải miễn nhiễm với các phép thay thế phía sau.
@@ -962,6 +1045,11 @@
              && !/^(#{1,4}\s|>|```|:::)/.test(dong[i])
              && !dsThuong.test(dong[i]) && !dsSo.test(dong[i]) && !laVach(dong[i])) {
         doan.push(dong[i]); i++;
+      }
+      var mNhung = doan.length === 1 && doan[0].match(RE_NHUNG);
+      if (mNhung) {
+        ra.push(nhungHTML(mNhung[1], mNhung[2], mNhung[3], mNhung[4] || ''));
+        continue;
       }
       if (doan.length) {
         /* ── CÓ NHỮNG ĐOẠN MÀ CHỖ NGẮT DÒNG LÀ NỘI DUNG ──
@@ -1909,18 +1997,20 @@
         if (!ma) { window.alert(L('bYtSai', 'Could not find a video id in that.')); return; }
         var chu = window.prompt(L('bCapAsk', 'Caption (can be empty):'), '') || '';
         khung.focus();
-        chenDoanMoi(doanChu('@youtube[' + ma + '](' + chu.replace(/[()]/g, '') + '){.wide}'));
+        chenDoanMoi(khoiNhung('youtube', ma, chu.replace(/[()]/g, ''), ''));
         capNhat();
       }, 'yt');
 
-      dong(L('bVideo', 'Video file'), L('bVideoMo', 'an .mp4 or .webm file already in /media/'), '@video[…]', function () {
+      dong(L('bVideo', 'Video file'), L('bVideoMo', 'upload an .mp4 or .webm up to 15 MB — longer videos: use YouTube'), '@video[…]', function () {
+        /* Có đường tải lên thì mở hộp chọn file video; không có (chưa đăng
+           nhập) thì rơi về ô gõ đường dẫn như cũ. */
+        if (taiAnh) { oVideo.click(); return; }
         var u = window.prompt(L('bVidAsk', 'Video path (starts with /media/):'), '/media/') || '';
         u = u.trim();
         if (!/^(https?:\/\/|\/)/.test(u)) return;
         var chu = window.prompt(L('bCapAsk', 'Caption (can be empty):'), '') || '';
         khung.focus();
-        chenDoanMoi(doanChu('@video[' + u.replace(/[()\[\]\s]/g, '') + '](' +
-                            chu.replace(/[()]/g, '') + '){.wide}'));
+        chenDoanMoi(khoiNhung('video', u.replace(/[()\[\]\s]/g, ''), chu.replace(/[()]/g, ''), ''));
         capNhat();
       }, 'video');
 
@@ -2195,6 +2285,104 @@
       }
       datConTroVao(sau);
     }
+
+    function khoiNhung(loai, nguon, cap, lop) {
+      var tam = document.createElement('div');
+      tam.innerHTML = nhungHTML(loai, nguon, cap, lop);
+      return tam.firstChild;
+    }
+    /* Bài hay bản nháp cũ còn mang dòng `@youtube[…]` dạng CHỮ: đổi thành khối. */
+    function doiDongNhung() {
+      var ds = khung.querySelectorAll('p');
+      for (var i = 0; i < ds.length; i++) {
+        if (ds[i].querySelector('*:not(br)')) continue;
+        var m = ds[i].textContent.match(RE_NHUNG);
+        if (m) ds[i].parentNode.replaceChild(khoiNhung(m[1], m[2], m[3], m[4] || ''), ds[i]);
+      }
+    }
+
+    /* ── TẢI VIDEO TỪ MÁY ──
+       Đi cùng đường với ảnh (`taiAnh` → functions/api/anh.js), trần 15 MB:
+       nội dung đi dạng base64 trong JSON, và bộ nhớ của Worker phải chứa cả
+       chuỗi ấy. Video dài hơn thì YouTube là chỗ đúng — nhẹ cho trang, và kho
+       mã không phình ra vì mấy chục MB nhị phân mỗi bài. Khối hiện ngay bằng
+       bản tại chỗ (`blob:`) để xem thử; đường thật về thì ghi vào `data-nguon`. */
+    var TRAN_VIDEO = 15 * 1024 * 1024;
+    var oVideo = el('input');
+    oVideo.type = 'file';
+    oVideo.accept = 'video/mp4,video/webm';
+    oVideo.hidden = true;
+    oVideo.addEventListener('change', function () {
+      var f = oVideo.files && oVideo.files[0];
+      oVideo.value = '';
+      if (f) taiVideo(f);
+    });
+    function taiVideo(f) {
+      if (!/^video\/(mp4|webm)$/i.test(f.type)) {
+        bao(L('vidLoai', 'Only .mp4 or .webm videos can be uploaded.'), true); return;
+      }
+      if (f.size > TRAN_VIDEO) {
+        bao(L('vidTo', 'This video is over 15 MB — upload it to YouTube and use the YouTube option instead.'), true); return;
+      }
+      ghiNgay();
+      var ma = 'tai-' + (++demAnh);
+      var fig = khoiNhung('video', '', '', '');
+      fig.setAttribute('data-tai', ma);
+      fig.classList.add('sz-nhung--tai');
+      var xem = URL.createObjectURL(f);
+      fig.querySelector('video').src = xem;
+      khung.focus();
+      chenDoanMoi(fig);
+      capNhat();
+      bao(L('vidUp', 'Uploading video…'));
+      sangB64(f).then(function (b64) {
+        return taiAnh({ ten: tenTu(f, f).ten, loai: f.type, duLieu: b64, co: f.size });
+      }).then(function (kq) {
+        xongTai[ma] = kq.duong;
+        suaAnhTai();
+        bao('');
+        capNhat();
+      }).catch(function (e) {
+        var x = khung.querySelector('[data-tai="' + ma + '"]');
+        if (x) x.remove();
+        URL.revokeObjectURL(xem);
+        var chu = (e && e.message) || '';
+        if (chu === 'doc-khong-duoc') chu = L('upRead', 'Could not read that file.');
+        bao(chu || L('upFail', 'Could not upload that image.'), true);
+        capNhat();
+      });
+    }
+
+    /* Bấm ▶ trên khối YouTube: phát thử ngay trong khung (bản nocookie — không
+       đặt cookie theo dõi). Bấm chỗ khác trên khối: hiện thanh khổ. Bấm đúp:
+       sửa chú thích. */
+    khung.addEventListener('click', function (e) {
+      var chay = e.target && e.target.closest ? e.target.closest('.sz-nhung-chay') : null;
+      if (!chay || !khung.contains(chay)) return;
+      var fig = chay.closest('.sz-nhung');
+      var k = chay.parentNode;
+      var ifr = document.createElement('iframe');
+      ifr.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(fig.getAttribute('data-nguon')) + '?autoplay=1';
+      ifr.allow = 'autoplay; encrypted-media; picture-in-picture';
+      ifr.allowFullscreen = true;
+      ifr.title = 'YouTube';
+      k.innerHTML = '';
+      k.appendChild(ifr);
+    });
+    khung.addEventListener('dblclick', function (e) {
+      var fig = e.target && e.target.closest ? e.target.closest('.sz-nhung') : null;
+      if (!fig || !khung.contains(fig)) return;
+      e.preventDefault();
+      var moi = window.prompt(L('bCapAsk', 'Caption (can be empty):'), fig.getAttribute('data-cap') || '');
+      if (moi === null) return;
+      ghiNgay();
+      moi = moi.replace(/[()]/g, '').trim();
+      fig.setAttribute('data-cap', moi);
+      var cap = fig.querySelector('.sz-nhung-chu');
+      if (cap) cap.textContent = moi;
+      capNhat();
+      ghiNgay();
+    });
 
     function chenMa(ngon) {
       khung.focus();
@@ -2714,11 +2902,12 @@
        ấy SAU khi ảnh đã lên xong thì ô ấy phải nhận lại đường thật, không thì
        `sangMD` ghi vào bài một đường `blob:` chết. */
     function suaAnhTai() {
-      var ds = khung.querySelectorAll('img[data-tai]');
+      var ds = khung.querySelectorAll('[data-tai]');
       for (var i = 0; i < ds.length; i++) {
         var d = xongTai[ds[i].getAttribute('data-tai')];
         if (!d) continue;
-        ds[i].setAttribute('data-that', d);
+        ds[i].setAttribute(ds[i].nodeName === 'IMG' ? 'data-that' : 'data-nguon', d);
+        ds[i].classList.remove('sz-nhung--tai');
         ds[i].removeAttribute('data-tai');
         ds[i].classList.remove('sz-anh--tai');
         if (!ds[i].classList.length) ds[i].removeAttribute('class');
@@ -3733,7 +3922,14 @@
       }
       /* Ô giữ chỗ của một lượt tải CHƯA XONG lúc đóng tab: nó không có
          `data-that`, nên không có gì cứu được. Bỏ đi, và nói ra. */
-      var treo = khung.querySelectorAll('img[data-tai]');
+      var vid = khung.querySelectorAll('.sz-nhung video');
+      for (var v = 0; v < vid.length; v++) {
+        var fg = vid[v].closest('.sz-nhung');
+        if (/^blob:/i.test(vid[v].getAttribute('src') || '') && fg.getAttribute('data-nguon')) {
+          vid[v].setAttribute('src', fg.getAttribute('data-nguon'));
+        }
+      }
+      var treo = khung.querySelectorAll('img[data-tai], .sz-nhung[data-tai]');
       for (var j = 0; j < treo.length; j++) treo[j].remove();
       if (treo.length) bao(L('upLost', 'An image that was still uploading did not make it.'), true);
 
@@ -4280,6 +4476,8 @@
       var nay = locLopAnh(a);
       for (var i = 0; i < nutKho.length; i++) {
         nutKho[i].classList.toggle('sz-anh-nut--bat', KHO_ANH[i][0] === nay.kho);
+        /* "Original" chỉ có nghĩa với ẢNH (khổ thật của file); video thì không. */
+        nutKho[i].hidden = KHO_ANH[i][0] === '{.goc}' && a.nodeName !== 'IMG';
       }
       var canDuoc = !!KHO_CAN_DUOC[nay.kho];
       for (var j = 0; j < nutCan.length; j++) {
@@ -4288,7 +4486,7 @@
       }
       /* Ảnh vừa chèn có thể chưa xong bố cục ở nhịp này — lúc ấy chiều cao
          bằng 0 và thanh rơi lên đỉnh tấm ảnh. Đợi nó tải xong rồi đặt lại. */
-      if (!a.complete || !a.getBoundingClientRect().height) {
+      if (a.nodeName === 'IMG' && (!a.complete || !a.getBoundingClientRect().height)) {
         a.addEventListener('load', function () {
           if (anhDangChon === a) datThanhAnh(a);
         }, { once: true });
@@ -4309,6 +4507,10 @@
 
     khung.addEventListener('click', function (e) {
       var a = e.target && e.target.nodeName === 'IMG' ? e.target : null;
+      /* Khối video cũng nhận thanh khổ — trừ cú bấm vào nút ▶ hay trình phát. */
+      if (!a && e.target && e.target.closest && !e.target.closest('.sz-nhung-chay, video, iframe')) {
+        a = e.target.closest('.sz-nhung');
+      }
       datThanhAnh(a && khung.contains(a) ? a : null);
     });
     /* ── CUỘN THÌ THANH ĐI THEO ẢNH, KHÔNG BIẾN MẤT ──
@@ -4587,6 +4789,19 @@
        hay bản nháp cũ cũng có. `sangMD` bỏ qua cả nhãn, nên nó không lọt ra
        Markdown. */
     function ganNutXoaKhoi() {
+      /* ── KHUNG BỌC (gallery · wide · full) KHÔNG CÓ Ô TIÊU ĐỀ ──
+         Bộ dựng bỏ qua tiêu đề của `:::wide` / `:::full`, còn với `:::gallery`
+         thì chữ ở chỗ ấy là LỚP dạng lưới (`.giu`, `.hai`), không phải tiêu đề
+         — gõ một câu vào là hỏng dạng. Nên ô "Title — type here" trên mấy khung
+         này là một cái bẫy: người dùng "ko hiểu cách dùng box này". Khoá và
+         giấu nó đi (chữ bên trong vẫn giữ cho `sangMD`); nhãn loại tự nói ra
+         khung dùng để làm gì (xem CSS `.sz-khoi--boc`). */
+      var boc = khung.querySelectorAll('.sz-khoi[data-khoi="gallery"], .sz-khoi[data-khoi="wide"], .sz-khoi[data-khoi="full"]');
+      for (var b2 = 0; b2 < boc.length; b2++) {
+        boc[b2].classList.add('sz-khoi--boc');
+        var de2 = boc[b2].querySelector(':scope > .sz-khoi-nhan > .sz-khoi-de');
+        if (de2 && de2.contentEditable !== 'false') de2.contentEditable = 'false';
+      }
       var ds = khung.querySelectorAll('.sz-khoi-nhan');
       for (var i = 0; i < ds.length; i++) {
         if (ds[i].querySelector(':scope > .sz-khoi-xoa')) continue;
@@ -4868,7 +5083,18 @@
         if (!MAU_GO[i][0].test(chu)) continue;
         /* Đang ở danh sách rồi mà gõ `- ` nữa thì để yên: chạy lệnh lúc ấy là
            BỎ danh sách, ngược hẳn ý người gõ. */
-        if (i >= 3 && k.nodeName === 'LI' && loaiLi(k) === ['cham', 'so', 'viec'][i - 3]) return;
+        if (i >= 3 && k.nodeName === 'LI' && loaiLi(k) === ['cham', 'so', 'viec'][i - 3]) {
+          /* Đã là ô việc mà gõ `[ ] ` nữa (thói quen gõ Markdown, hay vì mục
+             mới sau Enter đã tự là ô việc): nuốt mấy ký tự ấy thay vì để lại
+             một chữ `[ ]` trơ không tick được. Gõ `- ` trong mục chấm thì
+             vẫn để nguyên — có khi người ta muốn một gạch ngang thật. */
+          if (i === 5) {
+            while (k.firstChild) k.removeChild(k.firstChild);
+            k.appendChild(document.createElement('br'));
+            datConTroVao(k);
+          }
+          return;
+        }
         while (k.firstChild) k.removeChild(k.firstChild);
         k.appendChild(document.createElement('br'));
         datConTroVao(k);
@@ -4955,6 +5181,7 @@
     thanh.appendChild(bangKieu);
     khoiSoan.appendChild(oBao);
     khoiSoan.appendChild(oFile);
+    khoiSoan.appendChild(oVideo);
     khoiSoan.appendChild(thanhAnh);
     khoiSoan.appendChild(thanhBang);
     /* Khung gõ, bài xem thử và Markdown chung MỘT chỗ đứng — xem `doiCheDo`.
@@ -5001,7 +5228,7 @@
          trần ở đầu (bản .md trước đây dựng thế), và ô vừa xoá thì rỗng hẳn —
          cả hai đều cần gieo lại khối. */
       datHTML : function (h) {
-        khung.innerHTML = h || ''; donAnh(); baoDamKhoi(); donDanhSach();
+        khung.innerHTML = h || ''; doiDongNhung(); donAnh(); baoDamKhoi(); donDanhSach();
         /* Bài mở từ file chỉ có `data-lop`; dựng lại lớp nhìn thấy từ đó — không
            thì một đoạn `{.giua}` mở ra vẫn căn đều, và người viết tưởng mất. */
         [].forEach.call(khung.querySelectorAll('p[data-lop]'), function (p) { ghiLopDoan(p, tachLopDoan(p)); });

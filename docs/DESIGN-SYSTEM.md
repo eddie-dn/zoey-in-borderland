@@ -2986,6 +2986,14 @@ không biến mất.
 | 100% | *(không có)* | bằng cột chữ | như nhau |
 | Full | `{.full}` | tràn hết bề ngang màn hình | như nhau |
 
+**Video cũng dùng thanh này.** Trong ô soạn, `@youtube[…]` và `@video[…]` là một
+khối `.sz-nhung` khoá gõ — ảnh bìa với nút ▶ phát thử (YouTube, bản nocookie)
+hoặc trình phát thật (file) — bấm vào là hiện thanh khổ (trừ nấc Original),
+bấm đúp để sửa chú thích. `sangMD` ghi lại đúng dòng cú pháp từ các thuộc tính
+`data-nhung · data-nguon · data-cap · data-lop`. Trên trang, `.video-frame` của
+YouTube theo cùng các nấc `.w25`…`.w75`. Video tải từ máy: .mp4 · .webm, trần
+15 MB (functions/api/anh.js) — dài hơn thì dùng YouTube.
+
 Nấc gọi bằng chính con số vì hai nấc trước — *Nhỏ* `{.rat-hep}` 31% và *Hẹp*
 `{.hep}` 62% — không trả lời được câu người viết thật sự hỏi ("cho nó bằng một
 nửa"), và không có gì nhỏ hơn 31%. Hai lớp cũ vẫn chạy ở bộ dựng lẫn ô soạn
