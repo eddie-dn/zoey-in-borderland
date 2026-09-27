@@ -535,6 +535,10 @@ const NHAN = {
   szBXoaKhoi  : 'Remove this block',
   /* Thanh bảng — nổi lên khi con trỏ đứng trong một ô (xem `thanhBang`). */
   /* Hai menu Insert ▾ / Delete ▾ thay bốn nút + / − hàng cột. */
+  /* Tải video từ máy — xem `taiVideo` trong soan.js. */
+  szVidLoai   : 'Only .mp4 or .webm videos can be uploaded.',
+  szVidTo     : 'This video is over 15 MB — upload it to YouTube and use the YouTube option instead.',
+  szVidUp     : 'Uploading video…',
   szBangChen  : 'Insert',
   szBangBo    : 'Delete',
   szBangHangTren: 'Row above',
@@ -607,7 +611,7 @@ const NHAN = {
   szCropDo    : 'Crop',
   szBCodeAsk  : 'Language (js, css, python… — can be empty):',
   szBYoutube  : 'YouTube',   szBYoutubeMo : 'paste a YouTube link — the video loads only when someone presses play',
-  szBVideo    : 'Video file', szBVideoMo   : 'an .mp4 or .webm file already in /media/',
+  szBVideo    : 'Video file', szBVideoMo   : 'upload an .mp4 or .webm up to 15 MB — longer videos: use YouTube',
   szBNho      : 'Small text', szBNhoMo : 'for a side note or a source line',
   szSup       : 'Superscript — m²',
   szSub       : 'Subscript — H₂O',
@@ -1378,6 +1382,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         modeWrite: NHAN.szModeWrite, modeWriteTip: NHAN.szModeWriteTip,
                         previewFull: NHAN.szPreviewFull, previewSide: NHAN.szPreviewSide,
                         bXoaKhoi: NHAN.szBXoaKhoi, anhXoa: NHAN.szAnhXoa,
+                        vidLoai: NHAN.szVidLoai, vidTo: NHAN.szVidTo, vidUp: NHAN.szVidUp,
                         bangChen: NHAN.szBangChen, bangBo: NHAN.szBangBo,
                         bangHangTren: NHAN.szBangHangTren, bangCotTrai: NHAN.szBangCotTrai,
                         bangKeCot: NHAN.szBangKeCot, bangKeCotMo: NHAN.szBangKeCotMo,

@@ -47,6 +47,12 @@ const UA = 'zoey-in-borderland-admin';
    Worker phải chứa cả chuỗi ấy. Trên ngưỡng đó thì phải đổi sang Git Data API
    và luồng nhiều bước. */
 const TOI_DA = 4 * 1024 * 1024;
+/* ── VIDEO: TRẦN RIÊNG 15 MB ──
+   Ô soạn thảo cho tải clip ngắn (.mp4 · .webm) từ máy. 15 MB thành ~20 MB
+   chữ base64; cộng bản JSON gửi GitHub thì vẫn nằm gọn trong bộ nhớ 128 MB
+   của một Worker. Video dài hơn thì đưa lên YouTube — ô soạn nói thẳng điều
+   đó trước khi gửi, nên trần này chỉ là chốt chặn phía máy chủ. */
+const TOI_DA_VIDEO = 15 * 1024 * 1024;
 
 /* ── ĐUÔI FILE NHẬN VÀO ──
    KHÔNG có .svg, và đây là một quyết định về an toàn chứ không phải về sở
@@ -62,7 +68,9 @@ const DUOI = {
   'image/avif': 'avif',
   'image/jpeg': 'jpg',
   'image/png' : 'png',
-  'image/gif' : 'gif'
+  'image/gif' : 'gif',
+  'video/mp4' : 'mp4',
+  'video/webm': 'webm'
 };
 
 function bang(a, b) {
@@ -171,10 +179,12 @@ export async function onRequestPost({ request, env }) {
   }
   const co = soByte(duLieu);
   if (co <= 0) return ra({ ok: false, loi: 'dulieu', chiTiet: 'ảnh rỗng' }, 400);
-  if (co > TOI_DA) {
+  const laVideo = loai.startsWith('video/');
+  const tran = laVideo ? TOI_DA_VIDEO : TOI_DA;
+  if (co > tran) {
     return ra({ ok: false, loi: 'to',
-                chiTiet: `ảnh ${(co / 1048576).toFixed(1)} MB — quá ${TOI_DA / 1048576} MB`,
-                co, toiDa: TOI_DA }, 413);
+                chiTiet: `${laVideo ? 'video' : 'ảnh'} ${(co / 1048576).toFixed(1)} MB — quá ${tran / 1048576} MB`,
+                co, toiDa: tran }, 413);
   }
 
   /* ── THƯ MỤC: <năm>/<slug bài> ──
