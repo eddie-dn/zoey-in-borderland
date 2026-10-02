@@ -87,6 +87,12 @@ Chép khối `:root[data-theme="frost"]` trong `src/styles/tokens.css` sang kho 
 thành `:root` — **chép một lần, không dùng submodule**. Blog đổi màu thì khu học
 tập không có lý do gì đổi theo: một bên là tạp chí, một bên là quầy thu ngân.
 
+**Đầu trang và chân trang thì KHÔNG chép — dùng chung** (từ V3.2.4 của blog,
+V0.1.2 của khu học tập). Người đọc bấm tab Learning phải thấy mình vẫn ở cùng
+một trang web. Blog phát `/khung/khung.json`, khu học tập nạp qua service
+binding; màu phần giữa trang vẫn là 霜降 riêng của nó. Chi tiết:
+`docs/DESIGN-SYSTEM.md` §23.
+
 ---
 
 ## 3 · LUỒNG ĐI, CHỐT

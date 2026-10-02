@@ -1517,6 +1517,42 @@ const KIEM = [
     }
   },
   {
+    /* ── KHUNG CHUNG CHO KHU HỌC TẬP ──
+       learning.z-in-borderland.com ghép đầu trang và chân trang từ
+       dist/khung/khung.json (docs/DESIGN-SYSTEM.md §23). Bốn đường hỏng, và
+       bên khu học tập không ai thấy được nguyên nhân nằm ở kho này:
+         · thiếu file / thiếu khoá — khu kia rơi về khung dự phòng, trông như
+           một trang khác hẳn;
+         · còn đường dẫn TƯƠNG ĐỐI — ở learning.… "/notes/" trỏ vào chính khu
+           học tập, ra trang 404 của nó;
+         · còn nút đổi theme — khu ấy chỉ có 霜降, nút bấm không làm gì;
+         · CSS/JS trỏ vào file không có trong dist/assets — khu kia mất giao
+           diện hoặc mất menu ☰ trên điện thoại. */
+    ten: 'Khung chung cho khu học tập: đủ khoá, link tuyệt đối, file có thật',
+    muc: 'loi',
+    chay: ({ dist }) => {
+      const ra = [];
+      const f = path.join(dist, 'khung', 'khung.json');
+      if (!fs.existsSync(f)) return ['thiếu dist/khung/khung.json — khu học tập không có khung để ghép'];
+      let k;
+      try { k = JSON.parse(fs.readFileSync(f, 'utf8')); }
+      catch (e) { return [`dist/khung/khung.json không đọc được: ${e.message}`]; }
+      for (const khoa of ['phienBan', 'goc', 'css', 'js', 'tem', 'dau', 'chan']) {
+        if (!k[khoa] || (Array.isArray(k[khoa]) && !k[khoa].length)) ra.push(`khung.json thiếu "${khoa}"`);
+      }
+      const html = `${k.dau || ''}${k.chan || ''}`;
+      const tuongDoi = html.match(/(?:href|src)="\/(?!\/)[^"]*"/g);
+      if (tuongDoi) ra.push(`khung.json còn ${tuongDoi.length} đường dẫn tương đối (${tuongDoi[0]})`);
+      if (/theme-btn/.test(html)) ra.push('khung.json còn nút đổi theme — khu học tập chỉ có 霜降');
+      if (k.chan && !k.chan.includes('{{tem}}')) ra.push('chân trang trong khung.json thiếu chỗ {{tem}} cho tem phiên bản');
+      for (const u of [...(k.css || []), ...(k.js || [])]) {
+        const ten = String(u).split('/assets/')[1];
+        if (!ten || !fs.existsSync(path.join(dist, 'assets', ten))) ra.push(`khung.json trỏ tới file không có: ${u}`);
+      }
+      return ra;
+    }
+  },
+  {
     /* ── JS GỬI RA PHẢI DỊCH ĐƯỢC ──
        Bộ dựng cắt chú thích khỏi JS trước khi ghi vào dist/ (xem boChuThichJS
        trong tools/build.mjs). Cắt chú thích của JS khó hơn của CSS vì dấu `/`
