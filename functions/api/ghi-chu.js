@@ -32,7 +32,7 @@
    đã đúng — đủ để dò dần từng ký tự một.
 
    ── VÌ SAO KHÔNG MỞ CORS CHO LƯỢT GHI ─────────────────────────────────
-   GET để `*` cho thoải mái. POST/DELETE thì KHÔNG khai
+   GET để `*` cho thoải mái. POST/PATCH/DELETE thì KHÔNG khai
    `Access-Control-Allow-Headers`, nên trình duyệt ở tên miền khác không
    gửi được `x-gc-key` sang đây — request kiểm tra trước (preflight) không
    có ai trả lời. Gọi bằng curl hay Shortcuts vẫn chạy: mấy thứ đó không bị
@@ -45,7 +45,10 @@
        loai TEXT NOT NULL DEFAULT '',
        chu  TEXT NOT NULL,
        luc  TEXT NOT NULL,
-       xoa  INTEGER NOT NULL DEFAULT 0
+       xoa  INTEGER NOT NULL DEFAULT 0,
+       an     INTEGER NOT NULL DEFAULT 0,
+       soSua  INTEGER NOT NULL DEFAULT 0,
+       xoaLuc TEXT NOT NULL DEFAULT ''
      );
      CREATE INDEX IF NOT EXISTS ghi_chu_moi ON ghi_chu (xoa, ngay DESC);
 
@@ -61,6 +64,16 @@ const MAX_LOAI = 24;
 const MAX_MA   = 40;
 const LAY       = 200;          /* trả tối đa bấy nhiêu ghi chú một lượt */
 
+/* Trần số lần sửa một ghi chú đã đăng — cùng con số với bình luận (xem
+   TOI_DA_SUA ở binh-luan.js). Ba là đủ cho lỗi chính tả và một lần nghĩ lại;
+   quá nữa thì nó thôi là "sửa" mà là viết một ghi chú khác — mà ghi chú khác
+   thì đăng mới. */
+const TOI_DA_SUA = 3;
+
+/* Ghi chú bấm Delete vào THÙNG RÁC, nằm đó bấy nhiêu ngày rồi mới xoá cứng.
+   Cùng luật với thùng rác bình luận — xem khối "THÙNG RÁC" ở binh-luan.js. */
+const HAN_RAC = 30;
+
 const TAO = [
   `CREATE TABLE IF NOT EXISTS ghi_chu (
      ma   TEXT PRIMARY KEY,
@@ -68,10 +81,38 @@ const TAO = [
      loai TEXT NOT NULL DEFAULT '',
      chu  TEXT NOT NULL,
      luc  TEXT NOT NULL,
-     xoa  INTEGER NOT NULL DEFAULT 0
+     xoa  INTEGER NOT NULL DEFAULT 0,
+     an     INTEGER NOT NULL DEFAULT 0,
+     soSua  INTEGER NOT NULL DEFAULT 0,
+     xoaLuc TEXT NOT NULL DEFAULT ''
    )`,
   `CREATE INDEX IF NOT EXISTS ghi_chu_moi ON ghi_chu (xoa, ngay DESC)`
 ];
+
+/* ── BA CỘT THÊM SAU ──
+   `an` (ẩn khỏi /notes/ mà không xoá), `soSua` (đã sửa mấy lần), `xoaLuc`
+   (lúc vào thùng rác). Bảng đang chạy thật nên phải `ALTER TABLE`, chạy RIÊNG
+   từng câu và nuốt lỗi — lý do đầy đủ ở khối cùng tên trong binh-luan.js.
+
+   Ghi chú đã xoá từ đời trước (`xoa = 1`, chưa có `xoaLuc`) được đóng dấu lúc
+   này: chúng hiện ra trong ngăn Trash và có đủ 30 ngày để cứu lại. */
+const THEM_COT = [
+  `ALTER TABLE ghi_chu ADD COLUMN an INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE ghi_chu ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE ghi_chu ADD COLUMN xoaLuc TEXT NOT NULL DEFAULT ''`
+];
+let daNoiRong = false;
+async function noiRongBang(env) {
+  if (daNoiRong) return;
+  for (const sql of THEM_COT) {
+    try { await env.DB.prepare(sql).run(); } catch (e) { /* cột đã có */ }
+  }
+  try {
+    await env.DB.prepare(`UPDATE ghi_chu SET xoaLuc = ? WHERE xoa = 1 AND xoaLuc = ''`)
+      .bind(new Date().toISOString()).run();
+  } catch (e) { /* bảng chưa có */ }
+  daNoiRong = true;
+}
 
 function traLoi(data, ma = 200, cache = 'no-store', cors = true) {
   return new Response(JSON.stringify(data), {
@@ -134,13 +175,43 @@ function locMa(v) {
   return /^[A-Za-z0-9_-]{1,40}$/.test(s) ? s : null;
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   if (!env.DB) return traLoi({ tat: true });
+
+  /* ── `?ql=1`: DANH SÁCH CỦA CHỦ TRANG ──
+     Ngăn Note ở /z-admin/ cần thấy cả ghi chú đang ẩn và ghi chú trong thùng
+     rác, kèm số lần đã sửa — những thứ người đọc không được thấy. Nên nhánh
+     này đòi khoá, và không bao giờ cache. Dọn thùng rác quá hạn trước khi
+     đọc, cùng nếp với bàn duyệt bình luận. */
+  if (new URL(request.url).searchParams.get('ql') === '1') {
+    if (chuaDatKhoa(env)) return loiChuaDatKhoa();
+    if (!duocGhi(request, env)) return traLoi({ loi: 'sai khoá' }, 401, 'no-store', false);
+    await noiRongBang(env);
+    try {
+      const han = new Date(Date.now() - HAN_RAC * 864e5).toISOString();
+      await env.DB.prepare(
+        `DELETE FROM ghi_chu WHERE xoa = 1 AND xoaLuc != '' AND xoaLuc < ?`).bind(han).run();
+      const ql = await env.DB.prepare(
+        `SELECT ma, ngay, loai, chu, an, xoa, xoaLuc, soSua FROM ghi_chu
+          ORDER BY xoa ASC, ngay DESC, luc DESC LIMIT ?`).bind(LAY).all();
+      return traLoi({ ok: true, ghiChu: ql.results || [], hanRac: HAN_RAC,
+                      toiDaSua: TOI_DA_SUA }, 200, 'no-store', false);
+    } catch (e) {
+      const loi = String((e && e.message) || e);
+      if (/no such table/i.test(loi)) {
+        return traLoi({ ok: true, ghiChu: [], hanRac: HAN_RAC, toiDaSua: TOI_DA_SUA },
+                      200, 'no-store', false);
+      }
+      return traLoi({ ok: false, loi }, 500, 'no-store', false);
+    }
+  }
+
   let kq;
   try {
+    await noiRongBang(env);
     kq = await env.DB.prepare(
       `SELECT ma, ngay, loai, chu FROM ghi_chu
-        WHERE xoa = 0 ORDER BY ngay DESC, luc DESC LIMIT ?`).bind(LAY).all();
+        WHERE xoa = 0 AND an = 0 ORDER BY ngay DESC, luc DESC LIMIT ?`).bind(LAY).all();
   } catch (e) {
     /* Bảng chưa có (chưa ghi lần nào) là chuyện bình thường, không phải lỗi. */
     return traLoi({ ghiChu: [] }, 200, 'public, max-age=30');
@@ -177,23 +248,87 @@ export async function onRequestPost({ request, env }) {
   const ma = locMa(than.ma) || crypto.randomUUID().slice(0, MAX_MA);
   const luc = new Date().toISOString();
 
-  await env.DB.batch([
-    ...TAO.map((sql) => env.DB.prepare(sql)),
-    env.DB.prepare(
-      `INSERT INTO ghi_chu (ma, ngay, loai, chu, luc, xoa)
-       VALUES (?, ?, ?, ?, ?, 0)
-       ON CONFLICT(ma) DO UPDATE SET
-         ngay = excluded.ngay, loai = excluded.loai,
-         chu  = excluded.chu,  luc  = excluded.luc, xoa = 0`
-    ).bind(ma, ngay, loai, chu, luc)
-  ]);
+  /* ── GỬI LẠI CÙNG MÃ THÌ KHÔNG GHI ĐÈ ──
+     Bản trước `ON CONFLICT … DO UPDATE`: gửi lại thì ghi đè cả nội dung. Đó
+     là một đường SỬA không đếm lượt — đúng thứ trần ba lần sửa ở PATCH phải
+     chặn. Lượt gửi lại thật (mạng chập) mang đúng nội dung cũ, nên bỏ qua nó
+     là đủ; muốn đổi chữ thì đi qua PATCH. */
+  await env.DB.batch(TAO.map((sql) => env.DB.prepare(sql)));
+  await noiRongBang(env);
+  await env.DB.prepare(
+    `INSERT INTO ghi_chu (ma, ngay, loai, chu, luc, xoa, an, soSua, xoaLuc)
+     VALUES (?, ?, ?, ?, ?, 0, 0, 0, '')
+     ON CONFLICT(ma) DO NOTHING`
+  ).bind(ma, ngay, loai, chu, luc).run();
 
-  return traLoi({ ma, ngay, loai, chu }, 200, 'no-store', false);
+  const dong = await env.DB.prepare(
+    'SELECT ma, ngay, loai, chu, an, xoa, soSua FROM ghi_chu WHERE ma = ?').bind(ma).first();
+  return traLoi(dong || { ma, ngay, loai, chu }, 200, 'no-store', false);
 }
 
-/* Xoá MỀM. Ghi chú đã kéo về Markdown rồi mà xoá cứng ở đây thì không còn dấu
-   vết nào để biết dòng nào từng ở đâu; đánh dấu `xoa=1` thì bảng vẫn kể lại
-   được, và `tools/ghi-chu-keo.mjs` biết mà bỏ qua. */
+/* ══════════ SỬA · ẨN · CỨU KHỎI THÙNG RÁC ══════════
+   Một cửa cho mọi việc "đổi một ghi chú đang có", cùng nếp với PATCH của
+   bình luận. Thân gửi lên mang `ma` và đúng MỘT trong ba thứ:
+     · `chu` (kèm `ngay`, `loai` nếu đổi)  → sửa nội dung, tính một lượt sửa
+     · `an: 0|1`                           → hiện / ẩn khỏi /notes/
+     · `xoa: 0`                            → lấy ra khỏi thùng rác
+
+   Ẩn và cứu KHÔNG tính lượt sửa: chúng không đổi chữ nào. */
+export async function onRequestPatch({ request, env }) {
+  if (!env.DB) return traLoi({ loi: 'chưa gắn D1' }, 503, 'no-store', false);
+  if (chuaDatKhoa(env)) return loiChuaDatKhoa();
+  if (!duocGhi(request, env)) return traLoi({ loi: 'sai khoá' }, 401, 'no-store', false);
+
+  let than;
+  try { than = await request.json(); } catch (e) { than = null; }
+  const ma = locMa(than && than.ma);
+  if (!ma) return traLoi({ loi: 'thiếu mã' }, 400, 'no-store', false);
+
+  await noiRongBang(env);
+  const dong = await env.DB.prepare(
+    'SELECT ma, ngay, loai, chu, an, xoa, soSua FROM ghi_chu WHERE ma = ?').bind(ma).first();
+  if (!dong) return traLoi({ loi: 'không có' }, 404, 'no-store', false);
+
+  if ('chu' in than) {
+    if (dong.xoa) return traLoi({ loi: 'đang trong thùng rác' }, 409, 'no-store', false);
+    if (Number(dong.soSua) >= TOI_DA_SUA) {
+      return traLoi({ loi: 'het-luot-sua', conSua: 0 }, 409, 'no-store', false);
+    }
+    const chu = String(than.chu || '').trim();
+    if (!chu) return traLoi({ loi: 'chưa có chữ' }, 400, 'no-store', false);
+    if (chu.length > MAX_CHU) {
+      return traLoi({ loi: `dài quá ${MAX_CHU} ký tự` }, 400, 'no-store', false);
+    }
+    const ngay = locNgay(than.ngay) || dong.ngay;
+    const loai = 'loai' in than ? String(than.loai || '').trim().slice(0, MAX_LOAI) : dong.loai;
+    const soSua = Number(dong.soSua) + 1;
+    await env.DB.prepare(
+      'UPDATE ghi_chu SET chu = ?, ngay = ?, loai = ?, soSua = ? WHERE ma = ?'
+    ).bind(chu, ngay, loai, soSua, ma).run();
+    return traLoi({ ma, ngay, loai, chu, an: dong.an, soSua,
+                    conSua: TOI_DA_SUA - soSua }, 200, 'no-store', false);
+  }
+  if ('an' in than) {
+    await env.DB.prepare('UPDATE ghi_chu SET an = ? WHERE ma = ?')
+      .bind(than.an ? 1 : 0, ma).run();
+    return traLoi({ ma, an: than.an ? 1 : 0 }, 200, 'no-store', false);
+  }
+  if ('xoa' in than && !than.xoa) {
+    await env.DB.prepare(`UPDATE ghi_chu SET xoa = 0, xoaLuc = '' WHERE ma = ?`).bind(ma).run();
+    return traLoi({ ma, xoa: 0 }, 200, 'no-store', false);
+  }
+  return traLoi({ loi: 'không có gì để đổi' }, 400, 'no-store', false);
+}
+
+/* Mặc định là xoá MỀM: `xoa = 1` cộng `xoaLuc`, tức vào thùng rác. Nằm đó
+   HAN_RAC ngày thì lượt mở ngăn Note kế tiếp xoá cứng nó.
+
+   `?vinhVien=1` — nút "Delete forever" của ngăn Trash: xoá cứng ngay, và CHỈ
+   xoá được dòng đã nằm trong thùng.
+
+   `?vinhVien=1&keo=1` — `npm run gc` dùng sau khi đã chép ghi chú về
+   `content/ghi-chu.md`. Lúc ấy bản D1 chỉ là bản thừa; để nó vào thùng rác
+   thì ngăn Trash đầy những dòng mà bấm Restore là ra một bản trùng. */
 export async function onRequestDelete({ request, env }) {
   if (!env.DB) return traLoi({ loi: 'chưa gắn D1' }, 503, 'no-store', false);
   if (chuaDatKhoa(env)) return loiChuaDatKhoa();
@@ -202,6 +337,15 @@ export async function onRequestDelete({ request, env }) {
   const ma = locMa(new URL(request.url).searchParams.get('ma'));
   if (!ma) return traLoi({ loi: 'thiếu mã' }, 400, 'no-store', false);
 
-  await env.DB.prepare('UPDATE ghi_chu SET xoa = 1 WHERE ma = ?').bind(ma).run();
+  await noiRongBang(env);
+  const q = new URL(request.url).searchParams;
+  if (q.get('vinhVien') === '1') {
+    await env.DB.prepare(
+      q.get('keo') === '1' ? 'DELETE FROM ghi_chu WHERE ma = ?'
+                           : 'DELETE FROM ghi_chu WHERE ma = ? AND xoa = 1').bind(ma).run();
+    return traLoi({ ma, xoa: true, vinhVien: true }, 200, 'no-store', false);
+  }
+  await env.DB.prepare('UPDATE ghi_chu SET xoa = 1, xoaLuc = ? WHERE ma = ?')
+    .bind(new Date().toISOString(), ma).run();
   return traLoi({ ma, xoa: true }, 200, 'no-store', false);
 }

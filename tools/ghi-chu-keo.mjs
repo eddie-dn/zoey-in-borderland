@@ -187,7 +187,9 @@ if (!ID || !KEY) {
 
 let xong = 0, hong = 0;
 for (const g of [...moi, ...trung]) {
-  const r = await fetch(API + '?ma=' + encodeURIComponent(g.ma), {
+  /* `vinhVien=1&keo=1`: ghi chú đã nằm trong file, bản D1 xoá cứng luôn chứ
+     không vào thùng rác — xem chú thích DELETE ở functions/api/ghi-chu.js. */
+  const r = await fetch(API + '?ma=' + encodeURIComponent(g.ma) + '&vinhVien=1&keo=1', {
     method: 'DELETE', headers: { 'x-gc-id': ID, 'x-gc-key': KEY }
   }).catch(() => null);
   if (r && r.ok) xong++;

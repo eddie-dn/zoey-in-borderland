@@ -1150,20 +1150,6 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
 /* Báo tin ở ngăn ghi chú ngắn — cụm gốc ở `.bao`, đây chỉ khai phần khác. */
 .gc-noi{--bao-mau:var(--text-muted);font-size:var(--fs-2xs);min-height:1em}
 
-/* Nút xoá nằm trong cột ngày, dưới nhãn loại — chỗ trống sẵn có, không phải
-   chen vào giữa chữ. Mờ sẵn, rõ khi rê vào cả khối: nó là việc dọn dẹp, không
-   phải thứ mắt phải thấy mỗi lần đọc. */
-.gc-xoa{
-  align-self:start;margin-top:2px;
-  width:22px;height:22px;padding:0;
-  border:1px solid var(--line-strong);border-radius:50%;
-  background:var(--surface-solid);color:var(--text-faint);
-  font:inherit;font-size:14px;line-height:1;cursor:pointer;
-  opacity:0;transition:opacity var(--dur-fast),color var(--dur-fast);
-}
-.gc-mot:hover .gc-xoa,.gc-xoa:focus-visible{opacity:1}
-.gc-xoa:hover{color:var(--bad);border-color:var(--bad)}
-@media (hover:none){.gc-xoa{opacity:.7}}
 /* ══════════ THƯ MỤC CHUYÊN MỤC (/posts/) ══════════
    Mỗi mục một khối: tên mục cỡ lớn, số bài, một dòng mô tả, rồi ba bài mới
    nhất. Đường kẻ trên mỗi khối làm nhịp — đọc lướt xuống là thấy ngay blog này

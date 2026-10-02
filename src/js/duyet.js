@@ -112,6 +112,7 @@
            `loi` chỉ là mã phân loại — in mã ra thì màn hình hiện chữ
            "cauhinh" và người đọc không biết đi đâu tiếp. */
         if (!kq.ok) { veKhoa(kq.chiTiet || kq.loi || L('badKey')); return; }
+        if (kq.hanRac) HAN_RAC = kq.hanRac;
         veHang(kq.ds || []);
       })
       .catch(function () {
@@ -165,15 +166,24 @@
 
      Bàn duyệt là chỗ để LÀM XONG một việc, không phải chỗ để xem lại. Thứ đã
      duyệt vẫn mở ra được — chỉ là không nằm chắn đường nữa. */
-  var loc = 'cho';   /* 'cho' | 'roi' | '' (tất cả) */
+  var loc = 'cho';   /* 'cho' | 'roi' | '' (tất cả) | 'rac' (thùng rác) */
+  /* Số ngày một bình luận nằm trong thùng rác trước khi bị xoá cứng. Máy chủ
+     gửi kèm con số thật (`hanRac`); 30 chỉ là giá trị chờ. */
+  var HAN_RAC = 30;
   var MOI_LUOT = 25; /* dựng bấy nhiêu dòng một lần, còn lại chờ bấm "thêm" */
   var hienToi = MOI_LUOT;
   var dsHienTai = [];
 
   function veHang(ds) {
     dsHienTai = ds;
-    var cho = ds.filter(function (c) { return !c.duyet; });
-    var roi = ds.length - cho.length;
+    /* ── THÙNG RÁC LÀ MỘT NGĂN RIÊNG, KHÔNG NẰM TRONG "ALL" ──
+       "All" là mọi thứ ĐANG SỐNG trên trang. Cho thùng rác vào đó thì bấm All
+       là thấy lẫn cái đã xoá với cái đang hiện, và một cú Approve hàng loạt
+       ở All sẽ duyệt luôn cả rác. */
+    var rac = ds.filter(function (c) { return !!c.an; });
+    var song = ds.filter(function (c) { return !c.an; });
+    var cho = song.filter(function (c) { return !c.duyet; });
+    var roi = song.length - cho.length;
     hop.textContent = '';
     /* ── KHÔNG CÒN DÒNG "WAITING FOR REVIEW (n)" ──
        Nó nói lại đúng cái mà chip "Pending n" ngay dưới đã nói, mà nói bằng
@@ -223,10 +233,12 @@
     hangChip.className = 'ad-loc';
     [['cho', L('fPending'), cho.length],
      ['roi', L('fDone'), roi],
-     ['',    L('fAll'), ds.length]].forEach(function (x) {
+     ['',    L('fAll'), song.length],
+     ['rac', L('fTrash'), rac.length]].forEach(function (x) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'chip' + (loc === x[0] ? ' chip--nay' : '');
+      b.className = 'chip' + (loc === x[0] ? ' chip--nay' : '') +
+                    (x[0] === 'rac' ? ' bl-chip-rac' : '');
       b.textContent = x[1];
       var s = document.createElement('span');
       s.className = 'chip-so'; s.textContent = x[2];
@@ -248,23 +260,40 @@
     thanhChon.hidden = true;
     hop.appendChild(thanhChon);
 
-    var loc1 = ds.filter(function (c) {
+    var loc1 = loc === 'rac' ? rac : song.filter(function (c) {
       return !loc || (loc === 'cho' ? !c.duyet : !!c.duyet);
     });
+
+    /* Ngăn Trash nói luôn luật của nó, kể cả khi thùng rỗng: không ai đoán
+       được là thứ nằm đây sẽ tự mất sau một tháng. */
+    if (loc === 'rac') {
+      var luat = document.createElement('p');
+      luat.className = 'bl-rac-luat';
+      luat.textContent = L('trashNote').replace('{n}', HAN_RAC);
+      hop.appendChild(luat);
+    }
 
     if (!loc1.length) {
       tickHet.disabled = true;
       var trong2 = document.createElement('p');
       trong2.className = 'bao bl-duyet-bao';
-      trong2.textContent = L('queueEmpty');
+      trong2.textContent = loc === 'rac' ? L('trashEmpty') : L('queueEmpty');
       hop.appendChild(trong2);
       batDongHo();
       return;
     }
 
+    /* ── CÁC HÀNG NẰM CHUNG MỘT KHUNG `.ad-bang` ──
+       Đúng khuôn của ngăn Post. Trước bản này các hàng là con trực tiếp của
+       `.bl-duyet` — một cột `flex` có `gap` — nên giữa hai hàng hở ra một
+       khe, và hàng nào đang được tick thì nền màu của nó đứng lơ lửng giữa
+       hai khe ấy thay vì liền thành một dải. */
+    var bang = document.createElement('div');
+    bang.className = 'ad-bang';
+    hop.appendChild(bang);
     var dsDong = loc1.slice(0, hienToi).map(function (c) {
       var d = veDong(c);
-      hop.appendChild(d);
+      bang.appendChild(d);
       return d;
     });
 
@@ -289,17 +318,20 @@
 
        Gửi tuần tự từng cái: chậm hơn vài trăm mili giây, nhưng hỏng ở cái nào
        thì biết đúng cái ấy, và những cái đã xong vẫn xong. */
+    /* `nhan` rỗng = không hỏi lại. Vào thùng rác thì cứu lại được, nên
+       không có hộp hỏi; xoá vĩnh viễn thì không cứu được, nên luôn hỏi. */
     function lamHangLoat(than, nhan) {
       var ds2 = dangChon();
       if (!ds2.length) return;
-      if (!window.confirm(nhan.replace('{n}', ds2.length))) return;
+      if (nhan && !window.confirm(nhan.replace('{n}', ds2.length))) return;
       thanhChon.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
       var i = 0;
       (function ke() {
         if (i >= ds2.length) { xin(true); return; }
         var d = ds2[i++];
         d.classList.add('ad-dong--xong');
-        doi(Object.assign({ ma: d.duLieu.ma }, than), ke);
+        if (than === 'vinhVien') xoaHan(d.duLieu.ma, ke);
+        else doi(Object.assign({ ma: d.duLieu.ma }, than), ke);
       })();
     }
 
@@ -323,29 +355,28 @@
       dem.textContent = L('picked', '{n} selected').replace('{n}', n);
       thanhChon.appendChild(dem);
 
-      [[L('approve'), { duyet: 1 }, L('askApprove', 'Approve {n} comments?')],
-       [L('unapprove'), { duyet: 0 }, L('askUnapprove', 'Unapprove {n} comments?')],
-       [L('hide'), { an: 1 }, L('askHide', 'Hide {n} comments? This cannot be undone.')]
-      ].forEach(function (x) {
+      /* ── KHÔNG CÒN NÚT "CLEAR" ──
+         Bỏ tick hết đã có ô Select all ngay phía trên làm (bấm một lần nữa
+         là bỏ). Chỗ cuối thanh nhường cho Delete — việc hay làm hơn hẳn.
+
+         Ở ngăn Trash, thanh đổi sang hai việc của thùng rác. */
+      var viec = loc === 'rac'
+        ? [[L('restore'), { an: 0 }, '', ' ad-lenh--chinh'],
+           [L('purge'), 'vinhVien', L('askPurge'), ' ad-lenh--xoa']]
+        : [[L('approve'), { duyet: 1 }, L('askApprove'), ' ad-lenh--chinh'],
+           [L('unapprove'), { duyet: 0 }, L('askUnapprove'), ''],
+           [L('del'), { an: 1 }, '', ' ad-lenh--xoa']];
+      var cum = document.createElement('span');
+      cum.className = 'ad-chon-viec';
+      viec.forEach(function (x) {
         var b = document.createElement('button');
         b.type = 'button';
-        b.className = 'ad-lenh' + (x[1].duyet === 1 ? ' ad-lenh--chinh' : '');
+        b.className = 'ad-lenh' + x[3];
         b.textContent = x[0];
         b.addEventListener('click', function () { lamHangLoat(x[1], x[2]); });
-        thanhChon.appendChild(b);
+        cum.appendChild(b);
       });
-
-      var bo = document.createElement('button');
-      bo.type = 'button';
-      bo.className = 'ad-lenh ad-chon-bo';
-      bo.textContent = L('pickNone', 'Clear');
-      bo.addEventListener('click', function () {
-        dsDong.forEach(function (d) {
-          if (d.oTick) { d.oTick.checked = false; d.classList.remove('ad-dong--dang-chon'); }
-        });
-        veThanhChon();
-      });
-      thanhChon.appendChild(bo);
+      thanhChon.appendChild(cum);
     }
     /* `veDong` gọi tới nó mỗi lần một ô tick đổi — gán vào chỗ dùng chung để
        hàm kia với được. */
@@ -393,7 +424,8 @@
 
   function veDong(c) {
     var d = document.createElement('div');
-    d.className = 'ad-dong ad-dong--chon' + (c.duyet ? ' ad-dong--roi' : '');
+    d.className = 'ad-dong ad-dong--hai ad-dong--chon' +
+                  (c.duyet && !c.an ? ' ad-dong--roi' : '');
 
     /* ── Ô TICK ──
        Duyệt bình luận là việc LÀM HÀNG LOẠT: mở bàn duyệt ra thường có mươi
@@ -444,7 +476,16 @@
        Ô vẫn phải còn kể cả khi rỗng: nó giữ bề rộng cho cột nút phía sau. */
     var cd = document.createElement('span');
     cd.className = 'ad-cd';
-    if (!c.duyet) {
+    if (c.an) {
+      /* Trong thùng rác thì cột trạng thái đếm ngược: còn mấy ngày nữa là
+         mất hẳn. Ba ngày cuối đổi sang màu báo động. */
+      var con = conNgay(c);
+      var hr = document.createElement('span');
+      hr.className = 'badge' + (con <= 3 ? ' badge--bad' : '');
+      hr.textContent = L('daysLeft').replace('{n}', con);
+      hr.title = L('trashNote').replace('{n}', HAN_RAC);
+      cd.appendChild(hr);
+    } else if (!c.duyet) {
       var hh = document.createElement('span');
       hh.className = 'badge badge--warn';
       hh.textContent = L('stateOff', 'Pending');
@@ -454,30 +495,71 @@
     var nut = document.createElement('span');
     nut.className = 'ad-lenh-hang';
 
+    /* Trượt đi rồi mới rút khỏi danh sách — cùng nhịp với mọi hàng khác ở
+       bảng làm việc. Biến mất phụt một cái thì mắt không kịp thấy hàng nào
+       vừa đi, và cả bảng nhảy lên một nấc mà không rõ vì sao. */
+    function rut(b, viec) {
+      b.disabled = true;
+      d.classList.add('ad-dong--xong');
+      viec(function () { setTimeout(function () { xin(true); }, 200); });
+    }
+
     var bDuyet = document.createElement('button');
     bDuyet.type = 'button'; bDuyet.className = 'ad-lenh ad-lenh--chinh';
-    bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
-    bDuyet.addEventListener('click', function () {
-      bDuyet.disabled = true;
-      doi({ ma: c.ma, duyet: c.duyet ? 0 : 1 }, function () { xin(true); });
-    });
+    var bXoa = document.createElement('button');
+    bXoa.type = 'button'; bXoa.className = 'ad-lenh ad-lenh--xoa';
 
-    var bAn = document.createElement('button');
-    bAn.type = 'button'; bAn.className = 'ad-lenh';
-    bAn.textContent = L('hide');
-    bAn.addEventListener('click', function () {
-      bAn.disabled = true;
-      /* Trượt đi rồi mới rút khỏi danh sách — cùng nhịp với mọi hàng khác ở
-         bảng làm việc. Biến mất phụt một cái thì mắt không kịp thấy hàng nào
-         vừa đi, và cả bảng nhảy lên một nấc mà không rõ vì sao. */
-      d.classList.add('ad-dong--xong');
-      setTimeout(function () { d.remove(); xin(true); }, 280);
-    });
+    if (c.an) {
+      bDuyet.textContent = L('restore');
+      bDuyet.addEventListener('click', function () {
+        rut(bDuyet, function (xong) { doi({ ma: c.ma, an: 0 }, xong); });
+      });
+      bXoa.textContent = L('purge');
+      bXoa.addEventListener('click', function () {
+        if (!window.confirm(L('askPurge').replace('{n}', 1))) return;
+        rut(bXoa, function (xong) { xoaHan(c.ma, xong); });
+      });
+    } else {
+      bDuyet.textContent = c.duyet ? L('unapprove') : L('approve');
+      bDuyet.addEventListener('click', function () {
+        bDuyet.disabled = true;
+        doi({ ma: c.ma, duyet: c.duyet ? 0 : 1 }, function () { xin(true); });
+      });
+      /* ── DELETE THAY CHO HIDE ──
+         Hide cũ đặt `an = 1` rồi thôi: bình luận biến khỏi cả trang lẫn bàn
+         duyệt, không đường nào cứu lại. Nay cùng cờ ấy nghĩa là "nằm trong
+         thùng rác", có đồng hồ 30 ngày và nút Restore — nên nó là Delete,
+         và giữ thêm một nút Hide làm đúng việc ấy chỉ là hai tên cho một
+         việc. (Muốn tạm cất khỏi trang mà không xoá thì đã có Unapprove.) */
+      bXoa.textContent = L('del');
+      bXoa.addEventListener('click', function () {
+        rut(bXoa, function (xong) { doi({ ma: c.ma, an: 1 }, xong); });
+      });
+    }
 
-    nut.appendChild(bDuyet); nut.appendChild(bAn);
+    nut.appendChild(bDuyet); nut.appendChild(bXoa);
     d.appendChild(oTick);
     d.appendChild(ai); d.appendChild(giua); d.appendChild(cd); d.appendChild(nut);
     return d;
+  }
+
+  /* Số ngày còn lại trước khi một dòng trong thùng rác bị xoá cứng. Không
+     bao giờ âm: máy chủ dọn dòng quá hạn mỗi lượt đọc, nên con số 0 chỉ có
+     trong vài phút giữa hai lượt. */
+  function conNgay(c) {
+    var t = Date.parse(c.xoaLuc || '');
+    if (isNaN(t)) return HAN_RAC;
+    return Math.max(0, Math.ceil(HAN_RAC - (Date.now() - t) / 864e5));
+  }
+
+  /* Xoá vĩnh viễn — chỉ có ở ngăn Trash. Máy chủ chỉ xoá dòng đã nằm trong
+     thùng, nên lỡ gửi nhầm mã cũng không xoá được bình luận đang sống. */
+  function xoaHan(ma, xong) {
+    fetch(API + '?ma=' + encodeURIComponent(ma) + '&vinhVien=1', {
+      method: 'DELETE', headers: dauKhoa()
+    }).then(function (r) { return r.json(); })
+      .then(function (kq) { if (kq.ok) xong(); })
+      .catch(function () {});
   }
 
   function doi(than, xong) {

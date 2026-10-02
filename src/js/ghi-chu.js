@@ -174,15 +174,30 @@
   function xinVe() {
     /* Không có chỗ để chèn thì cũng không việc gì phải hỏi — /z-admin/ thôi
        dựng danh sách nên nó thôi luôn cả lượt gọi này. */
-    if (!api || !ds) return Promise.resolve();
+    /* ── TRANG KHÔNG CÓ GHI CHÚ DỰNG SẴN VẪN PHẢI HỎI ──
+       Bản trước dừng ngay khi không thấy `.gc-ds`. Mà build chỉ dựng `<ol>`
+       khi file Markdown có ít nhất một khối — nên lúc file trống (ba khối ví
+       dụ vừa xoá, ghi chú thật đều nằm trên D1), trang KHÔNG HỎI MÁY CHỦ, và
+       /notes/ báo "chưa có ghi chú nào" trong khi D1 vẫn còn nguyên. Nhìn y
+       như mọi ghi chú đã bị xoá.
+
+       Nay chỉ cần trang có danh sách HOẶC có câu báo trống là hỏi; thiếu
+       `<ol>` thì dựng nó ngay chỗ câu báo. */
+    var trong0 = document.querySelector('.ds-trong');
+    if (!api || (!ds && !trong0)) return Promise.resolve();
     return fetch(api, { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.ghiChu || !d.ghiChu.length) return;
-        /* Trang trống thì phần "chưa có ghi chú nào" phải biến đi, và danh
-           sách <ol> chưa tồn tại — build chỉ dựng nó khi có ghi chú. */
         var trong = document.querySelector('.ds-trong');
-        if (trong) trong.remove();
+        if (trong) {
+          if (!ds) {
+            ds = document.createElement('ol');
+            ds.className = 'gc-ds';
+            trong.parentNode.insertBefore(ds, trong);
+          }
+          trong.remove();
+        }
         for (var i = 0; i < d.ghiChu.length; i++) chen(d.ghiChu[i]);
         dungLoc();
         if (viet) viet.veLai();
@@ -252,45 +267,7 @@
       hop.hidden = !coKhoa();
       hop.innerHTML = coKhoa() ? khungViet() : '';
       if (coKhoa()) gan();
-      ganXoa();
-    }
-
-    /* ── XOÁ ──
-       Chỉ ghi chú đến từ mạng (`data-ma`) mới xoá được. Ghi chú dựng sẵn nằm
-       trong `content/ghi-chu.md`: xoá nó là việc của bàn phím, không phải của
-       một cái nút trên trang — và máy chủ cũng không có cách nào sửa file ấy.
-
-       Nút chỉ mọc khi máy này có khoá. Không phải để giấu: người không có
-       khoá bấm vào cũng chỉ nhận 401, nhưng bày ra một cái nút chắc chắn
-       hỏng thì thà đừng bày. */
-    function ganXoa() {
-      var cac = document.querySelectorAll('.gc-mot[data-ma]');
-      for (var i = 0; i < cac.length; i++) {
-        var cu = cac[i].querySelector('.gc-xoa');
-        if (!coKhoa()) { if (cu) cu.remove(); continue; }
-        if (cu) continue;
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'gc-xoa';
-        b.title = N.del || 'Delete note';
-        b.setAttribute('aria-label', N.del || 'Delete note');
-        b.textContent = '×';
-        b.addEventListener('click', function () {
-          var li = this.closest('.gc-mot');
-          this.disabled = true;
-          fetch(api + '?ma=' + encodeURIComponent(li.getAttribute('data-ma')), {
-            method: 'DELETE',
-            headers: K.dau()
-          }).then(function (r) {
-            if (!r.ok) throw new Error('401');
-            li.remove();
-            dungLoc();
-          }).catch(function () {
-            noi(N.delFail || 'Could not delete.', true);
-          });
-        });
-        cac[i].querySelector('.gc-dau').appendChild(b);
-      }
+      if (ql) ql.veLai();
     }
 
     /* Chỗ cắm sẵn ở /z-admin/ đã có tiêu đề ngăn ("Viết ghi chú") in ngay
@@ -320,6 +297,10 @@
         '<div class="gc-nut">' +
           '<button type="button" class="btn" data-dang>' +
             tho(N.post || 'Post') + '</button>' +
+          /* Chỉ hiện khi đang SỬA một ghi chú đã đăng (bấm Edit ở danh sách
+             bên dưới): khung viết mượn lại làm khung sửa, và đây là lối ra. */
+          '<button type="button" class="ad-lenh" data-huy hidden>' +
+            tho(N.cancel || 'Cancel') + '</button>' +
           /* Chỗ trống cho nút Đăng xuất. Ở /z-admin/ — chỗ DUY NHẤT ô viết
              mọc ra từ V1.8.8 — nút ấy đã nằm ở cột trái, nên chỗ này để rỗng.
              Giữ lại cái móc vì khoa.js vẫn tìm `[data-khoa-ra-nho]`, và vì
@@ -346,9 +327,13 @@
       /* Nút Đăng xuất chỉ mọc ở /notes/ — ở /z-admin/ nó đã có chỗ riêng. */
       if (oRa && K && !oVietCamSan()) K.veChao(oRa, '');
 
+      var bHuy = hop.querySelector('[data-huy]');
+      if (bHuy) bHuy.addEventListener('click', function () { thoiSua(); noi(''); });
+
       if (bDang) bDang.addEventListener('click', function () {
         var chu = (hop.querySelector('[name=chu]').value || '').trim();
         if (!chu) { noi(N.bodyMissing || 'Nothing written yet.', true); return; }
+        if (dangSua) { luuSua(chu); return; }
         var g = {
           /* Mã sinh ở đây chứ không ở máy chủ: bấm Đăng mà mạng chập, gửi lại
              lần nữa thì cùng một mã ⇒ máy chủ ghi đè, không đẻ ra bản trùng. */
@@ -380,10 +365,82 @@
           dungLoc();
           hop.querySelector('[name=chu]').value = '';
           noi(N.posted || 'Xong.');
+          if (ql) ql.xin();
         }).catch(function () {
           bDang.disabled = false;
           noi(N.postFail || 'Could not send.', true);
         });
+      });
+    }
+
+    /* ── SỬA MỘT GHI CHÚ ĐÃ ĐĂNG ──
+       Không dựng khung sửa thứ hai: bấm Edit ở danh sách thì khung viết ngay
+       phía trên nhận lấy ngày, loại và chữ của ghi chú ấy, nút Post đổi thành
+       "Save edit" kèm số lượt sửa còn lại, và hiện thêm nút Cancel. Hai khung
+       cùng hình cùng ô thì phải giữ cho giống nhau mãi; một khung hai vai thì
+       không. */
+    var dangSua = null;
+
+    function batSua(g, con) {
+      if (!coKhoa()) return;
+      dangSua = g;
+      hop.querySelector('[name=ngay]').value = g.ngay;
+      hop.querySelector('[name=loai]').value = g.loai || '';
+      hop.querySelector('[name=chu]').value = g.chu;
+      hop.classList.add('gc-viet--sua');
+      hop.querySelector('[data-dang]').textContent =
+        (N.saveEdit || 'Save edit ({n} left)').replace('{n}', con);
+      hop.querySelector('[data-huy]').hidden = false;
+      noi('');
+      hop.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      hop.querySelector('[name=chu]').focus({ preventScroll: true });
+    }
+
+    function thoiSua() {
+      dangSua = null;
+      hop.classList.remove('gc-viet--sua');
+      var b = hop.querySelector('[data-dang]');
+      if (!b) return;
+      b.textContent = N.post || 'Post';
+      hop.querySelector('[data-huy]').hidden = true;
+      hop.querySelector('[name=chu]').value = '';
+      hop.querySelector('[name=loai]').value = '';
+      /* Ngày về lại hôm nay — không thì ghi chú mới đăng ngay sau đó mang
+         ngày của ghi chú vừa sửa. */
+      var nay = new Date();
+      hop.querySelector('[name=ngay]').value =
+        new Date(nay.getTime() - nay.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    }
+
+    function luuSua(chu) {
+      var bDang = hop.querySelector('[data-dang]');
+      bDang.disabled = true;
+      noi(N.posting || 'Sending…');
+      fetch(api, {
+        method: 'PATCH',
+        headers: K.dau({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({
+          ma: dangSua.ma, chu: chu,
+          ngay: hop.querySelector('[name=ngay]').value,
+          loai: (hop.querySelector('[name=loai]').value || '').trim()
+        })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; })
+          .then(function (d) { return { ok: r.ok, d: d }; });
+      }).then(function (kq) {
+        bDang.disabled = false;
+        if (!kq.ok) {
+          noi(kq.d && kq.d.loi === 'het-luot-sua'
+                ? (N.noEdits || 'No edits left.')
+                : ((kq.d && kq.d.loi) || N.postFail || 'Could not send.'), true);
+          return;
+        }
+        thoiSua();
+        noi(N.saved || 'Saved.');
+        if (ql) ql.xin();
+      }).catch(function () {
+        bDang.disabled = false;
+        noi(N.postFail || 'Could not send.', true);
       });
     }
 
@@ -405,6 +462,11 @@
        Sửa và xoá ghi chú nay làm ngay tại /notes/ khi đã đăng nhập, đúng chỗ
        nhìn thấy nó trong ngữ cảnh của nó. */
     if (!oVietCamSan()) lamOl();
+    var ql = oSan ? dungQL(oSan, K, {
+      sua: function (g, con) { batSua(g, con); },
+      dangSua: function () { return dangSua; },
+      thoiSua: thoiSua
+    }) : null;
     veLai();
 
     /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. Cắm vào
@@ -419,6 +481,183 @@
     }
 
     return { veLai: veLai };
+  }
+
+  /* ══════════ 4 · DANH SÁCH GHI CHÚ Ở NGĂN NOTE ══════════
+
+     Trước bản này ngăn Note chỉ có ô viết: đăng xong là thôi, không có chỗ
+     nào để sửa một lỗi chính tả, cất tạm một ghi chú, hay xoá một cái đăng
+     nhầm. Nay bên dưới ô viết là một bảng cùng khuôn `.ad-*` với ngăn Post:
+
+       ngày | chữ (dòng dưới: loại · đã sửa mấy lần) | trạng thái | nút
+
+     Ba bộ lọc: All (đang sống, gồm cả ghi chú ẩn) · Hidden · Trash.
+       · Edit    — mượn khung viết phía trên; tối đa 3 lần (máy chủ đếm).
+       · Hide    — rút khỏi /notes/ mà không xoá; Unhide là hiện lại.
+       · Delete  — vào thùng rác; sau 30 ngày tự xoá cứng.
+       · Trash   — Restore để cứu lại, Delete forever để xoá ngay.
+
+     Chỉ ghi chú trên D1 có trong bảng này. Ghi chú đã kéo về
+     `content/ghi-chu.md` sửa ở file — máy chủ không ghi được vào file ấy. */
+  function dungQL(oSan, K, khung) {
+    var HAN = 30, TRAN = 3;
+    var loc = '';          /* '' | 'an' | 'rac' */
+    var dsQL = [];
+    var dangXin = false;
+
+    var hop = document.createElement('section');
+    hop.className = 'gc-ql';
+    oSan.appendChild(hop);
+
+    function coKhoa() { return !!(K && K.co()); }
+
+    function xin() {
+      if (!coKhoa() || dangXin) return;
+      dangXin = true;
+      fetch(api + '?ql=1', { cache: 'no-store', headers: K.dau() })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          dangXin = false;
+          if (!d || !d.ok) { bao((d && (d.chiTiet || d.loi)) || N.loadFail || 'Could not load notes.'); return; }
+          if (d.hanRac) HAN = d.hanRac;
+          if (d.toiDaSua) TRAN = d.toiDaSua;
+          dsQL = d.ghiChu || [];
+          ve();
+        })
+        .catch(function () { dangXin = false; bao(N.loadFail || 'Could not load notes.'); });
+    }
+
+    function bao(chu) {
+      hop.innerHTML = '<p class="bao bl-duyet-bao bao--hong">' + tho(chu) + '</p>';
+    }
+
+    function conNgay(g) {
+      var t = Date.parse(g.xoaLuc || '');
+      if (isNaN(t)) return HAN;
+      return Math.max(0, Math.ceil(HAN - (Date.now() - t) / 864e5));
+    }
+
+    function ve() {
+      var song = dsQL.filter(function (g) { return !g.xoa; });
+      var an = song.filter(function (g) { return !!g.an; });
+      var rac = dsQL.filter(function (g) { return !!g.xoa; });
+      var hien = loc === 'rac' ? rac : loc === 'an' ? an : song;
+
+      var h = '<div class="ad-thanh"><span class="gc-ql-de">' +
+                tho(N.listTitle || 'Notes') + '</span><div class="ad-loc">';
+      [['', N.all || 'All', song.length],
+       ['an', N.hidden || 'Hidden', an.length],
+       ['rac', N.trash || 'Trash', rac.length]].forEach(function (x) {
+        h += '<button type="button" class="chip' + (loc === x[0] ? ' chip--nay' : '') +
+             (x[0] === 'rac' ? ' bl-chip-rac' : '') + '" data-loc="' + x[0] + '">' +
+             tho(x[1]) + '<span class="chip-so">' + x[2] + '</span></button>';
+      });
+      h += '</div></div>';
+
+      if (loc === 'rac') {
+        h += '<p class="bl-rac-luat">' +
+             tho((N.trashNote || 'Deleted items are removed for good {n} days after deletion.')
+                 .replace('{n}', HAN)) + '</p>';
+      }
+
+      if (!hien.length) {
+        h += '<p class="trong trong--cho vb-cho">' +
+             tho(loc === 'rac' ? (N.trashEmpty || 'Trash is empty.') : (N.listEmpty || 'Nothing here.')) +
+             '</p>';
+      } else {
+        h += '<div class="ad-bang">' + hien.map(function (g) {
+          var cd = '', nut = '';
+          var con = TRAN - Number(g.soSua || 0);
+          if (g.xoa) {
+            var n = conNgay(g);
+            cd = '<span class="badge' + (n <= 3 ? ' badge--bad' : '') + '">' +
+                 tho((N.daysLeft || '{n}d left').replace('{n}', n)) + '</span>';
+            nut = '<button type="button" class="ad-lenh ad-lenh--chinh" data-viec="cuu">' +
+                    tho(N.restore || 'Restore') + '</button>' +
+                  '<button type="button" class="ad-lenh ad-lenh--xoa" data-viec="han">' +
+                    tho(N.purge || 'Delete forever') + '</button>';
+          } else {
+            if (g.an) cd = '<span class="badge badge--bad">' + tho(N.hidden || 'Hidden') + '</span>';
+            nut = '<button type="button" class="ad-lenh" data-viec="sua"' +
+                    (con > 0 ? ' title="' + tho((N.editsLeft || '{n} of {t} edits left')
+                                  .replace('{n}', con).replace('{t}', TRAN)) + '"'
+                             : ' disabled title="' + tho(N.noEdits || 'No edits left.') + '"') + '>' +
+                    tho(N.edit || 'Edit') + '</button>' +
+                  '<button type="button" class="ad-lenh" data-viec="an">' +
+                    tho(g.an ? (N.unhide || 'Unhide') : (N.hide || 'Hide')) + '</button>' +
+                  '<button type="button" class="ad-lenh ad-lenh--xoa" data-viec="xoa">' +
+                    tho(N.del2 || 'Delete') + '</button>';
+          }
+          /* Dòng dưới: loại, và số lần đã sửa khi đã sửa ít nhất một lần —
+             để biết trước còn bao nhiêu lượt, không phải bấm Edit mới thấy. */
+          var mo = [g.loai || ''];
+          if (Number(g.soSua) > 0) {
+            mo.push((N.edited || 'edited {n}/{t}').replace('{n}', g.soSua).replace('{t}', TRAN));
+          }
+          return '<div class="ad-dong ad-dong--hai" data-ma="' + tho(g.ma) + '">' +
+            '<span class="ad-phu">' + tho(g.ngay) + '</span>' +
+            '<span class="ad-chinh">' + tho(String(g.chu).replace(/\s+/g, ' ')) +
+              '<span class="ad-mo">' + tho(mo.filter(Boolean).join(' · ') || '—') + '</span></span>' +
+            '<span class="ad-cd">' + cd + '</span>' +
+            '<span class="ad-lenh-hang">' + nut + '</span>' +
+          '</div>';
+        }).join('') + '</div>';
+      }
+      hop.innerHTML = h;
+
+      [].forEach.call(hop.querySelectorAll('[data-loc]'), function (b) {
+        b.addEventListener('click', function () { loc = b.getAttribute('data-loc'); ve(); });
+      });
+      [].forEach.call(hop.querySelectorAll('.ad-dong'), function (d) {
+        var g = dsQL.filter(function (x) { return x.ma === d.getAttribute('data-ma'); })[0];
+        [].forEach.call(d.querySelectorAll('[data-viec]'), function (b) {
+          b.addEventListener('click', function () { lam(b.getAttribute('data-viec'), g, b, d); });
+        });
+      });
+    }
+
+    function goi(phuongThuc, url, than) {
+      return fetch(url, {
+        method: phuongThuc,
+        headers: K.dau(than ? { 'Content-Type': 'application/json' } : {}),
+        body: than ? JSON.stringify(than) : undefined
+      }).then(function (r) { if (!r.ok) throw new Error(String(r.status)); });
+    }
+
+    function lam(viec, g, b, d) {
+      if (viec === 'sua') { khung.sua(g, TRAN - Number(g.soSua || 0)); return; }
+      var p;
+      if (viec === 'an') p = goi('PATCH', api, { ma: g.ma, an: g.an ? 0 : 1 });
+      else if (viec === 'xoa') p = goi('DELETE', api + '?ma=' + encodeURIComponent(g.ma));
+      else if (viec === 'cuu') p = goi('PATCH', api, { ma: g.ma, xoa: 0 });
+      else if (viec === 'han') {
+        if (!window.confirm(N.askPurge || 'Delete this for good? This cannot be undone.')) return;
+        p = goi('DELETE', api + '?ma=' + encodeURIComponent(g.ma) + '&vinhVien=1');
+      }
+      if (!p) return;
+      /* Đang sửa đúng ghi chú vừa bị ẩn/xoá thì thả khung viết ra — không thì
+         bấm Save là sửa vào một ghi chú đã nằm trong thùng rác. */
+      var cu = khung.dangSua();
+      if (cu && cu.ma === g.ma && viec !== 'an') khung.thoiSua();
+      b.disabled = true;
+      if (viec !== 'an') d.classList.add('ad-dong--xong');
+      p.then(function () {
+        /* Trang /notes/ trong cùng phiên không cần biết: nó hỏi lại máy chủ
+           mỗi lần mở. Ở đây chỉ cần vẽ lại bảng. */
+        setTimeout(xin, viec === 'an' ? 0 : 220);
+      }).catch(function () {
+        b.disabled = false;
+        d.classList.remove('ad-dong--xong');
+        window.alert(N.actFail || 'Could not do that. Check the connection and try again.');
+      });
+    }
+
+    function veLai() {
+      if (!coKhoa()) { hop.innerHTML = ''; dsQL = []; return; }
+      xin();
+    }
+
+    return { xin: xin, veLai: veLai };
   }
 
   /* ══════════ CHẠY ══════════ */
