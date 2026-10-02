@@ -11,6 +11,7 @@ tags:
   - published
 cover: /media/2017/tarot-dummies-cau-chuyen-tu-nhung-la-bai/bia.png
 coverAlt: "[Tarot for Dummies] - 10 điều cơ bản về Tarot mà ai cũng nhầm"
+hidden: true
 ---
 
 *Tarot for Dummies — 10 điều cơ bản, thuộc chuỗi series Tự học Tarot cho người mới bắt đầu.*
