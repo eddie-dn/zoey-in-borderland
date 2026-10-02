@@ -95,6 +95,12 @@
    hết bề ngang thì mỗi dòng gần 90 ký tự — mắt trượt dòng khi nhảy xuống. */
 .bo-doan{display:flow-root;max-width:64ch}
 .bo-doan .bo-lead{margin:0;max-width:none;text-indent:2em}
+/* ── MỘT NHỊP THỞ NHẸ GIỮA CÁC ĐOẠN ──
+   Bản trước để các đoạn dính liền nhau như trang sách in. Với dăm đoạn dài
+   trong một ô hẹp, khối chữ đọc ra sát quá — chủ trang nói thẳng "cho đỡ bị
+   sát". Một khoảng nhỏ (chừng nửa dòng) đủ tách đoạn mà vẫn giữ cả ô là MỘT
+   khối văn xuôi; thụt đầu dòng vẫn giữ làm dấu mở đoạn. */
+.bo-doan .bo-lead + .bo-lead{margin-top:.6em}
 
 /* Ô ảnh: không lề trong, ảnh phủ kín. `position:relative` + ảnh trải tuyệt
    đối để ô cao đúng bằng hàng lưới, không phải bằng tỉ lệ tấm ảnh. */
