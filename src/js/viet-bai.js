@@ -318,6 +318,9 @@
             : '') +
         '</span>' +
         '<span class="ad-lenh-hang">' +
+          '<button type="button" class="ad-lenh" data-xt title="' +
+            tho(L('xtMo', 'Open a private preview in a new tab — nothing is published')) + '">' +
+            tho(L('xt', 'Preview')) + '</button>' +
           '<button type="button" class="ad-lenh" data-sua>' + tho(L('edit', 'Edit')) + '</button>' +
           '<button type="button" class="ad-lenh" data-an>' +
             tho(b.trang === 'an' ? L('unhide', 'Unhide') : L('hide', 'Hide')) + '</button>' +
@@ -330,6 +333,9 @@
     [].slice.call(oBang.querySelectorAll('.ad-dong')).forEach(function (d) {
       var duong = d.getAttribute('data-d');
       d.querySelector('[data-sua]').addEventListener('click', function () { moSua(duong); });
+      d.querySelector('[data-xt]').addEventListener('click', function () {
+        window.open(location.pathname + '?xem=' + encodeURIComponent(duong) + '#post', '_blank', 'noopener');
+      });
       d.querySelector('[data-an]').addEventListener('click', function (e) {
         doiAn(duong, e.target);
       });
@@ -414,6 +420,78 @@
      Dùng lại ĐÚNG khung viết bài, chỉ khác ba chỗ: ô đã điền sẵn, nút Đăng
      thành nút Lưu, và có thêm nút Quay lại. Dựng một khung sửa riêng thì hai
      khung phải giữ cho giống nhau mãi mãi — mà chúng vốn là một việc. */
+  /* ══════════════════════════════════════════════════════════════════════
+     XEM TRƯỚC RIÊNG TƯ — CHO BÀI ẨN, BÀI NHÁP, VÀ CẢ BÀI ĐANG HIỆN
+
+     Chủ trang hỏi: bài đã bấm Hide (hay còn là nháp) có xem thử được không,
+     "chỉ là không publish". Có hai cách, và cách dễ là cách SAI ở đây: dựng
+     bài ra một đường dẫn công khai khó đoán. Bộ dựng cố ý không làm thế (xem
+     chú thích `CO_NHAP` và `hidden` trong tools/build.mjs) — một trang khó
+     đoán vẫn là một trang công khai: ai có link, hay bot nào lần ra, là đọc
+     được.
+
+     Nên bản xem trước sống TRONG /z-admin/, sau lớp khoá: nút Preview mở một
+     tab với link `/z-admin/?xem=<file>`. Tab ấy xin bài từ API (cần khoá như
+     mọi việc khác ở đây), dựng bằng đúng bộ dựng của trang (`ZIB.md.render`,
+     cùng luật sapo), và phủ lên cả màn. Link giữ lại được để mở lại; gửi cho
+     người không có khoá thì họ chỉ thấy ô đăng nhập. */
+  var daXemTruoc = false;
+  function moXemTruoc(duong) {
+    var cu = document.querySelector('.vb-xt');
+    if (cu) cu.remove();
+    var lop = document.createElement('div');
+    lop.className = 'vb-xt';
+    lop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
+    document.body.appendChild(lop);
+    document.documentElement.classList.add('vb-xt-mo');
+    function dong() {
+      lop.remove();
+      document.documentElement.classList.remove('vb-xt-mo');
+      try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+    }
+    fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { lop.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(d)) + '</p>'; return; }
+        function ve() {
+          var fm = d.fm || {};
+          var trang = fm.hidden ? 'an' : fm.draft ? 'nhap' : 'hien';
+          var kq = window.ZIB.md.render(d.noiDung || '', { base: '', khongSapo: !!fm.summary });
+          var muc = d.duong.split('/').slice(2, -1).join(' / ');
+          lop.innerHTML =
+            '<div class="vb-xt-thanh">' +
+              '<span class="badge' + (SAC_TRANG[trang] ? ' badge--' + SAC_TRANG[trang] : '') + '">' +
+                tho(TEN_TRANG[trang]) + '</span>' +
+              '<span class="vb-xt-nhan">' + tho(L('xtNhan', 'Private preview — only visible here, while signed in. Nothing is published.')) + '</span>' +
+              '<button type="button" class="btn btn--ghost" data-xt-sua>' + tho(L('edit', 'Edit')) + '</button>' +
+              '<button type="button" class="btn" data-xt-dong>' + tho(L('xtDong', 'Close')) + '</button>' +
+            '</div>' +
+            '<article class="vb-xt-bai">' +
+              '<header class="post-head">' +
+                '<p class="label">' + tho(String(fm.date || '').slice(0, 10)) + (muc ? ' · ' + tho(muc) : '') + '</p>' +
+                '<h1>' + tho(fm.title || '') + '</h1>' +
+                (fm.summary ? '<p class="summary">' + tho(fm.summary) + '</p>' : '') +
+              '</header>' +
+              (fm.cover ? '<figure class="vb-xt-bia"><img src="' + tho(fm.cover) + '" alt="' + tho(fm.coverAlt || '') + '"></figure>' : '') +
+              '<div class="prose">' + kq.html + '</div>' +
+            '</article>';
+          lop.querySelector('[data-xt-dong]').addEventListener('click', dong);
+          lop.querySelector('[data-xt-sua]').addEventListener('click', function () { dong(); moSua(duong); });
+          /* Liên kết trong bài là liên kết thật — bấm vào là rời khỏi bản xem
+             trước. Mở ở tab mới cho đỡ mất chỗ. */
+          [].forEach.call(lop.querySelectorAll('.prose a[href]'), function (a) {
+            a.target = '_blank'; a.rel = 'noopener';
+          });
+          document.title = (fm.title || 'Preview') + ' · Preview';
+        }
+        if (window.ZIB && window.ZIB.md) ve();
+        else window.addEventListener('zib-md-san', ve, { once: true });
+      })
+      .catch(function () {
+        lop.innerHTML = '<p class="bao bao--hong">' + tho(L('netErr', 'Network hiccup. Try again in a moment.')) + '</p>';
+      });
+  }
+
   function moSua(duong) {
     hop.innerHTML = '<p class="trong trong--cho vb-cho">' + tho(L('loading', 'Loading…')) + '</p>';
     fetch(api + '?doc=' + encodeURIComponent(duong), { cache: 'no-store', headers: K.dau() })
@@ -1235,7 +1313,15 @@
     fetch(api, { headers: K.dau() })
       .then(function (r) { return r.json().then(function (d) { return { ma: r.status, d: d }; }); })
       .then(function (kq) {
-        if (kq.d && kq.d.ok) { dsMuc = kq.d.muc || []; dangSua = null; veBang(); return; }
+        if (kq.d && kq.d.ok) {
+          dsMuc = kq.d.muc || []; dangSua = null; veBang();
+          /* Mở bằng link xem trước (`?xem=…`): đã có khoá thì dựng luôn. Chưa có
+             khoá thì `nap()` chạy lại khi người ta đăng nhập — lúc ấy tới đây. */
+          var xemD = '';
+          try { xemD = new URLSearchParams(location.search).get('xem') || ''; } catch (e) {}
+          if (xemD && !daXemTruoc) { daXemTruoc = true; moXemTruoc(xemD); }
+          return;
+        }
         hop.innerHTML = '<p class="bao bao--hong">' + tho(loiChu(kq.d)) + '</p>';
       })
       /* ── HAI LOẠI HỎNG, MỘT CÂU BÁO — VÀ ĐÓ TỪNG LÀ MỘT BUỔI ĐI SAI ĐƯỜNG ──

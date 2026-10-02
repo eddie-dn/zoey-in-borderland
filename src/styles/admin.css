@@ -683,3 +683,33 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 @media (max-width:480px){
   .vb-bia-tha{width:100%}
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   XEM TRƯỚC RIÊNG TƯ (`/z-admin/?xem=…`) — xem `moXemTruoc` trong viet-bai.js
+
+   Phủ kín màn hình trang quản trị, nền đục, bài dựng giữa trang như trang bài
+   thật. Thanh trên dính khi cuộn: trạng thái bài, một câu nói rõ "không công
+   khai", và hai nút Edit · Close.
+   ══════════════════════════════════════════════════════════════════════ */
+.vb-xt-mo body{overflow:hidden}
+.vb-xt{
+  position:fixed;inset:0;z-index:90;overflow-y:auto;
+  background:var(--bg-tint, none),var(--bg);background-color:var(--bg);
+}
+.vb-xt > .bao,.vb-xt > .vb-cho{max-width:var(--measure);margin:var(--s9) auto;padding-inline:var(--gutter)}
+.vb-xt-thanh{
+  position:sticky;top:0;z-index:2;
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);
+  padding:var(--s3) var(--gutter);
+  background:linear-gradient(var(--surface-sunken),var(--surface-sunken)) var(--surface-solid);
+  border-bottom:1px solid var(--line);
+}
+.vb-xt-nhan{flex:1 1 16rem;font-size:var(--fs-2xs);color:var(--text-muted)}
+/* Đầu bài, ảnh bìa và cột chữ của `.prose` cùng căn giữa trong đúng một làn
+   `--measure`, nên ba thứ thẳng mép trái với nhau như ở trang bài thật. */
+.vb-xt-bai{margin:0 auto;padding:var(--s9) 0 var(--s11)}
+.vb-xt-bai .post-head{max-width:min(var(--measure), 100% - var(--gutter) * 2);margin:0 auto var(--s7)}
+.vb-xt-bai .post-head h1{margin-top:var(--s2)}
+.vb-xt-bia{max-width:min(var(--measure), 100% - var(--gutter) * 2);margin:0 auto var(--s7)}
+.vb-xt-bia img{display:block;width:100%;height:auto;border-radius:var(--r-md)}
+
