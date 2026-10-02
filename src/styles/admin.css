@@ -733,15 +733,15 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 
 
 /* ══════════ DANH SÁCH GHI CHÚ Ở NGĂN NOTE ══════════
-   Cùng khuôn `.ad-*` với ngăn Post; chỉ thêm khoảng cách với ô viết phía trên
-   và một nhãn đầu bảng — ở ngăn Post thanh công cụ đứng ngay dưới tiêu đề
-   ngăn, còn ở đây giữa hai thứ có cả một khung viết. */
-.gc-ql{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s7)}
+   Cùng khuôn `.ad-*` với ngăn Post. Ô viết và danh sách là hai mặt của ngăn,
+   chuyển bằng nút Write note · List notes (`.gc-che`) — xem dungChe trong
+   src/js/ghi-chu.js. */
+.gc-ql{display:flex;flex-direction:column;gap:var(--s3)}
+/* Nút chuyển Write note · List notes đứng trên cùng ngăn, cách mặt bên dưới
+   đúng một nhịp như khoảng giữa thanh công cụ và bảng ở ngăn Post. */
+.gc-che{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s5);
+  margin-bottom:var(--s5)}
 .gc-ql > .ad-thanh{margin-bottom:0}
-.gc-ql-de{
-  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
-}
 /* Khung viết đang mượn làm khung SỬA: viền màu nhấn để không ai tưởng mình
    đang gõ một ghi chú mới. */
 .ad-o .gc-viet--sua{border-style:solid;border-color:var(--accent)}

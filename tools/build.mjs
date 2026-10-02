@@ -307,7 +307,8 @@ const NHAN = {
      Cùng bộ chữ với ngăn Post (Edit · Hide · Unhide) và với thùng rác của
      bàn duyệt (Restore · Delete forever · "{n}d left"), để ba ngăn không có
      ba cách gọi cho cùng một việc. */
-  gcList      : 'Your notes',
+  gcTabWrite  : 'Write note',
+  gcTabList   : 'List notes',
   gcHidden    : 'Hidden',
   gcListEmpty : 'Nothing here yet.',
   gcLoadFail  : 'Could not load notes. Check the key or your connection.',
@@ -331,7 +332,7 @@ const NHAN = {
      tả lại đúng thứ người ta đang nhìn thấy, tức là không nói thêm gì. */
   qlDan       : '',
   khHello     : 'Haluuu, {ten}!',
-  qlViet      : 'Write a note',
+  qlViet      : 'Notes',
   qlDuyet     : 'Comments',
   qlMenu      : 'Pick a task',
   qlNote      : 'Note',
@@ -1507,7 +1508,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         body: NHAN.gcBody,     bodyMissing: NHAN.gcBodyEmpty,
                         post: NHAN.gcPost,     posting: NHAN.gcPosting,
                         posted: NHAN.gcPosted, postFail: NHAN.gcPostFail,
-                        cancel: NHAN.cancelEdit, listTitle: NHAN.gcList,
+                        cancel: NHAN.cancelEdit,
+                        tabWrite: NHAN.gcTabWrite, tabList: NHAN.gcTabList,
                         listEmpty: NHAN.gcListEmpty, loadFail: NHAN.gcLoadFail,
                         edit: NHAN.edit, hide: NHAN.vbHide, unhide: NHAN.vbUnhide,
                         hidden: NHAN.gcHidden, del2: NHAN.blDel,

@@ -264,10 +264,11 @@
        đây chỉ còn hai trạng thái, và trạng thái "chưa có khoá" chỉ là lưới an
        toàn cho lúc khoá bị gỡ ở một tab khác. */
     function veLai() {
-      hop.hidden = !coKhoa();
+      hop.hidden = !coKhoa() || (!!che && che.dang() !== 'viet');
       hop.innerHTML = coKhoa() ? khungViet() : '';
       if (coKhoa()) gan();
       if (ql) ql.veLai();
+      if (che) che.veLai();
     }
 
     /* Chỗ cắm sẵn ở /z-admin/ đã có tiêu đề ngăn ("Viết ghi chú") in ngay
@@ -392,6 +393,7 @@
         (N.saveEdit || 'Save edit ({n} left)').replace('{n}', con);
       hop.querySelector('[data-huy]').hidden = false;
       noi('');
+      if (che) che.doi('viet');
       hop.scrollIntoView({ block: 'start', behavior: 'smooth' });
       hop.querySelector('[name=chu]').focus({ preventScroll: true });
     }
@@ -438,6 +440,10 @@
         thoiSua();
         noi(N.saved || 'Saved.');
         if (ql) ql.xin();
+        /* Sửa xong thì về lại danh sách — sửa là việc bắt đầu TỪ danh sách
+           (bấm Edit ở một hàng), nên xong việc thì trả người dùng về đó để
+           thấy hàng vừa sửa. */
+        if (che) che.doi('ds');
       }).catch(function () {
         bDang.disabled = false;
         noi(N.postFail || 'Could not send.', true);
@@ -462,11 +468,15 @@
        Sửa và xoá ghi chú nay làm ngay tại /notes/ khi đã đăng nhập, đúng chỗ
        nhìn thấy nó trong ngữ cảnh của nó. */
     if (!oVietCamSan()) lamOl();
+    var che = oSan ? dungChe(oSan, hop, coKhoa) : null;
     var ql = oSan ? dungQL(oSan, K, {
       sua: function (g, con) { batSua(g, con); },
       dangSua: function () { return dangSua; },
-      thoiSua: thoiSua
+      thoiSua: thoiSua,
+      dem: function (n) { che.dem(n); },
+      oLoc: che.oLoc
     }) : null;
+    if (ql) che.ganDS(ql.el);
     veLai();
 
     /* Cuộn tới — lý do đầy đủ ở src/js/comments.js, cùng hai cái bẫy. Cắm vào
@@ -481,6 +491,83 @@
     }
 
     return { veLai: veLai };
+  }
+
+  /* ══════════ 3b · HAI MẶT CỦA NGĂN NOTE: WRITE · LIST ══════════
+
+     Ô viết và danh sách chồng lên nhau thì danh sách bị đẩy xuống dưới một
+     khung cao 400px: muốn xem lại ghi chú nào phải cuộn qua cả ô viết, và
+     ngồi viết thì danh sách lấp ló ở mép dưới làm phân tâm. Mỗi lúc chỉ làm
+     một việc, nên mỗi lúc chỉ bày một mặt.
+
+     Nút chuyển là đúng cái nút Write · Split · Preview của khung soạn bài
+     (`.sz-che` trong soan.css) — cùng một trang quản trị thì một kiểu nút
+     chuyển mặt, không phải hai.
+
+     Nhớ mặt đang mở trong localStorage: người hay vào để dọn ghi chú cũ thì
+     lần sau mở ra là thấy ngay danh sách. Bấm Edit ở danh sách tự chuyển sang
+     Write; Save edit xong tự về List. */
+  function dungChe(oSan, oViet, coKhoa) {
+    var oDS = null;
+    var dang = 'viet';
+    try { dang = localStorage.getItem('zib-gc-che') || 'viet'; } catch (e) {}
+    if (dang !== 'viet' && dang !== 'ds') dang = 'viet';
+    var soDem = null;
+
+    var thanh = document.createElement('div');
+    thanh.className = 'gc-che';
+    var nhom = document.createElement('span');
+    nhom.className = 'sz-che';
+    nhom.setAttribute('role', 'group');
+    var nut = {};
+    [['viet', N.tabWrite || 'Write note'], ['ds', N.tabList || 'List notes']].forEach(function (x) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sz-che-nut';
+      b.setAttribute('data-che', x[0]);
+      b.textContent = x[1];
+      b.addEventListener('click', function () { doi(x[0]); });
+      nut[x[0]] = b;
+      nhom.appendChild(b);
+    });
+    thanh.appendChild(nhom);
+    /* Chỗ cho hàng chip lọc của danh sách (All · Hidden · Trash), cùng hàng
+       với nút chuyển, dạt phải — đúng dáng thanh công cụ của ngăn Post: nút
+       việc bên trái, bộ lọc bên phải. Để chip ở một hàng riêng dưới nút
+       chuyển thì mặt List mất trắng một hàng chỉ để đứng ba viên chip. */
+    var oLoc = document.createElement('div');
+    oLoc.className = 'ad-loc';
+    thanh.appendChild(oLoc);
+    oSan.insertBefore(thanh, oSan.firstChild);
+
+    function ve() {
+      var co = coKhoa();
+      thanh.hidden = !co;
+      oViet.hidden = !co || dang !== 'viet';
+      if (oDS) oDS.hidden = !co || dang !== 'ds';
+      oLoc.hidden = !co || dang !== 'ds';
+      ['viet', 'ds'].forEach(function (k) {
+        nut[k].classList.toggle('sz-che-nut--bat', dang === k);
+        nut[k].setAttribute('aria-pressed', dang === k ? 'true' : 'false');
+      });
+      nut.ds.textContent = (N.tabList || 'List notes') + (soDem != null ? ' · ' + soDem : '');
+    }
+
+    function doi(moi) {
+      dang = moi;
+      try { localStorage.setItem('zib-gc-che', moi); } catch (e) {}
+      ve();
+    }
+
+    ve();
+    return {
+      dang: function () { return dang; },
+      doi: doi,
+      dem: function (n) { soDem = n; ve(); },
+      veLai: ve,
+      oLoc: oLoc,
+      ganDS: function (el) { oDS = el; ve(); }
+    };
   }
 
   /* ══════════ 4 · DANH SÁCH GHI CHÚ Ở NGĂN NOTE ══════════
@@ -542,17 +629,18 @@
       var an = song.filter(function (g) { return !!g.an; });
       var rac = dsQL.filter(function (g) { return !!g.xoa; });
       var hien = loc === 'rac' ? rac : loc === 'an' ? an : song;
+      if (khung.dem) khung.dem(song.length);
 
-      var h = '<div class="ad-thanh"><span class="gc-ql-de">' +
-                tho(N.listTitle || 'Notes') + '</span><div class="ad-loc">';
+      var loc0 = '';
       [['', N.all || 'All', song.length],
        ['an', N.hidden || 'Hidden', an.length],
        ['rac', N.trash || 'Trash', rac.length]].forEach(function (x) {
-        h += '<button type="button" class="chip' + (loc === x[0] ? ' chip--nay' : '') +
+        loc0 += '<button type="button" class="chip' + (loc === x[0] ? ' chip--nay' : '') +
              (x[0] === 'rac' ? ' bl-chip-rac' : '') + '" data-loc="' + x[0] + '">' +
              tho(x[1]) + '<span class="chip-so">' + x[2] + '</span></button>';
       });
-      h += '</div></div>';
+      khung.oLoc.innerHTML = loc0;
+      var h = '';
 
       if (loc === 'rac') {
         h += '<p class="bl-rac-luat">' +
@@ -605,7 +693,7 @@
       }
       hop.innerHTML = h;
 
-      [].forEach.call(hop.querySelectorAll('[data-loc]'), function (b) {
+      [].forEach.call(khung.oLoc.querySelectorAll('[data-loc]'), function (b) {
         b.addEventListener('click', function () { loc = b.getAttribute('data-loc'); ve(); });
       });
       [].forEach.call(hop.querySelectorAll('.ad-dong'), function (d) {
@@ -653,11 +741,11 @@
     }
 
     function veLai() {
-      if (!coKhoa()) { hop.innerHTML = ''; dsQL = []; return; }
+      if (!coKhoa()) { hop.innerHTML = ''; khung.oLoc.innerHTML = ''; dsQL = []; return; }
       xin();
     }
 
-    return { xin: xin, veLai: veLai };
+    return { xin: xin, veLai: veLai, el: hop };
   }
 
   /* ══════════ CHẠY ══════════ */
