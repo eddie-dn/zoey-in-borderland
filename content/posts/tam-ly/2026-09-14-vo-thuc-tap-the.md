@@ -5,6 +5,7 @@ summary: Jung nói có một tầng ký ức không thuộc về riêng ai. Nế
 tags: [tâm lý, jung, ghi chép]
 cover: /media/2026/vo-thuc-tap-the/bia.png
 coverAlt: Một quầng sáng tím hồng toả ra từ tâm, bao quanh là hai vòng tròn nét đứt
+hidden: true
 ---
 
 Có những hình ảnh quay lại trong giấc mơ của những người chưa từng gặp nhau, ở
