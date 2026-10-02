@@ -144,10 +144,13 @@ const COT_DOC = 'ma, ngay, loai, chu, mood, kieuNguon, nguon, tacGia, link, tric
 function docKem(than) {
   const ra = {};
   if ('mood' in than) {
-    /* Một biểu tượng, không phải một câu: tối đa 8 đơn vị mã (đủ cho biểu
-       tượng ghép nhiều mảnh), không khoảng trắng. */
+    /* Một biểu tượng, không phải một câu: tối đa 16 đơn vị mã (đủ cho biểu
+       tượng ghép nhiều mảnh như 😵‍💫 hay cờ), không khoảng trắng, và phải
+       có ít nhất một ký tự hình — ô "dán emoji bất kỳ" ở trang quản trị không
+       được thành chỗ gõ chữ. */
     const m = String(than.mood || '').trim();
-    ra.mood = m.length <= 8 && !/\s|[<>&"']/.test(m) ? m : '';
+    ra.mood = m.length <= 16 && !/\s|[<>&"']/.test(m) &&
+              /\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(m) ? m : '';
   }
   if ('kieuNguon' in than) ra.kieuNguon = KIEU_NGUON.includes(than.kieuNguon) ? than.kieuNguon : '';
   if ('nguon' in than)  ra.nguon  = String(than.nguon  || '').trim().slice(0, 120);

@@ -165,7 +165,9 @@
   var THANG = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var THANG_DU = ['January','February','March','April','May','June','July',
                   'August','September','October','November','December'];
-  var MOOD = N.moods || [];
+  /* Hàng gợi ý cộng cả kho, trải phẳng — chỉ để tra nhãn cho `title`. */
+  var MOOD = (N.moods || []).slice();
+  (N.moodKho || []).forEach(function (nh) { MOOD = MOOD.concat(nh[1] || []); });
 
   function nguonHTML(g) {
     if (!g.nguon) return '';
@@ -401,13 +403,36 @@
        Mood là một hàng nút chứ không phải danh sách thả: tám biểu tượng thấy
        hết một lượt, bấm một cái là chọn, bấm lại là bỏ. */
     function oThem() {
+      var nutMood = function (m) {
+        return '<button type="button" class="gc-mood-nut" data-mood="' + tho(m[0]) + '" ' +
+               'title="' + tho(m[1]) + '" aria-label="' + tho(m[1]) + '" aria-pressed="false">' +
+               tho(m[0]) + '</button>';
+      };
+      /* ── HÀNG GỢI Ý + KHO ──
+         Hàng tám cái giữ nguyên: đó là đường MỘT CÚ BẤM cho những hôm cảm
+         giác đơn giản. Cuối hàng có hai thứ:
+           · ô `data-mood-ngoai` — chỉ hiện khi mood đang chọn KHÔNG nằm trong
+             hàng (lấy từ kho hay dán tay), để nhìn hàng là biết đang chọn gì;
+           · nút ＋ mở kho: Recent, chín nhóm theo sắc thái, và một ô dán
+             emoji bất kỳ. Kho mở NGAY DƯỚI hàng, không phải một hộp nổi —
+             hộp nổi trên điện thoại che mất chính ô Note đang viết. */
+      var kho = '<div class="gc-mood-kho" data-mood-kho hidden>' +
+        '<div class="gc-mood-nhom" data-mood-gan hidden><span class="gc-mood-nhom-de">' +
+          tho(N.moodRecent || 'Recent') + '</span><div class="gc-mood-luoi"></div></div>' +
+        (N.moodKho || []).map(function (nh) {
+          return '<div class="gc-mood-nhom"><span class="gc-mood-nhom-de">' + tho(nh[0]) + '</span>' +
+                 '<div class="gc-mood-luoi">' + (nh[1] || []).map(nutMood).join('') + '</div></div>';
+        }).join('') +
+        '<label class="gc-mood-dan"><span>' + tho(N.moodPaste || 'Or paste any emoji') + '</span>' +
+          '<input type="text" maxlength="16" data-mood-dan autocomplete="off" placeholder="🫧"></label>' +
+      '</div>';
       var mood = '<div class="gc-o"><span>' + tho(N.fMood || 'Mood') + '</span>' +
         '<div class="gc-mood-hang" role="group" aria-label="' + tho(N.fMood || 'Mood') + '">' +
-        (N.moods || []).map(function (m) {
-          return '<button type="button" class="gc-mood-nut" data-mood="' + tho(m[0]) + '" ' +
-                 'title="' + tho(m[1]) + '" aria-label="' + tho(m[1]) + '" aria-pressed="false">' +
-                 tho(m[0]) + '</button>';
-        }).join('') + '</div></div>';
+        (N.moods || []).map(nutMood).join('') +
+        '<button type="button" class="gc-mood-nut gc-mood-ngoai" data-mood-ngoai aria-pressed="true" hidden></button>' +
+        '<button type="button" class="gc-mood-them" data-mood-mo aria-expanded="false" ' +
+          'title="' + tho(N.moodMore || 'More moods') + '" aria-label="' + tho(N.moodMore || 'More moods') + '">＋</button>' +
+        '</div>' + kho + '</div>';
       var nguon = '<fieldset class="gc-o gc-nguon-o"><legend>' + tho(N.fSrc || 'Source') + '</legend>' +
         '<div class="gc-nguon-hang">' +
           '<label class="gc-o"><span>' + tho(N.fSrcKind || 'I was…') + '</span>' +
@@ -434,27 +459,91 @@
       return mood + nguon + tick;
     }
 
+    /* Mood đang chọn sống ở MỘT biến, không đọc lại từ nút: cùng một emoji có
+       thể có mặt ở cả hàng gợi ý lẫn trong kho (Recent), và lúc ấy đọc "nút
+       nào đang bấm" ra hai câu trả lời. */
+    var moodDang = '';
+    var KHO_GAN = 'zib-gc-mood-gan';
+    var laHinh = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
+
+    function moodGan() {
+      try { return JSON.parse(localStorage.getItem(KHO_GAN) || '[]').slice(0, 8); }
+      catch (e) { return []; }
+    }
+    /* Nhớ tám mood dùng gần nhất NGOÀI hàng gợi ý — mood trong hàng thì đã
+       nằm sẵn trước mắt, nhớ thêm là lặp. */
+    function nhoGan(m) {
+      if (!m || (N.moods || []).some(function (x) { return x[0] === m; })) return;
+      var ds = moodGan().filter(function (x) { return x !== m; });
+      ds.unshift(m);
+      try { localStorage.setItem(KHO_GAN, JSON.stringify(ds.slice(0, 8))); } catch (e) {}
+    }
+    function nhanMood(m) {
+      for (var i = 0; i < MOOD.length; i++) if (MOOD[i][0] === m) return MOOD[i][1];
+      return '';
+    }
+
+    function veGan() {
+      var o = hop.querySelector('[data-mood-gan]');
+      if (!o) return;
+      var ds = moodGan();
+      o.hidden = !ds.length;
+      o.querySelector('.gc-mood-luoi').innerHTML = ds.map(function (m) {
+        var n = nhanMood(m) || m;
+        return '<button type="button" class="gc-mood-nut" data-mood="' + tho(m) + '" title="' + tho(n) +
+               '" aria-label="' + tho(n) + '" aria-pressed="' + (m === moodDang) + '">' + tho(m) + '</button>';
+      }).join('');
+    }
+
     function ganMood() {
-      [].forEach.call(hop.querySelectorAll('.gc-mood-nut'), function (b) {
-        b.addEventListener('click', function () {
-          var bat = b.getAttribute('aria-pressed') !== 'true';
-          datMood(bat ? b.getAttribute('data-mood') : '');
-        });
+      /* Một người nghe cho cả khung: nút trong Recent được dựng lại mỗi lần
+         mở kho, gắn từng nút thì phải gắn lại mỗi lần. */
+      hop.addEventListener('click', function (e) {
+        var b = e.target.closest('.gc-mood-nut[data-mood]');
+        if (b && hop.contains(b)) {
+          var m = b.getAttribute('data-mood');
+          datMood(m === moodDang ? '' : m);
+          return;
+        }
+        if (e.target.closest('[data-mood-ngoai]')) { datMood(''); return; }
+        var mo = e.target.closest('[data-mood-mo]');
+        if (mo) {
+          var kho = hop.querySelector('[data-mood-kho]');
+          kho.hidden = !kho.hidden;
+          mo.setAttribute('aria-expanded', kho.hidden ? 'false' : 'true');
+          if (!kho.hidden) veGan();
+        }
+      });
+      var dan = hop.querySelector('[data-mood-dan]');
+      if (dan) dan.addEventListener('input', function () {
+        var m = dan.value.trim();
+        if (m && laHinh.test(m) && !/\s/.test(m)) datMood(m);
       });
     }
+
     function datMood(m) {
-      [].forEach.call(hop.querySelectorAll('.gc-mood-nut'), function (b) {
-        b.setAttribute('aria-pressed', b.getAttribute('data-mood') === m ? 'true' : 'false');
+      moodDang = m || '';
+      [].forEach.call(hop.querySelectorAll('.gc-mood-nut[data-mood]'), function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-mood') === moodDang ? 'true' : 'false');
       });
+      var trongHang = (N.moods || []).some(function (x) { return x[0] === moodDang; });
+      var ngoai = hop.querySelector('[data-mood-ngoai]');
+      if (ngoai) {
+        ngoai.hidden = !moodDang || trongHang;
+        ngoai.textContent = moodDang;
+        var n = nhanMood(moodDang) || moodDang;
+        ngoai.title = n + ' — ' + (N.moodClear || 'No mood');
+        ngoai.setAttribute('aria-label', n);
+      }
+      var dan = hop.querySelector('[data-mood-dan]');
+      if (dan && dan.value.trim() !== moodDang) dan.value = '';
     }
-    function docMood() {
-      var b = hop.querySelector('.gc-mood-nut[aria-pressed="true"]');
-      return b ? b.getAttribute('data-mood') : '';
-    }
+    function docMood() { return moodDang; }
 
     /* Mọi ô thêm gom một chỗ — POST và PATCH gửi cùng bộ này. */
     function docKem() {
       var q = function (n) { return hop.querySelector('[name=' + n + ']'); };
+      nhoGan(docMood());
       return {
         mood: docMood(),
         kieuNguon: q('kieuNguon').value,
@@ -480,6 +569,8 @@
       hop.querySelector('[name=chu]').value = '';
       hop.querySelector('[name=loai]').value = '';
       datKem({});
+      var kho = hop.querySelector('[data-mood-kho]');
+      if (kho) { kho.hidden = true; hop.querySelector('[data-mood-mo]').setAttribute('aria-expanded', 'false'); }
     }
 
     function loaiDaCo() {
@@ -844,13 +935,21 @@
              để biết trước còn bao nhiêu lượt, không phải bấm Edit mới thấy. */
           var mo = [[g.mood || '', g.loai || ''].join(' ').trim()];
           if (g.nguon) mo.push(g.nguon);
+          mo = mo.filter(Boolean).map(tho);
+          /* ── CÒN BAO NHIÊU LƯỢT SỬA ──
+             Chỉ hiện khi đã sửa ít nhất một lần: ghi chú chưa sửa thì còn đủ
+             ba, và ba chữ "3 edits left" trên mọi hàng chỉ là nhiễu. Hết lượt
+             thì đỏ — nút Edit bên phải cũng mờ đi, nhưng mờ thì dễ bỏ qua. */
           if (Number(g.soSua) > 0) {
-            mo.push((N.edited || 'edited {n}/{t}').replace('{n}', g.soSua).replace('{t}', TRAN));
+            mo.push('<span class="gc-con-sua' + (con <= 0 ? ' gc-con-sua--het' : '') + '">' +
+              tho(con > 1 ? (N.editsLeftRow || '{n} edits left').replace('{n}', con)
+                : con === 1 ? (N.editLeftRow1 || '1 edit left')
+                : (N.noEditsRow || 'No edits left')) + '</span>');
           }
           return '<div class="ad-dong ad-dong--hai" data-ma="' + tho(g.ma) + '">' +
             '<span class="ad-phu">' + tho(g.ngay) + '</span>' +
             '<span class="ad-chinh">' + tho(String(g.chu).replace(/\s+/g, ' ')) +
-              '<span class="ad-mo">' + tho(mo.filter(Boolean).join(' · ') || '—') + '</span></span>' +
+              '<span class="ad-mo">' + (mo.join(' · ') || '—') + '</span></span>' +
             '<span class="ad-cd">' + cd + '</span>' +
             '<span class="ad-lenh-hang">' + nut + '</span>' +
           '</div>';

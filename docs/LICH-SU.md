@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.0 | 2026-10-02 | 00 | Kho mood cho ghi chú; danh sách hiện số lượt sửa còn lại |
 | V3.1.9 | 2026-10-02 | 09 | Trang Notes thành dòng thời gian: nguồn, câu trích, mood, ghim |
 | V3.1.8 | 2026-10-02 | 08 | Ngăn Note chia hai tab Write note · List notes |
 | V3.1.7 | 2026-10-02 | 07 | Thùng rác cho bình luận và ghi chú; ghi chú D1 hiện lại ở /notes/ |
@@ -269,6 +270,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.0 — 02-Oct-2026
+
+- **Kho mood.** Hàng 8 mood gợi ý giữ nguyên; nút ＋ cuối hàng mở thêm 72
+  mood chia 9 nhóm theo sắc thái (Joy, Calm, Love, Melancholy…), một hàng
+  Recent nhớ mood vừa dùng, và một ô dán emoji bất kỳ.
+- **Danh sách ghi chú hiện số lượt sửa còn lại** ("1 edit left") ngay khi
+  đã sửa lần đầu; hết lượt thì báo đỏ.
 
 ## V3.1.9 — 02-Oct-2026
 

@@ -315,6 +315,10 @@ const NHAN = {
   gcTabWrite  : 'Write note',
   /* Các ô thêm của khung viết ghi chú — đều không bắt buộc. */
   gcFMood     : 'Mood',
+  gcMoodMore  : 'More moods',
+  gcMoodRecent: 'Recent',
+  gcMoodPaste : 'Or paste any emoji',
+  gcMoodClear : 'No mood',
   gcFSrc      : 'Source',
   gcFSrcKind  : 'I was…',
   gcFSrcNone  : '—',
@@ -331,7 +335,9 @@ const NHAN = {
   gcHidden    : 'Hidden',
   gcListEmpty : 'Nothing here yet.',
   gcLoadFail  : 'Could not load notes. Check the key or your connection.',
-  gcEdited    : 'edited {n}/{t}',
+  gcEditsLeftRow: '{n} edits left',
+  gcEditLeftRow1: '1 edit left',
+  gcNoEditsRow: 'No edits left',
   gcEditsLeft : '{n} of {t} edits left',
   gcNoEdits   : 'No edits left — each note can be edited 3 times.',
   gcSaveEdit  : 'Save edit ({n} left)',
@@ -1535,14 +1541,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         restore: NHAN.blRestore, purge: NHAN.blPurge,
                         trash: NHAN.blFTrash, trashNote: NHAN.blTrashNote,
                         trashEmpty: NHAN.blTrashEmpty, daysLeft: NHAN.blDaysLeft,
-                        edited: NHAN.gcEdited, editsLeft: NHAN.gcEditsLeft,
+                        editsLeftRow: NHAN.gcEditsLeftRow, noEditsRow: NHAN.gcNoEditsRow,
+                        editLeftRow1: NHAN.gcEditLeftRow1,
+                        editsLeft: NHAN.gcEditsLeft,
                         noEdits: NHAN.gcNoEdits, saveEdit: NHAN.gcSaveEdit,
                         saved: NHAN.gcSaved, actFail: NHAN.gcActFail,
                         askPurge: NHAN.gcAskPurge,
                         /* Khuôn ghi chú mới: nguồn · câu trích · mood · ghim.
                            `moods` là bảng GC_MOOD — ô viết vẽ nút từ đó, còn
                            /notes/ lấy chữ cho `title` của ghi chú chèn từ D1. */
-                        moods: GC_MOOD, pinned: NHAN.gcPinned,
+                        moods: GC_MOOD, moodKho: GC_MOOD_KHO, pinned: NHAN.gcPinned,
+                        moodMore: NHAN.gcMoodMore, moodRecent: NHAN.gcMoodRecent,
+                        moodPaste: NHAN.gcMoodPaste, moodClear: NHAN.gcMoodClear,
                         srcDoc: NHAN.gcSrcDoc, srcNghe: NHAN.gcSrcNghe, srcXem: NHAN.gcSrcXem,
                         fMood: NHAN.gcFMood, fSrc: NHAN.gcFSrc, fSrcKind: NHAN.gcFSrcKind,
                         fSrcNone: NHAN.gcFSrcNone, fSrcTen: NHAN.gcFSrcTen,
@@ -4289,6 +4299,45 @@ const GC_TOI_DA_GHIM = 2;
    /notes/ (chữ nằm trong `title`), và ghi chú kéo từ D1 về (chèn bằng JS). */
 const GC_MOOD = [['🙂', 'happy'], ['😌', 'calm'], ['🤔', 'thoughtful'], ['🥹', 'moved'],
                  ['😢', 'sad'], ['😤', 'annoyed'], ['😴', 'tired'], ['✨', 'inspired']];
+/* ── KHO MOOD ──
+   Hàng tám cái trên là GỢI Ý — chọn trong một cú bấm. Kho này mở ra bằng nút
+   `＋` cạnh hàng ấy, cho những hôm "vui" hay "buồn" là quá thô: buồn kiểu mưa
+   dầm khác buồn kiểu lá rụng. Chia nhóm theo SẮC THÁI chứ không theo hình
+   (mặt người, thời tiết, đồ vật…), vì người ta chọn mood bằng cảm giác.
+
+   Nhãn tiếng Anh, cùng lệ với phần khung; nó chỉ hiện trong `title` khi rê
+   chuột lên mood ở /notes/. Ngoài kho vẫn dán được emoji bất kỳ. */
+const GC_MOOD_KHO = [
+  ['Joy',        [['😊', 'content'], ['😄', 'joyful'], ['😆', 'giggly'], ['🥳', 'celebrating'],
+                  ['🤩', 'starstruck'], ['😎', 'cool'], ['🙃', 'silly'], ['😇', 'blessed']]],
+  ['Calm',       [['🍃', 'breezy'], ['🧘', 'centered'], ['🫖', 'cozy'], ['🕯️', 'still'],
+                  ['☁️', 'drifting'], ['🌙', 'quiet night'], ['🌊', 'flowing'], ['🛁', 'unwinding']]],
+  ['Love',       [['🥰', 'loved'], ['😍', 'smitten'], ['💗', 'tender'], ['🫶', 'grateful'],
+                  ['💌', 'longing'], ['🌷', 'soft'], ['🤍', 'gentle'], ['💞', 'close']]],
+  ['Thoughtful', [['🧐', 'curious'], ['💭', 'daydreaming'], ['📚', 'studious'], ['🔍', 'searching'],
+                  ['🪞', 'reflective'], ['🧩', 'puzzling'], ['🌀', 'spinning'], ['🗝️', 'figuring out']]],
+  ['Melancholy', [['🥺', 'tender-hearted'], ['😔', 'pensive'], ['🌧️', 'rainy'], ['🍂', 'wistful'],
+                  ['💧', 'teary'], ['🫠', 'melting'], ['🌫️', 'foggy'], ['🖤', 'heavy']]],
+  ['Heated',     [['😠', 'angry'], ['🙄', 'over it'], ['😬', 'tense'], ['😰', 'anxious'],
+                  ['😵‍💫', 'dizzy'], ['🤯', 'overwhelmed'], ['🔥', 'fired up'], ['🌪️', 'stormy']]],
+  ['Low',        [['🥱', 'sleepy'], ['🪫', 'drained'], ['🤒', 'unwell'], ['🫥', 'blank'],
+                  ['🐢', 'slow'], ['🛌', 'resting'], ['☕', 'need coffee'], ['🌑', 'dim']]],
+  ['Spark',      [['💡', 'idea'], ['🌱', 'growing'], ['🚀', 'driven'], ['🎨', 'creative'],
+                  ['🎶', 'musical'], ['🌈', 'hopeful'], ['⚡', 'electric'], ['🦋', 'changing']]],
+  ['Out & about',[['☀️', 'sunny'], ['❄️', 'chilly'], ['🌸', 'blooming'], ['🏖️', 'seaside'],
+                  ['🏔️', 'far away'], ['🌃', 'city night'], ['🚲', 'wandering'], ['✈️', 'travelling']]]
+];
+/* Tra nhãn của một mood — ở hàng gợi ý trước, rồi tới kho. Mood dán tay
+   không có trong cả hai thì không có nhãn, chỉ có hình. */
+function gcNhanMood(m) {
+  const tim = GC_MOOD.find((y) => y[0] === m);
+  if (tim) return tim[1];
+  for (const [, ds] of GC_MOOD_KHO) {
+    const y = ds.find((z) => z[0] === m);
+    if (y) return y[1];
+  }
+  return '';
+}
 function docKemGhiChu(dong) {
   const kem = { mood: '', kieuNguon: '', nguon: '', tacGia: '', link: '', trich: false, ghim: false };
   let i = 0;
@@ -4300,7 +4349,7 @@ function docKemGhiChu(dong) {
     const [, khoa, gt] = m;
     if (khoa === 'trich') kem.trich = true;
     else if (khoa === 'ghim') kem.ghim = true;
-    else if (khoa === 'mood') kem.mood = gt.trim().slice(0, 8);
+    else if (khoa === 'mood') kem.mood = gt.trim().slice(0, 16);
     else if (khoa === 'nguon') {
       const [kieu, ten, ai, link] = gt.split('|').map((x) => x.trim());
       kem.kieuNguon = ['doc', 'nghe', 'xem'].includes(kieu) ? kieu : '';
@@ -4360,14 +4409,14 @@ function gcNguonHTML(x) {
 }
 function gcMotHTML(x) {
   const d = new Date(x.ngay + 'T00:00:00Z');
-  const mood = GC_MOOD.find((y) => y[0] === x.mood);
+  const nhanMood = gcNhanMood(x.mood);
   return `
       <li class="gc-mot${x.trich ? ' gc-mot--trich' : ''}" data-loai="${attr(x.loai)}">
         <div class="gc-dau">
           <time datetime="${x.ngay}"><span class="gc-ngay">${d.getUTCDate()}</span>` +
             `<span class="gc-thu">${GC_THU[d.getUTCDay()]}</span>` +
             `<span class="gc-nam">${GC_THANG[d.getUTCMonth()]} ${d.getUTCFullYear()}</span></time>
-          ${x.mood ? `<span class="gc-mood" title="${attr(mood ? mood[1] : '')}"${mood ? ` aria-label="${attr(mood[1])}"` : ''}>${escapeHtml(x.mood)}</span>` : ''}
+          ${x.mood ? `<span class="gc-mood"${nhanMood ? ` title="${attr(nhanMood)}" aria-label="${attr(nhanMood)}"` : ''}>${escapeHtml(x.mood)}</span>` : ''}
         </div>
         <div class="gc-than">
           ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
