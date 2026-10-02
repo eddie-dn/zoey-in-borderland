@@ -48,7 +48,14 @@
        xoa  INTEGER NOT NULL DEFAULT 0,
        an     INTEGER NOT NULL DEFAULT 0,
        soSua  INTEGER NOT NULL DEFAULT 0,
-       xoaLuc TEXT NOT NULL DEFAULT ''
+       xoaLuc TEXT NOT NULL DEFAULT '',
+       mood   TEXT NOT NULL DEFAULT '',
+       kieuNguon TEXT NOT NULL DEFAULT '',
+       nguon  TEXT NOT NULL DEFAULT '',
+       tacGia TEXT NOT NULL DEFAULT '',
+       link   TEXT NOT NULL DEFAULT '',
+       trich  INTEGER NOT NULL DEFAULT 0,
+       ghim   INTEGER NOT NULL DEFAULT 0
      );
      CREATE INDEX IF NOT EXISTS ghi_chu_moi ON ghi_chu (xoa, ngay DESC);
 
@@ -84,7 +91,14 @@ const TAO = [
      xoa  INTEGER NOT NULL DEFAULT 0,
      an     INTEGER NOT NULL DEFAULT 0,
      soSua  INTEGER NOT NULL DEFAULT 0,
-     xoaLuc TEXT NOT NULL DEFAULT ''
+     xoaLuc TEXT NOT NULL DEFAULT '',
+     mood   TEXT NOT NULL DEFAULT '',
+     kieuNguon TEXT NOT NULL DEFAULT '',
+     nguon  TEXT NOT NULL DEFAULT '',
+     tacGia TEXT NOT NULL DEFAULT '',
+     link   TEXT NOT NULL DEFAULT '',
+     trich  INTEGER NOT NULL DEFAULT 0,
+     ghim   INTEGER NOT NULL DEFAULT 0
    )`,
   `CREATE INDEX IF NOT EXISTS ghi_chu_moi ON ghi_chu (xoa, ngay DESC)`
 ];
@@ -99,8 +113,61 @@ const TAO = [
 const THEM_COT = [
   `ALTER TABLE ghi_chu ADD COLUMN an INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE ghi_chu ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`,
-  `ALTER TABLE ghi_chu ADD COLUMN xoaLuc TEXT NOT NULL DEFAULT ''`
+  `ALTER TABLE ghi_chu ADD COLUMN xoaLuc TEXT NOT NULL DEFAULT ''`,
+  /* Bảy cột của khuôn ghi chú mới — xem khối "THÔNG TIN KÈM" dưới đây. */
+  `ALTER TABLE ghi_chu ADD COLUMN mood TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE ghi_chu ADD COLUMN kieuNguon TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE ghi_chu ADD COLUMN nguon TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE ghi_chu ADD COLUMN tacGia TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE ghi_chu ADD COLUMN link TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE ghi_chu ADD COLUMN trich INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE ghi_chu ADD COLUMN ghim INTEGER NOT NULL DEFAULT 0`
 ];
+
+/* ── THÔNG TIN KÈM MỘT GHI CHÚ ──
+     mood       một biểu tượng cảm xúc, chọn từ bảng có sẵn ở ô viết
+     kieuNguon  'doc' | 'nghe' | 'xem' | '' — đang đọc, nghe hay xem cái gì
+     nguon      tên thứ ấy (sách, bài hát, phim…)
+     tacGia     người viết / người hát / đạo diễn
+     link       đường dẫn tới nó, chỉ nhận http(s)
+     trich      1 = ghi chú là một CÂU TRÍCH, hiện thành chữ trích lớn
+     ghim       1 = nằm trên cùng /notes/; tối đa TOI_DA_GHIM cái
+
+   Tất cả đều không bắt buộc: một ghi chú ba dòng không kèm gì vẫn là ghi chú
+   đầy đủ. */
+const TOI_DA_GHIM = 2;
+const KIEU_NGUON = ['doc', 'nghe', 'xem'];
+const COT_DOC = 'ma, ngay, loai, chu, mood, kieuNguon, nguon, tacGia, link, trich, ghim';
+
+/* Đọc phần kèm từ thân gửi lên. Chỉ trả về những khoá CÓ trong thân, để
+   PATCH không xoá trắng một trường mà trang không gửi. */
+function docKem(than) {
+  const ra = {};
+  if ('mood' in than) {
+    /* Một biểu tượng, không phải một câu: tối đa 8 đơn vị mã (đủ cho biểu
+       tượng ghép nhiều mảnh), không khoảng trắng. */
+    const m = String(than.mood || '').trim();
+    ra.mood = m.length <= 8 && !/\s|[<>&"']/.test(m) ? m : '';
+  }
+  if ('kieuNguon' in than) ra.kieuNguon = KIEU_NGUON.includes(than.kieuNguon) ? than.kieuNguon : '';
+  if ('nguon' in than)  ra.nguon  = String(than.nguon  || '').trim().slice(0, 120);
+  if ('tacGia' in than) ra.tacGia = String(than.tacGia || '').trim().slice(0, 80);
+  if ('link' in than) {
+    const l = String(than.link || '').trim();
+    ra.link = /^https?:\/\/[^\s<>"']{3,300}$/.test(l) ? l : '';
+  }
+  if ('trich' in than) ra.trich = than.trich ? 1 : 0;
+  return ra;
+}
+
+/* Còn chỗ ghim không. Đếm cả ghi chú đang ẩn: ẩn rồi hiện lại thì nó vẫn
+   mang cờ ghim, và lúc ấy trang có ba cái ghim. Ghi chú vào thùng rác thì
+   nhả cờ ghim ra (xem DELETE), nên không chiếm chỗ. */
+async function conChoGhim(env, tru = '') {
+  const r = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM ghi_chu WHERE ghim = 1 AND xoa = 0 AND ma != ?').bind(tru).first();
+  return Number((r && r.n) || 0) < TOI_DA_GHIM;
+}
 let daNoiRong = false;
 async function noiRongBang(env) {
   if (daNoiRong) return;
@@ -192,15 +259,15 @@ export async function onRequestGet({ request, env }) {
       await env.DB.prepare(
         `DELETE FROM ghi_chu WHERE xoa = 1 AND xoaLuc != '' AND xoaLuc < ?`).bind(han).run();
       const ql = await env.DB.prepare(
-        `SELECT ma, ngay, loai, chu, an, xoa, xoaLuc, soSua FROM ghi_chu
+        `SELECT ${COT_DOC}, an, xoa, xoaLuc, soSua FROM ghi_chu
           ORDER BY xoa ASC, ngay DESC, luc DESC LIMIT ?`).bind(LAY).all();
       return traLoi({ ok: true, ghiChu: ql.results || [], hanRac: HAN_RAC,
-                      toiDaSua: TOI_DA_SUA }, 200, 'no-store', false);
+                      toiDaSua: TOI_DA_SUA, toiDaGhim: TOI_DA_GHIM }, 200, 'no-store', false);
     } catch (e) {
       const loi = String((e && e.message) || e);
       if (/no such table/i.test(loi)) {
-        return traLoi({ ok: true, ghiChu: [], hanRac: HAN_RAC, toiDaSua: TOI_DA_SUA },
-                      200, 'no-store', false);
+        return traLoi({ ok: true, ghiChu: [], hanRac: HAN_RAC, toiDaSua: TOI_DA_SUA,
+                        toiDaGhim: TOI_DA_GHIM }, 200, 'no-store', false);
       }
       return traLoi({ ok: false, loi }, 500, 'no-store', false);
     }
@@ -210,7 +277,7 @@ export async function onRequestGet({ request, env }) {
   try {
     await noiRongBang(env);
     kq = await env.DB.prepare(
-      `SELECT ma, ngay, loai, chu FROM ghi_chu
+      `SELECT ${COT_DOC} FROM ghi_chu
         WHERE xoa = 0 AND an = 0 ORDER BY ngay DESC, luc DESC LIMIT ?`).bind(LAY).all();
   } catch (e) {
     /* Bảng chưa có (chưa ghi lần nào) là chuyện bình thường, không phải lỗi. */
@@ -255,15 +322,22 @@ export async function onRequestPost({ request, env }) {
      là đủ; muốn đổi chữ thì đi qua PATCH. */
   await env.DB.batch(TAO.map((sql) => env.DB.prepare(sql)));
   await noiRongBang(env);
+  const kem = { mood: '', kieuNguon: '', nguon: '', tacGia: '', link: '', trich: 0, ...docKem(than) };
+  /* Xin ghim mà đã đủ hai cái thì VẪN ĐĂNG, chỉ là không ghim — mất cả ghi
+     chú vì một cái cờ là trả giá quá đắt. `ghimDay` báo lại cho ô viết nói ra. */
+  let ghim = 0, ghimDay = false;
+  if (than.ghim) { if (await conChoGhim(env)) ghim = 1; else ghimDay = true; }
   await env.DB.prepare(
-    `INSERT INTO ghi_chu (ma, ngay, loai, chu, luc, xoa, an, soSua, xoaLuc)
-     VALUES (?, ?, ?, ?, ?, 0, 0, 0, '')
+    `INSERT INTO ghi_chu (ma, ngay, loai, chu, luc, xoa, an, soSua, xoaLuc,
+                          mood, kieuNguon, nguon, tacGia, link, trich, ghim)
+     VALUES (?, ?, ?, ?, ?, 0, 0, 0, '', ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(ma) DO NOTHING`
-  ).bind(ma, ngay, loai, chu, luc).run();
+  ).bind(ma, ngay, loai, chu, luc, kem.mood, kem.kieuNguon, kem.nguon, kem.tacGia,
+         kem.link, kem.trich, ghim).run();
 
   const dong = await env.DB.prepare(
-    'SELECT ma, ngay, loai, chu, an, xoa, soSua FROM ghi_chu WHERE ma = ?').bind(ma).first();
-  return traLoi(dong || { ma, ngay, loai, chu }, 200, 'no-store', false);
+    `SELECT ${COT_DOC}, an, xoa, soSua FROM ghi_chu WHERE ma = ?`).bind(ma).first();
+  return traLoi({ ...(dong || { ma, ngay, loai, chu }), ghimDay }, 200, 'no-store', false);
 }
 
 /* ══════════ SỬA · ẨN · CỨU KHỎI THÙNG RÁC ══════════
@@ -286,7 +360,7 @@ export async function onRequestPatch({ request, env }) {
 
   await noiRongBang(env);
   const dong = await env.DB.prepare(
-    'SELECT ma, ngay, loai, chu, an, xoa, soSua FROM ghi_chu WHERE ma = ?').bind(ma).first();
+    `SELECT ${COT_DOC}, an, xoa, soSua FROM ghi_chu WHERE ma = ?`).bind(ma).first();
   if (!dong) return traLoi({ loi: 'không có' }, 404, 'no-store', false);
 
   if ('chu' in than) {
@@ -302,11 +376,27 @@ export async function onRequestPatch({ request, env }) {
     const ngay = locNgay(than.ngay) || dong.ngay;
     const loai = 'loai' in than ? String(than.loai || '').trim().slice(0, MAX_LOAI) : dong.loai;
     const soSua = Number(dong.soSua) + 1;
+    /* Đổi nguồn, mood hay kiểu trích cũng là SỬA — cùng một lượt với chữ,
+       vì chúng đi chung một lần bấm Save edit. */
+    const k = { ...dong, ...docKem(than) };
     await env.DB.prepare(
-      'UPDATE ghi_chu SET chu = ?, ngay = ?, loai = ?, soSua = ? WHERE ma = ?'
-    ).bind(chu, ngay, loai, soSua, ma).run();
-    return traLoi({ ma, ngay, loai, chu, an: dong.an, soSua,
+      `UPDATE ghi_chu SET chu = ?, ngay = ?, loai = ?, soSua = ?,
+         mood = ?, kieuNguon = ?, nguon = ?, tacGia = ?, link = ?, trich = ? WHERE ma = ?`
+    ).bind(chu, ngay, loai, soSua, k.mood, k.kieuNguon, k.nguon, k.tacGia, k.link,
+           k.trich ? 1 : 0, ma).run();
+    return traLoi({ ...k, ma, ngay, loai, chu, soSua,
                     conSua: TOI_DA_SUA - soSua }, 200, 'no-store', false);
+  }
+  /* Ghim / bỏ ghim — không tính lượt sửa, như ẩn. Hết chỗ thì 409 và nói rõ
+     phải bỏ ghim cái nào trước: tự gỡ cái cũ nhất thì một cú bấm lặng lẽ đổi
+     cả trang mà người bấm không hề biết. */
+  if ('ghim' in than) {
+    if (than.ghim && !dong.ghim && !(await conChoGhim(env, ma))) {
+      return traLoi({ loi: 'het-cho-ghim', toiDaGhim: TOI_DA_GHIM }, 409, 'no-store', false);
+    }
+    await env.DB.prepare('UPDATE ghi_chu SET ghim = ? WHERE ma = ?')
+      .bind(than.ghim ? 1 : 0, ma).run();
+    return traLoi({ ma, ghim: than.ghim ? 1 : 0 }, 200, 'no-store', false);
   }
   if ('an' in than) {
     await env.DB.prepare('UPDATE ghi_chu SET an = ? WHERE ma = ?')
@@ -345,7 +435,9 @@ export async function onRequestDelete({ request, env }) {
                            : 'DELETE FROM ghi_chu WHERE ma = ? AND xoa = 1').bind(ma).run();
     return traLoi({ ma, xoa: true, vinhVien: true }, 200, 'no-store', false);
   }
-  await env.DB.prepare('UPDATE ghi_chu SET xoa = 1, xoaLuc = ? WHERE ma = ?')
+  /* Vào thùng rác thì nhả cờ ghim: một ghi chú đã xoá không được giữ một
+     trong hai chỗ ghim. Cứu ra thì nó về như ghi chú thường. */
+  await env.DB.prepare('UPDATE ghi_chu SET xoa = 1, xoaLuc = ?, ghim = 0 WHERE ma = ?')
     .bind(new Date().toISOString(), ma).run();
   return traLoi({ ma, xoa: true }, 200, 'no-store', false);
 }

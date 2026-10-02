@@ -285,6 +285,11 @@ const NHAN = {
   notes       : 'Notes',
   notesHint   : 'Bits picked up along the way — books, music, thoughts not yet essays',
   noNotes     : 'No notes yet.',
+  gcPinned    : 'Pinned',
+  /* Dòng nguồn dưới một ghi chú: "READING  Siddhartha · Hermann Hesse". */
+  gcSrcDoc    : 'Reading',
+  gcSrcNghe   : 'Listening',
+  gcSrcXem    : 'Watching',
   allNotes    : 'All',
   filter      : 'Filter',
   /* Ô viết ghi chú — chỉ chủ trang thấy, nên KHÔNG theo lệ tiếng Anh của phần
@@ -308,6 +313,20 @@ const NHAN = {
      bàn duyệt (Restore · Delete forever · "{n}d left"), để ba ngăn không có
      ba cách gọi cho cùng một việc. */
   gcTabWrite  : 'Write note',
+  /* Các ô thêm của khung viết ghi chú — đều không bắt buộc. */
+  gcFMood     : 'Mood',
+  gcFSrc      : 'Source',
+  gcFSrcKind  : 'I was…',
+  gcFSrcNone  : '—',
+  gcFSrcTen   : 'Title',
+  gcFSrcAi    : 'By',
+  gcFSrcLink  : 'Link',
+  gcFTrich    : 'Show as a quote',
+  gcFGhim     : 'Pin to top',
+  gcPin       : 'Pin',
+  gcUnpin     : 'Unpin',
+  gcPinFull   : 'Two notes are pinned already — unpin one first.',
+  gcPinFullPost: 'Posted — but not pinned: two notes are pinned already.',
   gcTabList   : 'List notes',
   gcHidden    : 'Hidden',
   gcListEmpty : 'Nothing here yet.',
@@ -1519,7 +1538,18 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         edited: NHAN.gcEdited, editsLeft: NHAN.gcEditsLeft,
                         noEdits: NHAN.gcNoEdits, saveEdit: NHAN.gcSaveEdit,
                         saved: NHAN.gcSaved, actFail: NHAN.gcActFail,
-                        askPurge: NHAN.gcAskPurge
+                        askPurge: NHAN.gcAskPurge,
+                        /* Khuôn ghi chú mới: nguồn · câu trích · mood · ghim.
+                           `moods` là bảng GC_MOOD — ô viết vẽ nút từ đó, còn
+                           /notes/ lấy chữ cho `title` của ghi chú chèn từ D1. */
+                        moods: GC_MOOD, pinned: NHAN.gcPinned,
+                        srcDoc: NHAN.gcSrcDoc, srcNghe: NHAN.gcSrcNghe, srcXem: NHAN.gcSrcXem,
+                        fMood: NHAN.gcFMood, fSrc: NHAN.gcFSrc, fSrcKind: NHAN.gcFSrcKind,
+                        fSrcNone: NHAN.gcFSrcNone, fSrcTen: NHAN.gcFSrcTen,
+                        fSrcAi: NHAN.gcFSrcAi, fSrcLink: NHAN.gcFSrcLink,
+                        fTrich: NHAN.gcFTrich, fGhim: NHAN.gcFGhim,
+                        pin: NHAN.gcPin, unpin: NHAN.gcUnpin, pinFull: NHAN.gcPinFull,
+                        pinFullPost: NHAN.gcPinFullPost
                       }))}"`
                    : ''
                 ].filter(Boolean).join(' '),
@@ -4242,6 +4272,46 @@ function cacTrangTags(bai, bangTag) {
 
    Khuôn khối: `## <ngày> · <loại>` rồi mấy dòng chữ. Loại muốn đặt gì cũng
    được, trang tự gom thành bộ lọc — không có bảng loại nào phải khai trước. */
+/* ── THÔNG TIN KÈM MỘT KHỐI GHI CHÚ ──
+   Ngay dưới dòng `## ngày · loại`, trước chữ, có thể có vài dòng bắt đầu bằng
+   `@` — cùng bộ thông tin mà ô viết ở /z-admin/ gửi lên D1, để ghi chú kéo về
+   bằng `npm run gc` không rơi mất gì:
+
+     @nguon doc | Siddhartha | Hermann Hesse | https://…   (đọc · nghe · xem)
+     @trich                                                 (hiện thành câu trích)
+     @mood 😌
+     @ghim                                                  (ghim lên đầu; tối đa 2)
+
+   Mọi dòng đều không bắt buộc. Dòng `@` không nhận ra thì bỏ qua — thà mất
+   một tuỳ chọn còn hơn in nguyên dòng ấy ra trang như chữ của ghi chú. */
+const GC_TOI_DA_GHIM = 2;
+/* Bảng mood. Một chỗ khai cho cả ba nơi dùng: ô viết (nút chọn), trang
+   /notes/ (chữ nằm trong `title`), và ghi chú kéo từ D1 về (chèn bằng JS). */
+const GC_MOOD = [['🙂', 'happy'], ['😌', 'calm'], ['🤔', 'thoughtful'], ['🥹', 'moved'],
+                 ['😢', 'sad'], ['😤', 'annoyed'], ['😴', 'tired'], ['✨', 'inspired']];
+function docKemGhiChu(dong) {
+  const kem = { mood: '', kieuNguon: '', nguon: '', tacGia: '', link: '', trich: false, ghim: false };
+  let i = 0;
+  for (; i < dong.length; i++) {
+    const d = dong[i].trim();
+    if (!d) continue;
+    const m = d.match(/^@(\w+)\s*(.*)$/);
+    if (!m) break;
+    const [, khoa, gt] = m;
+    if (khoa === 'trich') kem.trich = true;
+    else if (khoa === 'ghim') kem.ghim = true;
+    else if (khoa === 'mood') kem.mood = gt.trim().slice(0, 8);
+    else if (khoa === 'nguon') {
+      const [kieu, ten, ai, link] = gt.split('|').map((x) => x.trim());
+      kem.kieuNguon = ['doc', 'nghe', 'xem'].includes(kieu) ? kieu : '';
+      kem.nguon = ten || '';
+      kem.tacGia = ai || '';
+      kem.link = /^https?:\/\/\S+$/.test(link || '') ? link : '';
+    }
+  }
+  return { kem, con: dong.slice(i) };
+}
+
 function docGhiChu() {
   const f = path.join(THU_MUC.content, 'ghi-chu.md');
   if (!fs.existsSync(f)) return [];
@@ -4254,12 +4324,57 @@ function docGhiChu() {
        chú còn hơn xếp nó sai chỗ trong dòng thời gian mà không ai biết. */
     const m = dau.match(/^(\d{4}-\d{2}-\d{2})(?:\s*[·|-]\s*(.+))?$/);
     if (!m) continue;
-    const than = dong.slice(1).join('\n').trim();
+    const { kem, con } = docKemGhiChu(dong.slice(1));
+    const than = con.join('\n').trim();
     if (!than) continue;
-    ra.push({ ngay: m[1], loai: (m[2] || '').trim(),
-              html: render(than, { ...MD_DIA, base: BASE }).html });
+    /* Câu trích thì không có sapo: cả khối đã là một câu trích lớn, thêm một
+       đoạn mở đầu nghiêng có vạch dọc bên trong nó là hai lớp nhấn chồng nhau. */
+    ra.push({ ngay: m[1], loai: (m[2] || '').trim(), ...kem,
+              html: render(than, { ...MD_DIA, base: BASE, khongSapo: kem.trich }).html });
   }
   return ra.sort((a, b) => (a.ngay < b.ngay ? 1 : -1));
+}
+
+/* ── MỘT GHI CHÚ, ĐÚNG MỘT KHUÔN ──
+   src/js/ghi-chu.js dựng lại đúng khuôn này cho ghi chú kéo từ D1 về (hàm
+   `veMot`). Sửa một bên thì sửa cả bên kia — kiem-dinh không canh được hai
+   chuỗi HTML có giống nhau không.
+
+     cột trái   ngày (số to) · thứ · tháng năm (chỉ hiện ở khu ghim) · mood
+     cột phải   loại · chữ (hoặc câu trích) · dòng nguồn
+
+   Dấu chấm trên trục và đường trục là việc của CSS (`.gc-than`). */
+const GC_THU = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const GC_THANG = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const GC_THANG_DU = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                     'August', 'September', 'October', 'November', 'December'];
+function gcNguonHTML(x) {
+  if (!x.nguon) return '';
+  const ten = x.link
+    ? `<a href="${attr(x.link)}" rel="noopener nofollow" target="_blank"><cite>${escapeHtml(x.nguon)}</cite></a>`
+    : `<cite>${escapeHtml(x.nguon)}</cite>`;
+  const ai = x.tacGia ? `<span class="gc-nguon-ai">${escapeHtml(x.tacGia)}</span>` : '';
+  const kieu = { doc: NHAN.gcSrcDoc, nghe: NHAN.gcSrcNghe, xem: NHAN.gcSrcXem }[x.kieuNguon];
+  return `<p class="gc-nguon">${kieu ? `<span class="gc-nguon-kieu">${kieu}</span>` : '<span class="gc-nguon-gach">—</span>'}` +
+         `${ten}${ai ? ` · ${ai}` : ''}</p>`;
+}
+function gcMotHTML(x) {
+  const d = new Date(x.ngay + 'T00:00:00Z');
+  const mood = GC_MOOD.find((y) => y[0] === x.mood);
+  return `
+      <li class="gc-mot${x.trich ? ' gc-mot--trich' : ''}" data-loai="${attr(x.loai)}">
+        <div class="gc-dau">
+          <time datetime="${x.ngay}"><span class="gc-ngay">${d.getUTCDate()}</span>` +
+            `<span class="gc-thu">${GC_THU[d.getUTCDay()]}</span>` +
+            `<span class="gc-nam">${GC_THANG[d.getUTCMonth()]} ${d.getUTCFullYear()}</span></time>
+          ${x.mood ? `<span class="gc-mood" title="${attr(mood ? mood[1] : '')}"${mood ? ` aria-label="${attr(mood[1])}"` : ''}>${escapeHtml(x.mood)}</span>` : ''}
+        </div>
+        <div class="gc-than">
+          ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
+          <div class="gc-chu prose">${x.trich ? `<blockquote class="gc-trich">${x.html}</blockquote>` : x.html}</div>
+          ${gcNguonHTML(x)}
+        </div>
+      </li>`;
 }
 
 function trangGhiChu() {
@@ -4278,29 +4393,46 @@ function trangGhiChu() {
           `</button>`).join('')
       : '') + `</nav>`;
 
-  const than = ds.length ? `
-    ${locHTML}
-    <ol class="gc-ds">${ds.map((x) => `
-      <li class="gc-mot" data-loai="${attr(x.loai)}">
-        <div class="gc-dau">
-          <time datetime="${x.ngay}">${ngayAnh(x.ngay)}</time>
-          ${x.loai ? `<span class="gc-loai">${escapeHtml(x.loai)}</span>` : ''}
-        </div>
-        <div class="gc-chu prose">${x.html}</div>
-      </li>`).join('')}</ol>` : `${locHTML}<p class="trong ds-trong">${NHAN.noNotes}</p>`;
+  /* ── KHU GHIM: TỐI ĐA HAI, MỚI NHẤT TRƯỚC ──
+     Ghi chú ghim KHÔNG lặp lại trong dòng thời gian bên dưới: một ghi chú
+     hiện hai lần trên cùng một trang đọc ra như lỗi. File có lỡ đánh dấu ghim
+     hơn hai khối thì chỉ hai khối mới nhất lên, phần còn lại về chỗ cũ. */
+  const ghim = ds.filter((x) => x.ghim).slice(0, GC_TOI_DA_GHIM);
+  const dong = ds.filter((x) => !ghim.includes(x));
+  const ghimHTML = `<section class="gc-ghim" data-gc-ghim aria-label="${attr(NHAN.gcPinned)}"${ghim.length ? '' : ' hidden'}>
+      <h2 class="gc-ghim-de"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 3h6l-1 7 4 3H6l4-3-1-7z"/></svg>${NHAN.gcPinned}</h2>
+      <ol class="gc-ds">${ghim.map(gcMotHTML).join('')}</ol>
+    </section>`;
 
-  /* Bọc phân trang, KHÔNG để danh sách dài vô tận. Chọn `.gc-mot:not(.gc-khac-loai)`
-     chứ không phải `.gc-mot` trơn: lọc theo loại giấu mục bằng class ấy, và bộ
-     chia trang phải đếm trên danh sách CÒN LẠI sau khi lọc — không thì lọc còn
-     hai ghi chú mà bộ số vẫn ghi ba trang. */
-  const thanCoSo = ds.length
-    ? bocPhanTrang(than, '.gc-mot:not(.gc-khac-loai)', ds.length)
-    : than;
+  /* ── DÒNG THỜI GIAN, CHIA THEO THÁNG ──
+     Mỗi tháng một khối `data-nhom`: bộ chia trang (trang-so.js) tự giấu khối
+     tháng nào không còn ghi chú nào hiện ở trang đang xem, nên trang 2 không
+     mở ra bằng một cái đầu đề "September" trống trơn. */
+  const thang = [];
+  for (const x of dong) {
+    const k = x.ngay.slice(0, 7);
+    if (!thang.length || thang[thang.length - 1].k !== k) thang.push({ k, ds: [] });
+    thang[thang.length - 1].ds.push(x);
+  }
+  const dongHTML = `<div class="gc-dong">${thang.map((t) => `
+    <section class="gc-thang" data-nhom data-thang="${t.k}">
+      <h2 class="gc-thang-de">${GC_THANG_DU[Number(t.k.slice(5)) - 1]} ${t.k.slice(0, 4)}</h2>
+      <ol class="gc-ds">${t.ds.map(gcMotHTML).join('')}</ol>
+    </section>`).join('')}</div>`;
+
+  /* Bọc phân trang quanh DÒNG THỜI GIAN thôi, khu ghim đứng ngoài: nó phải
+     ở đầu mọi trang, không bị chia sang trang 1 rồi biến mất ở trang 2.
+     Chọn `.gc-mot:not(.gc-khac-loai)` chứ không phải `.gc-mot` trơn: lọc theo
+     loại giấu mục bằng class ấy, và bộ chia trang phải đếm trên danh sách CÒN
+     LẠI sau khi lọc — không thì lọc còn hai ghi chú mà bộ số vẫn ghi ba trang. */
+  const than = ds.length
+    ? `${locHTML}${ghimHTML}${dong.length ? bocPhanTrang(dongHTML, '.gc-mot:not(.gc-khac-loai)', dong.length) : dongHTML}`
+    : `${locHTML}${ghimHTML}<p class="trong ds-trong">${NHAN.noNotes}</p>`;
 
   return trangDanhSach({
     tieuDe: NHAN.notes,
     dan: NHAN.notesHint,
-    than: thanCoSo,
+    than,
     duong: '/notes/',
     loaiCSS: 'gc',
     description: `${NHAN.notesHint} — ${CAU.title}.`,

@@ -44,6 +44,10 @@
        sách đổi rồi". */
     hop.addEventListener('trang-so:dung-lai', function () {
       mon = [].slice.call(hop.querySelectorAll(chon));
+      /* Nhóm cũng quét lại: trang ghi chú chèn thêm khối THÁNG mới khi kéo
+         ghi chú từ D1 về, và khối ấy phải được giấu/hiện theo trang như mọi
+         khối khác. */
+      nhom = [].slice.call(hop.querySelectorAll('[data-nhom]'));
       trang = 1;
       ve();
     });

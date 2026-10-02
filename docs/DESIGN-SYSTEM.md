@@ -2431,7 +2431,7 @@ từng mục. (Ngăn Note có hai tab: Write note là ô viết, List notes là 
 
 | Ngăn | Mỗi hàng là | Nút trên hàng |
 |---|---|---|
-| Note | một ghi chú trên D1 | Edit (tối đa 3 lần) · Hide · Delete |
+| Note | một ghi chú trên D1 | Edit (tối đa 3 lần) · Pin (tối đa 2) · Hide · Delete |
 | Post | một bài đã đăng | Preview · Edit · Hide |
 | Category | một chuyên mục | Edit · Delete |
 | Comment | một bình luận | Approve · Delete, và một ô tích để làm hàng loạt |

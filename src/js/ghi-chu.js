@@ -19,7 +19,10 @@
 (function () {
   'use strict';
 
-  var ds  = document.querySelector('.gc-ds');
+  /* `dong` là DÒNG THỜI GIAN (các khối tháng), `ghimO` là khu ghim ở đầu
+     trang. Hai chỗ đứng khác nhau cho ghi chú, xem `chen`. */
+  var dong = document.querySelector('.gc-dong');
+  var ghimO = document.querySelector('[data-gc-ghim]');
   var loc = document.querySelector('[data-gc-loc]');
   var api = document.documentElement.getAttribute('data-gc-api');
   var N   = {};
@@ -47,7 +50,7 @@
 
      THOÁT CHỮ TRƯỚC, dựng thẻ SAU. Ngược lại thì mấy thẻ vừa dựng bị thoát
      theo, mà chừa chúng ra thì phải dò — và dò thì sót. */
-  function dungChu(chu) {
+  function dungChu(chu, trich) {
     return String(chu).trim().split(/\n{2,}/).map(function (doan, i) {
       var h = tho(doan).replace(/\n/g, '<br>');
       h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -62,7 +65,8 @@
          vừa đăng nằm cạnh ghi chú dựng sẵn mà trông khác hẳn — không nghiêng,
          không có vạch dọc bên trái — và người đọc thấy hai kiểu ghi chú trong
          cùng một danh sách. */
-      return '<p' + (i === 0 ? ' class="lead"' : '') + '>' + h + '</p>';
+      /* Câu trích thì không có sapo — cùng luật với build (`khongSapo`). */
+      return '<p' + (i === 0 && !trich ? ' class="lead"' : '') + '>' + h + '</p>';
     }).join('');
   }
 
@@ -87,6 +91,15 @@
     for (var i = 0; i < mon.length; i++) {
       mon[i].classList.toggle('gc-khac-loai',
         !!loai && mon[i].getAttribute('data-loai') !== loai);
+    }
+    /* Khối tháng và khu ghim không còn ghi chú nào sau khi lọc thì giấu cả
+       đầu đề — để lại thì lọc "nhạc" ra một cột đầu đề tháng trống trơn.
+       Có bộ chia trang thì nó cũng giấu khối tháng theo trang (`data-nhom`);
+       hai bên dùng hai cách giấu khác nhau nên không đè nhau. */
+    var khoi = document.querySelectorAll('.gc-thang, [data-gc-ghim]');
+    for (i = 0; i < khoi.length; i++) {
+      khoi[i].classList.toggle('gc-trong-loc',
+        !khoi[i].querySelector('.gc-mot:not(.gc-khac-loai)'));
     }
     var hop = document.querySelector('[data-phan-trang]');
     if (hop) hop.dispatchEvent(new CustomEvent('trang-so:dung-lai'));
@@ -144,30 +157,103 @@
 
   /* ══════════ 2 · XIN GHI CHÚ MỚI VỀ ══════════ */
 
-  /* Chèn theo NGÀY, mới nhất trước — đúng thứ tự mà build đã xếp. Nối đuôi
-     vào cuối danh sách thì một ghi chú đề ngày cũ nhảy xuống dưới cùng. */
-  function chen(g) {
-    if (!ds) return null;
+  /* ── MỘT GHI CHÚ, ĐÚNG KHUÔN CỦA BUILD ──
+     Bản sao của `gcMotHTML` trong tools/build.mjs. Sửa một bên thì sửa cả
+     bên kia: ghi chú dựng sẵn và ghi chú kéo từ D1 về nằm cạnh nhau trong
+     cùng một dòng thời gian, lệch một chi tiết là thấy ngay. */
+  var THU = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var THANG = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var THANG_DU = ['January','February','March','April','May','June','July',
+                  'August','September','October','November','December'];
+  var MOOD = N.moods || [];
+
+  function nguonHTML(g) {
+    if (!g.nguon) return '';
+    var ten = '<cite>' + tho(g.nguon) + '</cite>';
+    if (/^https?:\/\//.test(g.link || '')) {
+      ten = '<a href="' + tho(g.link) + '" rel="noopener nofollow" target="_blank">' + ten + '</a>';
+    }
+    var kieu = { doc: N.srcDoc, nghe: N.srcNghe, xem: N.srcXem }[g.kieuNguon];
+    return '<p class="gc-nguon">' +
+      (kieu ? '<span class="gc-nguon-kieu">' + tho(kieu) + '</span>'
+            : '<span class="gc-nguon-gach">—</span>') +
+      ten + (g.tacGia ? ' · <span class="gc-nguon-ai">' + tho(g.tacGia) + '</span>' : '') +
+      '</p>';
+  }
+
+  function veMot(g) {
+    var d = new Date(g.ngay + 'T00:00:00Z');
+    var m = null;
+    for (var i = 0; i < MOOD.length; i++) if (MOOD[i][0] === g.mood) m = MOOD[i];
     var li = document.createElement('li');
-    li.className = 'gc-mot';
+    li.className = 'gc-mot' + (g.trich ? ' gc-mot--trich' : '');
     li.setAttribute('data-loai', g.loai || '');
     if (g.ma) li.setAttribute('data-ma', g.ma);
+    var chu = dungChu(g.chu, !!g.trich);
     li.innerHTML =
       '<div class="gc-dau">' +
-        '<time datetime="' + tho(g.ngay) + '">' + tho(ngayAnh(g.ngay)) + '</time>' +
-        (g.loai ? '<span class="gc-loai">' + tho(g.loai) + '</span>' : '') +
+        '<time datetime="' + tho(g.ngay) + '">' +
+          '<span class="gc-ngay">' + d.getUTCDate() + '</span>' +
+          '<span class="gc-thu">' + THU[d.getUTCDay()] + '</span>' +
+          '<span class="gc-nam">' + THANG[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + '</span>' +
+        '</time>' +
+        (g.mood ? '<span class="gc-mood" title="' + tho(m ? m[1] : '') + '"' +
+                    (m ? ' aria-label="' + tho(m[1]) + '"' : '') + '>' + tho(g.mood) + '</span>' : '') +
       '</div>' +
-      '<div class="gc-chu prose">' + dungChu(g.chu) + '</div>';
+      '<div class="gc-than">' +
+        (g.loai ? '<span class="gc-loai">' + tho(g.loai) + '</span>' : '') +
+        '<div class="gc-chu prose">' +
+          (g.trich ? '<blockquote class="gc-trich">' + chu + '</blockquote>' : chu) +
+        '</div>' +
+        nguonHTML(g) +
+      '</div>';
+    return li;
+  }
 
-    var cac = ds.querySelectorAll('.gc-mot');
+  /* Chèn vào danh sách `ol`, theo NGÀY, mới nhất trước. */
+  function chenVaoOl(ol, li, ngay) {
+    var cac = ol.querySelectorAll('.gc-mot');
     for (var i = 0; i < cac.length; i++) {
       var t = cac[i].querySelector('time');
-      if (t && (t.getAttribute('datetime') || '') < g.ngay) {
-        ds.insertBefore(li, cac[i]);
-        return li;
-      }
+      if (t && (t.getAttribute('datetime') || '') < ngay) { ol.insertBefore(li, cac[i]); return; }
     }
-    ds.appendChild(li);
+    ol.appendChild(li);
+  }
+
+  /* Khối tháng của một ngày — chưa có thì dựng, đứng đúng chỗ theo thứ tự
+     tháng mới nhất trước. */
+  function olThang(ngay) {
+    var k = ngay.slice(0, 7);
+    var o = dong.querySelector('.gc-thang[data-thang="' + k + '"]');
+    if (o) return o.querySelector('.gc-ds');
+    o = document.createElement('section');
+    o.className = 'gc-thang';
+    o.setAttribute('data-nhom', '');
+    o.setAttribute('data-thang', k);
+    o.innerHTML = '<h2 class="gc-thang-de">' + THANG_DU[Number(k.slice(5)) - 1] + ' ' +
+                  k.slice(0, 4) + '</h2><ol class="gc-ds"></ol>';
+    var cac = dong.querySelectorAll('.gc-thang');
+    for (var i = 0; i < cac.length; i++) {
+      if ((cac[i].getAttribute('data-thang') || '') < k) { dong.insertBefore(o, cac[i]); return o.querySelector('.gc-ds'); }
+    }
+    dong.appendChild(o);
+    return o.querySelector('.gc-ds');
+  }
+
+  /* ── GHIM: TỐI ĐA HAI TRÊN TRANG ──
+     Máy chủ đã giữ trần hai cái cho D1, build giữ trần hai cái cho file.
+     Nhưng hai nguồn cộng lại vẫn có thể ra ba — nên ở đây đếm lại: khu ghim
+     đầy thì ghi chú ghim từ D1 về chỗ của nó trong dòng thời gian. */
+  function chen(g) {
+    if (!dong) return null;
+    var li = veMot(g);
+    var olGhim = ghimO && ghimO.querySelector('.gc-ds');
+    if (g.ghim && olGhim && olGhim.querySelectorAll('.gc-mot').length < 2) {
+      chenVaoOl(olGhim, li, g.ngay);
+      ghimO.hidden = false;
+    } else {
+      chenVaoOl(olThang(g.ngay), li, g.ngay);
+    }
     return li;
   }
 
@@ -181,20 +267,20 @@
        /notes/ báo "chưa có ghi chú nào" trong khi D1 vẫn còn nguyên. Nhìn y
        như mọi ghi chú đã bị xoá.
 
-       Nay chỉ cần trang có danh sách HOẶC có câu báo trống là hỏi; thiếu
-       `<ol>` thì dựng nó ngay chỗ câu báo. */
+       Nay chỉ cần trang có dòng thời gian HOẶC có câu báo trống là hỏi;
+       thiếu dòng thời gian thì dựng nó ngay chỗ câu báo. */
     var trong0 = document.querySelector('.ds-trong');
-    if (!api || (!ds && !trong0)) return Promise.resolve();
+    if (!api || (!dong && !trong0)) return Promise.resolve();
     return fetch(api, { headers: { Accept: 'application/json' } })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.ghiChu || !d.ghiChu.length) return;
         var trong = document.querySelector('.ds-trong');
         if (trong) {
-          if (!ds) {
-            ds = document.createElement('ol');
-            ds.className = 'gc-ds';
-            trong.parentNode.insertBefore(ds, trong);
+          if (!dong) {
+            dong = document.createElement('div');
+            dong.className = 'gc-dong';
+            trong.parentNode.insertBefore(dong, trong);
           }
           trong.remove();
         }
@@ -232,8 +318,7 @@
   function oVietCamSan() { return document.querySelector('[data-viet-host]'); }
 
   function dungOViet(tuDong) {
-    if (!api) return null;
-    if (!oVietCamSan() && !ds && !document.querySelector('.ds-trong')) return null;
+    if (!api || !oVietCamSan()) return null;
 
     /* Khoá nay do src/js/khoa.js giữ — file này không đọc localStorage nữa.
        Trước đây nó tự đọc tự ghi, và đó chính là chỗ sinh ra chuyện "đăng
@@ -244,11 +329,7 @@
     var hop = document.createElement('section');
     hop.className = 'gc-viet';
     var oSan = oVietCamSan();
-    if (oSan) oSan.appendChild(hop);
-    else {
-      var neo = document.querySelector('.gc-loc') || ds || document.querySelector('.ds-trong');
-      neo.parentNode.insertBefore(hop, neo);
-    }
+    oSan.appendChild(hop);
 
     function coKhoa() { return !!(K && K.co()); }
 
@@ -295,6 +376,7 @@
         '<datalist id="gc-loai-co">' + loaiDaCo() + '</datalist>' +
         '<label class="gc-o"><span>' + tho(N.body || 'Note') + '</span>' +
           '<textarea name="chu" rows="5" maxlength="2000"></textarea></label>' +
+        oThem() +
         '<div class="gc-nut">' +
           '<button type="button" class="btn" data-dang>' +
             tho(N.post || 'Post') + '</button>' +
@@ -311,6 +393,95 @@
         '<p class="bao gc-noi"></p>';
     }
 
+    /* ── CÁC Ô THÊM: MOOD · NGUỒN · TRÍCH · GHIM ──
+       Đều không bắt buộc, và đứng SAU ô chữ: viết trước, kèm sau. Đặt chúng
+       lên trên thì ô viết mở ra là một tờ khai, mà ghi chú là thứ phải gõ được
+       trong mười giây.
+
+       Mood là một hàng nút chứ không phải danh sách thả: tám biểu tượng thấy
+       hết một lượt, bấm một cái là chọn, bấm lại là bỏ. */
+    function oThem() {
+      var mood = '<div class="gc-o"><span>' + tho(N.fMood || 'Mood') + '</span>' +
+        '<div class="gc-mood-hang" role="group" aria-label="' + tho(N.fMood || 'Mood') + '">' +
+        (N.moods || []).map(function (m) {
+          return '<button type="button" class="gc-mood-nut" data-mood="' + tho(m[0]) + '" ' +
+                 'title="' + tho(m[1]) + '" aria-label="' + tho(m[1]) + '" aria-pressed="false">' +
+                 tho(m[0]) + '</button>';
+        }).join('') + '</div></div>';
+      var nguon = '<fieldset class="gc-o gc-nguon-o"><legend>' + tho(N.fSrc || 'Source') + '</legend>' +
+        '<div class="gc-nguon-hang">' +
+          '<label class="gc-o"><span>' + tho(N.fSrcKind || 'I was…') + '</span>' +
+            '<select name="kieuNguon">' +
+              '<option value="">' + tho(N.fSrcNone || '—') + '</option>' +
+              '<option value="doc">' + tho(N.srcDoc || 'Reading') + '</option>' +
+              '<option value="nghe">' + tho(N.srcNghe || 'Listening') + '</option>' +
+              '<option value="xem">' + tho(N.srcXem || 'Watching') + '</option>' +
+            '</select></label>' +
+          '<label class="gc-o"><span>' + tho(N.fSrcTen || 'Title') + '</span>' +
+            '<input type="text" name="nguon" maxlength="120" placeholder="Siddhartha"></label>' +
+          '<label class="gc-o"><span>' + tho(N.fSrcAi || 'By') + '</span>' +
+            '<input type="text" name="tacGia" maxlength="80" placeholder="Hermann Hesse"></label>' +
+          '<label class="gc-o"><span>' + tho(N.fSrcLink || 'Link') + '</span>' +
+            '<input type="url" name="link" maxlength="300" placeholder="https://"></label>' +
+        '</div></fieldset>';
+      var tick = '<div class="gc-tick-hang">' +
+        '<label class="gc-tick"><input type="checkbox" name="trich"> ' + tho(N.fTrich || 'Show as a quote') + '</label>' +
+        /* Ghim chỉ có ở lúc ĐĂNG MỚI. Ghi chú đã đăng thì ghim/bỏ ghim bằng
+           nút Pin ở danh sách — không tính lượt sửa, và không phải mở khung
+           sửa chỉ để bật một cái cờ. */
+        '<label class="gc-tick" data-o-ghim><input type="checkbox" name="ghim"> ' + tho(N.fGhim || 'Pin to top') + '</label>' +
+      '</div>';
+      return mood + nguon + tick;
+    }
+
+    function ganMood() {
+      [].forEach.call(hop.querySelectorAll('.gc-mood-nut'), function (b) {
+        b.addEventListener('click', function () {
+          var bat = b.getAttribute('aria-pressed') !== 'true';
+          datMood(bat ? b.getAttribute('data-mood') : '');
+        });
+      });
+    }
+    function datMood(m) {
+      [].forEach.call(hop.querySelectorAll('.gc-mood-nut'), function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-mood') === m ? 'true' : 'false');
+      });
+    }
+    function docMood() {
+      var b = hop.querySelector('.gc-mood-nut[aria-pressed="true"]');
+      return b ? b.getAttribute('data-mood') : '';
+    }
+
+    /* Mọi ô thêm gom một chỗ — POST và PATCH gửi cùng bộ này. */
+    function docKem() {
+      var q = function (n) { return hop.querySelector('[name=' + n + ']'); };
+      return {
+        mood: docMood(),
+        kieuNguon: q('kieuNguon').value,
+        nguon: (q('nguon').value || '').trim(),
+        tacGia: (q('tacGia').value || '').trim(),
+        link: (q('link').value || '').trim(),
+        trich: q('trich').checked ? 1 : 0
+      };
+    }
+    function datKem(g) {
+      var q = function (n) { return hop.querySelector('[name=' + n + ']'); };
+      datMood(g.mood || '');
+      q('kieuNguon').value = g.kieuNguon || '';
+      q('nguon').value = g.nguon || '';
+      q('tacGia').value = g.tacGia || '';
+      q('link').value = g.link || '';
+      q('trich').checked = !!Number(g.trich);
+      q('ghim').checked = false;
+    }
+
+    /* Dọn khung sau khi đăng hay thôi sửa. */
+    function xoaO() {
+      hop.querySelector('[name=chu]').value = '';
+      hop.querySelector('[name=loai]').value = '';
+      datKem({});
+    }
+
     function loaiDaCo() {
       var co = {}, h = '';
       var cac = document.querySelectorAll('.gc-mot');
@@ -324,6 +495,7 @@
     function gan() {
       var bDang = hop.querySelector('[data-dang]');
       var oRa   = hop.querySelector('[data-khoa-ra-nho]');
+      ganMood();
 
       /* Nút Đăng xuất chỉ mọc ở /notes/ — ở /z-admin/ nó đã có chỗ riêng. */
       if (oRa && K && !oVietCamSan()) K.veChao(oRa, '');
@@ -344,6 +516,9 @@
           loai: (hop.querySelector('[name=loai]').value || '').trim(),
           chu : chu
         };
+        var kem = docKem();
+        for (var k in kem) g[k] = kem[k];
+        g.ghim = hop.querySelector('[name=ghim]').checked ? 1 : 0;
         bDang.disabled = true;
         noi(N.posting || 'Sending…');
         fetch(api, {
@@ -360,12 +535,9 @@
                 (N.postFail || 'Could not send.'), true);
             return;
           }
-          var trong = document.querySelector('.ds-trong');
-          if (trong) { trong.remove(); lamOl(); }
-          chen(kq.d);
-          dungLoc();
-          hop.querySelector('[name=chu]').value = '';
-          noi(N.posted || 'Xong.');
+          xoaO();
+          noi(kq.d && kq.d.ghimDay ? (N.pinFullPost || 'Posted — but not pinned.')
+                                   : (N.posted || 'Xong.'), !!(kq.d && kq.d.ghimDay));
           if (ql) ql.xin();
         }).catch(function () {
           bDang.disabled = false;
@@ -388,6 +560,8 @@
       hop.querySelector('[name=ngay]').value = g.ngay;
       hop.querySelector('[name=loai]').value = g.loai || '';
       hop.querySelector('[name=chu]').value = g.chu;
+      datKem(g);
+      hop.querySelector('[data-o-ghim]').hidden = true;
       hop.classList.add('gc-viet--sua');
       hop.querySelector('[data-dang]').textContent =
         (N.saveEdit || 'Save edit ({n} left)').replace('{n}', con);
@@ -405,8 +579,8 @@
       if (!b) return;
       b.textContent = N.post || 'Post';
       hop.querySelector('[data-huy]').hidden = true;
-      hop.querySelector('[name=chu]').value = '';
-      hop.querySelector('[name=loai]').value = '';
+      hop.querySelector('[data-o-ghim]').hidden = false;
+      xoaO();
       /* Ngày về lại hôm nay — không thì ghi chú mới đăng ngay sau đó mang
          ngày của ghi chú vừa sửa. */
       var nay = new Date();
@@ -421,11 +595,16 @@
       fetch(api, {
         method: 'PATCH',
         headers: K.dau({ 'Content-Type': 'application/json' }),
-        body: JSON.stringify({
-          ma: dangSua.ma, chu: chu,
-          ngay: hop.querySelector('[name=ngay]').value,
-          loai: (hop.querySelector('[name=loai]').value || '').trim()
-        })
+        body: JSON.stringify((function () {
+          var t = {
+            ma: dangSua.ma, chu: chu,
+            ngay: hop.querySelector('[name=ngay]').value,
+            loai: (hop.querySelector('[name=loai]').value || '').trim()
+          };
+          var kem = docKem();
+          for (var k in kem) t[k] = kem[k];
+          return t;
+        })())
       }).then(function (r) {
         return r.json().catch(function () { return {}; })
           .then(function (d) { return { ok: r.ok, d: d }; });
@@ -450,24 +629,6 @@
       });
     }
 
-    /* Trang chưa có ghi chú nào thì build không dựng <ol> — phải tự dựng, nếu
-       không ghi chú đầu tiên không có chỗ nào để đứng. */
-    function lamOl() {
-      if (ds) return;
-      ds = document.createElement('ol');
-      ds.className = 'gc-ds';
-      hop.parentNode.insertBefore(ds, hop.nextSibling);
-    }
-
-    /* ── Ở /z-admin/ KHÔNG DỰNG DANH SÁCH ──
-       Ngăn Note của bàn làm việc là chỗ VIẾT. Bản trước nó tự dựng thêm một
-       thẻ <ol> rỗng rồi đổ toàn bộ ghi chú vào đấy, nên đăng xong là dưới ô
-       viết mọc ra một khối dài — và khối ấy chẳng để làm gì: nó chỉ chép lại
-       thứ /notes/ đã bày đầy đủ hơn.
-
-       Sửa và xoá ghi chú nay làm ngay tại /notes/ khi đã đăng nhập, đúng chỗ
-       nhìn thấy nó trong ngữ cảnh của nó. */
-    if (!oVietCamSan()) lamOl();
     var che = oSan ? dungChe(oSan, hop, coKhoa) : null;
     var ql = oSan ? dungQL(oSan, K, {
       sua: function (g, con) { batSua(g, con); },
@@ -666,11 +827,14 @@
                     tho(N.purge || 'Delete forever') + '</button>';
           } else {
             if (g.an) cd = '<span class="badge badge--bad">' + tho(N.hidden || 'Hidden') + '</span>';
+            else if (Number(g.ghim)) cd = '<span class="badge badge--ok">' + tho(N.pinned || 'Pinned') + '</span>';
             nut = '<button type="button" class="ad-lenh" data-viec="sua"' +
                     (con > 0 ? ' title="' + tho((N.editsLeft || '{n} of {t} edits left')
                                   .replace('{n}', con).replace('{t}', TRAN)) + '"'
                              : ' disabled title="' + tho(N.noEdits || 'No edits left.') + '"') + '>' +
                     tho(N.edit || 'Edit') + '</button>' +
+                  '<button type="button" class="ad-lenh" data-viec="ghim">' +
+                    tho(Number(g.ghim) ? (N.unpin || 'Unpin') : (N.pin || 'Pin')) + '</button>' +
                   '<button type="button" class="ad-lenh" data-viec="an">' +
                     tho(g.an ? (N.unhide || 'Unhide') : (N.hide || 'Hide')) + '</button>' +
                   '<button type="button" class="ad-lenh ad-lenh--xoa" data-viec="xoa">' +
@@ -678,7 +842,8 @@
           }
           /* Dòng dưới: loại, và số lần đã sửa khi đã sửa ít nhất một lần —
              để biết trước còn bao nhiêu lượt, không phải bấm Edit mới thấy. */
-          var mo = [g.loai || ''];
+          var mo = [[g.mood || '', g.loai || ''].join(' ').trim()];
+          if (g.nguon) mo.push(g.nguon);
           if (Number(g.soSua) > 0) {
             mo.push((N.edited || 'edited {n}/{t}').replace('{n}', g.soSua).replace('{t}', TRAN));
           }
@@ -709,13 +874,19 @@
         method: phuongThuc,
         headers: K.dau(than ? { 'Content-Type': 'application/json' } : {}),
         body: than ? JSON.stringify(than) : undefined
-      }).then(function (r) { if (!r.ok) throw new Error(String(r.status)); });
+      }).then(function (r) {
+        if (r.ok) return;
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          throw new Error((d && d.loi) || String(r.status));
+        });
+      });
     }
 
     function lam(viec, g, b, d) {
       if (viec === 'sua') { khung.sua(g, TRAN - Number(g.soSua || 0)); return; }
       var p;
       if (viec === 'an') p = goi('PATCH', api, { ma: g.ma, an: g.an ? 0 : 1 });
+      else if (viec === 'ghim') p = goi('PATCH', api, { ma: g.ma, ghim: Number(g.ghim) ? 0 : 1 });
       else if (viec === 'xoa') p = goi('DELETE', api + '?ma=' + encodeURIComponent(g.ma));
       else if (viec === 'cuu') p = goi('PATCH', api, { ma: g.ma, xoa: 0 });
       else if (viec === 'han') {
@@ -728,15 +899,17 @@
       var cu = khung.dangSua();
       if (cu && cu.ma === g.ma && viec !== 'an') khung.thoiSua();
       b.disabled = true;
-      if (viec !== 'an') d.classList.add('ad-dong--xong');
+      if (viec !== 'an' && viec !== 'ghim') d.classList.add('ad-dong--xong');
       p.then(function () {
         /* Trang /notes/ trong cùng phiên không cần biết: nó hỏi lại máy chủ
            mỗi lần mở. Ở đây chỉ cần vẽ lại bảng. */
-        setTimeout(xin, viec === 'an' ? 0 : 220);
-      }).catch(function () {
+        setTimeout(xin, viec === 'an' || viec === 'ghim' ? 0 : 220);
+      }).catch(function (e) {
         b.disabled = false;
         d.classList.remove('ad-dong--xong');
-        window.alert(N.actFail || 'Could not do that. Check the connection and try again.');
+        window.alert(e && e.message === 'het-cho-ghim'
+          ? (N.pinFull || 'Two notes are pinned already — unpin one first.')
+          : (N.actFail || 'Could not do that. Check the connection and try again.'));
       });
     }
 
