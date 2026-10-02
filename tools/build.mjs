@@ -3059,11 +3059,22 @@ function khungBento(t, soBai, soTag) {
   const oAnh = anhBento(t);
   const coAnh = !!oAnh;
 
+  /* ── BỐN Ô NHỎ: Ở ĐÂU · TỪ BAO GIỜ · LIÊN HỆ · CÀ PHÊ ──
+     Hai ô cuối từng là "5 posts" và "14 topics". Con số ấy trang Posts và
+     trang Tags đã nói, và ở trang giới thiệu nó chẳng cho người đọc biết gì
+     về CHỦ TRANG. Trong khi đó liên hệ và cà phê mỗi thứ chiếm một ô to ở
+     hàng cuối — chỉ để đựng một dòng email và một dòng "Coming soon", phần
+     còn lại là khoảng trắng.
+
+     Nay liên hệ và cà phê xuống đúng cỡ của chúng: hai ô nhỏ trong dải bốn
+     ô, cạnh "Đà Nẵng" và "2014". Hàng ô to cuối trang chỉ còn ô "dạo này"
+     nếu có khai. Ô nào không có dữ liệu thì không dựng — dải auto-fit tự kín. */
+  const lienHe0 = t.lienHe[0];
   const soLieu = [
     t.viTri && { nhan: NHAN.based, chu: t.viTri },
     t.tuNam && { nhan: NHAN.writingSince, chu: t.tuNam },
-    soBai   && { nhan: NHAN.posts, chu: String(soBai) },
-    soTag   && { nhan: NHAN.topics, chu: String(soTag) }
+    lienHe0 && { nhan: lienHe0.nhan || NHAN.findMe, html: oLienHeNho(t.lienHe), lop: ' bo--so-lh' },
+    t.caPhe && { nhan: NHAN.buyCoffee, html: oCaPheNho(t), lop: ' bo--so-caphe', title: t.caPhe }
   ].filter(Boolean);
 
   /* Ô số vốn dựng cho giá trị NGẮN: "2016", "12", "Hà Nội". Gặp chuỗi dài
@@ -3072,8 +3083,8 @@ function khungBento(t, soBai, soTag) {
      Ngưỡng 11 ký tự là chỗ chuỗi bắt đầu không vừa một dòng ở ô hẹp nhất
      (150px) trong dải. */
   const dai = soLieu.length
-    ? `<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
-      <span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>
+    ? `<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card${x.lop || ''}"${x.title ? ` title="${attr(x.title)}"` : ''}>
+      ${x.html || `<span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>`}
       <span class="label label--muted">${escapeHtml(x.nhan)}</span>
     </div>`).join('')}</div>`
     : '';
@@ -3114,22 +3125,8 @@ function khungBento(t, soBai, soTag) {
     </div>`);
   }
 
-  if (t.lienHe.length) {
-    hang.push(`<div class="bo bo--lienhe card">
-      <p class="label label--muted">${NHAN.findMe}</p>
-      <ul class="bo-ds">${t.lienHe.map((d) => {
-        const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu) &&
-                       d.nhan.toLowerCase().includes('mail');
-        const url = laMail ? `mailto:${d.chu}` : (/^https?:/.test(d.chu) ? d.chu : null);
-        const chu = escapeHtml(d.chu);
-        return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
-               `${url ? `<a href="${attr(url)}">${chu}</a>` : chu}</span></li>`;
-      }).join('')}</ul>
-    </div>`);
-  }
-
-  const oCaPhe = oCaPheBento(t);
-  if (oCaPhe) hang.push(oCaPhe);
+  /* Liên hệ và cà phê đã lên dải bốn ô nhỏ ở trên — xem chú thích ở
+     `soLieu`. Hàng này chỉ còn ô "dạo này". */
 
   if (hang.length) o.push(`<div class="bo-hang">${hang.join('')}</div>`);
 
@@ -3142,29 +3139,41 @@ function khungBento(t, soBai, soTag) {
   return `<div class="bento${coAnh ? ' bento--anh' : ''}">${o.filter(Boolean).join('\n')}</div>`;
 }
 
-/* Ô MỜI CÀ PHÊ. Trả '' nếu không khai `caPhe:` — hàng cuối tự khép lại.
+/* ── RUỘT Ô LIÊN HỆ NHỎ ──
+   Mục đầu tiên là giá trị chính (thường là email), cỡ chữ thân bài chứ không
+   cỡ số Cormorant của "2014": một địa chỉ email 27 ký tự ở cỡ 32px nghiêng
+   thì vỡ thành ba dòng. Mục thứ hai trở đi (nếu khai) xếp thành dòng nhỏ. */
+function linkLienHe(d) {
+  const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu);
+  const url = laMail ? `mailto:${d.chu}` : (/^https?:/.test(d.chu) ? d.chu : null);
+  /* Email: cho xuống dòng ngay SAU dấu @ và giữ nguyên tên miền trên một
+     dòng. Để trình duyệt tự ngắt thì nó chọn dấu gạch trong tên miền —
+     "contact@z-in-" / "borderland.com" — đọc ra như hai mẩu không liên quan. */
+  const chu = laMail
+    ? escapeHtml(d.chu).replace(/@(.+)$/, '@<wbr><span class="bo-mien">$1</span>')
+    : escapeHtml(d.chu);
+  return url ? `<a href="${attr(url)}"${laMail ? '' : ' rel="noopener"'}>${chu}</a>` : chu;
+}
+function oLienHeNho(ds) {
+  const [dau, ...con] = ds;
+  return `<span class="bo-so bo-so--lh">${linkLienHe(dau)}</span>` +
+    (con.length ? `<span class="bo-so-them">${con.map((d) =>
+      `${d.nhan ? `${escapeHtml(d.nhan)} ` : ''}${linkLienHe(d)}`).join(' · ')}</span>` : '');
+}
 
-   Chưa khai phương thức nào thì vẫn dựng ô, chỉ thay danh sách bằng một dòng
-   mờ "Coming soon". Cố ý: đây là chỗ đặt sẵn để sau này dán số tài khoản hay
-   link donate vào, và một ô đã có mặt trên trang thì lúc gắn chỉ còn là thêm
-   một dòng YAML — không phải mở lại CSS để tìm chỗ cho nó. */
-function oCaPheBento(t) {
-  if (!t.caPhe) return '';
-  const cach = t.caPheCach.map((d) => {
-    /* Cùng luật link với ô liên hệ: http → thẻ <a>, còn lại để nguyên chữ
-       (số tài khoản, mã ví — mấy thứ người ta copy chứ không bấm). */
+/* ── RUỘT Ô CÀ PHÊ NHỎ ──
+   Chưa khai phương thức nào thì giá trị là "Coming soon" — vẫn dựng ô, để
+   lúc có số tài khoản hay link donate chỉ còn là thêm một dòng YAML. Câu mời
+   (`caPhe:`) nằm trong `title` của ô: ô nhỏ không còn chỗ cho hai dòng chữ,
+   mà bỏ hẳn câu ấy thì phí một lời mời viết sẵn. */
+function oCaPheNho(t) {
+  if (!t.caPheCach.length) return `<span class="bo-so bo-so--dai bo-so--cho">${NHAN.soon}</span>`;
+  return `<span class="bo-so bo-so--lh">${t.caPheCach.map((d) => {
     const url = /^https?:/.test(d.chu) ? d.chu : null;
-    const chu = escapeHtml(d.chu);
-    return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
-           `${url ? `<a href="${attr(url)}" rel="noopener">${chu}</a>` : chu}</span></li>`;
-  }).join('');
-
-  return `<div class="bo bo--caphe card">
-    <p class="label label--muted">${NHAN.buyCoffee}</p>
-    <p class="bo-caphe-chu">${escapeHtml(t.caPhe)}</p>
-    ${cach ? `<ul class="bo-ds">${cach}</ul>`
-           : `<p class="bo-nghe">${NHAN.soon}</p>`}
-  </div>`;
+    const chu = escapeHtml(d.nhan && url ? d.nhan : d.chu);
+    return url ? `<a href="${attr(url)}" rel="noopener">${chu}</a>`
+               : `${d.nhan ? `${escapeHtml(d.nhan)} ` : ''}${chu}`;
+  }).join(' · ')}</span>`;
 }
 
 
