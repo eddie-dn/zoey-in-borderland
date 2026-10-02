@@ -43,8 +43,30 @@
 #
 # Nay tên file là `comments.afa8a87e.js`: nội dung đổi thì tên đổi. Người đọc
 # cũ KHÔNG hỏi lại lần nào, mà cũng không bao giờ thấy bản cũ.
+# ── PHÔNG CHỮ CHO KHU HỌC TẬP ──
+# learning.z-in-borderland.com nạp gói CSS nền của blog (khung chung — xem
+# docs/DESIGN-SYSTEM.md §23), và @font-face trong đó trỏ về /assets/fonts/ của
+# tên miền NÀY. Trình duyệt chỉ chịu dùng phông khác tên miền khi máy chủ trả
+# Access-Control-Allow-Origin; thiếu dòng này thì khu học tập lặng lẽ rơi về
+# phông hệ thống mà không báo lỗi gì trên trang. Phông là file công khai, nên
+# mở cho mọi nơi (`*`) không lộ gì.
+#
+# Khai lại Cache-Control ngay trong luật này: luật phải đứng TRƯỚC `/assets/*`
+# để khớp trước, và nếu chỉ luật khớp đầu được dùng thì phông vẫn giữ cache dài.
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# ── KHUNG CHUNG ──
+# /khung/khung.json đổi mỗi lần blog dựng lại (thanh điều hướng, tên file CSS
+# có mã băm), nên KHÔNG được cache một năm như /assets/. Năm phút: khu học tập
+# thấy thanh điều hướng mới gần như ngay, mà blog không phải trả lời mỗi lượt.
+/khung/*
+  Cache-Control: public, max-age=300
+  Access-Control-Allow-Origin: *
 
 # Vài header an toàn cơ bản cho mọi trang.
 /*

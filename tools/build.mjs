@@ -3381,6 +3381,72 @@ function chep(tu, den) {
    mọi lần nhắc tới tên cũ trong HTML/JS đã sinh ra. Mọi chỗ gọi giữ nguyên
    cách viết cũ, và thêm một file js mới cũng không phải nhớ gì thêm.
    ══════════════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════════
+   KHUNG CHUNG — đầu trang và chân trang cho các khu khác của hệ
+   (learning.z-in-borderland.com). Tài liệu: docs/DESIGN-SYSTEM.md §23.
+
+   Blog là NƠI DUY NHẤT dựng đầu trang và chân trang. Khu học tập không tự
+   viết lại hai khối ấy — nó xin về đây mỗi lượt (có cache) và ghép vào trang
+   của nó. Sửa thanh điều hướng ở blog là khu học tập đổi theo, không phải
+   chép tay sang một kho khác rồi quên.
+
+   ── LẤY TỪ CHÍNH `trang()`, KHÔNG DỰNG LẠI ──
+   Dựng một trang thật bằng đúng hàm mọi trang blog dùng, rồi cắt lấy
+   <header class="site-head"> và <footer class="site-foot">. Viết một hàm
+   dựng khung riêng thì sớm muộn hai bản lệch nhau — đúng cái bệnh khung chung
+   sinh ra để chữa. Sau khi cắt, đổi đúng bốn chỗ cho hợp với một tên miền khác:
+
+     · mọi `href="/…"` thành đường dẫn TUYỆT ĐỐI về blog — ở learning.… một
+       đường dẫn tương đối trỏ vào chính khu học tập, không về blog;
+     · bỏ nút đổi theme — khu học tập chỉ có theme 霜降 (DESIGN-SYSTEM bên kho
+       z-learning §1), một cái nút bấm không làm gì là một cái nút hỏng;
+     · gắn `aria-current` cho mục Learning — ở đó, nó LÀ trang đang mở;
+     · tem phiên bản để trống `{{tem}}` — mỗi kho một cuốn sổ, khu học tập in
+       số và ngày của chính nó, cùng một khuôn chữ.
+
+   Kèm đường dẫn gói CSS nền (`nen`) và gói JS khung (menu ☰ · logo · sổ phiên
+   bản). Bước vân tay chạy SAU và tự thay tên có mã băm vào file này, nên khu
+   học tập luôn trỏ đúng bản đang chạy. */
+function khungChung() {
+  const goc = CAU.url.replace(/\/$/, '');
+  const html = trang({
+    title: CAU.title, description: CAU.description, canonical: `${goc}/`,
+    content: '', duong: '/khung/', loaiCSS: 'nen', noindex: true
+  });
+  const cat = (re) => { const m = html.match(re); return m ? m[0] : ''; };
+  const tuyetDoi = (h) => h.replace(/(href|src)="\/(?!\/)/g, `$1="${goc}/`);
+  let dau = tuyetDoi(cat(/<header class="site-head">[\s\S]*?<\/header>/));
+  let chan = tuyetDoi(cat(/<footer class="site-foot">[\s\S]*?<\/footer>/));
+  if (!dau || !chan) { LOI.push('khung chung: không cắt được đầu trang / chân trang từ shell.html'); return; }
+
+  dau = dau.replace(/<button class="ico-btn tip theme-btn"[\s\S]*?<\/button>\s*/, '');
+  const hocTap = (CAU.nav || []).find((n) => /^https?:/i.test(n.href) && /learning\./i.test(n.href));
+  if (hocTap) {
+    dau = dau.replace(`<a class="nav-text" href="${attr(hocTap.href)}"`,
+                      `<a class="nav-text" href="${attr(hocTap.href)}" aria-current="page"`);
+  }
+  chan = chan.replace(/<div class="stamp">[\s\S]*?<\/div>/, '<div class="stamp">{{tem}}</div>');
+
+  ghi(path.join(THU_MUC.dist, 'khung', 'khung.json'), JSON.stringify({
+    phienBan: BAN.ten,
+    goc,
+    css: [`${goc}/assets/nen.css`],
+    js: [`${goc}/assets/khung.js`],
+    /* Mẫu tem cho kho kia điền: cùng một khuôn chữ với tem của blog. */
+    tem: '<span class="stamp-ban" data-so-tay tabindex="0" role="button" ' +
+         'aria-label="Last updated {{ngay}}, {{ban}}">Last updated {{ngay}} · {{ban}}</span>',
+    dau,
+    chan
+  }));
+
+  /* Gói JS khung: ba file blog vẫn dùng ở mọi trang, nối liền. Mỗi file tự
+     bọc trong một hàm chạy ngay và tự thoát khi trang không có việc của nó,
+     nên nối thẳng là đủ. */
+  const js = ['menu.js', 'logo-nhip.js', 'so-tay.js'].map((f) =>
+    fs.readFileSync(path.join(THU_MUC.dist, 'assets', f), 'utf8')).join(';\n');
+  ghi(path.join(THU_MUC.dist, 'assets', 'khung.js'), js);
+}
+
 function vanTayAssets() {
   const thu = path.join(THU_MUC.dist, 'assets');
   if (!fs.existsSync(thu)) return;
@@ -5085,6 +5151,7 @@ async function chay() {
     }
 
     ghi(path.join(THU_MUC.dist, 'so-tay.json'), SO_TAY());
+    khungChung();
     ghi(path.join(THU_MUC.dist, 'favicon.svg'), FAVICON);
     ghi(path.join(THU_MUC.dist, 'favicon-calm.svg'), FAVICON_CALM);
     ghi(path.join(THU_MUC.dist, 'favicon-frost.svg'), FAVICON_FROST);

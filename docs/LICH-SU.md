@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.4 | 2026-10-02 | 04 | Khung chung cho khu học tập |
 | V3.2.3 | 2026-10-02 | 03 | Bật tab Learning |
 | V3.2.2 | 2026-10-02 | 02 | Trang About gọn lại: liên hệ và cà phê thành ô nhỏ |
 | V3.2.1 | 2026-10-02 | 01 | Notes gom theo năm và tháng, gập được |
@@ -273,6 +274,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.4 — 02-Oct-2026
+
+- **Khu học tập dùng chung đầu trang và chân trang với blog.** Bấm Learning
+  vẫn thấy đúng thanh điều hướng, menu, chân trang này; sửa ở blog là bên ấy
+  đổi theo trong vài phút, không phải chép tay sang.
+- **Phông chữ dùng được ở learning.…**, và tem phiên bản hai bên cùng một
+  khuôn — mỗi bên số của mình, cùng một cuốn sổ bấm năm nhịp mở ra.
 
 ## V3.2.3 — 02-Oct-2026
 

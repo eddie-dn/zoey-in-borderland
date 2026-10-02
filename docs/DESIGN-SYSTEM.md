@@ -3261,3 +3261,87 @@ quan trọng — mở bảng chọn trước khi có chỗ đặt thì ảnh v�
    lần đụng vào hai hàm ấy, phải thử tay: mở một bài có đủ khối (bảng, khung
    nhấn, ảnh, khối mã), bấm `</>` ghi lại đoạn Markdown, lưu, mở lại, bấm `</>`
    lần nữa — hai đoạn phải giống nhau từng ký tự.
+
+---
+
+## 23 · KHUNG CHUNG — MỘT ĐẦU TRANG, MỘT CHÂN TRANG CHO CẢ HỆ
+
+Hệ có hai Worker: blog (`z-in-borderland.com`, kho này) và khu học tập
+(`learning.z-in-borderland.com`, kho `z-learning`). Người đọc bấm tab
+**Learning** thì phải thấy mình vẫn ở cùng một trang web: cùng thanh đầu trang,
+cùng chân trang, cùng cách ghi phiên bản. Hai kho thì không được chép tay khung
+của nhau — chép là sớm muộn lệch.
+
+### 23.1 · Ai giữ cái gì
+
+| Phần | Chủ | Ghi chú |
+|---|---|---|
+| Đầu trang `.site-head` (tên blog, điều hướng, tìm kiếm, menu ☰) | **blog** | dựng từ `src/templates/shell.html` |
+| Chân trang `.site-foot` (ký tên, RSS · Notes · Archive · Tags, tem) | **blog** | cùng file |
+| Phông, token, nền, kính, `layout.css`, `components.css` | **blog** | gói CSS `nen` |
+| Hành vi khung: menu ☰, logo, sổ phiên bản | **blog** | gói JS `khung.js` = `menu.js` + `logo-nhip.js` + `so-tay.js` |
+| Phần giữa trang (`main`) | **mỗi kho tự lo** | khu học tập: `main.zl`, theme 霜降 |
+| Số phiên bản, ngày, nội dung sổ | **mỗi kho tự lo** | hai kho hai cuốn `docs/LICH-SU.md` |
+
+### 23.2 · Blog phát, khu học tập nạp
+
+Mỗi lần dựng, `khungChung()` trong `tools/build.mjs` ghi
+`dist/khung/khung.json`:
+
+```
+phienBan  số phiên bản của blog lúc dựng (để dò lỗi, khu kia không in)
+goc       https://z-in-borderland.com
+css       [ …/assets/nen.<mã băm>.css ]
+js        [ …/assets/khung.<mã băm>.js ]
+tem       mẫu tem "Last updated {{ngay}} · {{ban}}" — kho kia điền số của nó
+dau       HTML <header class="site-head">…</header>
+chan      HTML <footer class="site-foot">…{{tem}}…</footer>
+```
+
+`dau` và `chan` **cắt ra từ chính `trang()`** — đúng hàm mọi trang blog dùng —
+rồi đổi đúng bốn chỗ: link thành tuyệt đối, bỏ nút đổi theme, sáng mục
+Learning, để trống `{{tem}}`. Không có hàm dựng khung thứ hai để mà lệch.
+
+Khu học tập xin file này qua **service binding** `BLOG` (fetch thẳng giữa hai
+Worker cùng zone bị Cloudflare chặn), nhớ 5 phút, ghép vào trang. Blog hỏng
+thì nó dùng bản cũ còn nhớ, không còn thì dựng khung dự phòng tối giản — trang
+trả tiền không trắng vì blog đang dựng lại. Chi tiết phía bên kia:
+`docs/DESIGN-SYSTEM.md` §7 của kho z-learning.
+
+### 23.3 · Hai thứ phải đi kèm ở kho này
+
+- **CORS cho phông** (`public/_headers`, luật `/assets/fonts/*`): `@font-face`
+  trong gói `nen` trỏ về tên miền blog, và trình duyệt chỉ dùng phông khác tên
+  miền khi có `Access-Control-Allow-Origin`. Thiếu là khu học tập lặng lẽ rơi
+  về phông hệ thống.
+- **Cache ngắn cho `/khung/*`** (5 phút): file đổi mỗi lần dựng, không được
+  ăn luật một năm của `/assets/`.
+
+### 23.4 · Theme
+
+Khu học tập **cố định 霜降** (`<html data-theme="frost">`), không nút đổi —
+xem `docs/KHU-HOC-TAP.md` §2.4. Nên `khung.json` không chở nút theme, và khung
+blog phải đọc được ở `frost` (nó vốn là một trong bốn theme của blog, nên
+không có gì phải làm thêm — chỉ đừng viết luật khung nào chỉ chạy ở theme tím).
+
+### 23.5 · Phiên bản: một cách ghi, một cách trình bày
+
+| | Blog | Khu học tập |
+|---|---|---|
+| Sổ | `docs/LICH-SU.md` | `docs/LICH-SU.md` — cùng khuôn, cùng luật ba tầng, cùng số kiêng |
+| Ghi | `npm run ver -- "…"` | `npm run ver -- "…"` |
+| Tem ở chân trang | `Last updated 02-Oct-2026 · V3.2.4` | `Last updated 02-Oct-2026 · V0.1.2` — số của kho ấy |
+| Sổ mở ra | bấm 5 nhịp vào tem → `so-tay.js` đọc `/so-tay.json` | y hệt — cùng `so-tay.js` (trong `khung.js`), `/so-tay.json` của kho ấy |
+
+Hai kho **đếm số riêng**: hai Worker lên xuống độc lập, một số chung thì bản vá
+của bên này làm nhảy số bên kia.
+
+### 23.6 · Đổi khung thì sao
+
+Sửa ở kho này, như mọi chỗ khác của đầu/chân trang. `npm run kiem` canh
+`khung.json` (đủ khoá, không còn link tương đối, không còn nút theme, CSS/JS
+trỏ vào file có thật). Khu học tập thấy khung mới sau tối đa 5 phút, không phải
+deploy gì bên ấy.
+
+Thêm một mục điều hướng hay một link chân trang **chỉ có nghĩa ở blog** thì vẫn
+sẽ hiện ở khu học tập — đó là chủ ý: một trang web, một thanh điều hướng.
