@@ -105,6 +105,58 @@ function gomContext() {
   return { cau, trang, media, goc: GOC, dist: DIST };
 }
 
+/* ── QUÉT TÀI LIỆU MỘT LẦN, HAI PHÉP KIỂM DÙNG CHUNG ──
+   Đọc mọi file mã và tài liệu đúng một lượt, gom hai loại lỗi: tham chiếu
+   "§N" sai mục, và "npm run X" không có script. Nhớ kết quả để phép kiểm thứ
+   hai không phải đọc lại cả kho. */
+let _tienTrinh = null;
+function tienTrinhTaiLieu() {
+  if (_tienTrinh) return _tienTrinh;
+  const BO_QUA_THU = new Set(['node_modules', '.git', 'dist', 'media', '_anh', 'og-font', '.wrangler']);
+  const tep = [];
+  (function quet(d) {
+    for (const f of fs.readdirSync(d)) {
+      if (BO_QUA_THU.has(f)) continue;
+      const p = path.join(d, f);
+      const st = fs.statSync(p);
+      if (st.isDirectory()) quet(p);
+      else if (/\.(md|mjs|js|css|html|jsonc|json|gs)$|^_headers$/.test(f) && st.size < 2e6) tep.push(p);
+    }
+  })(GOC);
+  const tieuDe = new Map();
+  for (const f of tep.filter((x) => x.endsWith('.md'))) {
+    const muc = new Set();
+    for (const m of fs.readFileSync(f, 'utf8').matchAll(/^#{2,4}\s+(\d+[a-z]?(?:\.\d+[a-z]?)*)\s*[·.]/gm)) muc.add(m[1]);
+    tieuDe.set(path.relative(GOC, f).replace(/\\/g, '/'), muc);
+  }
+  let lenh = {};
+  try { lenh = JSON.parse(fs.readFileSync(path.join(GOC, 'package.json'), 'utf8')).scripts || {}; } catch {}
+  const sai = { muc: [], lenh: [] };
+  for (const f of tep) {
+    const ten = path.relative(GOC, f).replace(/\\/g, '/');
+    if (/(^|\/)LICH-SU\.md$/.test(ten) || ten === 'tools/kiem-dinh.mjs') continue;
+    const van = fs.readFileSync(f, 'utf8');
+    for (const m of van.matchAll(/((?:docs\/)?[A-Z][A-Z0-9-]+\.md)\s*§\s*(\d+[a-z]?(?:\.\d+[a-z]?)*)/g)) {
+      if (/^\s*(bên|của|ở) kho/.test(van.slice(m.index + m[0].length, m.index + m[0].length + 20))) continue;
+      const doc = m[1].startsWith('docs/') ? m[1]
+        : (tieuDe.has('docs/' + m[1]) ? 'docs/' + m[1] : m[1]);
+      const muc = tieuDe.get(doc);
+      if (!muc) { sai.muc.push(`${ten}: "${m[0]}" — không có file ${doc}`); continue; }
+      if (!muc.has(m[2])) sai.muc.push(`${ten}: "${m[0]}" — ${doc} không có mục §${m[2]}`);
+    }
+    for (const m of van.matchAll(/npm run ([a-z][a-z0-9:-]*)/g)) {
+      /* Dòng đang nói về kho z-learning thì lệnh ấy là lệnh của kho kia. */
+      const dong = van.slice(van.lastIndexOf('\n', m.index) + 1, (van.indexOf('\n', m.index) + 1) || van.length);
+      if (/z-learning|bên kho|của kho/.test(dong)) continue;
+      if (!lenh[m[1]]) sai.lenh.push(`${ten}: "npm run ${m[1]}" — package.json không có script ấy`);
+    }
+  }
+  sai.muc = [...new Set(sai.muc)];
+  sai.lenh = [...new Set(sai.lenh)];
+  _tienTrinh = { sai };
+  return _tienTrinh;
+}
+
 /* ══════════════ 2. CÁC PHÉP KIỂM ══════════════ */
 
 const KIEM = [
@@ -2206,6 +2258,31 @@ const KIEM = [
       }
       return ra;
     }
+  },
+  {
+    /* ── TÀI LIỆU KHÔNG ĐƯỢC TRỎ VÀO MỤC KHÔNG CÓ ──
+       Mã và tài liệu ở đây gọi nhau bằng số mục: "xem docs/DESIGN-SYSTEM.md
+       §23". Thêm, bớt hay đánh lại số mục là mọi câu trỏ tới nó thành lời nói
+       dối, mà không có gì báo — đã suýt xảy ra thật: một lượt thay chuỗi đổi
+       nhầm "§21.4" thành "§23.4" trong hai file không liên quan.
+
+       Quét mọi file mã và tài liệu (trừ sổ phiên bản — sổ kể chuyện cũ), bắt
+       mọi `TEN-FILE.md §N` hay `§N.M`, rồi đối chiếu với tiêu đề `## N ·` /
+       `### N.M ·` trong đúng file ấy. Câu trỏ sang KHO KHÁC (ngay sau có chữ
+       "bên kho …" / "của kho …") thì bỏ qua — kho này không đọc được kho kia. */
+    ten: 'Tham chiếu "§N" tới tài liệu đều trỏ vào một mục có thật',
+    muc: 'loi',
+    chay: () => tienTrinhTaiLieu().sai.muc
+  },
+  {
+    /* ── LỆNH NÊU TRONG TÀI LIỆU PHẢI CHẠY ĐƯỢC ──
+       Tài liệu dạy bằng lệnh: "chạy `npm run gc`", "`npm run phong` để tải lại
+       phông". Đổi tên hay bỏ một script trong package.json là mọi câu dạy ấy
+       thành một lệnh báo lỗi "missing script" — người làm theo không biết lệnh
+       mới tên gì. Phép kiểm đối chiếu mọi `npm run X` với package.json. */
+    ten: 'Lệnh "npm run …" nêu trong tài liệu và mã đều có trong package.json',
+    muc: 'loi',
+    chay: () => tienTrinhTaiLieu().sai.lenh
   },
   {
     /* ── CỤM TIM · CHIA SẺ · BÌNH LUẬN: MỘT CỤM, ĐÚNG MỘT CHỖ ──

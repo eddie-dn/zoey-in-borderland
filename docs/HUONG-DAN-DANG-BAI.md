@@ -489,13 +489,14 @@ thường.
 | `tuNam` | ô số `WRITING SINCE` |
 | `nghe` | dòng nghiêng ở đáy ô `LATELY` |
 | `dangLam` | danh sách trong ô `LATELY` |
-| `lienHe` | danh sách trong ô `FIND ME` |
-| `caPhe` | câu mời trong ô `BUY ME A COFFEE`. Xoá dòng này thì ô biến mất |
-| `caPheCach` | các phương thức nhận trong ô ấy. Chưa khai dòng nào thì ô hiện chữ mờ `Coming soon` |
+| `lienHe` | ô nhỏ thứ ba (dưới ảnh). Mục đầu là giá trị chính, nhãn của nó (ví dụ `Email`) làm nhãn ô; các mục sau xếp thành dòng nhỏ bên dưới |
+| `caPhe` | câu mời của ô nhỏ `BUY ME A COFFEE` — hiện khi rê chuột lên ô. Xoá dòng này thì ô biến mất |
+| `caPheCach` | các phương thức nhận trong ô ấy. Chưa khai dòng nào thì ô hiện `Coming soon` |
 | phần dưới `---` | khối chữ dài bên dưới lưới |
 
-**`POSTS` và `TOPICS` không khai ở đâu cả** — máy tự đếm mỗi lần build: số bài
-công khai, và số tag khác nhau. Viết thêm bài là hai con số đó tự lên.
+Dưới ảnh là **bốn ô nhỏ**: `BASED IN` · `WRITING SINCE` · liên hệ · cà phê.
+(Hai ô `POSTS` / `TOPICS` tự đếm số bài, số tag đã bỏ từ V3.2.2 — trang Posts
+và trang Tags nói con số ấy rồi.)
 
 ### 6.2 · Khuôn `Nhãn · Nội dung`
 
@@ -514,8 +515,8 @@ lienHe:
 
 Không có dấu `·` thì cả dòng là nội dung, nhãn để trống — vẫn hiện được.
 
-Dòng nào có nhãn chứa chữ "mail" và nội dung có `@` thì tự thành link `mailto:`.
-Dòng nào bắt đầu bằng `http` thì tự thành link.
+Dòng nào có nội dung là địa chỉ email (có `@`, không bắt đầu bằng `http`) thì
+tự thành link `mailto:`. Dòng nào bắt đầu bằng `http` thì tự thành link.
 
 ### 6.2b · Ô mời cà phê
 
@@ -527,8 +528,8 @@ caPheCach:
   - Ko-fi · https://ko-fi.com/…
 ```
 
-`caPhe` là câu mời — **xoá dòng ấy đi thì cả ô biến mất**, hàng cuối tự khép
-lại còn hai ô, không để lỗ hổng.
+`caPhe` là câu mời — **xoá dòng ấy đi thì cả ô biến mất**, dải ô nhỏ tự khép
+lại, không để lỗ hổng.
 
 `caPheCach` là chỗ dán phương thức nhận. Dòng bắt đầu bằng `http` thành link;
 còn lại để nguyên chữ — số tài khoản hay mã ví là thứ người ta copy chứ không

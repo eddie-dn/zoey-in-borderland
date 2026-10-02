@@ -65,8 +65,10 @@ Bảng `binh_luan` **không phải tạo tay**: bình luận đầu tiên tự t
 tên-miền-của-bạn/z-admin/
 ```
 
-**Một trang, hai việc:** ô viết ghi chú ở trên, hàng chờ duyệt bình luận ở
-dưới. Lưu vào màn hình chính điện thoại là một chạm vào thẳng.
+**Một trang, bốn ngăn** ở cột trái: **Note** (viết và quản lý ghi chú —
+§6.4), **Comment** (duyệt bình luận, thùng rác — `docs/BINH-LUAN.md`), **Post**
+(viết, sửa, ẩn, xem trước bài — §7), **Category** (chuyên mục). Lưu vào màn hình
+chính điện thoại là một chạm vào thẳng.
 
 Cửa sau: ở trang giới thiệu, **bấm 5 nhịp vào tiêu đề** cũng tới đây — tiện khi
 đang đọc mà không muốn gõ địa chỉ.
@@ -555,9 +557,31 @@ là một chạm ra ô viết.
 
 (Lối cũ `/notes/#viet` **đã bỏ** — lý do ở §1.4.)
 
-Ô viết nhận: ngày (mặc định hôm nay), loại (gõ gì cũng được, trang tự gom thành
-bộ lọc) và nội dung. Nội dung hiểu `**đậm**`, `*nghiêng*`, `` `mã` ``,
-`[chữ](địa-chỉ)` và ngắt đoạn bằng dòng trống — vừa đủ cho mấy dòng ghi nhanh.
+Ngăn Note có hai tab, chuyển bằng nút **Write note · List notes** ở đầu ngăn
+(trang nhớ tab đang mở).
+
+**Write note** — ô viết nhận: ngày (mặc định hôm nay), loại (gõ gì cũng được,
+trang tự gom thành bộ lọc) và nội dung. Nội dung hiểu `**đậm**`, `*nghiêng*`,
+`` `mã` ``, `[chữ](địa-chỉ)` và ngắt đoạn bằng dòng trống. Dưới ô chữ là mấy ô
+kèm, **đều không bắt buộc**:
+
+- **Mood** — hàng 8 biểu tượng gợi ý, bấm lại là bỏ; nút **＋** mở kho thêm 72
+  mood chia 9 nhóm, một hàng Recent và một ô dán emoji bất kỳ.
+- **Source** — đang đọc / nghe / xem gì: tên, người viết, link (chỉ nhận http/https).
+- **Show as a quote** — ghi chú hiện thành một câu trích chữ nghiêng lớn.
+- **Pin to top** — ghim lên đầu `/notes/`, **tối đa 2**. Đã đủ hai thì vẫn đăng,
+  chỉ là không ghim, và ô viết nói rõ.
+
+**List notes** — mọi ghi chú trên D1, bộ lọc All · Hidden · Trash. Mỗi dòng:
+
+- **Edit** — mở lại trong tab Write; **mỗi ghi chú sửa được 3 lần** (máy chủ
+  đếm), sửa rồi thì dòng ấy ghi "2 edits left" / "1 edit left" / "No edits left".
+- **Pin / Unpin** — không tính lượt sửa. Hết chỗ thì báo phải bỏ ghim cái khác.
+- **Hide / Unhide** — rút khỏi `/notes/` mà không xoá.
+- **Delete** — vào thùng rác 30 ngày, Restore để cứu, Delete forever để xoá ngay.
+
+Ghi chú đã kéo về `content/ghi-chu.md` (§6.5) không nằm trong danh sách này —
+sửa chúng ở file.
 
 > **Đường dẫn `/z-admin/` không phải lớp bảo mật**, chỉ là chỗ cất cho khuất
 > mắt — nó `noindex`, không nằm trong sitemap, không có trong thanh điều hướng.
@@ -573,6 +597,9 @@ curl -X POST https://ten-mien-cua-ban/api/ghi-chu \
   -d '{"ngay":"2026-09-16","loai":"sách","chu":"Mấy dòng."}'
 ```
 
+Các trường kèm (đều không bắt buộc): `mood`, `kieuNguon` (`doc` · `nghe` ·
+`xem`), `nguon`, `tacGia`, `link`, `trich` (1/0), `ghim` (1/0).
+
 ### 6.5 · Kéo về nhà — `npm run gc`
 
 Chạy trước mỗi lần dựng. Nó xin ghi chú trên D1 về, ghi vào
@@ -586,6 +613,11 @@ npm run gc -- --thu     # chỉ xem sẽ kéo về gì, không sửa gì
 
 Kéo về rồi thì ghi chú thành ghi chú bình thường: vào RSS, vào tìm kiếm, đọc
 được khi tắt JavaScript, và nằm trong bản sao lưu của chính thư mục dự án.
+
+Phần kèm (nguồn · câu trích · mood · ghim) đi theo thành mấy dòng `@` ngay dưới
+tiêu đề khối — khuôn ghi ở chú thích đầu `content/ghi-chu.md`. Bản trên D1 bị
+**xoá hẳn**, không vào thùng rác: nó đã có nhà, để trong thùng thì bấm Restore
+là ra một bản trùng.
 
 Quên khoá lúc chạy thì nó vẫn ghi vào file nhưng **không xoá được trên D1**, và
 nó nói thẳng ra như vậy — bỏ qua dòng cảnh báo ấy thì lần dựng sau `/notes/` sẽ

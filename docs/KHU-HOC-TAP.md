@@ -205,7 +205,18 @@ nhat_ky      id · nguoi_dung_id · viec · chi_tiet · ip · tao_luc
 ## 6 · ĐÃ LÀM / CHƯA LÀM
 
 **Đã làm (trong kho này):**
-- Mục `Learning` trên thanh đầu trang, đang ở trạng thái "Coming soon".
+- Mục `Learning` trên thanh đầu trang — **đã là link thật** (V3.2.3; trước đó là
+  chữ mờ "Coming soon" vì nằm trong `chuaDung`).
 - `navHTML` hiểu đường dẫn tuyệt đối.
+- **Khung chung** (V3.2.4): blog phát `/khung/khung.json` — đầu trang, chân
+  trang, gói CSS nền, gói JS khung — cho khu học tập ghép vào. Chi tiết ở
+  `docs/DESIGN-SYSTEM.md` §23.
 
-**Chưa làm (kho `z-learning`):** tất cả phần còn lại.
+**Đã làm (kho `z-learning`, tới V0.1.2):** khung Worker, D1 + R2, `/api/health`,
+trang danh mục `/` dựng từ D1, trang 404, khung chung với blog (khung dự phòng
+khi blog lỗi), tem phiên bản và sổ phiên bản cùng khuôn blog.
+
+**Chưa làm (kho `z-learning`):** trang chi tiết `/materials/<slug>/`, magic
+link, tạo đơn + VietQR, webhook SePay, tủ sách, trình đọc có watermark. Chưa
+bật `published` cho tài liệu nào trước khi có trang chi tiết — nút "Xem thử &
+mua" sẽ trỏ vào trang 404.
