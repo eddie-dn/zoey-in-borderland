@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.3 | 2026-10-02 | 03 | Bật tab Learning |
 | V3.2.2 | 2026-10-02 | 02 | Trang About gọn lại: liên hệ và cà phê thành ô nhỏ |
 | V3.2.1 | 2026-10-02 | 01 | Notes gom theo năm và tháng, gập được |
 | V3.2.0 | 2026-10-02 | 00 | Kho mood cho ghi chú; danh sách hiện số lượt sửa còn lại |
@@ -272,6 +273,11 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.3 — 02-Oct-2026
+
+- **Tab Learning trên thanh đầu trang thành link thật** tới
+  learning.z-in-borderland.com, thôi là chữ mờ "Coming soon".
 
 ## V3.2.2 — 02-Oct-2026
 
