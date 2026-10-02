@@ -2427,7 +2427,7 @@ dừng ở bốn cánh là dừng giữa chừng.
 
 `/z-admin/` có bốn ngăn — **Note · Comment · Post · Category** — và ba trong số
 đó làm cùng một loại việc: bày một danh sách để **điểm danh** rồi thao tác trên
-từng mục. (Ngăn Note có ô viết ở trên, danh sách ghi chú ở dưới.)
+từng mục. (Ngăn Note có hai tab: Write note là ô viết, List notes là danh sách.)
 
 | Ngăn | Mỗi hàng là | Nút trên hàng |
 |---|---|---|

@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.8 | 2026-10-02 | 08 | Ngăn Note chia hai tab Write note · List notes |
 | V3.1.7 | 2026-10-02 | 07 | Thùng rác cho bình luận và ghi chú; ghi chú D1 hiện lại ở /notes/ |
 | V3.1.6 | 2026-10-02 | 06 | trang quản trị: xem trước riêng tư cho bài ẩn và bài nháp |
 | V3.1.5 | 2026-09-27 | 05 | ô soạn thảo: nền đục ở theme tối · ảnh giữ đúng khổ · khối video xem được · tải video · khung Wide rõ nghĩa |
@@ -267,6 +268,13 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.8 — 02-Oct-2026
+
+- **Ngăn Note chia hai tab: Write note · List notes.** Mỗi lúc chỉ một mặt,
+  không phải cuộn qua ô viết mới tới danh sách. Bấm Edit tự sang Write, lưu
+  xong tự về List; lần sau mở lại đúng tab đang dùng. Bộ lọc All · Hidden ·
+  Trash nằm cùng hàng với nút chuyển.
 
 ## V3.1.7 — 02-Oct-2026
 
