@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.7 | 2026-10-02 | 07 | Ô Buy me a coffee nối sang trang Mời cà phê của Learning |
 | V3.2.6 | 2026-10-02 | 06 | Khung chung gửi thêm gói CSS danh sách để Learning dựng bằng cụm của blog; ghi §23.6 |
 | V3.2.5 | 2026-10-02 | 05 | Rà tài liệu · phép kiểm tài liệu lệch mã |
 | V3.2.4 | 2026-10-02 | 04 | Khung chung cho khu học tập |
@@ -276,6 +277,11 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.7 — 02-Oct-2026
+
+- **Ô "Buy me a coffee" ở trang About nay bấm được:** dẫn sang trang Mời cà phê
+  của Learning — chọn ly, quét mã QR, không cần tài khoản.
 
 ## V3.2.6 — 02-Oct-2026
 
