@@ -130,6 +130,34 @@
 /* Giá trị dài (xem khungBento trong tools/build.mjs): nhỏ lại cho vừa một dòng,
    và cho phép ngắt giữa chữ nếu vẫn không vừa — thà xuống dòng còn hơn tràn ô. */
 .bo-so--dai{font-size:clamp(16px,.85rem + .55vw,21px);line-height:1.25;text-wrap:balance}
+/* Ô liên hệ / cà phê nhỏ: giá trị là một địa chỉ hay một đường dẫn, không
+   phải một con số — chữ thân bài, đứng thẳng, ngắt được ở bất kỳ đâu (email
+   dài hơn bề ngang ô là chuyện thường). */
+.bo-so--lh{
+  font-family:var(--font-body);font-style:normal;font-weight:500;
+  font-size:var(--fs-sm);line-height:1.35;overflow-wrap:break-word;
+}
+.bo-so--lh a{color:var(--accent-ink);text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
+.bo-so--lh a:hover{color:var(--text)}
+/* ── EMAIL TRONG Ô NHỎ ──
+   Dấu @ có sẵn một chỗ ngắt (`<wbr>` ở tools/build.mjs), và tên miền là một
+   khối `inline-block`: đủ chỗ thì nó đứng trọn một dòng ngay dưới "contact@",
+   thiếu chỗ thì nó tự gãy BÊN TRONG khối thay vì tràn ra ngoài ô.
+
+   Cỡ chữ co theo bề ngang ô (`cqi` = phần trăm bề ngang ô, ô khai
+   `container-type` ngay dưới), nhưng không dưới 12px: co tới mức vừa khít ở
+   khổ 320px thì chữ còn 8px — vừa mà không đọc được. */
+.bo--so-lh{container-type:inline-size}
+.bo--so-lh .bo-so--lh{font-size:clamp(12px, 8.6cqi, var(--fs-sm))}
+.bo-mien{display:inline-block;max-width:100%;overflow-wrap:break-word}
+.bo-so-them{font-size:var(--fs-xs);color:var(--text-muted);overflow-wrap:anywhere}
+/* "Coming soon" là một lời hẹn, không phải dữ liệu: nhạt hơn giá trị thật. */
+.bo-so--cho{color:var(--text-muted);font-weight:500}
+/* Ô liên hệ và cà phê đặt nhãn LÊN TRÊN giá trị — với một con số ("2014")
+   thì đọc số trước nhãn sau là tự nhiên, còn với một địa chỉ email thì phải
+   biết nó là gì trước đã. */
+.bo--so-lh,.bo--so-caphe{flex-direction:column-reverse;justify-content:flex-end;gap:6px}
 
 /* Thân bài KHÔNG phải tấm kính — nó là chữ chảy tiếp, không phải một ô. */
 .bo--chu{backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -171,18 +199,6 @@
   font-size:var(--fs-sm);font-style:italic;color:var(--text-faint);
 }
 
-/* Ô mời cà phê. Câu mời đọc như lời nói, nên cỡ chữ bằng thân ô `LATELY` chứ
-   không to hơn — ô này là một lời mời nhỏ, không phải một băng quảng cáo. */
-.bo-caphe-chu{
-  margin:0;font-size:calc(var(--fs-base) * .95);line-height:1.55;
-  color:var(--text-muted);text-wrap:pretty;max-width:34ch;
-}
-/* Danh sách phương thức đẩy xuống đáy ô, để ba ô cùng hàng có chân thẳng nhau
-   dù câu mời dài ngắn khác nhau. Dòng "Coming soon" thì KHÔNG đẩy: lúc chưa có
-   phương thức nào, đẩy nó xuống đáy là để một dòng chữ mồ côi cách câu mời cả
-   một khoảng trống — trông như ô bị lỗi chứ không như ô đang chờ. */
-.bo--caphe .bo-ds{margin-top:auto}
-
 /* Dưới 860px: bỏ hẳn lưới 6 cột, xếp dọc một cột. Ép lưới xuống màn hẹp mà
    vẫn giữ 6 cột thì mỗi ô còn vài chục pixel, không đọc được gì. */
 @media (max-width:860px){
@@ -200,7 +216,7 @@
      Và phải kể tên ĐỦ mọi ô: thiếu `.bo--anh` thì đúng một ô đó ở lại cột cũ,
      kéo theo cả lưới. Có phép kiểm tự động cho chuyện này — xem kiem-dinh.mjs. */
   .bento .bo--anh,.bento .bo--cot,.bento .bo--intro,.bento .bo-dai,
-  .bento .bo-hang,.bento .bo--nay,.bento .bo--lienhe,.bento .bo--caphe,
+  .bento .bo-hang,.bento .bo--nay,
   .bento .bo--chu{
     grid-column:1 / 2;grid-row:auto;
   }

@@ -58,6 +58,8 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.2 | 2026-10-02 | 02 | Trang About gọn lại: liên hệ và cà phê thành ô nhỏ |
+| V3.2.1 | 2026-10-02 | 01 | Notes gom theo năm và tháng, gập được |
 | V3.2.0 | 2026-10-02 | 00 | Kho mood cho ghi chú; danh sách hiện số lượt sửa còn lại |
 | V3.1.9 | 2026-10-02 | 09 | Trang Notes thành dòng thời gian: nguồn, câu trích, mood, ghim |
 | V3.1.8 | 2026-10-02 | 08 | Ngăn Note chia hai tab Write note · List notes |
@@ -270,6 +272,20 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.2 — 02-Oct-2026
+
+- **Trang About gọn lại một hàng.** Email và "Buy me a coffee" thành hai ô
+  nhỏ cạnh "Đà Nẵng" và "2014", thay cho hai ô số bài và số chủ đề. Hàng hai
+  hộp to ở cuối trang bỏ hẳn. Câu mời cà phê hiện khi rê chuột lên ô.
+
+## V3.2.1 — 02-Oct-2026
+
+- **Trang /notes/ gom theo năm rồi tháng, bấm để gập hoặc mở.** Tiêu đề kèm
+  số ghi chú ("2026 · 7 notes", "August · 2 notes"). Mặc định chỉ mở năm mới
+  nhất và các tháng gần nhất (đủ khoảng 5 ghi chú); phần cũ gập lại cho gọn.
+- **Lọc theo loại thì tự mở những tháng có ghi chú khớp**, con số đếm theo
+  kết quả lọc; bấm All là về như cũ.
 
 ## V3.2.0 — 02-Oct-2026
 

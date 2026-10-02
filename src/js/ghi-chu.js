@@ -92,22 +92,61 @@
       mon[i].classList.toggle('gc-khac-loai',
         !!loai && mon[i].getAttribute('data-loai') !== loai);
     }
-    /* Khối tháng và khu ghim không còn ghi chú nào sau khi lọc thì giấu cả
-       đầu đề — để lại thì lọc "nhạc" ra một cột đầu đề tháng trống trơn.
-       Có bộ chia trang thì nó cũng giấu khối tháng theo trang (`data-nhom`);
-       hai bên dùng hai cách giấu khác nhau nên không đè nhau. */
-    var khoi = document.querySelectorAll('.gc-thang, [data-gc-ghim]');
+    /* Năm, tháng và khu ghim không còn ghi chú nào sau khi lọc thì giấu cả
+       đầu đề — để lại thì lọc "nhạc" ra một cột tiêu đề trống trơn. */
+    var khoi = document.querySelectorAll('.gc-nam-khoi, .gc-thang, [data-gc-ghim]');
     for (i = 0; i < khoi.length; i++) {
       khoi[i].classList.toggle('gc-trong-loc',
         !khoi[i].querySelector('.gc-mot:not(.gc-khac-loai)'));
     }
-    var hop = document.querySelector('[data-phan-trang]');
-    if (hop) hop.dispatchEvent(new CustomEvent('trang-so:dung-lai'));
+    /* ── LỌC THÌ MỞ, BỎ LỌC THÌ VỀ NHƯ CŨ ──
+       Lọc "nhạc" mà kết quả nằm trong mấy tháng đang gập thì trang trông như
+       không có gì — phải bấm mở từng tháng mới thấy. Nên đang lọc thì mọi khối
+       còn ghi chú khớp đều mở; bấm lại All thì về đúng trạng thái mặc định
+       (`data-mo`). Số cạnh tiêu đề cũng đếm theo kết quả lọc. */
+    var gap = document.querySelectorAll('.gc-dong details');
+    for (i = 0; i < gap.length; i++) {
+      gap[i].open = loai ? !gap[i].classList.contains('gc-trong-loc') : gap[i].hasAttribute('data-mo');
+    }
+    demLai();
     for (i = 0; i < nut.length; i++) {
       var la = nut[i].getAttribute('data-loai') === loai;
       nut[i].classList.toggle('chip--nay', la);
       nut[i].setAttribute('aria-pressed', la ? 'true' : 'false');
     }
+  }
+
+  function demChu(n) {
+    return (n === 1 ? (N.note1 || '1 note') : (N.noteN || '{n} notes')).replace('{n}', n);
+  }
+  function demLai() {
+    var cac = document.querySelectorAll('.gc-dong details');
+    for (var i = 0; i < cac.length; i++) {
+      var o = cac[i].querySelector(':scope > summary .gc-dem');
+      if (o) o.textContent = demChu(cac[i].querySelectorAll('.gc-mot:not(.gc-khac-loai)').length);
+    }
+  }
+
+  /* Bản sao luật `gcMoMacDinh` của build: mở năm mới nhất; trong đó mở tháng
+     mới nhất, và mở tiếp cho tới khi đủ `moToiThieu` ghi chú. Chạy lại sau khi
+     chèn ghi chú từ D1 — ghi chú mới có thể dựng ra một tháng mới hơn mọi
+     tháng build đã biết. */
+  function moMacDinh() {
+    if (!dong) return;
+    var toiThieu = N.moToiThieu || 5;
+    var nam = dong.querySelectorAll(':scope > .gc-nam-khoi');
+    var gap = dong.querySelectorAll('details');
+    for (var i = 0; i < gap.length; i++) gap[i].removeAttribute('data-mo');
+    if (nam.length) {
+      nam[0].setAttribute('data-mo', '');
+      var thang = nam[0].querySelectorAll(':scope > .gc-thang'), da = 0;
+      for (i = 0; i < thang.length; i++) {
+        thang[i].setAttribute('data-mo', '');
+        da += thang[i].querySelectorAll('.gc-mot').length;
+        if (da >= toiThieu) break;
+      }
+    }
+    for (i = 0; i < gap.length; i++) gap[i].open = gap[i].hasAttribute('data-mo');
   }
 
   function dangChon() {
@@ -123,6 +162,9 @@
      hàng nút — ghi chú mới có thể mang một loại chưa từng có nút nào. */
   function dungLoc() {
     mon = [].slice.call(document.querySelectorAll('.gc-mot'));
+    /* Đếm lại số cạnh tiêu đề năm/tháng ngay cả khi không có hàng lọc:
+       khối dựng ra từ JS (ghi chú D1) chưa có con số nào. */
+    demLai();
     if (!loc) return;
 
     var dem = {}, thuTu = [];
@@ -222,24 +264,40 @@
     ol.appendChild(li);
   }
 
-  /* Khối tháng của một ngày — chưa có thì dựng, đứng đúng chỗ theo thứ tự
-     tháng mới nhất trước. */
-  function olThang(ngay) {
-    var k = ngay.slice(0, 7);
-    var o = dong.querySelector('.gc-thang[data-thang="' + k + '"]');
-    if (o) return o.querySelector('.gc-ds');
-    o = document.createElement('section');
-    o.className = 'gc-thang';
-    o.setAttribute('data-nhom', '');
-    o.setAttribute('data-thang', k);
-    o.innerHTML = '<h2 class="gc-thang-de">' + THANG_DU[Number(k.slice(5)) - 1] + ' ' +
-                  k.slice(0, 4) + '</h2><ol class="gc-ds"></ol>';
-    var cac = dong.querySelectorAll('.gc-thang');
+  /* Chèn `el` vào `cha` theo khoá giảm dần (mới nhất trước), so bằng
+     thuộc tính `thuocTinh` của các anh em cùng lớp `lop`. */
+  function chenTheoKhoa(cha, el, lop, thuocTinh, khoa) {
+    var cac = cha.querySelectorAll(':scope > ' + lop);
     for (var i = 0; i < cac.length; i++) {
-      if ((cac[i].getAttribute('data-thang') || '') < k) { dong.insertBefore(o, cac[i]); return o.querySelector('.gc-ds'); }
+      if ((cac[i].getAttribute(thuocTinh) || '') < khoa) { cha.insertBefore(el, cac[i]); return; }
     }
-    dong.appendChild(o);
-    return o.querySelector('.gc-ds');
+    cha.appendChild(el);
+  }
+
+  /* Danh sách của tháng chứa một ngày — chưa có năm hay tháng ấy thì dựng,
+     đúng khuôn của build. Khối mới dựng ra GẬP; `moMacDinh` quyết lại sau. */
+  function olThang(ngay) {
+    var y = ngay.slice(0, 4), k = ngay.slice(0, 7);
+    var n = dong.querySelector(':scope > .gc-nam-khoi[data-nam="' + y + '"]');
+    if (!n) {
+      n = document.createElement('details');
+      n.className = 'gc-nam-khoi';
+      n.setAttribute('data-nam', y);
+      n.innerHTML = '<summary class="gc-nam-de"><span class="gc-nam-so">' + y +
+                    '</span><span class="gc-dem"></span></summary>';
+      chenTheoKhoa(dong, n, '.gc-nam-khoi', 'data-nam', y);
+    }
+    var t = n.querySelector(':scope > .gc-thang[data-thang="' + k + '"]');
+    if (!t) {
+      t = document.createElement('details');
+      t.className = 'gc-thang';
+      t.setAttribute('data-thang', k);
+      t.innerHTML = '<summary class="gc-thang-de"><span class="gc-thang-ten">' +
+                    THANG_DU[Number(k.slice(5)) - 1] + '</span><span class="gc-dem"></span></summary>' +
+                    '<ol class="gc-ds"></ol>';
+      chenTheoKhoa(n, t, '.gc-thang', 'data-thang', k);
+    }
+    return t.querySelector('.gc-ds');
   }
 
   /* ── GHIM: TỐI ĐA HAI TRÊN TRANG ──
@@ -287,6 +345,7 @@
           trong.remove();
         }
         for (var i = 0; i < d.ghiChu.length; i++) chen(d.ghiChu[i]);
+        moMacDinh();
         dungLoc();
         if (viet) viet.veLai();
       })

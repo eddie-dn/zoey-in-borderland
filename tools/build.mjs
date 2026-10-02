@@ -286,6 +286,8 @@ const NHAN = {
   notesHint   : 'Bits picked up along the way — books, music, thoughts not yet essays',
   noNotes     : 'No notes yet.',
   gcPinned    : 'Pinned',
+  gcNote1     : '1 note',
+  gcNoteN     : '{n} notes',
   /* Dòng nguồn dưới một ghi chú: "READING  Siddhartha · Hermann Hesse". */
   gcSrcDoc    : 'Reading',
   gcSrcNghe   : 'Listening',
@@ -1551,6 +1553,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                            `moods` là bảng GC_MOOD — ô viết vẽ nút từ đó, còn
                            /notes/ lấy chữ cho `title` của ghi chú chèn từ D1. */
                         moods: GC_MOOD, moodKho: GC_MOOD_KHO, pinned: NHAN.gcPinned,
+                        note1: NHAN.gcNote1, noteN: NHAN.gcNoteN, moToiThieu: GC_MO_TOI_THIEU,
                         moodMore: NHAN.gcMoodMore, moodRecent: NHAN.gcMoodRecent,
                         moodPaste: NHAN.gcMoodPaste, moodClear: NHAN.gcMoodClear,
                         srcDoc: NHAN.gcSrcDoc, srcNghe: NHAN.gcSrcNghe, srcXem: NHAN.gcSrcXem,
@@ -3056,11 +3059,22 @@ function khungBento(t, soBai, soTag) {
   const oAnh = anhBento(t);
   const coAnh = !!oAnh;
 
+  /* ── BỐN Ô NHỎ: Ở ĐÂU · TỪ BAO GIỜ · LIÊN HỆ · CÀ PHÊ ──
+     Hai ô cuối từng là "5 posts" và "14 topics". Con số ấy trang Posts và
+     trang Tags đã nói, và ở trang giới thiệu nó chẳng cho người đọc biết gì
+     về CHỦ TRANG. Trong khi đó liên hệ và cà phê mỗi thứ chiếm một ô to ở
+     hàng cuối — chỉ để đựng một dòng email và một dòng "Coming soon", phần
+     còn lại là khoảng trắng.
+
+     Nay liên hệ và cà phê xuống đúng cỡ của chúng: hai ô nhỏ trong dải bốn
+     ô, cạnh "Đà Nẵng" và "2014". Hàng ô to cuối trang chỉ còn ô "dạo này"
+     nếu có khai. Ô nào không có dữ liệu thì không dựng — dải auto-fit tự kín. */
+  const lienHe0 = t.lienHe[0];
   const soLieu = [
     t.viTri && { nhan: NHAN.based, chu: t.viTri },
     t.tuNam && { nhan: NHAN.writingSince, chu: t.tuNam },
-    soBai   && { nhan: NHAN.posts, chu: String(soBai) },
-    soTag   && { nhan: NHAN.topics, chu: String(soTag) }
+    lienHe0 && { nhan: lienHe0.nhan || NHAN.findMe, html: oLienHeNho(t.lienHe), lop: ' bo--so-lh' },
+    t.caPhe && { nhan: NHAN.buyCoffee, html: oCaPheNho(t), lop: ' bo--so-caphe', title: t.caPhe }
   ].filter(Boolean);
 
   /* Ô số vốn dựng cho giá trị NGẮN: "2016", "12", "Hà Nội". Gặp chuỗi dài
@@ -3069,8 +3083,8 @@ function khungBento(t, soBai, soTag) {
      Ngưỡng 11 ký tự là chỗ chuỗi bắt đầu không vừa một dòng ở ô hẹp nhất
      (150px) trong dải. */
   const dai = soLieu.length
-    ? `<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card">
-      <span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>
+    ? `<div class="bo-dai">${soLieu.map((x) => `<div class="bo bo--so card${x.lop || ''}"${x.title ? ` title="${attr(x.title)}"` : ''}>
+      ${x.html || `<span class="bo-so${x.chu.length > 11 ? ' bo-so--dai' : ''}">${escapeHtml(x.chu)}</span>`}
       <span class="label label--muted">${escapeHtml(x.nhan)}</span>
     </div>`).join('')}</div>`
     : '';
@@ -3111,22 +3125,8 @@ function khungBento(t, soBai, soTag) {
     </div>`);
   }
 
-  if (t.lienHe.length) {
-    hang.push(`<div class="bo bo--lienhe card">
-      <p class="label label--muted">${NHAN.findMe}</p>
-      <ul class="bo-ds">${t.lienHe.map((d) => {
-        const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu) &&
-                       d.nhan.toLowerCase().includes('mail');
-        const url = laMail ? `mailto:${d.chu}` : (/^https?:/.test(d.chu) ? d.chu : null);
-        const chu = escapeHtml(d.chu);
-        return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
-               `${url ? `<a href="${attr(url)}">${chu}</a>` : chu}</span></li>`;
-      }).join('')}</ul>
-    </div>`);
-  }
-
-  const oCaPhe = oCaPheBento(t);
-  if (oCaPhe) hang.push(oCaPhe);
+  /* Liên hệ và cà phê đã lên dải bốn ô nhỏ ở trên — xem chú thích ở
+     `soLieu`. Hàng này chỉ còn ô "dạo này". */
 
   if (hang.length) o.push(`<div class="bo-hang">${hang.join('')}</div>`);
 
@@ -3139,29 +3139,41 @@ function khungBento(t, soBai, soTag) {
   return `<div class="bento${coAnh ? ' bento--anh' : ''}">${o.filter(Boolean).join('\n')}</div>`;
 }
 
-/* Ô MỜI CÀ PHÊ. Trả '' nếu không khai `caPhe:` — hàng cuối tự khép lại.
+/* ── RUỘT Ô LIÊN HỆ NHỎ ──
+   Mục đầu tiên là giá trị chính (thường là email), cỡ chữ thân bài chứ không
+   cỡ số Cormorant của "2014": một địa chỉ email 27 ký tự ở cỡ 32px nghiêng
+   thì vỡ thành ba dòng. Mục thứ hai trở đi (nếu khai) xếp thành dòng nhỏ. */
+function linkLienHe(d) {
+  const laMail = /@/.test(d.chu) && !/^https?:/.test(d.chu);
+  const url = laMail ? `mailto:${d.chu}` : (/^https?:/.test(d.chu) ? d.chu : null);
+  /* Email: cho xuống dòng ngay SAU dấu @ và giữ nguyên tên miền trên một
+     dòng. Để trình duyệt tự ngắt thì nó chọn dấu gạch trong tên miền —
+     "contact@z-in-" / "borderland.com" — đọc ra như hai mẩu không liên quan. */
+  const chu = laMail
+    ? escapeHtml(d.chu).replace(/@(.+)$/, '@<wbr><span class="bo-mien">$1</span>')
+    : escapeHtml(d.chu);
+  return url ? `<a href="${attr(url)}"${laMail ? '' : ' rel="noopener"'}>${chu}</a>` : chu;
+}
+function oLienHeNho(ds) {
+  const [dau, ...con] = ds;
+  return `<span class="bo-so bo-so--lh">${linkLienHe(dau)}</span>` +
+    (con.length ? `<span class="bo-so-them">${con.map((d) =>
+      `${d.nhan ? `${escapeHtml(d.nhan)} ` : ''}${linkLienHe(d)}`).join(' · ')}</span>` : '');
+}
 
-   Chưa khai phương thức nào thì vẫn dựng ô, chỉ thay danh sách bằng một dòng
-   mờ "Coming soon". Cố ý: đây là chỗ đặt sẵn để sau này dán số tài khoản hay
-   link donate vào, và một ô đã có mặt trên trang thì lúc gắn chỉ còn là thêm
-   một dòng YAML — không phải mở lại CSS để tìm chỗ cho nó. */
-function oCaPheBento(t) {
-  if (!t.caPhe) return '';
-  const cach = t.caPheCach.map((d) => {
-    /* Cùng luật link với ô liên hệ: http → thẻ <a>, còn lại để nguyên chữ
-       (số tài khoản, mã ví — mấy thứ người ta copy chứ không bấm). */
+/* ── RUỘT Ô CÀ PHÊ NHỎ ──
+   Chưa khai phương thức nào thì giá trị là "Coming soon" — vẫn dựng ô, để
+   lúc có số tài khoản hay link donate chỉ còn là thêm một dòng YAML. Câu mời
+   (`caPhe:`) nằm trong `title` của ô: ô nhỏ không còn chỗ cho hai dòng chữ,
+   mà bỏ hẳn câu ấy thì phí một lời mời viết sẵn. */
+function oCaPheNho(t) {
+  if (!t.caPheCach.length) return `<span class="bo-so bo-so--dai bo-so--cho">${NHAN.soon}</span>`;
+  return `<span class="bo-so bo-so--lh">${t.caPheCach.map((d) => {
     const url = /^https?:/.test(d.chu) ? d.chu : null;
-    const chu = escapeHtml(d.chu);
-    return `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>` +
-           `${url ? `<a href="${attr(url)}" rel="noopener">${chu}</a>` : chu}</span></li>`;
-  }).join('');
-
-  return `<div class="bo bo--caphe card">
-    <p class="label label--muted">${NHAN.buyCoffee}</p>
-    <p class="bo-caphe-chu">${escapeHtml(t.caPhe)}</p>
-    ${cach ? `<ul class="bo-ds">${cach}</ul>`
-           : `<p class="bo-nghe">${NHAN.soon}</p>`}
-  </div>`;
+    const chu = escapeHtml(d.nhan && url ? d.nhan : d.chu);
+    return url ? `<a href="${attr(url)}" rel="noopener">${chu}</a>`
+               : `${d.nhan ? `${escapeHtml(d.nhan)} ` : ''}${chu}`;
+  }).join(' · ')}</span>`;
 }
 
 
@@ -4426,6 +4438,28 @@ function gcMotHTML(x) {
       </li>`;
 }
 
+/* Số ghi chú cạnh tiêu đề năm/tháng: "1 note", "5 notes". */
+function gcDemGhiChu(n) {
+  return (n === 1 ? NHAN.gcNote1 : NHAN.gcNoteN).replace('{n}', n);
+}
+/* ── NĂM/THÁNG NÀO MỞ SẴN ──
+   Nhận danh sách năm (mới nhất trước), mỗi năm một danh sách tháng kèm số
+   ghi chú; trả về tập khoá ('2026', '2026-09'…) được mở. ghi-chu.js có bản
+   sao đúng luật này (`moMacDinh`) — sửa một bên thì sửa cả bên kia. */
+const GC_MO_TOI_THIEU = 5;
+function gcMoMacDinh(nam) {
+  const mo = new Set();
+  if (!nam.length) return mo;
+  mo.add(nam[0].y);
+  let da = 0;
+  for (const t of nam[0].thang) {
+    mo.add(t.k);
+    da += t.so;
+    if (da >= GC_MO_TOI_THIEU) break;
+  }
+  return mo;
+}
+
 function trangGhiChu() {
   const ds = docGhiChu();
   const loai = [...new Set(ds.map((x) => x.loai).filter(Boolean))];
@@ -4453,29 +4487,45 @@ function trangGhiChu() {
       <ol class="gc-ds">${ghim.map(gcMotHTML).join('')}</ol>
     </section>`;
 
-  /* ── DÒNG THỜI GIAN, CHIA THEO THÁNG ──
-     Mỗi tháng một khối `data-nhom`: bộ chia trang (trang-so.js) tự giấu khối
-     tháng nào không còn ghi chú nào hiện ở trang đang xem, nên trang 2 không
-     mở ra bằng một cái đầu đề "September" trống trơn. */
-  const thang = [];
-  for (const x of dong) {
-    const k = x.ngay.slice(0, 7);
-    if (!thang.length || thang[thang.length - 1].k !== k) thang.push({ k, ds: [] });
-    thang[thang.length - 1].ds.push(x);
-  }
-  const dongHTML = `<div class="gc-dong">${thang.map((t) => `
-    <section class="gc-thang" data-nhom data-thang="${t.k}">
-      <h2 class="gc-thang-de">${GC_THANG_DU[Number(t.k.slice(5)) - 1]} ${t.k.slice(0, 4)}</h2>
-      <ol class="gc-ds">${t.ds.map(gcMotHTML).join('')}</ol>
-    </section>`).join('')}</div>`;
+  /* ── DÒNG THỜI GIAN: NĂM → THÁNG, GẬP ĐƯỢC ──
+     Ghi chú dài ra theo năm tháng, và một cột cuộn mãi không hết thì phần
+     cũ chỉ là thứ phải lướt qua. Nên mỗi năm, mỗi tháng là một `<details>`:
+     dòng tiêu đề kèm số ghi chú ("2026 · 12 notes", "August · 5 notes"),
+     bấm mới mở ra.
 
-  /* Bọc phân trang quanh DÒNG THỜI GIAN thôi, khu ghim đứng ngoài: nó phải
-     ở đầu mọi trang, không bị chia sang trang 1 rồi biến mất ở trang 2.
-     Chọn `.gc-mot:not(.gc-khac-loai)` chứ không phải `.gc-mot` trơn: lọc theo
-     loại giấu mục bằng class ấy, và bộ chia trang phải đếm trên danh sách CÒN
-     LẠI sau khi lọc — không thì lọc còn hai ghi chú mà bộ số vẫn ghi ba trang. */
+     Mặc định (luật ở `gcMoMacDinh`, ghi-chu.js chạy lại đúng luật ấy sau khi
+     chèn ghi chú từ D1): mở năm mới nhất, và trong đó mở tháng mới nhất —
+     tháng ấy chưa tới GC_MO_TOI_THIEU ghi chú thì mở thêm tháng kế, để vào
+     trang không gặp một tháng lèo tèo một dòng rồi cả dãy tiêu đề gập.
+
+     `<details>` chứ không phải nút tự chế: không JavaScript vẫn gập/mở được,
+     trình đọc màn hình tự báo "đã mở / đã gập", phím Enter tự chạy.
+
+     Không còn bộ chia trang ở đây — gập theo tháng đã làm đúng việc ấy, và
+     hai cơ chế giấu chồng lên nhau thì trang 2 có thể mở ra toàn tháng gập. */
+  const nam = [];
+  for (const x of dong) {
+    const y = x.ngay.slice(0, 4), k = x.ngay.slice(0, 7);
+    if (!nam.length || nam[nam.length - 1].y !== y) nam.push({ y, thang: [] });
+    const t = nam[nam.length - 1].thang;
+    if (!t.length || t[t.length - 1].k !== k) t.push({ k, ds: [] });
+    t[t.length - 1].ds.push(x);
+  }
+  const mo = gcMoMacDinh(nam.map((n) => ({ y: n.y, thang: n.thang.map((t) => ({ k: t.k, so: t.ds.length })) })));
+  const dongHTML = `<div class="gc-dong">${nam.map((n) => {
+    const so = n.thang.reduce((c, t) => c + t.ds.length, 0);
+    return `
+    <details class="gc-nam-khoi" data-nam="${n.y}"${mo.has(n.y) ? ' open data-mo' : ''}>
+      <summary class="gc-nam-de"><span class="gc-nam-so">${n.y}</span><span class="gc-dem">${gcDemGhiChu(so)}</span></summary>${n.thang.map((t) => `
+      <details class="gc-thang" data-thang="${t.k}"${mo.has(t.k) ? ' open data-mo' : ''}>
+        <summary class="gc-thang-de"><span class="gc-thang-ten">${GC_THANG_DU[Number(t.k.slice(5)) - 1]}</span><span class="gc-dem">${gcDemGhiChu(t.ds.length)}</span></summary>
+        <ol class="gc-ds">${t.ds.map(gcMotHTML).join('')}</ol>
+      </details>`).join('')}
+    </details>`;
+  }).join('')}</div>`;
+
   const than = ds.length
-    ? `${locHTML}${ghimHTML}${dong.length ? bocPhanTrang(dongHTML, '.gc-mot:not(.gc-khac-loai)', dong.length) : dongHTML}`
+    ? `${locHTML}${ghimHTML}${dongHTML}`
     : `${locHTML}${ghimHTML}<p class="trong ds-trong">${NHAN.noNotes}</p>`;
 
   return trangDanhSach({
