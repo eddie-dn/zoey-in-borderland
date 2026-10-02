@@ -170,8 +170,19 @@ if (chiThu) {
 
 /* BƯỚC 3 — ghi file trước. */
 if (moi.length) {
-  const khoi = moi.map((g) =>
-    `## ${g.ngay}${g.loai ? ' · ' + g.loai : ''}\n\n${String(g.chu).trim()}`);
+  /* Phần kèm (nguồn · trích · mood · ghim) đi thành mấy dòng `@` ngay dưới
+     tiêu đề khối — khuôn ấy khai ở `docKemGhiChu` trong tools/build.mjs.
+     Thiếu bước này thì kéo về là mất sạch nguồn và câu trích. */
+  const kem = (g) => [
+    g.nguon ? `@nguon ${g.kieuNguon || ''} | ${g.nguon} | ${g.tacGia || ''}${g.link ? ' | ' + g.link : ''}` : '',
+    Number(g.trich) ? '@trich' : '',
+    g.mood ? `@mood ${g.mood}` : '',
+    Number(g.ghim) ? '@ghim' : ''
+  ].filter(Boolean).join('\n');
+  const khoi = moi.map((g) => {
+    const k = kem(g);
+    return `## ${g.ngay}${g.loai ? ' · ' + g.loai : ''}\n\n${k ? k + '\n\n' : ''}${String(g.chu).trim()}`;
+  });
   fs.writeFileSync(FILE, chen(md, khoi), 'utf8');
 }
 

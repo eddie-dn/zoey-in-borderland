@@ -1069,24 +1069,69 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
 .gc-ds{list-style:none;margin:0;padding:0}
 /* Bộ lọc theo loại giấu mục bằng class này, còn bộ chia trang giấu bằng
    thuộc tính `hidden` — hai cách khác nhau cho hai việc khác nhau, để chúng
-   không giành nhau một chỗ. */
-.gc-mot.gc-khac-loai{display:none}
+   không giành nhau một chỗ. `.gc-trong-loc` là khối tháng (hay khu ghim)
+   không còn ghi chú nào sau khi lọc. */
+.gc-mot.gc-khac-loai,.gc-trong-loc{display:none}
+
+/* ══ DÒNG THỜI GIAN ══
+   Hướng "nhật ký": ghi chú nối nhau trên MỘT TRỤC DỌC, chia theo tháng. Cột
+   trái là ngày — số to, thứ nhỏ bên dưới, mood dưới cùng — để đọc dọc xuống
+   là thấy nhịp ghi mà không phải đọc chữ nào. Cột phải là trục và chữ.
+
+   Không khung thẻ: ghi chú là chữ ngắn, đóng khung từng cái thì trang thành
+   một chồng hộp, và cái hộp nặng hơn ba dòng chữ trong nó. */
+.gc-thang + .gc-thang{margin-top:var(--s8)}
+.gc-thang-de{
+  display:flex;align-items:center;gap:var(--s4);
+  margin:0 0 var(--s5);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+}
+.gc-thang-de::after{content:"";flex:1;height:1px;background:var(--line)}
+
 .gc-mot{
   display:grid;
-  grid-template-columns:8.5rem minmax(0,1fr);
+  grid-template-columns:3.6rem minmax(0,1fr);
   gap:var(--s5);
-  padding:var(--s6) 0;
-  border-top:1px solid var(--line);
 }
-.gc-mot:first-child{border-top:none;padding-top:0}
-.gc-dau{display:flex;flex-direction:column;gap:4px}
-.gc-dau time{
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:.08em;color:var(--text-faint);
-  font-variant-numeric:tabular-nums;
+.gc-dau{display:flex;flex-direction:column;align-items:flex-end;gap:2px;padding-top:2px}
+/* Cột ngày cũng có lề dưới bằng cột chữ: ghi chú một dòng mà có mood thì cột
+   ngày CAO hơn cột chữ, và thiếu lề này thì mood của ghi chú trên dính sát
+   số ngày của ghi chú dưới. */
+.gc-dong .gc-dau{padding-bottom:var(--s5)}
+.gc-dau time{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.gc-ngay{
+  font-family:var(--font-display);font-size:var(--fs-h3);font-weight:500;
+  color:var(--text);font-variant-numeric:lining-nums tabular-nums;
+}
+.gc-thu{
+  margin-top:3px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+/* Tháng năm chỉ cần ở khu ghim — trong dòng thời gian đã có đầu đề tháng. */
+.gc-nam{display:none}
+.gc-mood{margin-top:var(--s2);font-size:1.05rem;line-height:1}
+
+/* ── TRỤC ──
+   Đường kẻ là viền trái của cột chữ, kéo dài suốt chiều cao ghi chú cộng
+   khoảng cách tới ghi chú sau (lề dưới nằm TRONG cột, không nằm giữa hai
+   `li`), nên các đoạn trục nối liền thành một đường. Ghi chú cuối của mỗi
+   tháng cắt đuôi trục để tháng sau bắt đầu một đường mới dưới đầu đề. */
+.gc-than{
+  position:relative;
+  padding:0 0 var(--s6) var(--s5);
+  border-left:1px solid var(--line);
+}
+.gc-mot:last-child > .gc-than{padding-bottom:var(--s2)}
+.gc-than::before{
+  content:"";position:absolute;left:-4px;top:.5em;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 0 3px var(--bg);
 }
 .gc-loai{
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  display:block;margin-bottom:6px;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
   letter-spacing:var(--ls-label);text-transform:uppercase;
   color:var(--accent-ink);
 }
@@ -1096,9 +1141,72 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
 .gc-chu.prose > * + *{margin-top:calc(var(--flow) * .9)}
 .gc-chu.prose p{text-align:left}
 
+/* ── CÂU TRÍCH ──
+   Chữ trình bày (Cormorant) nghiêng, to một bậc, dấu mở ngoặc lớn treo ra lề
+   trái — đọc ra ngay là "câu của người khác", không cần nhãn. Không viền,
+   không nền: một câu trích nằm giữa mấy ghi chú thường đã đủ khác. */
+.gc-trich{
+  position:relative;margin:0;padding:0;border:0;background:none;
+  font-family:var(--font-display);font-style:italic;font-weight:500;
+  font-size:var(--fs-md);line-height:1.45;color:var(--text);
+}
+.gc-trich::before{
+  content:"\201C";position:absolute;left:-.05em;top:-.32em;
+  font-size:2.6em;line-height:1;color:var(--accent);opacity:.35;
+  pointer-events:none;
+}
+.gc-trich p{margin:0;text-indent:.9em}
+.gc-trich p + p{margin-top:.6em;text-indent:0}
+
+/* ── DÒNG NGUỒN ──
+   "READING  Siddhartha · Hermann Hesse". Nhãn kiểu nguồn mượn lối chữ nhãn
+   (Oswald hoa giãn), tên tác phẩm nghiêng như mọi tên sách — nên mắt tách
+   được ba phần mà không cần dấu hai chấm hay ngoặc. */
+.gc-nguon{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:0 .4em;
+  margin:var(--s3) 0 0;font-size:var(--fs-xs);color:var(--text-muted);
+}
+.gc-nguon-kieu{
+  margin-right:.3em;
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+.gc-nguon-gach{color:var(--text-faint)}
+.gc-nguon cite{font-style:italic;color:var(--text)}
+.gc-nguon a{color:inherit;text-decoration:none;
+  border-bottom:1px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+.gc-nguon a:hover cite{color:var(--accent-ink)}
+
+/* ══ KHU GHIM ══
+   Tối đa hai ghi chú, trên đầu trang, trên một tấm nền chìm — tách khỏi dòng
+   thời gian để không ai tưởng chúng là ghi chú mới nhất. Không có trục ở
+   đây: hai ghi chú không làm thành một dòng thời gian. Ngày hiện đủ tháng
+   năm, vì khu này không nằm dưới đầu đề tháng nào. */
+.gc-ghim{
+  margin-bottom:var(--s8);padding:var(--s5) var(--s5) var(--s4);
+  border-radius:var(--r-md);background:var(--surface-sunken);
+  box-shadow:inset 0 0 0 1px var(--line);
+}
+.gc-ghim-de{
+  display:flex;align-items:center;gap:6px;margin:0 0 var(--s4);
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--accent-ink);
+}
+.gc-ghim-de svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.gc-ghim .gc-mot + .gc-mot{margin-top:var(--s5);padding-top:var(--s5);border-top:1px solid var(--line)}
+.gc-ghim .gc-than{border-left:0;padding:0}
+.gc-ghim .gc-than::before{display:none}
+.gc-ghim .gc-nam{display:block;margin-top:3px;white-space:nowrap;
+  font-family:var(--font-label);font-size:var(--fs-3xs);letter-spacing:.08em;color:var(--text-faint)}
+
 @media (max-width:640px){
-  .gc-mot{grid-template-columns:1fr;gap:var(--s3);padding:var(--s5) 0}
-  .gc-dau{flex-direction:row;align-items:baseline;gap:var(--s3)}
+  .gc-mot{grid-template-columns:2.6rem minmax(0,1fr);gap:var(--s3)}
+  .gc-than{padding-left:var(--s4)}
+  .gc-ngay{font-size:var(--fs-h4)}
+  .gc-ghim{padding:var(--s4)}
+  /* Khu ghim có thêm dòng tháng năm ("Aug 2026") — cột 2,6rem không đủ. */
+  .gc-ghim .gc-mot{grid-template-columns:3.4rem minmax(0,1fr)}
 }
 
 /* ── Ô VIẾT GHI CHÚ (/z-admin/) ──

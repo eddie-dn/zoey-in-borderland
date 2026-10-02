@@ -14,6 +14,16 @@
   │  được — trang tự gom thành bộ lọc. Bốn loại đang dùng: sách · nhạc ·   │
   │  ý · người. Bỏ trống loại cũng chạy.                                   │
   │                                                                        │
+  │  Kèm thêm (đều không bắt buộc) — vài dòng `@` ngay dưới tiêu đề khối: │
+  │                                                                        │
+  │      @nguon doc | Siddhartha | Hermann Hesse | https://…               │
+  │      @trich                  (hiện thành một câu trích lớn)            │
+  │      @mood 😌                                                          │
+  │      @ghim                   (ghim lên đầu trang; tối đa 2)            │
+  │                                                                        │
+  │  Sau @nguon: doc · nghe · xem (đang đọc / nghe / xem), rồi tên, người  │
+  │  viết, link — cách nhau bằng dấu |.                                    │
+  │                                                                        │
   │  Khối mới bỏ lên TRÊN CÙNG hay dưới cùng đều được — trang tự xếp theo  │
   │  ngày, mới nhất trước.                                                 │
   │                                                                        │

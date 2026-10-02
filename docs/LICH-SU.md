@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.9 | 2026-10-02 | 09 | Trang Notes thành dòng thời gian: nguồn, câu trích, mood, ghim |
 | V3.1.8 | 2026-10-02 | 08 | Ngăn Note chia hai tab Write note · List notes |
 | V3.1.7 | 2026-10-02 | 07 | Thùng rác cho bình luận và ghi chú; ghi chú D1 hiện lại ở /notes/ |
 | V3.1.6 | 2026-10-02 | 06 | trang quản trị: xem trước riêng tư cho bài ẩn và bài nháp |
@@ -268,6 +269,16 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.9 — 02-Oct-2026
+
+- **Trang /notes/ thành một dòng thời gian chia theo tháng.** Ngày số to ở
+  lề trái, một trục dọc nối các ghi chú, mood nằm dưới ngày.
+- **Ghi chú kèm được nguồn, câu trích và mood.** Nguồn là đang đọc/nghe/xem
+  gì, kèm tên, tác giả và link. Tick "Show as a quote" thì ghi chú hiện thành
+  câu trích chữ nghiêng lớn.
+- **Ghim tối đa 2 ghi chú lên đầu trang**, bằng ô "Pin to top" lúc đăng hoặc
+  nút Pin ở danh sách. Hết chỗ thì trang nói rõ phải bỏ ghim cái nào trước.
 
 ## V3.1.8 — 02-Oct-2026
 
