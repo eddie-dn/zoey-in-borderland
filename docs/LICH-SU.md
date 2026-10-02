@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.6 | 2026-10-02 | 06 | trang quản trị: xem trước riêng tư cho bài ẩn và bài nháp |
 | V3.1.5 | 2026-09-27 | 05 | ô soạn thảo: nền đục ở theme tối · ảnh giữ đúng khổ · khối video xem được · tải video · khung Wide rõ nghĩa |
 | V3.1.4 | 2026-09-27 | 04 | ô soạn thảo: menu kiểu chữ chia nhóm · bảng Media có hình minh hoạ · ảnh luôn đứng riêng dòng · cột đầu in đậm |
 | V3.1.3 | 2026-09-25 | 03 | ô soạn thảo: danh sách kiểu chữ đầy đủ · chữ lớn · bảng thả xuống theo thanh dính · menu bảng · kẻ ngăn cột |
@@ -265,6 +266,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.6 — 02-Oct-2026
+
+- **Xem trước bài ẩn và bài nháp mà không đăng.** Mỗi dòng trong danh sách
+  bài ở /z-admin/ có thêm nút Preview: mở một tab với link riêng, bài hiện
+  như đã đăng (đúng bộ dựng của trang). Trang xem trước nằm sau lớp khoá của
+  trang quản trị — ai không có khoá mở link cũng chỉ thấy ô đăng nhập — nên
+  bài ẩn vẫn không có mặt ở bất cứ đâu trên trang công khai.
 
 ## V3.1.5 — 27-Sep-2026
 
