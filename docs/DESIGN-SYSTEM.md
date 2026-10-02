@@ -1743,6 +1743,16 @@ chân trang của chúng không thể trôi xa nhau:
 | `/tags/` | một **tag** | `.may-tag` | — |
 | `/tags/<t>/` | một **bài** mang tag ấy | `.ds-luoi` | — |
 
+**Ô chuyên mục và thẻ bài cùng một mặt** (V3.2.9): `.muc-khoi` và `.the-bai`
+đều là `--surface` + viền `--line` 1px, bo `--r-md`, không lớp ánh kính. Trang
+`/posts/` và trang một chuyên mục đứng liền nhau trong cùng hàng chip — một
+bên mặt đặc viền sắc, một bên kính mờ viền nhoè là hai trang web. Kính để dành
+cho thanh đầu trang, nút, ô About.
+
+Độ tách thẻ khỏi nền đo trên ảnh chụp (`card/page`) sau lần chỉnh này: sáng
+1,05 (đứng nhờ viền `.26`), Galaxy 1,30, Tĩnh lặng 1,23, 霜降 1,00 (viền). Chữ
+phụ (`--text-faint`) trên mặt thẻ: thấp nhất 5,0:1 (theme sáng).
+
 Khuôn chung:
 
 ```

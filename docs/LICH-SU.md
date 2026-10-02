@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.9 | 2026-10-02 | 09 | Rà màu bốn theme: thẻ bài cùng mặt ô chuyên mục · Galaxy tách khối rõ · viền theme sáng đậm hơn |
 | V3.2.8 | 2026-10-02 | 08 | Căn đều hai lề đoạn About me |
 | V3.2.7 | 2026-10-02 | 07 | Ô Buy me a coffee nối sang trang Mời cà phê của Learning |
 | V3.2.6 | 2026-10-02 | 06 | Khung chung gửi thêm gói CSS danh sách để Learning dựng bằng cụm của blog; ghi §23.6 |
@@ -278,6 +279,15 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.9 — 02-Oct-2026
+
+- **Trang một chuyên mục nay rõ và gọn như trang All posts:** thẻ bài thôi mặc
+  kính mờ, dùng đúng mặt trắng và viền sắc của ô chuyên mục.
+- **Theme tối Galaxy:** thẻ và ô sáng lên một bậc, viền rõ hơn — không còn
+  chìm vào nền tím; chữ phụ vẫn trên 5:1.
+- **Theme sáng mặc định:** viền thẻ đậm hơn, để thẻ trắng không hoà vào nền
+  tím nhạt.
 
 ## V3.2.8 — 02-Oct-2026
 
