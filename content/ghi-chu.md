@@ -17,24 +17,7 @@
   │  Khối mới bỏ lên TRÊN CÙNG hay dưới cùng đều được — trang tự xếp theo  │
   │  ngày, mới nhất trước.                                                 │
   │                                                                        │
-  │  BA KHỐI DƯỚI ĐÂY LÀ VÍ DỤ, viết để trang có cái mà xem. Xoá đi và     │
-  │  thay bằng chữ của mình.                                               │
+  │  Ghi chú đăng từ /z-admin/ (ngăn Note) lên thẳng /notes/ qua D1, chưa  │
+  │  nằm ở file này; `npm run gc` kéo chúng về đây thành khối thường.      │
   └────────────────────────────────────────────────────────────────────────┘
 -->
-
-## 2026-09-15 · sách
-
-*Siddhartha* — Hermann Hesse viết cả quyển về một người đi tìm, rồi kết bằng
-chuyện ông ta ngồi xuống bên một dòng sông và nghe. Cái kết ấy hơi bất công với
-người đọc: nó nói rằng đường đi thì dài mà câu trả lời thì ở ngay chỗ đứng yên.
-
-## 2026-09-12 · nhạc
-
-Nhạc không lời buổi sáng. Có lời thì mình nghe lời, mà nghe lời thì không viết
-được — chữ của người khác chiếm mất chỗ.
-
-## 2026-09-08 · ý
-
-Nếu ký ức được dựng lại mỗi lần nhớ chứ không phải lấy ra từ một cái kho, thì
-một chuyện nhớ nhiều lần là chuyện đã bị viết lại nhiều lần nhất. Thứ mình chắc
-nhất có khi lại là thứ xa bản gốc nhất.
