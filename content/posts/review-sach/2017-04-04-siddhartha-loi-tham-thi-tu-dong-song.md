@@ -11,6 +11,7 @@ tags:
   - published
 cover: /media/2017/siddhartha-loi-tham-thi-tu-dong-song/bia.png
 coverAlt: "Siddhartha: Lời thầm thì từ dòng sông"
+hidden: true
 ---
 
 **Book:** Siddhartha · **Author:** Hermann Hesse · **Reviewer:** Chiêu Dương
