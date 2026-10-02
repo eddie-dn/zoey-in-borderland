@@ -8,6 +8,7 @@ tags:
   - published
 cover: /media/2017/muon-yeu-cung-can-sach/bia.png
 coverAlt: "Muốn yêu cũng cần ăn sạch :v"
+hidden: true
 ---
 
 Một trong số các video quảng cáo "có tâm" hướng người tiêu dùng trở nên thông
