@@ -3294,8 +3294,9 @@ của nhau — chép là sớm muộn lệch.
 | Đầu trang `.site-head` (tên blog, điều hướng, tìm kiếm, menu ☰) | **blog** | dựng từ `src/templates/shell.html` |
 | Chân trang `.site-foot` (ký tên, RSS · Notes · Archive · Tags, tem) | **blog** | cùng file |
 | Phông, token, nền, kính, `layout.css`, `components.css` | **blog** | gói CSS `nen` |
+| Cụm trang danh sách: `.ds-trang` `.ds-dau` `.ds-dan` `.ds-luoi` `.the-bai` `.chip` | **blog** | gói CSS `ds` |
 | Hành vi khung: menu ☰, logo, sổ phiên bản | **blog** | gói JS `khung.js` = `menu.js` + `logo-nhip.js` + `so-tay.js` |
-| Phần giữa trang (`main`) | **mỗi kho tự lo** | khu học tập: `main.zl`, theme 霜降 |
+| Phần giữa trang (`main`) | **mỗi kho tự lo nội dung** | khu học tập: `main.zl`, theme 霜降 — nhưng dựng bằng cụm của blog (§23.6), không tự vẽ |
 | Số phiên bản, ngày, nội dung sổ | **mỗi kho tự lo** | hai kho hai cuốn `docs/LICH-SU.md` |
 
 ### 23.2 · Blog phát, khu học tập nạp
@@ -3306,7 +3307,7 @@ Mỗi lần dựng, `khungChung()` trong `tools/build.mjs` ghi
 ```
 phienBan  số phiên bản của blog lúc dựng (để dò lỗi, khu kia không in)
 goc       https://z-in-borderland.com
-css       [ …/assets/nen.<mã băm>.css ]
+css       [ …/assets/nen.<mã băm>.css, …/assets/ds.<mã băm>.css ]
 js        [ …/assets/khung.<mã băm>.js ]
 tem       mẫu tem "Last updated {{ngay}} · {{ban}}" — kho kia điền số của nó
 dau       HTML <header class="site-head">…</header>
@@ -3325,10 +3326,12 @@ trả tiền không trắng vì blog đang dựng lại. Chi tiết phía bên k
 
 ### 23.3 · Hai thứ phải đi kèm ở kho này
 
-- **CORS cho phông** (`public/_headers`, luật `/assets/fonts/*`): `@font-face`
-  trong gói `nen` trỏ về tên miền blog, và trình duyệt chỉ dùng phông khác tên
-  miền khi có `Access-Control-Allow-Origin`. Thiếu là khu học tập lặng lẽ rơi
-  về phông hệ thống.
+- **CORS cho phông** (`public/_headers`, luật `/assets/fonts/*`): lớp dự
+  phòng. Bình thường khu học tập không nạp phông khác tên miền nữa — Worker
+  bên ấy xin CSS, JS, phông của blog qua binding rồi trả trên chính tên miền
+  learning (DESIGN-SYSTEM §7.2 bước 5 của kho z-learning), vì phông lỡ nhớ
+  từ lúc chưa có header CORS thì trình duyệt cứ thế chặn. CORS chỉ còn cần
+  cho khung dự phòng (`shell-upgrade.js`).
 - **Cache ngắn cho `/khung/*`** (5 phút): file đổi mỗi lần dựng, không được
   ăn luật một năm của `/assets/`.
 
@@ -3351,7 +3354,30 @@ không có gì phải làm thêm — chỉ đừng viết luật khung nào ch�
 Hai kho **đếm số riêng**: hai Worker lên xuống độc lập, một số chung thì bản vá
 của bên này làm nhảy số bên kia.
 
-### 23.6 · Đổi khung thì sao
+
+### 23.6 · Phần giữa trang của khu học tập dùng chung cụm với blog
+
+Chung khung mà phần giữa tự vẽ thì người đọc vẫn thấy hai trang web: tiêu đề
+một kiểu, thẻ một kiểu, nút một kiểu. Nên khu học tập **không có cụm giao diện
+riêng** cho những thứ blog đã có:
+
+| Việc | Cụm của blog | Gói |
+|---|---|---|
+| Khung trang danh sách | `.container.ds-trang` ngay dưới `main` | `ds` |
+| Đầu màn: vạch kim cương · tiêu đề · dòng dẫn | `.ds-dau` > `.eyebrow` + `h1` + `.ds-dan` | `ds` · `nen` |
+| Lưới thẻ, thẻ | `.ds-luoi` > `.card.the-bai` (h2 + `a.stretch`, `.the-tom`) | `ds` · `nen` |
+| Nhãn nhỏ | `.label` / `.label--muted` | `nen` |
+| Nút | `.btn` (một nút chính mỗi màn) · `.btn--ghost` · `.btn--nho` | `nen` |
+| Trạng thái | `.badge.badge--warn/ok/bad` | `nen` |
+| Hàng meta (số trang · giá) | `.meta-row` | `nen` |
+| Danh sách rỗng | `.trong.ds-trong` | `nen` · `ds` |
+
+Cụm nào blog chưa có (ô nhập email, hàng thông tin chuyển khoản) thì khu học
+tập mới viết, bằng token của blog và tiền tố `zl-`. Đổi một cụm ở đây là đổi
+luôn bên khu học tập ở lượt dựng kế — nên đổi tên hay bỏ một cụm trong bảng
+trên thì báo kho z-learning.
+
+### 23.7 · Đổi khung thì sao
 
 Sửa ở kho này, như mọi chỗ khác của đầu/chân trang. `npm run kiem` canh
 `khung.json` (đủ khoá, không còn link tương đối, không còn nút theme, CSS/JS
