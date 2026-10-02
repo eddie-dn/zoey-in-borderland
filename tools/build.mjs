@@ -3404,7 +3404,9 @@ function chep(tu, den) {
      · tem phiên bản để trống `{{tem}}` — mỗi kho một cuốn sổ, khu học tập in
        số và ngày của chính nó, cùng một khuôn chữ.
 
-   Kèm đường dẫn gói CSS nền (`nen`) và gói JS khung (menu ☰ · logo · sổ phiên
+   Kèm đường dẫn gói CSS nền (`nen`), gói trang danh sách (`ds` — đầu trang
+   `.ds-dau`, lưới `.ds-luoi`, thẻ `.the-bai`, chip: khu học tập dựng màn của
+   nó bằng đúng mấy cụm này, không tự vẽ lại) và gói JS khung (menu ☰ · logo · sổ phiên
    bản). Bước vân tay chạy SAU và tự thay tên có mã băm vào file này, nên khu
    học tập luôn trỏ đúng bản đang chạy. */
 function khungChung() {
@@ -3430,7 +3432,7 @@ function khungChung() {
   ghi(path.join(THU_MUC.dist, 'khung', 'khung.json'), JSON.stringify({
     phienBan: BAN.ten,
     goc,
-    css: [`${goc}/assets/nen.css`],
+    css: [`${goc}/assets/nen.css`, `${goc}/assets/ds.css`],
     js: [`${goc}/assets/khung.js`],
     /* Mẫu tem cho kho kia điền: cùng một khuôn chữ với tem của blog. */
     tem: '<span class="stamp-ban" data-so-tay tabindex="0" role="button" ' +

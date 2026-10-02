@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.6 | 2026-10-02 | 06 | Khung chung gửi thêm gói CSS danh sách để Learning dựng bằng cụm của blog; ghi §23.6 |
 | V3.2.5 | 2026-10-02 | 05 | Rà tài liệu · phép kiểm tài liệu lệch mã |
 | V3.2.4 | 2026-10-02 | 04 | Khung chung cho khu học tập |
 | V3.2.3 | 2026-10-02 | 03 | Bật tab Learning |
@@ -275,6 +276,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.6 — 02-Oct-2026
+
+- **Trang Learning dùng chung design system với blog**, không chỉ đầu và
+  chân trang: tiêu đề, thẻ, nhãn, nút đều là cụm của blog. Khung chung nay
+  gửi kèm gói CSS của trang danh sách để bên ấy dùng.
+- Design system ghi bảng cụm dùng chung ở §23.6 — đổi tên cụm nào trong bảng
+  thì báo kho z-learning.
 
 ## V3.2.5 — 02-Oct-2026
 
