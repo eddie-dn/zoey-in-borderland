@@ -94,7 +94,11 @@
    Làn chữ 64ch đặt ở ô bọc: ô giới thiệu rộng ~700px ở khổ 1440, để chữ chạy
    hết bề ngang thì mỗi dòng gần 90 ký tự — mắt trượt dòng khi nhảy xuống. */
 .bo-doan{display:flow-root;max-width:64ch}
-.bo-doan .bo-lead{margin:0;max-width:none;text-indent:2em}
+/* Căn đều hai lề, như trang sách — đúng với kiểu thụt đầu dòng ở trên.
+   Tiếng Việt toàn chữ một âm tiết, ngắn và đều, nên khoảng giãn giữa các chữ
+   rải mỏng, không thành "sông trắng" như căn đều tiếng Anh ở cột hẹp. Dòng
+   cuối mỗi đoạn vẫn dạt trái (mặc định của justify). */
+.bo-doan .bo-lead{margin:0;max-width:none;text-indent:2em;text-align:justify;text-justify:inter-word}
 /* ── MỘT NHỊP THỞ NHẸ GIỮA CÁC ĐOẠN ──
    Bản trước để các đoạn dính liền nhau như trang sách in. Với dăm đoạn dài
    trong một ô hẹp, khối chữ đọc ra sát quá — chủ trang nói thẳng "cho đỡ bị
