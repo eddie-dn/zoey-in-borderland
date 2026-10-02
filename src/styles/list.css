@@ -1080,14 +1080,49 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
 
    Không khung thẻ: ghi chú là chữ ngắn, đóng khung từng cái thì trang thành
    một chồng hộp, và cái hộp nặng hơn ba dòng chữ trong nó. */
-.gc-thang + .gc-thang{margin-top:var(--s8)}
-.gc-thang-de{
-  display:flex;align-items:center;gap:var(--s4);
-  margin:0 0 var(--s5);
-  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
-  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-faint);
+/* ── NĂM VÀ THÁNG LÀ HAI TẦNG GẬP ──
+   Tiêu đề NĂM to (số Cormorant), tiêu đề THÁNG nhỏ (nhãn Oswald hoa giãn):
+   nhìn lướt là biết mình đang ở tầng nào. Cả hai cùng một lối: chữ · số ghi
+   chú · đường kẻ kéo hết hàng · mũi tên. Mũi tên quay xuống khi mở. */
+.gc-nam-khoi + .gc-nam-khoi{margin-top:var(--s6)}
+.gc-nam-de,.gc-thang-de{
+  display:flex;align-items:baseline;gap:var(--s3);
+  list-style:none;cursor:pointer;user-select:none;
 }
-.gc-thang-de::after{content:"";flex:1;height:1px;background:var(--line)}
+.gc-nam-de::-webkit-details-marker,.gc-thang-de::-webkit-details-marker{display:none}
+.gc-nam-de::after,.gc-thang-de::after{
+  content:"";flex:none;align-self:center;
+  width:6px;height:6px;margin-left:var(--s2);
+  border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+  color:var(--text-faint);
+  transform:rotate(-45deg);transition:transform var(--dur-fast);
+}
+details[open] > .gc-nam-de::after,details[open] > .gc-thang-de::after{transform:rotate(45deg)}
+.gc-nam-de > .gc-dem,.gc-thang-de > .gc-dem{
+  flex:1;display:flex;align-items:center;gap:var(--s3);
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+/* Đường kẻ nằm giữa con số và mũi tên, kéo hết phần còn lại của hàng. */
+.gc-nam-de > .gc-dem::after,.gc-thang-de > .gc-dem::after{content:"";flex:1;height:1px;background:var(--line)}
+.gc-nam-de:hover::after,.gc-thang-de:hover::after,
+.gc-nam-de:hover .gc-dem,.gc-thang-de:hover .gc-dem{color:var(--accent-ink)}
+.gc-nam-de:focus-visible,.gc-thang-de:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+
+.gc-nam-de{padding:var(--s2) 0}
+.gc-nam-so{
+  font-family:var(--font-display);font-size:var(--fs-h3);font-weight:500;line-height:1;
+  color:var(--text);font-variant-numeric:lining-nums;
+}
+.gc-nam-khoi > .gc-thang:first-of-type{margin-top:var(--s3)}
+.gc-thang + .gc-thang{margin-top:var(--s2)}
+.gc-thang-de{
+  padding:var(--s2) 0;
+  font-family:var(--font-label);font-size:var(--fs-2xs);font-weight:600;
+  letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);
+}
+.gc-thang-ten{min-width:6.5rem}
+.gc-thang[open] > .gc-ds{margin:var(--s4) 0 var(--s5)}
 
 .gc-mot{
   display:grid;

@@ -286,6 +286,8 @@ const NHAN = {
   notesHint   : 'Bits picked up along the way — books, music, thoughts not yet essays',
   noNotes     : 'No notes yet.',
   gcPinned    : 'Pinned',
+  gcNote1     : '1 note',
+  gcNoteN     : '{n} notes',
   /* Dòng nguồn dưới một ghi chú: "READING  Siddhartha · Hermann Hesse". */
   gcSrcDoc    : 'Reading',
   gcSrcNghe   : 'Listening',
@@ -1551,6 +1553,7 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                            `moods` là bảng GC_MOOD — ô viết vẽ nút từ đó, còn
                            /notes/ lấy chữ cho `title` của ghi chú chèn từ D1. */
                         moods: GC_MOOD, moodKho: GC_MOOD_KHO, pinned: NHAN.gcPinned,
+                        note1: NHAN.gcNote1, noteN: NHAN.gcNoteN, moToiThieu: GC_MO_TOI_THIEU,
                         moodMore: NHAN.gcMoodMore, moodRecent: NHAN.gcMoodRecent,
                         moodPaste: NHAN.gcMoodPaste, moodClear: NHAN.gcMoodClear,
                         srcDoc: NHAN.gcSrcDoc, srcNghe: NHAN.gcSrcNghe, srcXem: NHAN.gcSrcXem,
@@ -4426,6 +4429,28 @@ function gcMotHTML(x) {
       </li>`;
 }
 
+/* Số ghi chú cạnh tiêu đề năm/tháng: "1 note", "5 notes". */
+function gcDemGhiChu(n) {
+  return (n === 1 ? NHAN.gcNote1 : NHAN.gcNoteN).replace('{n}', n);
+}
+/* ── NĂM/THÁNG NÀO MỞ SẴN ──
+   Nhận danh sách năm (mới nhất trước), mỗi năm một danh sách tháng kèm số
+   ghi chú; trả về tập khoá ('2026', '2026-09'…) được mở. ghi-chu.js có bản
+   sao đúng luật này (`moMacDinh`) — sửa một bên thì sửa cả bên kia. */
+const GC_MO_TOI_THIEU = 5;
+function gcMoMacDinh(nam) {
+  const mo = new Set();
+  if (!nam.length) return mo;
+  mo.add(nam[0].y);
+  let da = 0;
+  for (const t of nam[0].thang) {
+    mo.add(t.k);
+    da += t.so;
+    if (da >= GC_MO_TOI_THIEU) break;
+  }
+  return mo;
+}
+
 function trangGhiChu() {
   const ds = docGhiChu();
   const loai = [...new Set(ds.map((x) => x.loai).filter(Boolean))];
@@ -4453,29 +4478,45 @@ function trangGhiChu() {
       <ol class="gc-ds">${ghim.map(gcMotHTML).join('')}</ol>
     </section>`;
 
-  /* ── DÒNG THỜI GIAN, CHIA THEO THÁNG ──
-     Mỗi tháng một khối `data-nhom`: bộ chia trang (trang-so.js) tự giấu khối
-     tháng nào không còn ghi chú nào hiện ở trang đang xem, nên trang 2 không
-     mở ra bằng một cái đầu đề "September" trống trơn. */
-  const thang = [];
-  for (const x of dong) {
-    const k = x.ngay.slice(0, 7);
-    if (!thang.length || thang[thang.length - 1].k !== k) thang.push({ k, ds: [] });
-    thang[thang.length - 1].ds.push(x);
-  }
-  const dongHTML = `<div class="gc-dong">${thang.map((t) => `
-    <section class="gc-thang" data-nhom data-thang="${t.k}">
-      <h2 class="gc-thang-de">${GC_THANG_DU[Number(t.k.slice(5)) - 1]} ${t.k.slice(0, 4)}</h2>
-      <ol class="gc-ds">${t.ds.map(gcMotHTML).join('')}</ol>
-    </section>`).join('')}</div>`;
+  /* ── DÒNG THỜI GIAN: NĂM → THÁNG, GẬP ĐƯỢC ──
+     Ghi chú dài ra theo năm tháng, và một cột cuộn mãi không hết thì phần
+     cũ chỉ là thứ phải lướt qua. Nên mỗi năm, mỗi tháng là một `<details>`:
+     dòng tiêu đề kèm số ghi chú ("2026 · 12 notes", "August · 5 notes"),
+     bấm mới mở ra.
 
-  /* Bọc phân trang quanh DÒNG THỜI GIAN thôi, khu ghim đứng ngoài: nó phải
-     ở đầu mọi trang, không bị chia sang trang 1 rồi biến mất ở trang 2.
-     Chọn `.gc-mot:not(.gc-khac-loai)` chứ không phải `.gc-mot` trơn: lọc theo
-     loại giấu mục bằng class ấy, và bộ chia trang phải đếm trên danh sách CÒN
-     LẠI sau khi lọc — không thì lọc còn hai ghi chú mà bộ số vẫn ghi ba trang. */
+     Mặc định (luật ở `gcMoMacDinh`, ghi-chu.js chạy lại đúng luật ấy sau khi
+     chèn ghi chú từ D1): mở năm mới nhất, và trong đó mở tháng mới nhất —
+     tháng ấy chưa tới GC_MO_TOI_THIEU ghi chú thì mở thêm tháng kế, để vào
+     trang không gặp một tháng lèo tèo một dòng rồi cả dãy tiêu đề gập.
+
+     `<details>` chứ không phải nút tự chế: không JavaScript vẫn gập/mở được,
+     trình đọc màn hình tự báo "đã mở / đã gập", phím Enter tự chạy.
+
+     Không còn bộ chia trang ở đây — gập theo tháng đã làm đúng việc ấy, và
+     hai cơ chế giấu chồng lên nhau thì trang 2 có thể mở ra toàn tháng gập. */
+  const nam = [];
+  for (const x of dong) {
+    const y = x.ngay.slice(0, 4), k = x.ngay.slice(0, 7);
+    if (!nam.length || nam[nam.length - 1].y !== y) nam.push({ y, thang: [] });
+    const t = nam[nam.length - 1].thang;
+    if (!t.length || t[t.length - 1].k !== k) t.push({ k, ds: [] });
+    t[t.length - 1].ds.push(x);
+  }
+  const mo = gcMoMacDinh(nam.map((n) => ({ y: n.y, thang: n.thang.map((t) => ({ k: t.k, so: t.ds.length })) })));
+  const dongHTML = `<div class="gc-dong">${nam.map((n) => {
+    const so = n.thang.reduce((c, t) => c + t.ds.length, 0);
+    return `
+    <details class="gc-nam-khoi" data-nam="${n.y}"${mo.has(n.y) ? ' open data-mo' : ''}>
+      <summary class="gc-nam-de"><span class="gc-nam-so">${n.y}</span><span class="gc-dem">${gcDemGhiChu(so)}</span></summary>${n.thang.map((t) => `
+      <details class="gc-thang" data-thang="${t.k}"${mo.has(t.k) ? ' open data-mo' : ''}>
+        <summary class="gc-thang-de"><span class="gc-thang-ten">${GC_THANG_DU[Number(t.k.slice(5)) - 1]}</span><span class="gc-dem">${gcDemGhiChu(t.ds.length)}</span></summary>
+        <ol class="gc-ds">${t.ds.map(gcMotHTML).join('')}</ol>
+      </details>`).join('')}
+    </details>`;
+  }).join('')}</div>`;
+
   const than = ds.length
-    ? `${locHTML}${ghimHTML}${dong.length ? bocPhanTrang(dongHTML, '.gc-mot:not(.gc-khac-loai)', dong.length) : dongHTML}`
+    ? `${locHTML}${ghimHTML}${dongHTML}`
     : `${locHTML}${ghimHTML}<p class="trong ds-trong">${NHAN.noNotes}</p>`;
 
   return trangDanhSach({
