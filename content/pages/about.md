@@ -62,7 +62,8 @@ caPhe: Nếu có bài nào ở đây giúp được bạn một chút, mời mì
 # Phương thức nhận — cùng khuôn  Nhãn · Nội dung  như ô liên hệ. Dòng bắt đầu
 # bằng http thành link; còn lại để nguyên chữ (số tài khoản, mã ví — thứ người
 # ta copy chứ không bấm). Chưa khai dòng nào thì ô hiện chữ mờ "Coming soon".
-caPheCach: []
+caPheCach:
+  - Mời một ly → · https://learning.z-in-borderland.com/coffee/
 ---
 
 <!-- Phần chữ dài dưới lưới đang để TRỐNG — cả khối biến mất khỏi trang, không

@@ -212,11 +212,18 @@ nhat_ky      id · nguoi_dung_id · viec · chi_tiet · ip · tao_luc
   trang, gói CSS nền, gói JS khung — cho khu học tập ghép vào. Chi tiết ở
   `docs/DESIGN-SYSTEM.md` §23.
 
-**Đã làm (kho `z-learning`, tới V0.1.2):** khung Worker, D1 + R2, `/api/health`,
-trang danh mục `/` dựng từ D1, trang 404, khung chung với blog (khung dự phòng
-khi blog lỗi), tem phiên bản và sổ phiên bản cùng khuôn blog.
+**Đã làm (kho `z-learning`, tới V0.2.0):** khung Worker, D1 + R2, `/api/health`,
+khung chung với blog và cùng design system (phần giữa trang dựng bằng cụm của
+blog), tem + sổ phiên bản; **luồng mua trọn vẹn** — trang giới thiệu tài liệu,
+gõ email lúc tạo đơn (không đăng nhập trước), VietQR, webhook SePay, thư báo
+qua Resend, tủ sách, trang đọc có watermark; **Mời cà phê** `/coffee/` (không
+tài khoản, tường cảm ơn có duyệt); bàn đối soát `/z-admin/`.
 
-**Chưa làm (kho `z-learning`):** trang chi tiết `/materials/<slug>/`, magic
-link, tạo đơn + VietQR, webhook SePay, tủ sách, trình đọc có watermark. Chưa
-bật `published` cho tài liệu nào trước khi có trang chi tiết — nút "Xem thử &
-mua" sẽ trỏ vào trang 404.
+**Ô "Buy me a coffee"** trên `/about/` của blog trỏ sang
+`learning.z-in-borderland.com/coffee/` (dòng `caPheCach` trong
+`content/pages/about.md`).
+
+**Chưa làm (kho `z-learning`):** tải về có watermark riêng từng bản, Q&A,
+trang tài khoản (đơn · thiết bị · đổi email), giới hạn thiết bị và khoá tạm
+khi nghi chia sẻ tài khoản, màn soạn tài liệu trong `/z-admin/` (nay thêm bằng
+lệnh — `docs/CAI-DAT.md` bước 8b bên kho ấy).

@@ -3119,7 +3119,9 @@ function khungBento(t, soBai, soTag) {
     hang.push(`<div class="bo bo--nay card">
       <p class="label label--muted">${NHAN.lately}</p>
       <ul class="bo-ds">${t.dangLam.map((d) =>
-        `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>${escapeHtml(d.chu)}</span></li>`
+        /^https?:/.test(d.chu)
+          ? `<li><a href="${attr(d.chu)}" rel="noopener">${escapeHtml(d.nhan || d.chu)}</a></li>`
+          : `<li>${d.nhan ? `<b>${escapeHtml(d.nhan)}</b>` : ''}<span>${escapeHtml(d.chu)}</span></li>`
       ).join('')}</ul>
       ${t.nghe ? `<p class="bo-nghe">${escapeHtml(t.nghe)}</p>` : ''}
     </div>`);
