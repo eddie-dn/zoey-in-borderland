@@ -167,9 +167,15 @@ mới (`docs/QUOTE.md`).
 
 **Khung bình luận chạy trên Cloudflare D1**, cùng nhà với trang — người đọc
 không phải đợi một dịch vụ bên thứ ba nào. Không bình luận nào tự lên trang:
-mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web — mở `/z-admin/`
-là có cả ô viết ghi chú lẫn hàng chờ duyệt. Làm được từ điện thoại, không cần
-mở máy, không cần dựng lại trang.
+mọi dòng chờ duyệt, và bạn duyệt ngay trên chính trang web — ngăn Comment ở
+`/z-admin/`: duyệt từng dòng hay cả loạt, Delete thì vào **thùng rác 30 ngày**
+(Restore để cứu). Làm được từ điện thoại, không cần mở máy, không cần dựng lại
+trang.
+
+**Ghi chú ngắn ở `/notes/`** là một dòng thời gian gom năm → tháng, gập được,
+có khu ghim tối đa hai ghi chú. Viết ở ngăn Note của `/z-admin/` (tab Write ·
+List): kèm mood, nguồn đang đọc/nghe/xem, kiểu câu trích; sửa tối đa ba lần,
+ẩn, xoá vào thùng rác (`docs/CAI-DAT.md` §6).
 
 **Tim · bình luận · chia sẻ nằm chung MỘT hàng với ngày đăng**, ở mọi kiểu
 bài, và mỗi con số in ngay trên cái nút sinh ra nó. Bấm nút bình luận thì ở khổ
@@ -200,10 +206,19 @@ phép kiểm canh vòng đổi-đi-đổi-lại đứng yên từ lượt lưu t
 **Số phiên bản có đúng một nguồn.** `docs/LICH-SU.md` là sổ; build đọc dòng đầu
 bảng rồi in ra tem chân trang, và báo nổi bật mỗi khi lên bản mới.
 
-**Bộ kiểm định 67 phép, thêm dần được.** `npm run kiem` soi HTML đã dựng xong —
-link gãy, ảnh mồ côi, tag viết lệch, bản nháp lọt vào bản dựng, thẻ meta thiếu,
-file CSS/JS quên đăng ký, hàm dùng thứ Cloudflare Workers không có. Mỗi phép
-kiểm đều phải cắm lỗi vào thử xem nó có bắt thật không trước khi tính là xong.
+**Bộ kiểm định, thêm dần được** (số phép in ở cuối mỗi lượt chạy — không ghi
+ở đây để khỏi cũ). `npm run kiem` soi HTML đã dựng xong — link gãy, ảnh mồ côi,
+tag viết lệch, bản nháp lọt vào bản dựng, thẻ meta thiếu, file CSS/JS quên đăng
+ký, hàm dùng thứ Cloudflare Workers không có. Mỗi phép kiểm đều phải cắm lỗi vào
+thử xem nó có bắt thật không trước khi tính là xong.
+
+**Tài liệu tự rà mỗi lần dựng.** Cùng lượt `npm run kiem` canh tài liệu lệch mã:
+đường dẫn file nêu trong tài liệu phải có thật, tham chiếu `§N` phải trỏ vào một
+mục có thật, lệnh `npm run …` phải có trong `package.json`, README phải kể đủ
+file trong `src/js/` và `functions/api/`. Kho `z-learning` chạy đúng bộ ấy trong
+lượt QA của nó. Còn những câu tả HÀNH VI (nút này làm gì, trang kia trông ra sao)
+thì máy không đọc hiểu được — sửa tính năng nào thì sửa luôn đoạn tài liệu của
+nó trong cùng lượt.
 
 ---
 
@@ -213,8 +228,11 @@ Bản hiện tại: xem tem `Vxx.yy` ở chân mọi trang, hoặc dòng đầu 
 `docs/LICH-SU.md` — đó là nguồn duy nhất, mục này không nhắc lại số.
 
 **Đã dựng xong:** trang chủ hai màn (màn đầu cao trọn màn hình, cuộn xuống ra
-danh sách), `/posts/` với thư mục con theo chuyên mục, `/tags/`, `/archive/`,
-`/search/` tìm ngay trên máy người đọc, `/about/` khung bento.
+danh sách), `/posts/` với thư mục con theo chuyên mục, `/notes/` dòng thời gian
+ghi chú, `/tags/`, `/archive/`, `/search/` tìm ngay trên máy người đọc,
+`/about/` khung bento, `/z-admin/` bốn ngăn Note · Comment · Post · Category.
+Tab **Learning** dẫn sang `learning.z-in-borderland.com` (kho `z-learning`),
+dùng chung đầu/chân trang với blog (`docs/DESIGN-SYSTEM.md` §23).
 
 **Chạy trên máy chủ:** tám hàm Cloudflare — `/api/binh-luan`, `/api/ghi-chu`,
 `/api/xem`, `/api/thich`, `/api/anh`, `/api/bai`, `/api/quote` và

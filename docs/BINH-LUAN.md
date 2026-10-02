@@ -22,9 +22,10 @@ Ba mẩu:
 
 | Mẩu | Ở đâu | Lo việc gì |
 |---|---|---|
-| Hàm | `functions/api/binh-luan.js` | nhận · lọc spam · đọc · duyệt · ẩn |
+| Hàm | `functions/api/binh-luan.js` | nhận · lọc spam · đọc · duyệt · thùng rác |
 | Bảng | D1, tên `binh_luan` | chỗ chứa. Tự tạo ở lượt gửi đầu tiên |
-| Giao diện | `src/js/comments.js` | dựng cây, form, bàn duyệt |
+| Giao diện người đọc | `src/js/comments.js` | dựng cây, form gửi, tự sửa lời mình |
+| Bàn duyệt | `src/js/duyet.js` | ngăn Comment ở `/z-admin/` |
 
 Khung HTML rỗng do `tools/build.mjs` in ra lúc dựng; phần chữ trong đó do JS đổ
 vào lúc chạy. Cả hai lấy chữ từ **cùng một bảng `NHAN`** trong build.mjs — rải
@@ -65,6 +66,23 @@ không ai duyệt nữa.
 
 Dòng **đã duyệt** vẫn ở lại danh sách nhưng mờ đi — để còn bỏ duyệt lại được
 nếu lỡ tay, mà không tranh chỗ với những dòng đang chờ.
+
+**Bốn bộ lọc:** Pending · Approved · All (mọi bình luận đang sống) · **Trash**.
+
+**Làm hàng loạt.** Tick ô ở đầu dòng (hoặc *Select all*) là hiện thanh
+`N selected` với Approve · Unapprove · Delete. Bỏ tick hết bằng chính ô
+*Select all*.
+
+**Delete là vào thùng rác, không phải xoá luôn.** Bình luận biến khỏi trang ngay,
+nằm ở bộ lọc Trash với cột đếm ngược "{n}d left"; ở đó có **Restore** (về đúng
+chỗ cũ, giữ nguyên trạng thái duyệt) và **Delete forever** (hỏi lại một lần).
+Quá **30 ngày** không ai cứu thì máy chủ xoá cứng — việc dọn chạy mỗi lần mở bàn
+duyệt, không có lịch riêng. Cột `xoaLuc` trong bảng ghi lúc vào thùng; bình luận
+"ẩn" từ đời trước (trước khi có thùng rác) được đóng dấu và đưa vào thùng ở lượt
+mở đầu tiên.
+
+Muốn cất tạm một bình luận khỏi trang mà không xoá thì **Unapprove** — không có
+nút Hide riêng nữa, vì Hide cũ và Delete cùng một cờ `an`.
 
 Khoá dùng **chung với ô viết ghi chú và ô viết bài**: cùng hai biến trong
 localStorage, cùng hai biến bí mật ở phía máy chủ. Nhập ở một chỗ là mở được cả

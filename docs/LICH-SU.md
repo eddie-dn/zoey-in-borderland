@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.5 | 2026-10-02 | 05 | Rà tài liệu · phép kiểm tài liệu lệch mã |
 | V3.2.4 | 2026-10-02 | 04 | Khung chung cho khu học tập |
 | V3.2.3 | 2026-10-02 | 03 | Bật tab Learning |
 | V3.2.2 | 2026-10-02 | 02 | Trang About gọn lại: liên hệ và cà phê thành ô nhỏ |
@@ -274,6 +275,14 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.5 — 02-Oct-2026
+
+- **Tài liệu rà lại một vòng** cho khớp những gì đã đổi: thùng rác bình luận,
+  ngăn Note hai tab và các ô kèm, /notes/ gom năm–tháng, bốn ô nhỏ ở About, tab
+  Learning và khung chung.
+- **Tài liệu tự rà mỗi lần dựng:** `npm run kiem` nay báo đỏ khi tài liệu trỏ
+  vào một mục "§N" không có, hoặc dạy một lệnh `npm run …` không tồn tại.
 
 ## V3.2.4 — 02-Oct-2026
 

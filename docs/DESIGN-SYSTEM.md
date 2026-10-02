@@ -903,17 +903,26 @@ từ **cùng dữ liệu** trong front matter, chỉ khác cách bày.
 
 ```
 CÓ ẢNH (khai `anh:` trong front matter)
-hàng 1     [ cột trái 2 cột: ảnh ở trên · dải số 2×2 ở dưới ]
+hàng 1     [ cột trái 2 cột: ảnh ở trên · dải bốn ô nhỏ 2×2 ở dưới ]
            [ giới thiệu  4 cột — cao bằng cả cột trái ]
-hàng 2     [ dải cuối 6 cột: dạo này · liên hệ · cà phê ]
+hàng 2     [ dải cuối 6 cột: chỉ còn ô "dạo này", nếu có khai ]
 hàng 3     [ thân bài  6 cột ]
 
 KHÔNG ẢNH
 hàng 1     [ giới thiệu  6 cột ]
-hàng 2     [ dải số  6 cột ]
+hàng 2     [ dải bốn ô nhỏ  6 cột ]
 hàng 3     [ dải cuối 6 cột ]
 hàng 4     [ thân bài  6 cột ]
 ```
+
+**Bốn ô nhỏ** (V3.2.2): Based in · Writing since · **Email** · **Buy me a
+coffee**. Hai ô cuối từng là "N posts" và "N topics" — con số trang Posts và
+trang Tags đã nói, mà ở trang giới thiệu chẳng nói gì về chủ trang. Liên hệ và
+cà phê thì từng mỗi thứ một ô to ở hàng cuối, chỉ để đựng một dòng email và một
+dòng "Coming soon". Ô liên hệ / cà phê (`.bo--so-lh`, `.bo--so-caphe`) đặt nhãn
+LÊN TRÊN giá trị (biết nó là gì trước đã), giá trị chữ thân bài; email ngắt sau
+`@` (`<wbr>`), tên miền là `inline-block`, cỡ chữ co theo bề ngang ô nhưng không
+dưới 12px. Câu mời `caPhe:` nằm trong `title` của ô.
 
 > **Bẫy đã vấp.** Bản đầu cho mỗi ô một `span` rồi thả cho lưới tự lấp. Hỏng vì
 > số ô SỐ thay đổi theo việc tác giả khai bao nhiêu field, nên hàng nào cũng có
@@ -922,13 +931,13 @@ hàng 4     [ thân bài  6 cột ]
 >
 > Cách chữa: nhét mọi ô số vào **một dải chiếm trọn 6 cột**, bên trong dải đó
 > mới chia đều bằng `auto-fit`. Khai 2 field hay 4 field thì lưới ngoài vẫn kín.
-> Hàng cuối (dạo này · liên hệ · cà phê) dùng đúng cách ấy, vì cả ba ô đều có
-> thể vắng mặt tuỳ front matter.
+> Hàng cuối (nay chỉ còn ô "dạo này") dùng đúng cách ấy, vì nó có thể vắng mặt
+> tuỳ front matter.
 
 > **Bẫy thứ hai: span qua nhiều hàng thì phần cao dư chia ĐỀU.** Ô giới thiệu
 > nay chứa cả đoạn tự giới thiệu — dăm đoạn văn chứ không phải một câu. Bản
 > trước xếp ảnh và dải số thành hai hàng lưới riêng rồi cho ô giới thiệu span
-> qua cả hai; đoạn chữ càng dài thì mấy ô số càng bị kéo cao ra, bốn con số
+> qua cả hai; đoạn chữ càng dài thì mấy ô số càng bị kéo cao ra, bốn ô nhỏ
 > nằm lọt thỏm giữa khoảng trống 300px.
 >
 > Cách chữa: gom ảnh + dải số vào **một ô lưới** (`.bo--cot`) rồi xếp dọc bằng
@@ -1730,7 +1739,7 @@ chân trang của chúng không thể trôi xa nhau:
 |---|---|---|---|
 | `/posts/` | một **chuyên mục**, chở 3 bài mới nhất của nó | `.muc-luoi` → `.muc-khoi` | chip trạng thái ở `.chip-hang` |
 | `/archive/` | một **bài**, gom theo năm | `.phan-trang` → `.kho-nam` → `.kho-ds` | — (cả kho, có số trang) |
-| `/notes/` | một **mẩu ghi chú** | `.gc-ds` | chip loại ở `.chip-hang .gc-loc` |
+| `/notes/` | một **mẩu ghi chú** — khu ghim `.gc-ghim`, rồi `.gc-dong` → `.gc-nam-khoi` → `.gc-thang` (đều `<details>`) → `.gc-ds` | chip loại ở `.chip-hang .gc-loc` |
 | `/tags/` | một **tag** | `.may-tag` | — |
 | `/tags/<t>/` | một **bài** mang tag ấy | `.ds-luoi` | — |
 
@@ -1806,7 +1815,7 @@ chế riêng.
 | `/posts/<mục>/` | thẻ bài | `moiTrang` (10) | có: 10 · 20 · 50 · tất cả |
 | `/tags/<tag>/` | thẻ bài | `moiTrang` | có |
 | `/archive/` | dòng bài | `moiTrang` | có |
-| `/notes/` | ghi chú | `moiTrang` | có |
+| `/notes/` | — | không cắt — gập theo **năm → tháng** thay cho số trang | bấm mở/gập từng năm, từng tháng |
 | `/search/` | — | không cắt | — |
 
 Ba điều rút ra từ bảng:
@@ -1820,6 +1829,12 @@ Ba điều rút ra từ bảng:
    chuyện trình bày, và mở cho đổi thì có lúc mở ra một trang hai mươi khối.
 3. **`/search/` không cắt trang.** Kết quả tìm kiếm đã được chính câu tìm lọc
    rồi; cắt thêm một lần nữa là bắt người đang tìm phải tìm trong kết quả tìm.
+4. **`/notes/` gập chứ không cắt.** Ghi chú là dòng thời gian, và dòng thời gian
+   đọc theo mốc (năm, tháng) chứ không theo trang 2, trang 3. Mỗi năm, mỗi tháng
+   là một `<details>`; mặc định mở năm mới nhất và các tháng gần nhất cho tới khi
+   đủ 5 ghi chú (`gcMoMacDinh` trong build, bản sao `moMacDinh` trong
+   `ghi-chu.js`). Lọc theo loại thì mọi khối còn ghi chú khớp tự mở. Hai cơ chế
+   giấu chồng lên nhau (gập + số trang) thì trang 2 có thể mở ra toàn tháng gập.
 
 Danh sách ngắn hơn con số của nó thì **không bọc khung phân trang** — thêm một
 lớp div và một ô chọn chẳng để làm gì.

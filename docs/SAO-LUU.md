@@ -146,6 +146,15 @@ lượt xem):
 | Dòng **không đổi** | **Không đụng tới** — `_capNhat` giữ nguyên mốc cũ |
 | Dòng **biến mất khỏi D1** | **KHÔNG xoá.** Đánh dấu `đã xoá khỏi DB`, một lần duy nhất |
 
+**Thùng rác và sổ sao lưu.** Bình luận và ghi chú bấm Delete ở `/z-admin/` vẫn
+nằm trong D1 30 ngày (cờ `an` / `xoa` cộng cột `xoaLuc`), nên tuần ấy sổ chỉ
+ghi `đổi`. Quá hạn, máy chủ xoá cứng, thì tuần kế sổ đánh dấu `đã xoá khỏi DB`
+— bản cũ vẫn còn trong Sheet. Muốn một dòng biến hẳn (người gửi xin xoá) thì
+phải xoá cả ở Sheet bằng tay.
+
+Cột mới thêm vào bảng (ví dụ `xoaLuc`, `mood`, `nguon`… của ghi chú) tự thành
+cột mới trong tab ở lượt chép kế tiếp — không phải sửa `Code.gs`.
+
 ### Ba cột sổ, đứng đầu mỗi tab
 
 | Cột | Nghĩa |

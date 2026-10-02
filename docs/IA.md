@@ -227,12 +227,13 @@ giữ nguyên bảng cũ thì tài liệu nói dối, nên nó được thay b�
 | Số trang cho Posts · Tags · Archive, người đọc chọn được số bài mỗi trang | `trang-so.js` |
 | `/posts/` — thư mục theo MỤC: mỗi mục **5 bài** dạng dòng đơn rồi "See all →", tối đa **6 mục** một trang | `congKhai` + `_muc.json` |
 | `/posts/<mục>/` — danh sách đầy đủ của một mục | `congKhai` + `_muc.json` |
-| `/notes/` — ghi chú ngắn, lọc theo loại. Thay Tags trên thanh đầu trang | `content/ghi-chu.md` |
+| `/notes/` — ghi chú ngắn: khu **Pinned** (tối đa 2) rồi dòng thời gian gom **năm → tháng**, gập được, lọc theo loại. Ghi chú kèm được nguồn, câu trích, mood. Thay Tags trên thanh đầu trang | `content/ghi-chu.md` + D1 (`/api/ghi-chu`) · `ghi-chu.js` |
 | `/tags/` và `/tags/<tag>/` — vẫn còn, đường vào ở chân trang | `tags.json` |
 | `/search/` — tìm ngay trên máy người đọc, không gọi máy chủ | `search-index.json` + trường `kd` |
 | `/archive/` gom theo năm | `congKhai` |
-| `/about/` khung bento | `content/pages/` |
-| `/z-admin/` — bàn làm việc của chủ trang: ba ngăn **Note · Comment · Post**, mỗi lúc một ngăn | `admin.js` + `ghi-chu.js` · `duyet.js` · `viet-bai.js` |
+| `/about/` khung bento — ảnh · lời giới thiệu · bốn ô nhỏ Based in · Writing since · Email · Buy me a coffee | `content/pages/` |
+| `/z-admin/` — bàn làm việc của chủ trang: bốn ngăn **Note · Comment · Post · Category**, mỗi lúc một ngăn. Note có hai tab Write/List; Comment có thùng rác 30 ngày; Post có xem trước riêng tư cho bài ẩn/nháp | `admin.js` + `ghi-chu.js` · `duyet.js` · `viet-bai.js` · `muc.js` |
+| Tab **Learning** → `learning.z-in-borderland.com` (kho `z-learning`), dùng chung đầu/chân trang qua `/khung/khung.json` | `khungChung()` · `docs/DESIGN-SYSTEM.md` §23 · `docs/KHU-HOC-TAP.md` |
 | Ảnh chia sẻ mặc định — một bản cho mỗi theme: `og.jpg` · `og-thien-ha.jpg` · `og-tinh-lang.jpg` · `og-suong-giang.jpg` | bài không có `cover` rơi về một trong bốn, chọn theo tên bài. Sinh bằng `npm run og` |
 | `/404` — trang không tìm thấy, dựng cùng bộ khung với mọi trang khác | `trang404()` |
 | Menu thả xuống cho màn hẹp — bốn mục điều hướng gấp vào sau nút ☰ | `menu.js` |
