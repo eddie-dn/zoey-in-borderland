@@ -2427,13 +2427,18 @@ dừng ở bốn cánh là dừng giữa chừng.
 
 `/z-admin/` có bốn ngăn — **Note · Comment · Post · Category** — và ba trong số
 đó làm cùng một loại việc: bày một danh sách để **điểm danh** rồi thao tác trên
-từng mục. (Ngăn Note chỉ có một ô viết, không có danh sách.)
+từng mục. (Ngăn Note có ô viết ở trên, danh sách ghi chú ở dưới.)
 
 | Ngăn | Mỗi hàng là | Nút trên hàng |
 |---|---|---|
-| Post | một bài đã đăng | Edit · Hide |
+| Note | một ghi chú trên D1 | Edit (tối đa 3 lần) · Hide · Delete |
+| Post | một bài đã đăng | Preview · Edit · Hide |
 | Category | một chuyên mục | Edit · Delete |
-| Comment | một bình luận chờ duyệt | Approve · Hide, và một ô tích để làm hàng loạt |
+| Comment | một bình luận | Approve · Delete, và một ô tích để làm hàng loạt |
+
+Delete ở Note và Comment là đưa vào **thùng rác** (bộ lọc Trash): ở đó hàng có
+Restore · Delete forever, cột trạng thái đếm ngược "{n}d left", và sau 30 ngày
+máy chủ tự xoá cứng. Chỉ Delete forever mới hỏi lại, vì chỉ nó là không lùi được.
 
 Thứ tự bốn ngăn đi theo TẦN SUẤT dùng, không theo thứ bậc dữ liệu: Category là
 việc làm một lần rồi cả tháng không mở lại, nên nó đứng cuối.

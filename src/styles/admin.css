@@ -350,6 +350,11 @@
 }
 /* Bàn duyệt có thêm một cột ô tick ở ngoài cùng bên trái. */
 .ad-dong--chon{grid-template-columns:1.1rem 5.5rem minmax(0,1fr) auto auto}
+/* Ô tick canh giữa DÒNG ĐẦU của hàng (tên người gửi, câu bình luận), không
+   canh mép trên của cả hàng: hàng hai tầng chữ mà ô tick nằm sát mép trên thì
+   nó trông như thuộc về đường kẻ phía trên chứ không thuộc về hàng này.
+   2px = nửa phần chênh giữa dòng chữ 1.4 × --fs-xs và ô tick 13px. */
+.ad-dong--chon > .ad-tick{margin-top:calc(-9px + 3px)}
 .ad-tick{display:flex;align-items:center;cursor:pointer;
   /* Vùng bấm nới ra quanh ô 14px mà không đẩy hàng cao lên: lề âm bù lại. */
   padding:9px 6px;margin:-9px -6px}
@@ -377,15 +382,14 @@
 .ad-chon-thanh{
   position:sticky;top:calc(var(--header-h) + 2px);z-index:2;
   display:flex;flex-wrap:wrap;align-items:center;gap:var(--s4);
-  /* ── LỀ TRONG BÙ BẰNG LỀ NGOÀI ÂM ──
-     Thanh này có nền nên cần lề trong, còn hàng bên dưới thì không
-     (`padding:5px 0`). Để lề trong trơn thì nút cuối của thanh đứng lùi vào
-     12px so với nút cuối của mỗi hàng — hai thứ làm cùng một việc mà không
-     thẳng nhau.
+  /* ── NẰM TRONG KHUNG, KHÔNG THÒ RA ──
+     Bản trước kéo thanh ra ngoài hai bên bằng lề âm, để ruột thanh thẳng cột
+     với từng nút của hàng bên dưới. Trên màn hình thì cái đập vào mắt lại là
+     cái NỀN: một dải thò ra khỏi mép bảng 12px mỗi bên, trong khi thanh công
+     cụ ngay trên nó và mọi hàng dưới nó đều đứng đúng mép. Nhìn như bị lệch.
 
-     Kéo cả thanh ra ngoài đúng bằng lề trong: nền vẫn rộng hơn hàng một chút
-     (đúng ý, nó là một thanh nổi), mà RUỘT thanh thì thẳng cột với hàng. */
-  padding:8px var(--s3);margin:0 calc(var(--s3) * -1) 2px;
+     Nay thanh đứng đúng bề rộng của bảng, lề trong lo phần chừa chỗ cho chữ. */
+  padding:7px var(--s3);margin:0 0 2px;
   border-radius:var(--r-sm);
   /* ── NỀN PHẢI ĐỤC, KHÔNG ĐƯỢC TRONG ──
      `--accent-wash` là một lớp rửa alpha .14. Thanh này DÍNH khi cuộn, nên
@@ -405,15 +409,26 @@
   letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);
   margin-right:auto;
 }
-/* ── NÚT GỘP DÙNG CHUNG BỀ RỘNG CỘT VỚI NÚT TỪNG HÀNG ──
-   Thanh gộp nằm ngay trên danh sách và làm đúng những việc mà nút từng hàng
-   làm. Để nó tự do theo `flex` thì bốn nút rộng theo chữ, và không cái nào
-   thẳng cột với cái nào ở dưới — mắt phải đọc lại nhãn mỗi lần nhìn xuống.
-
-   `5rem` là đúng con số `grid-auto-columns` của `.ad-lenh-hang`, nên nút cuối
-   cùng của thanh gộp và nút cuối cùng của mỗi hàng rơi vào cùng một mép. */
-.ad-chon-thanh .ad-lenh{width:5rem;text-align:right;flex:none}
-.ad-chon-bo{color:var(--text-faint)}
+/* ── CÁC NÚT GỘP: MỘT CỤM SÁT PHẢI, KHOẢNG ĐỀU ──
+   Bản trước cho mỗi nút một ô 5rem chữ dồn phải, để thẳng cột với nút của
+   hàng bên dưới. Mà thanh gộp có ba bốn nút còn hàng chỉ có hai, nên chỉ nút
+   cuối là thẳng được với ai — mấy nút kia đứng cách nhau những khoảng rộng
+   hẹp tuỳ độ dài chữ ("APPROVE ······ UNAPPROVE ······ HIDE"), đọc ra là rời
+   rạc. Một cụm chữ cách đều nhau, sát mép phải, thì đọc một hơi. */
+.ad-chon-viec{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s5);margin-left:auto}
+.ad-chon-thanh .ad-lenh{flex:none}
+/* ── NÚT XOÁ ──
+   Ở từng hàng thì nhạt như mọi nút khác, chỉ đỏ lên khi trỏ vào: mười lăm
+   chữ DELETE đỏ dọc bảng là mười lăm lời báo động cho một việc bình thường.
+   Ở thanh gộp thì đỏ sẵn — đó là chỗ một cú bấm đi cùng lúc mười dòng. */
+.ad-lenh--xoa:hover{color:var(--bad)}
+.ad-chon-thanh .ad-lenh--xoa{color:var(--bad)}
+.ad-chon-thanh .ad-lenh--xoa:hover{color:var(--text)}
+/* ── THÙNG RÁC ──
+   Chip Trash đứng cách ba chip kia một nhịp: ba cái đầu là ba lát cắt của
+   cùng một thứ (bình luận đang sống), còn thùng rác là một chỗ khác hẳn. */
+.bl-chip-rac{margin-left:var(--s3)}
+.bl-rac-luat{margin:0;font-size:var(--fs-3xs);color:var(--text-faint);line-height:1.5}
 .ad-dong:last-of-type{border-bottom:1px solid var(--line)}
 .ad-phu{
   font-family:var(--font-mono);font-size:var(--fs-3xs);
@@ -494,7 +509,10 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
    Lưới với cột rộng CỐ ĐỊNH, chữ dồn phải: mọi hàng thẳng cột, kể cả khi
    nhãn đổi. 5rem đủ cho `Unapprove` — chuỗi dài nhất trong cả ba ngăn. */
 .ad-lenh-hang{
-  display:grid;grid-auto-flow:column;grid-auto-columns:5rem;
+  /* `minmax(5rem, auto)`: 5rem cho mọi nhãn thường, và nới ra cho nhãn dài
+     duy nhất — "Delete forever" ở thùng rác. Mọi hàng trong thùng cùng mang
+     nhãn ấy, nên chúng vẫn thẳng cột với nhau. */
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(5rem, auto);
   justify-items:end;gap:var(--s2);
 }
 /* Nút chữ, không viền: hai nút trên mỗi dòng × mười lăm dòng = ba mươi cái
@@ -713,3 +731,17 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 .vb-xt-bia{max-width:min(var(--measure), 100% - var(--gutter) * 2);margin:0 auto var(--s7)}
 .vb-xt-bia img{display:block;width:100%;height:auto;border-radius:var(--r-md)}
 
+
+/* ══════════ DANH SÁCH GHI CHÚ Ở NGĂN NOTE ══════════
+   Cùng khuôn `.ad-*` với ngăn Post; chỉ thêm khoảng cách với ô viết phía trên
+   và một nhãn đầu bảng — ở ngăn Post thanh công cụ đứng ngay dưới tiêu đề
+   ngăn, còn ở đây giữa hai thứ có cả một khung viết. */
+.gc-ql{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s7)}
+.gc-ql > .ad-thanh{margin-bottom:0}
+.gc-ql-de{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+}
+/* Khung viết đang mượn làm khung SỬA: viền màu nhấn để không ai tưởng mình
+   đang gõ một ghi chú mới. */
+.ad-o .gc-viet--sua{border-style:solid;border-color:var(--accent)}

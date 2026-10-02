@@ -39,7 +39,10 @@
        chuTrang INTEGER NOT NULL DEFAULT 0,
        duyet    INTEGER NOT NULL DEFAULT 0,
        an       INTEGER NOT NULL DEFAULT 0,
-       luc      TEXT NOT NULL
+       luc      TEXT NOT NULL,
+       mtSua    TEXT NOT NULL DEFAULT '',
+       soSua    INTEGER NOT NULL DEFAULT 0,
+       xoaLuc   TEXT NOT NULL DEFAULT ''
      );
      CREATE INDEX IF NOT EXISTS bl_trang ON binh_luan (trang, duyet, an, luc);
 
@@ -65,12 +68,15 @@ const TAO = [
      chuTrang INTEGER NOT NULL DEFAULT 0,
      duyet    INTEGER NOT NULL DEFAULT 0,
      an       INTEGER NOT NULL DEFAULT 0,
-     luc      TEXT NOT NULL
+     luc      TEXT NOT NULL,
+     mtSua    TEXT NOT NULL DEFAULT '',
+     soSua    INTEGER NOT NULL DEFAULT 0,
+     xoaLuc   TEXT NOT NULL DEFAULT ''
    )`,
   `CREATE INDEX IF NOT EXISTS bl_trang ON binh_luan (trang, duyet, an, luc)`
 ];
 
-/* ── HAI CỘT THÊM SAU, PHẢI DÙNG `ALTER TABLE` ──
+/* ── CÁC CỘT THÊM SAU, PHẢI DÙNG `ALTER TABLE` ──
    `CREATE TABLE IF NOT EXISTS` KHÔNG thêm cột vào một bảng đã có: nó thấy
    bảng tồn tại rồi là bỏ qua cả câu. Bảng `binh_luan` đã chạy thật với dữ
    liệu thật, nên hai cột này phải đi bằng `ALTER TABLE`.
@@ -78,11 +84,32 @@ const TAO = [
    Chạy RIÊNG từng câu trong try/catch, KHÔNG gộp vào `batch`: lần thứ hai trở
    đi thì cột đã có và SQLite ném lỗi — mà trong một batch thì một câu lỗi là
    cả batch hỏng, tức là mọi bình luận thôi gửi được kể từ lượt deploy thứ hai.
-   SQLite không có `ADD COLUMN IF NOT EXISTS`, nên nuốt lỗi là cách đúng. */
+   SQLite không có `ADD COLUMN IF NOT EXISTS`, nên nuốt lỗi là cách đúng.
+
+   Bảng tạo mới thì đã có đủ cột ngay trong `TAO` ở trên, và ba câu này chỉ
+   ném lỗi rồi bị nuốt.
+
+   `xoaLuc` là lúc một bình luận vào THÙNG RÁC (rỗng = không nằm trong thùng).
+   Xem khối "THÙNG RÁC" ở dưới. */
 const THEM_COT = [
   `ALTER TABLE binh_luan ADD COLUMN mtSua TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE binh_luan ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`
+  `ALTER TABLE binh_luan ADD COLUMN soSua INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE binh_luan ADD COLUMN xoaLuc TEXT NOT NULL DEFAULT ''`
 ];
+
+/* ── THÙNG RÁC ──
+   Xoá ở bàn duyệt là xoá MỀM: `an = 1` cộng `xoaLuc` = lúc xoá. Bình luận
+   biến khỏi trang ngay, nhưng còn nằm trong ngăn Trash để cứu lại.
+
+   Quá HAN_RAC ngày mà không ai cứu thì xoá cứng. Không có lịch chạy riêng:
+   việc dọn chạy mỗi lần chủ trang mở bàn duyệt. Hệ quả là một dòng có thể
+   nằm lâu hơn 30 ngày nếu cả tháng không ai mở `/z-admin/` — nhưng không ai
+   thấy nó ngoài chủ trang, nên chậm vài hôm cũng không sao, còn một lịch
+   chạy riêng là thêm một thứ để cấu hình.
+
+   Bình luận đã ẩn từ đời trước (`an = 1`, chưa có `xoaLuc`) được đóng dấu
+   lúc này: chúng vào thùng rác, và có đủ 30 ngày để cứu như mọi dòng khác. */
+const HAN_RAC = 30;
 
 /* Nhớ trong isolate: hai câu ALTER chỉ cần chạy MỘT lần cho mỗi isolate, mà
    bàn duyệt thì gọi mỗi lượt tải. Không nhớ thì mỗi lượt xem hàng chờ là hai
@@ -94,6 +121,11 @@ async function noiRongBang(env) {
   for (const sql of THEM_COT) {
     try { await env.DB.prepare(sql).run(); } catch (e) { /* cột đã có */ }
   }
+  try {
+    await env.DB.prepare(
+      `UPDATE binh_luan SET xoaLuc = ? WHERE an = 1 AND xoaLuc = ''`
+    ).bind(new Date().toISOString()).run();
+  } catch (e) { /* bảng chưa có */ }
   daNoiRong = true;
 }
 
@@ -195,10 +227,18 @@ export async function onRequestGet({ request, env }) {
        nhưng nhìn thì y như mất sạch. */
     await noiRongBang(env);
     try {
+      /* Dọn thùng rác trước khi đọc, để ngăn Trash không bao giờ bày ra một
+         dòng đã quá hạn. */
+      const han = new Date(Date.now() - HAN_RAC * 864e5).toISOString();
+      await env.DB.prepare(
+        `DELETE FROM binh_luan WHERE an = 1 AND xoaLuc != '' AND xoaLuc < ?`
+      ).bind(han).run();
+      /* Một lượt đọc cho cả bốn bộ lọc, kể cả thùng rác — trình duyệt tự
+         chia. Thùng rác xếp CUỐI để trần LAY không cắt mất dòng đang chờ. */
       const kq = await env.DB.prepare(
-        `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, luc, soSua FROM binh_luan
-          WHERE an = 0 ORDER BY duyet ASC, luc DESC LIMIT ?`).bind(LAY).all();
-      return traLoi({ ok: true, ds: kq.results || [] });
+        `SELECT ma, trang, ten, chu, cha, chuTrang, duyet, an, xoaLuc, luc, soSua FROM binh_luan
+          ORDER BY an ASC, duyet ASC, luc DESC LIMIT ?`).bind(LAY).all();
+      return traLoi({ ok: true, ds: kq.results || [], hanRac: HAN_RAC });
     } catch (e) {
       /* ── KHÔNG BIẾN LỖI THÀNH "KHÔNG CÓ GÌ" ──
          Bản trước trả thẳng `{ok:true, ds:[]}` cho MỌI lỗi. Nó biến một câu
@@ -365,18 +405,28 @@ export async function onRequestPatch({ request, env }) {
   const dat = [];
   const tham = [];
   if ('duyet' in than) { dat.push('duyet = ?'); tham.push(than.duyet ? 1 : 0); }
-  if ('an' in than)    { dat.push('an = ?');    tham.push(than.an ? 1 : 0); }
+  /* Vào thùng rác thì đóng dấu giờ, ra khỏi thùng thì xoá dấu — đồng hồ 30
+     ngày chạy theo `xoaLuc`. */
+  if ('an' in than) {
+    dat.push('an = ?', 'xoaLuc = ?');
+    tham.push(than.an ? 1 : 0, than.an ? new Date().toISOString() : '');
+  }
   if (!dat.length) return traLoi({ ok: false, loi: 'không có gì để đổi' }, 400);
 
   tham.push(ma);
+  await noiRongBang(env);
   await env.DB.prepare(
     `UPDATE binh_luan SET ${dat.join(', ')} WHERE ma = ?`).bind(...tham).run();
 
   return traLoi({ ok: true, ma });
 }
 
-/* Xoá MỀM, cùng lý do với ghi chú: đánh dấu thì bảng vẫn kể lại được chuyện gì
-   đã xảy ra, còn xoá cứng thì không. Dọn hẳn thì vào Console của D1 mà DELETE. */
+/* Mặc định là xoá MỀM (vào thùng rác), cùng lý do với ghi chú: đánh dấu thì
+   còn cứu lại được, còn xoá cứng thì không.
+
+   `?vinhVien=1` là nút "Delete forever" của ngăn Trash: xoá cứng ngay, không
+   đợi hết 30 ngày. Nó CHỈ xoá được dòng đã nằm trong thùng (`an = 1`) — một
+   lượt gọi nhầm mã không thể xoá thẳng một bình luận đang hiện trên trang. */
 export async function onRequestDelete({ request, env }) {
   if (!env.DB) return traLoi({ ok: false, loi: 'chưa gắn D1' }, 503);
   if (chuaDatKhoa(env)) return traLoi(LOI_CHUA_DAT, 503);
@@ -385,6 +435,12 @@ export async function onRequestDelete({ request, env }) {
   const ma = locMa(new URL(request.url).searchParams.get('ma'));
   if (!ma) return traLoi({ ok: false, loi: 'thiếu mã' }, 400);
 
-  await env.DB.prepare('UPDATE binh_luan SET an = 1 WHERE ma = ?').bind(ma).run();
+  await noiRongBang(env);
+  if (new URL(request.url).searchParams.get('vinhVien') === '1') {
+    await env.DB.prepare('DELETE FROM binh_luan WHERE ma = ? AND an = 1').bind(ma).run();
+    return traLoi({ ok: true, ma, xoa: true });
+  }
+  await env.DB.prepare('UPDATE binh_luan SET an = 1, xoaLuc = ? WHERE ma = ?')
+    .bind(new Date().toISOString(), ma).run();
   return traLoi({ ok: true, ma, an: true });
 }

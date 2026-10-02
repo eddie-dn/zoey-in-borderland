@@ -303,8 +303,21 @@ const NHAN = {
   gcPosting   : 'Sending…',
   gcPosted    : 'Done — the note is live.',
   gcPostFail  : 'Could not send. Check the key or your connection.',
-  gcDel       : 'Delete note',
-  gcDelFail   : 'Could not delete.',
+  /* ── DANH SÁCH GHI CHÚ Ở NGĂN NOTE ──
+     Cùng bộ chữ với ngăn Post (Edit · Hide · Unhide) và với thùng rác của
+     bàn duyệt (Restore · Delete forever · "{n}d left"), để ba ngăn không có
+     ba cách gọi cho cùng một việc. */
+  gcList      : 'Your notes',
+  gcHidden    : 'Hidden',
+  gcListEmpty : 'Nothing here yet.',
+  gcLoadFail  : 'Could not load notes. Check the key or your connection.',
+  gcEdited    : 'edited {n}/{t}',
+  gcEditsLeft : '{n} of {t} edits left',
+  gcNoEdits   : 'No edits left — each note can be edited 3 times.',
+  gcSaveEdit  : 'Save edit ({n} left)',
+  gcSaved     : 'Saved.',
+  gcActFail   : 'Could not do that. Check the connection and try again.',
+  gcAskPurge  : 'Delete this note for good? This cannot be undone.',
   blPrevPage  : 'Previous page',
   blNextPage  : 'Next page',
   blSentWait  : 'Waiting for review — only you can see it. {n} edits left this session.',
@@ -717,10 +730,20 @@ const NHAN = {
   blPick      : 'Select',
   blPickAll   : 'Select all',
   blPicked    : '{n} selected',
-  blPickNone  : 'Clear',
   blAskApprove: 'Approve {n} comments?',
   blAskUnappr : 'Unapprove {n} comments?',
-  blAskHide   : 'Hide {n} comments? This cannot be undone.',
+  /* ── THÙNG RÁC ──
+     Delete thay cho Hide cũ: cùng cờ `an`, nhưng nay vào thùng rác, có đồng
+     hồ và nút cứu. Chỉ xoá VĨNH VIỄN mới phải hỏi lại — vào thùng thì không,
+     vì lùi lại được. Ghi chú ở ngăn Note mượn chung mấy chữ này. */
+  blDel       : 'Delete',
+  blRestore   : 'Restore',
+  blPurge     : 'Delete forever',
+  blAskPurge  : 'Delete {n} for good? This cannot be undone.',
+  blFTrash    : 'Trash',
+  blTrashNote : 'Deleted items are removed for good {n} days after deletion. Restore puts them back where they were.',
+  blTrashEmpty: 'Trash is empty.',
+  blDaysLeft  : '{n}d left',
   blStateOff  : 'Pending',
   blFPending  : 'Pending',
   blFDone     : 'Approved',
@@ -1272,7 +1295,11 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                      `data-duyet-nhan="${attr(JSON.stringify({
                         queueEmpty: NHAN.queueEmpty,
                         loading: NHAN.loading, approve: NHAN.approve,
-                        unapprove: NHAN.unapprove, hide: NHAN.hide,
+                        unapprove: NHAN.unapprove, del: NHAN.blDel,
+                        restore: NHAN.blRestore, purge: NHAN.blPurge,
+                        askPurge: NHAN.blAskPurge, fTrash: NHAN.blFTrash,
+                        trashNote: NHAN.blTrashNote, trashEmpty: NHAN.blTrashEmpty,
+                        daysLeft: NHAN.blDaysLeft,
                         /* Bốn nhãn của khung xin khoá (keyId, keySecret,
                            keySave, keyForget) đã rời khỏi đây: bàn duyệt không
                            còn tự hỏi khoá, nó mượn khung chung của khoa.js và
@@ -1286,8 +1313,8 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         stateOff: NHAN.blStateOff,
                         pick: NHAN.blPick, pickAll: NHAN.blPickAll,
                         picked: NHAN.blPicked,
-                        pickNone: NHAN.blPickNone, askApprove: NHAN.blAskApprove,
-                        askUnapprove: NHAN.blAskUnappr, askHide: NHAN.blAskHide
+                        askApprove: NHAN.blAskApprove,
+                        askUnapprove: NHAN.blAskUnappr
                       }))}"`
                    : '',
                  /* ── NHÃN CỦA KHUNG ĐĂNG NHẬP ──
@@ -1480,7 +1507,17 @@ function trang({ title, description, canonical, ogTitle, ogImage, ogType, conten
                         body: NHAN.gcBody,     bodyMissing: NHAN.gcBodyEmpty,
                         post: NHAN.gcPost,     posting: NHAN.gcPosting,
                         posted: NHAN.gcPosted, postFail: NHAN.gcPostFail,
-                        del: NHAN.gcDel,       delFail: NHAN.gcDelFail
+                        cancel: NHAN.cancelEdit, listTitle: NHAN.gcList,
+                        listEmpty: NHAN.gcListEmpty, loadFail: NHAN.gcLoadFail,
+                        edit: NHAN.edit, hide: NHAN.vbHide, unhide: NHAN.vbUnhide,
+                        hidden: NHAN.gcHidden, del2: NHAN.blDel,
+                        restore: NHAN.blRestore, purge: NHAN.blPurge,
+                        trash: NHAN.blFTrash, trashNote: NHAN.blTrashNote,
+                        trashEmpty: NHAN.blTrashEmpty, daysLeft: NHAN.blDaysLeft,
+                        edited: NHAN.gcEdited, editsLeft: NHAN.gcEditsLeft,
+                        noEdits: NHAN.gcNoEdits, saveEdit: NHAN.gcSaveEdit,
+                        saved: NHAN.gcSaved, actFail: NHAN.gcActFail,
+                        askPurge: NHAN.gcAskPurge
                       }))}"`
                    : ''
                 ].filter(Boolean).join(' '),

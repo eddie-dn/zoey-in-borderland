@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.1.7 | 2026-10-02 | 07 | Thùng rác cho bình luận và ghi chú; ghi chú D1 hiện lại ở /notes/ |
 | V3.1.6 | 2026-10-02 | 06 | trang quản trị: xem trước riêng tư cho bài ẩn và bài nháp |
 | V3.1.5 | 2026-09-27 | 05 | ô soạn thảo: nền đục ở theme tối · ảnh giữ đúng khổ · khối video xem được · tải video · khung Wide rõ nghĩa |
 | V3.1.4 | 2026-09-27 | 04 | ô soạn thảo: menu kiểu chữ chia nhóm · bảng Media có hình minh hoạ · ảnh luôn đứng riêng dòng · cột đầu in đậm |
@@ -266,6 +267,17 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.1.7 — 02-Oct-2026
+
+- **Ghi chú đăng từ /z-admin/ hiện lại ở /notes/.** Bỏ ba ghi chú mẫu khỏi
+  file làm trang tưởng không còn ghi chú nào và thôi hỏi máy chủ, nên ghi chú
+  thật cũng biến theo. Chúng chưa từng bị xoá.
+- **Thùng rác cho bình luận và ghi chú.** Bấm Delete là vào ngăn Trash,
+  Restore để cứu lại; sau 30 ngày tự xoá hẳn. Bình luận từng bấm Hide cũng
+  nằm trong đó.
+- **Ngăn Note có danh sách ghi chú**: Edit (mỗi ghi chú tối đa 3 lần), Hide,
+  Delete, giống ngăn Post. Thanh chọn ở ngăn Comment nằm gọn trong khung.
 
 ## V3.1.6 — 02-Oct-2026
 
