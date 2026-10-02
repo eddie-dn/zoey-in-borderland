@@ -71,8 +71,11 @@
   --accent-3:#F5BCBA;
   --accent-wash:rgba(227,170,221,.14);/* nền nhạt của chip, callout */
 
-  --line:rgba(122,103,149,.18);
-  --line-strong:rgba(122,103,149,.34);
+  /* Viền .18 → .26 (V3.2.9): trên nền tím rất nhạt, mặt thẻ trắng chỉ tách
+     nền 1,05:1 — thẻ đứng được là nhờ viền, mà viền .18 thì gần như không
+     thấy. Kẻ ngang trong ô (hàng bài ở /posts/) đậm theo, vẫn nhẹ. */
+  --line:rgba(122,103,149,.26);
+  --line-strong:rgba(122,103,149,.42);
   --sel-bg:rgba(200,168,233,.34);
 
   --ok:#2F7D62;  --ok-wash:rgba(47,125,98,.10);
@@ -313,7 +316,10 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   :root:not([data-theme]){
     --bg:#120C22;
     --bg-tint:radial-gradient(125% 85% at 50% 38%, #2B1E4C 0%, #1B1233 54%, #120C22 100%);
-    --surface:rgba(255,255,255,.065);
+    /* Mặt thẻ .065 → .10, viền .20 → .32 (V3.2.9): thẻ và ô chuyên mục từng
+     gần như chìm vào nền tím — tách nền chỉ 1,15:1, mép viền khó thấy. Chữ
+     phụ trên mặt mới vẫn trên 5:1. */
+  --surface:rgba(255,255,255,.10);
     --surface-solid:#241839;
     --surface-sunken:rgba(255,255,255,.05);
 
@@ -331,8 +337,8 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
     --accent-3:#F5BCBA;
     --accent-wash:rgba(227,170,221,.13);
 
-    --line:rgba(227,170,221,.20);
-    --line-strong:rgba(227,170,221,.38);
+    --line:rgba(227,170,221,.32);
+    --line-strong:rgba(227,170,221,.48);
     --sel-bg:rgba(200,168,233,.30);
 
     --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
@@ -364,7 +370,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
     /* Nền tối: tấm phủ lấy màu MẶT THẺ đục (#241839) pha sáng lên một chút,
        chứ không lấy trắng trong suốt — trắng .9 trên nền tối ra một vũng sữa. */
     --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
-    --glass-edge:rgba(227,170,221,.15);
+    --glass-edge:rgba(227,170,221,.22);
     --glass-ring:rgba(227,170,221,.26);
     --glass-spec:rgba(255,255,255,.42);
     --glass-spec2:rgba(255,255,255,.05);
@@ -389,7 +395,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
 :root[data-theme="dark"]{
   --bg:#120C22;
   --bg-tint:radial-gradient(125% 85% at 50% 38%, #2B1E4C 0%, #1B1233 54%, #120C22 100%);
-  --surface:rgba(255,255,255,.065);
+  --surface:rgba(255,255,255,.10);
   --surface-solid:#241839;
   --surface-sunken:rgba(255,255,255,.05);
 
@@ -412,8 +418,8 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --accent-3:#F5BCBA;
   --accent-wash:rgba(227,170,221,.13);
 
-  --line:rgba(227,170,221,.20);
-  --line-strong:rgba(227,170,221,.38);
+  --line:rgba(227,170,221,.32);
+  --line-strong:rgba(227,170,221,.48);
   --sel-bg:rgba(200,168,233,.30);
 
   --ok:#7FD3B0;  --ok-wash:rgba(127,211,176,.11);
@@ -443,7 +449,7 @@ màu chữ mà không đọc được thì nó là màu trang trí, không phả
   --w-doc:400;
   --glass-fill:linear-gradient(163deg,rgba(255,255,255,.072),rgba(255,255,255,.028));
   --glass-tam:linear-gradient(163deg,rgba(58,41,88,.985),rgba(36,24,57,.955));
-  --glass-edge:rgba(227,170,221,.15);
+  --glass-edge:rgba(227,170,221,.22);
   --glass-ring:rgba(227,170,221,.26);
   --glass-spec:rgba(255,255,255,.42);
   --glass-spec2:rgba(255,255,255,.05);

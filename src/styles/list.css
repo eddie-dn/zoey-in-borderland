@@ -111,12 +111,28 @@ main:has(> .ds-trang) + .site-foot{margin-top:0}
 .the-bai{height:100%}
 
 .the-bai{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s5) var(--s5) var(--s4)}
+/* ── THẺ BÀI CÙNG MỘT GIỌNG VỚI Ô CHUYÊN MỤC ──
+   Thẻ bài từng mặc kính chung của `.card`: nền trong ngả màu nền trang, viền
+   kính mảnh, bóng nhoè. Đặt cạnh ô chuyên mục ở /posts/ (mặt `--surface` gần
+   đặc + viền `--line` 1px sắc) thì trang chuyên mục đọc ra đục và kém rõ —
+   đo trên theme Tĩnh lặng: thẻ tách nền 1,28:1 mà mép mờ, ô chuyên mục 1,23:1
+   nhưng mép sắc nên trông rõ hơn hẳn. Hai trang danh sách liền nhau phải nói
+   cùng một giọng: nay thẻ bài dùng đúng mặt và viền của ô chuyên mục, bỏ lớp
+   ánh kính `::before`. Kính vẫn ở chỗ của nó — thanh đầu trang, nút, ô About. */
+.the-bai{
+  background:var(--surface);
+  box-shadow:inset 0 0 0 1px var(--line);
+  border-radius:var(--r-md);
+  transition:box-shadow var(--dur-fast);
+}
+.the-bai::before{content:none}
+.the-bai:hover{box-shadow:inset 0 0 0 1px var(--line-strong)}
 .the-bai h2{
   margin:0;font-size:var(--fs-h4);font-style:italic;
   line-height:1.28;text-wrap:balance;
 }
 .the-bai h2 a{color:var(--text);text-decoration:none;background:none}
-.the-bai:hover h3 a{color:var(--accent-ink)}
+.the-bai:hover h2 a{color:var(--accent-ink)}
 .the-tom{
   margin:0;font-size:var(--fs-sm);line-height:1.6;color:var(--text-muted);
   text-wrap:pretty;
