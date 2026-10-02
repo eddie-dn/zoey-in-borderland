@@ -781,3 +781,46 @@ a.ad-mo:hover{color:var(--accent-ink);text-decoration:underline}
 .gc-tick{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   font-size:var(--fs-sm);color:var(--text-muted)}
 .gc-tick input{accent-color:var(--accent);margin:0}
+/* ── KHO MOOD ──
+   Nút ＋ đứng cuối hàng gợi ý, cùng cỡ với tám nút kia nhưng viền đứt: đọc ra
+   là "mở thêm", không phải một mood thứ chín. Kho mở ngay dưới hàng, trên nền
+   đục hơn khung viết một bậc, chia nhóm theo sắc thái. */
+.gc-mood-them{
+  appearance:none;width:34px;height:34px;border-radius:50%;cursor:pointer;
+  border:1px dashed var(--line-strong);background:none;color:var(--text-muted);
+  font-size:1rem;line-height:1;transition:border-color var(--dur-fast),color var(--dur-fast);
+}
+.gc-mood-them:hover,.gc-mood-them[aria-expanded="true"]{border-color:var(--accent);color:var(--accent-ink)}
+.gc-mood-them:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* Mood chọn từ kho hiện thành một nút đang bấm ở cuối hàng — bấm vào là bỏ. */
+.gc-mood-ngoai{position:relative}
+.gc-mood-kho{
+  display:flex;flex-direction:column;gap:var(--s3);
+  margin-top:var(--s3);padding:var(--s4);
+  border-radius:var(--r-sm);background:var(--surface-solid);
+  box-shadow:inset 0 0 0 1px var(--line);
+  max-height:22rem;overflow:auto;
+}
+.gc-mood-nhom{display:grid;grid-template-columns:6.5rem minmax(0,1fr);align-items:center;gap:var(--s3)}
+.gc-mood-nhom-de{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+.gc-mood-luoi{display:flex;flex-wrap:wrap;gap:4px}
+.gc-mood-kho .gc-mood-nut{width:32px;height:32px;font-size:1rem}
+.gc-mood-dan{display:flex;align-items:center;gap:var(--s3);padding-top:var(--s2);border-top:1px solid var(--line)}
+.gc-mood-dan > span{
+  font-family:var(--font-label);font-size:var(--fs-3xs);font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);
+}
+.gc-mood-dan input{
+  width:5rem;font:inherit;font-size:1rem;text-align:center;color:var(--text);
+  padding:4px var(--s2);border:1px solid var(--line-strong);border-radius:var(--r-xs);
+  background:var(--surface-solid);
+}
+@media (max-width:560px){
+  .gc-mood-nhom{grid-template-columns:1fr;gap:6px}
+}
+/* ── CÒN BAO NHIÊU LƯỢT SỬA (ngăn Note, tab List) ── */
+.gc-con-sua{color:var(--accent-ink)}
+.gc-con-sua--het{color:var(--bad)}
