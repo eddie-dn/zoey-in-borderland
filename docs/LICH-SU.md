@@ -58,6 +58,7 @@
 
 | Bản | Ngày | # | Sửa chính |
 |---|---|---|---|
+| V3.2.8 | 2026-10-02 | 08 | Căn đều hai lề đoạn About me |
 | V3.2.7 | 2026-10-02 | 07 | Ô Buy me a coffee nối sang trang Mời cà phê của Learning |
 | V3.2.6 | 2026-10-02 | 06 | Khung chung gửi thêm gói CSS danh sách để Learning dựng bằng cụm của blog; ghi §23.6 |
 | V3.2.5 | 2026-10-02 | 05 | Rà tài liệu · phép kiểm tài liệu lệch mã |
@@ -277,6 +278,11 @@
 <!-- BANG-KET-THUC -->
 
 ---
+
+## V3.2.8 — 02-Oct-2026
+
+- **Đoạn "About me" căn đều hai lề**, như trang sách — đi cùng kiểu thụt đầu
+  dòng sẵn có; dòng cuối mỗi đoạn vẫn dạt trái.
 
 ## V3.2.7 — 02-Oct-2026
 
